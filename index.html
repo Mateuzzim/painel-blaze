@@ -701,8 +701,7 @@
                             <option value="minutosOuro">5. Minutos de Ouro</option>
                             <option value="somaTotal">6. Soma Total dos Intervalos</option>
                             <option value="custom">7. Estratégia Personalizada</option>
-                            <option value="offset">8. Deslocamento Fixo</option>
-                            <option value="padraoHoras">9. Padrão de Horas</option>
+                            <option value="offset">8. Deslocamento Fixo</option><option value="padraoHoras">9. Padrão de Horas</option>
                             <option value="brianTracy">10. Fórmula Ponderada (Brian Tracy)</option>
                             <option value="pitagoras">11. Teorema de Pitágoras</option>
                             <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
@@ -1287,10 +1286,7 @@
             let attempts = 0; // Para evitar loop infinito
 
             const bestHours = filterByBestHour ? getBestPerformingHours() : [];
-            if (filterByBestHour && bestHours.length === 0) {
-                document.getElementById('suite_resGerador').innerText = "Filtro por Melhor Hora ativo, mas nenhuma hora com bom desempenho foi encontrada no histórico. Analise um histórico primeiro ou desative o filtro.";
-                return;
-            }
+            let isFiltering = filterByBestHour && bestHours.length > 0;
 
             while (signalsGenerated < qtd && attempts < (qtd * 100)) {
                 attempts++;
@@ -1302,7 +1298,7 @@
                 }
 
                 // Se o filtro estiver ativo, verifica se a hora do sinal é uma das melhores
-                if (filterByBestHour) {
+                if (isFiltering) {
                     let potentialTime = new Date(db.getTime() + minutosParaAdicionar * 60000);
                     if (!bestHours.includes(potentialTime.getHours())) {
                         // Se não for uma boa hora, avança o tempo e tenta de novo
@@ -1550,16 +1546,20 @@
         }
 
         function suite_analisarEGerar() {
-            const input = document.getElementById('suite_inputHistorico').value.trim();
+            // MODIFICAÇÃO: Pega os dados diretamente do painel direito (Analisador de Sinais)
+            const input = document.getElementById('dash_inputData').value.trim();
             const qtd = parseInt(document.getElementById('suite_qtdProjecoes').value);
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             
             if (!input) {
-                alert("Por favor, cole os dados do histórico.");
+                // Mensagem de alerta atualizada para refletir a nova fonte de dados
+                alert("Por favor, analise um histórico no painel 'Analisador de Sinais' (à direita) primeiro.");
                 return;
             }
+            // Atualiza o campo de texto da esquerda para o usuário ver qual histórico foi usado
+            document.getElementById('suite_inputHistorico').value = input;
 
             const linhas = input.split('\n').map(l => l.trim()).filter(l => l); // Filtra linhas vazias
             let coresProcessadas = [];
@@ -2139,8 +2139,7 @@
 
         function suite_toggleStrategyInputs() {
             const estrategia = document.getElementById('suite_estrategiaBranco').value;
-            document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';
-            document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
+            document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
             document.getElementById('suite_intervaloFixoContainer').style.display = (estrategia === 'intervaloFixo') ? 'block' : 'none';
         }
 
@@ -2267,11 +2266,34 @@
                 case 'minimo': pattern = getIntervals(horarios); if (pattern.length > 0) { const min = Math.min(...pattern.filter(i => i > 0)); if(min > 0) projectedSignals = projectSignals(lastTime, [min], qtdSinais, intervaloMinimo); } break;
                 case 'espelho12h': horarios.slice(0, qtdSinais).forEach(h => { let date = new Date(); const [hr, mn] = h.split(':').map(Number); date.setHours(hr + 12, mn); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
                 case 'fibonacci': projectedSignals = projectSignals(lastTime, [5, 8, 13, 21, 34, 55], qtdSinais, intervaloMinimo); break;
-                case 'intervaloFixo': const fixedInterval = parseInt(document.getElementById('suite_intervaloFixoValue').value); if (!isNaN(fixedInterval) && fixedInterval > 0) { projectedSignals = projectSignals(lastTime, [fixedInterval], qtdSinais, intervaloMinimo); } else { projectedSignals = "Insira um intervalo fixo válido."; } break;
                 case 'minutosOuro': const minuteCounts = {}; horarios.forEach(h => { const min = h.split(':')[1]; minuteCounts[min] = (minuteCounts[min] || 0) + 1; }); const goldenMinutes = Object.keys(minuteCounts).sort((a, b) => minuteCounts[b] - minuteCounts[a]).slice(0, 5); let projTime = new Date(lastTime); while(projectedSignals.length < qtdSinais && goldenMinutes.length > 0) { projTime.setHours(projTime.getHours() + 1); if (projectedSignals.length >= qtdSinais) break; goldenMinutes.forEach(min => { if(projectedSignals.length < qtdSinais) projectedSignals.push(`🕒 ${projTime.getHours().toString().padStart(2, '0')}:${min} ➔ ⚪`); }); } break;
                 case 'somaTotal': pattern = getIntervals(horarios); if (pattern.length > 0) { const totalSum = pattern.reduce((a, b) => a + b, 0); let finalTime = new Date(lastTime); finalTime.setMinutes(finalTime.getMinutes() + totalSum); projectedSignals.push(`🕒 ${finalTime.getHours().toString().padStart(2, '0')}:${finalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); } break;
                 case 'custom': const customPatternStr = document.getElementById('suite_customPattern').value; if (!customPatternStr) { projectedSignals = "Insira um padrão."; break; } pattern = customPatternStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0); projectedSignals = projectSignals(lastTime, pattern, qtdSinais, intervaloMinimo); break;
-                case 'offset': const offsetValue = parseInt(document.getElementById('suite_fixedOffsetValue').value); if (isNaN(offsetValue)) { projectedSignals = "Insira um deslocamento."; break; } [...horarios].reverse().slice(0, qtdSinais).forEach(h => { const [hr, mn] = h.split(':').map(Number); let date = new Date(); date.setHours(hr, mn + offsetValue, 0, 0); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
+                case 'offset':
+                    const offsetValue = parseInt(document.getElementById('suite_fixedOffsetValue').value);
+                    if (isNaN(offsetValue)) { projectedSignals = "Insira um deslocamento."; break; }
+                    
+                    let potentialSignals = [];
+                    [...horarios].forEach(h => {
+                        const [hr, mn] = h.split(':').map(Number);
+                        let date = new Date(); // Usa a data atual como base para evitar problemas com virada de dia
+                        date.setHours(hr, mn + offsetValue, 0, 0);
+                        potentialSignals.push(date);
+                    });
+                    
+                    potentialSignals.sort((a, b) => a.getTime() - b.getTime());
+                    
+                    let finalSignals = [];
+                    let lastSignalTime = null;
+                    for (const signalDate of potentialSignals) {
+                        if (finalSignals.length >= qtdSinais) break;
+                        if (!lastSignalTime || (signalDate.getTime() - lastSignalTime.getTime()) / (1000 * 60) >= Math.abs(offsetValue)) {
+                            finalSignals.push(signalDate);
+                            lastSignalTime = signalDate;
+                        }
+                    }
+                    projectedSignals = finalSignals.map(d => `🕒 ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
+                    break;
                 case 'padraoHoras':
                     const hourlyPatterns = {};
                     horarios.forEach(h => {
@@ -2330,6 +2352,7 @@
                         projectedSignals = projectSignals(lastTime, jikanPattern, qtdSinais, intervaloMinimo);
                     }
                     break;
+                case 'intervaloFixo': const fixedInterval = parseInt(document.getElementById('suite_intervaloFixoValue').value); if (!isNaN(fixedInterval) && fixedInterval > 0) { projectedSignals = projectSignals(lastTime, [fixedInterval], qtdSinais, intervaloMinimo); } else { projectedSignals = "Insira um intervalo fixo válido."; } break;
             }
 
             out += `--------------------------------\n`;
