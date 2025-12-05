@@ -121,7 +121,7 @@
             left: 0;
             background: none;
             border: 1px solid #444;
-            color: var(--text-color);
+            color: #fff;
             padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
@@ -498,7 +498,10 @@
                         </label>
                         <div class="hint" style="margin: 0; font-size: 0.7em;">(Usa dados do painel direito)</div>
                     </div>
-                    <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
+                        <button class="btn-action" style="background-color: #555;" onclick="suite_limparGeradorIA()">LIMPAR</button>
+                    </div>
                     <div class="output-area" id="suite_resGerador" style="margin-bottom: 10px;">Resultado aqui...</div>
                     <div class="inline-controls" style="margin-top: 0;">
                         <button class="btn-copy" onclick="copiar('suite_resGerador', this)" style="margin-top: 0; width: 50%;">📋 COPIAR LISTA</button>
