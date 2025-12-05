@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Análise Integrado</title>
+    <style>
+        /* ================================== */
+        /* ESTILOS GLOBAIS (unidas.html)      */
+        /* ================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-blaze: #f12c4c;
+            --accent-jonbet: #00e676;
+        }
+
+        body.light-theme {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #1c1e21;
+            --border-color: #ddd;
+        }
+        body.light-theme .suite .platform-switcher,
+        body.light-theme .dashboard .platform-switcher,
+        body.light-theme .suite .tabs,
+        body.light-theme .dashboard .tabs { background-color: #e4e6eb; }
+        body.light-theme .layout-panel { border-color: var(--border-color); }
+        body.light-theme h1 { color: var(--text-color); }
+        body.light-theme .suite .main-header, body.light-theme .dashboard .main-header { border-bottom-color: var(--border-color); }
+        body.light-theme .suite input, body.light-theme .suite select, body.light-theme .suite textarea { border-color: var(--border-color); }
+        body.light-theme .suite .output-area { color: var(--text-color); border-color: var(--border-color); }
+        body.light-theme .suite .hint { color: #555; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom right, #1a1a1a, #2c2c2c);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s;
+            padding: 15px;
+        }
+
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .layout-panel {
+            flex: 1;
+            border-radius: 12px;
+            border: 1px solid #333;
+            overflow-y: auto; /* Permite rolagem interna */
+            overflow-x: hidden;
+            background-color: var(--card-bg);
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Scrollbar customizada */
+        .layout-panel::-webkit-scrollbar { width: 8px; }
+        .layout-panel::-webkit-scrollbar-track { background: #2c2c2c; }
+        .layout-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        .layout-panel::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .main-container { flex-direction: column; }
+            h1 { font-size: 1.2rem; }
+        }
+        
+        /* Theme Switcher */
+        .top-header-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        #main-title {
+            margin: 0; /* Reset margin as it's now in a flex container */
+            color: #fff; /* Garante que o título principal seja sempre branco */
+        }
+        #theme-switcher {
+            position: absolute; /* Alterado */
+            right: 0;
+            background: none;
+            border: 1px solid #444;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #theme-switcher:hover { background-color: #333; }
+        body.light-theme #theme-switcher:hover { background-color: #ddd; }
+        
+        /* Logout Button */
+        #logout-button {
+            position: absolute;
+            left: 0;
+            background: none;
+            border: 1px solid #444;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #logout-button:hover { background-color: #333; }
+        body.light-theme #logout-button:hover { background-color: #ddd; }
+        #logout-button svg {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            stroke-width: 2.5;
+            margin-right: 5px; /* Espaço entre o ícone e o texto */
+        }
+
+        /* ================================== */
+        /* ESTILOS DO GERADOR (gerador_de_lista2.html) */
+        /* ================================== */
+        .suite { --accent: var(--accent-blaze); }
+        .suite.platform-jonbet { --accent: var(--accent-jonbet); }
+
+        .suite .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .suite .main-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .suite .header-controls { display: flex; align-items: center; gap: 10px; } 
+        .suite .platform-switcher { display: flex; background-color: #000; border-radius: 8px; padding: 4px; margin: 0 auto; }
+        .suite .platform-btn { padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase; }
+        .suite .platform-btn.active { background-color: var(--accent); color: #fff; }
+        .suite .tabs { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 5px; margin-bottom: 25px; background-color: #000; border-radius: 10px; padding: 5px; }
+        .suite .tab-btn { flex: 1; padding: 12px 5px; border: none; background-color: transparent; color: #aaa; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; font-size: 0.65rem; text-align: center; }
+        body.light-theme .suite .tab-btn { color: #4b4f56; }
+        .suite .tab-btn.active { background-color: var(--accent); color: #fff; box-shadow: 0 2px 10px rgba(241, 44, 76, 0.4); }
+        body.light-theme .suite .tab-btn.active { color: #fff; }
+        .suite .tab-btn:not(.active):hover { background-color: var(--accent); color: #000; transform: translateY(-2px); opacity: 0.7; }
+        .suite.platform-jonbet .tab-btn.active { box-shadow: 0 2px 10px rgba(0, 230, 118, 0.4); }
+        .suite .tab-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2;
+            vertical-align: middle;
+            margin-bottom: 2px;
+        }
+        /* Estilos para o Toggle Switch */
+        .suite .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background-color: var(--bg-color);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .suite .toggle-switch-container label {
+            margin-bottom: 0;
+            font-size: 0.8em;
+        }
+        .suite .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .suite .switch input { opacity: 0; width: 0; height: 0; }
+        .suite .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 26px; }
+        .suite .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        .suite input:checked + .slider { background-color: var(--accent); }
+        .suite input:checked + .slider:before { transform: translateX(24px); }
+        body.light-theme .suite .toggle-switch-container { border-color: var(--border-color); }
+
+        .suite .tab-content { display: none; animation: suite_fadeIn 0.5s; }
+        .suite .tab-content.active { display: block; }
+        @keyframes suite_fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .suite h2 { text-align: center; color: var(--accent); margin-bottom: 25px; font-size: 1.3rem; text-transform: uppercase; }
+        .suite .control-group { margin-bottom: 15px; }
+        .suite label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.85em; color: var(--text-color); opacity: 0.8; text-transform: uppercase; }
+        .suite input, .suite select, .suite textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); box-sizing: border-box; font-size: 1rem; outline: none; }
+        .suite textarea { resize: vertical; height: 100px; font-family: monospace; font-size: 0.8rem; }
+        .suite input:focus, .suite select:focus, .suite textarea:focus { border-color: var(--accent); }
+        .suite .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; background-color: var(--accent); color: #000; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
+        .suite .btn-action:hover { opacity: 0.9; transform: scale(1.01); }
+        .suite .output-area { margin-top: 20px; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #333; min-height: 150px; white-space: pre-line; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #fff; line-height: 1.5; }
+        .suite .btn-copy { background: #2979ff; color: white; margin-top: 10px; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .suite .hint { font-size: 0.75em; color: #888; margin-top: 3px; }
+        .suite .color-selector { display: flex; gap: 10px; margin-top: 5px; }
+        .suite .color-btn { flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 5px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.3s; }
+        .suite .color-btn.vermelho { background-color: #f12c4c; color: white; }
+        .suite .color-btn.preto { background-color: #333; color: white; }
+        .suite .color-btn.selected { border-color: var(--accent); }
+        .suite .btn-clear-all { background: #424242; color: white; margin-top: 20px; width: 100%; padding: 10px; border: 1px solid #7a5a5a; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; }
+        .suite .btn-clear-all:hover { background: #5a3a3a; }
+        .suite .main-color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .suite .main-color-grid .manual-btn { padding: 6px 5px; font-size: 1.1rem; }        
+        .suite .util-button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .suite .util-button-grid .manual-btn { padding: 4px 5px; font-size: 0.9rem; }
+        .suite .inline-controls { display: flex; gap: 10px; align-items: flex-start; }
+        .suite .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        .suite .inline-controls > .btn-action, .suite .inline-controls > .btn-copy { flex: 1; }
+        .suite .manual-button-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 5px; margin-bottom: 15px; }
+        .suite .manual-btn { padding: 8px 4px; font-size: 0.9rem; font-weight: bold; border-radius: 5px; border: 1px solid #555; background-color: #333; color: white; cursor: pointer; transition: 0.2s; text-align: center; }
+        .suite .manual-btn:active { transform: scale(0.95); }        
+        .suite .manual-btn.color-v { background-color: #f12c4c; }
+        .suite .manual-btn.color-p { background-color: #262f3c; }
+        .suite .manual-btn.color-b { background-color: #fff; color: #000; }
+        .suite .manual-btn.color-x { background-color: #2979ff; }
+        .suite .manual-btn.util-btn { background-color: #555; color: #fff; }
+        body.light-theme .suite .manual-btn.util-btn { background-color: #ddd; color: #333; }
+        .suite.platform-jonbet .manual-btn.color-v { background-color: #00e676; }
+        .suite .manual-button-grid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        @media (max-width: 600px) {
+            .suite .main-header { flex-direction: column; gap: 15px; }
+            .suite .tabs .tab-btn { width: 30%; font-size: 0.7rem; }
+            .suite .inline-controls { flex-direction: column; gap: 15px; }
+        }
+
+        /* ================================== */
+        /* ESTILOS DO CORRETOR (coressao_de_sinais.html) */
+        /* ================================== */
+        .dashboard { --accent: var(--accent-blaze); }
+        .dashboard.platform-jonbet { --accent: var(--accent-jonbet); }
+
+        .dashboard h1, .dashboard h3, .dashboard h4 { margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .dashboard .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .dashboard .main-header h1 { margin: 0; font-size: 1.5rem; }
+        .dashboard .platform-switcher { display: flex; background-color: #000; border-radius: 8px; padding: 4px; margin: 0 auto; }
+        .dashboard .platform-btn { padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase; }
+        .dashboard .platform-btn.active { background-color: var(--accent); color: #fff; }
+        .dashboard.platform-jonbet .badge.vermelho { background-color: var(--accent-jonbet); }
+        .dashboard .tabs { display: flex; justify-content: space-around; margin-bottom: 25px; background-color: #000; border-radius: 10px; padding: 5px; }
+        .dashboard .tab-btn { flex: 1; padding: 12px; border: none; background-color: transparent; color: #aaa; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; font-size: 0.9rem; }
+        body.light-theme .dashboard .tab-btn { color: #4b4f56; }
+        .dashboard .tab-btn.active { background-color: var(--accent); color: #fff; }
+        body.light-theme .dashboard .tab-btn.active { color: #fff; }
+        .dashboard .tab-content { display: none; }
+        .dashboard .tab-content.active { display: block; animation: dash_fadeIn 0.5s; }
+        @keyframes dash_fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .dashboard .control-panel { background-color: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid #333; }
+        .dashboard textarea { width: 100%; flex-grow: 1; background-color: #0a0e13; color: #fff; border: 1px solid #333; border-radius: 5px; padding: 10px; margin: 5px 0 15px 0; resize: vertical; box-sizing: border-box; }
+        .dashboard select { width: 100%; padding: 8px; font-size: 11px; background-color: #0a0e13; border: 1px solid #333; color: #fff; border-radius: 5px; }
+        .dashboard button { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 11px; transition: 0.3s; }
+        .dashboard button:hover { filter: brightness(1.1); }
+        .dashboard .action-buttons { display: flex; gap: 10px; }
+        .dashboard .stats-box { margin-top: 20px; padding: 15px; background-color: rgba(0, 0, 0, 0.2); border-radius: 5px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .dashboard .stat-item { font-size: 11px; }
+        .dashboard .stat-dynamic-color { color: var(--accent); font-weight: bold; }
+        .dashboard .stat-dynamic-color span { font-weight: normal; }
+        .dashboard .display-area { display: flex; flex-direction: column; }
+        .dashboard #log-estrategia { overflow-y: auto; background-color: #000; color: #00e676; font-family: monospace; padding: 10px; border-radius: 5px; border: 1px solid #333; flex-grow: 1; }
+        .dashboard .log-container, .dashboard .history-container { background-color: var(--card-bg); padding: 20px; border-radius: 10px; display: flex; flex-direction: column; border-bottom: 1px solid #333; flex-direction: column; border: 1px solid #333; }
+        .dashboard .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        .dashboard .header-buttons { display: flex; gap: 10px; }
+        .dashboard .history-grid { display: flex; flex-wrap: wrap; gap: 30px 8px; align-content: flex-start; padding-bottom: 20px; min-height: 180px; overflow-y: auto; }
+        .dashboard .badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; font-size: 11px; color: white; position: relative; border: 1px solid #333; }
+        .dashboard .badge .time-overlay { position: absolute; bottom: -20px; font-size: 9px; color: #fff; white-space: nowrap; left: 50%; transform: translateX(-50%); }
+        .dashboard .delete-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: rgba(220, 53, 69, 0.9); display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-size: 11px; cursor: pointer; border: 1px solid white; transition: transform 0.2s ease; }
+        .dashboard .delete-overlay:hover { transform: translate(-50%, -50%) scale(1.1); }
+        .dashboard .badge.vermelho { background-color: var(--accent); }
+        .dashboard .badge.preto { background-color: #333; border: 1px solid #555; }
+        .dashboard .badge.branco { background-color: #fff; color: #333; }
+    </style>
+    <style>
+        /* ================================== */
+        /* ESTILOS DO LOGIN                   */
+        /* ================================== */
+        #login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: var(--bg-color);
+            z-index: 1000;
+            transition: opacity 0.5s ease-out;
+        }
+        #login-form {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        body.light-theme #login-form { border-color: var(--border-color); }
+        #login-form h2 {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            text-transform: uppercase;
+        }
+        .login-input-group { margin-bottom: 20px; text-align: left; }
+        .login-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.85em;
+            color: var(--text-color);
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+        #login-form input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); font-size: 1rem; }
+        #login-form button { width: 100%; padding: 15px; border: none; border-radius: 8px; background-color: var(--accent-blaze); color: #fff; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
+        #login-form button:disabled { background-color: #8e1a2e; cursor: not-allowed; }
+        #login-error { color: var(--accent-blaze); margin-top: 15px; font-weight: bold; min-height: 20px; }
+
+        /* Spinner de Carregamento */
+        .login-spinner {
+            display: none; /* Oculto por padrão */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Welcome Message */
+        #welcome-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 25px 50px;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 2000;
+            border: 1px solid var(--accent-blaze);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            animation: fadeInOut 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+    <style>
+        /* Estilo para o link "Esqueci minha senha" */
+        .forgot-password-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .forgot-password-container a {
+            color: var(--text-color);
+            opacity: 0.7;
+            text-decoration: none;
+            font-size: 0.85em;
+        }
+        .forgot-password-container a:hover { opacity: 1; text-decoration: underline; }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="welcome-message"></div>
+    <div id="login-container">
+        <form id="login-form">
+            <h2>Acesso ao Painel</h2>
+            <div class="login-input-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="login-input-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" id="login-button">
+                <span class="login-button-text">ENTRAR</span>
+                <div class="login-spinner"></div>
+            </button>
+            <div class="forgot-password-container">
+                <a href="#" id="forgot-password-link">Esqueci minha senha</a>
+            </div>
+            <div id="login-error"></div>
+        </form>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <div class="top-header-container">
+            <h1 id="main-title">PAINEL DE ANÁLISE</h1>
+            <button id="theme-switcher" title="Mudar Tema">☀️</button>
+            <button id="logout-button" title="Sair">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg> Sair
+            </button>
+        </div>
+
+        <div class="main-container">
+            <div class="layout-panel suite">
+                <!-- CONTEÚDO DE gerador_de_lista2.html -->
+                <div class="main-header">
+                    <h1>SUITE DE ANÁLISE</h1>
+                    <div class="platform-switcher">
+                        <input type="hidden" id="suite_platformSelector" value="blaze">
+                        <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                        <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                    </div>
+                    <div class="header-controls"></div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="suite_openTab('gerador')">Gerador I.A</button>
+                    <button class="tab-btn" onclick="suite_openTab('analisador')">Analisar Histórico</button>
+                    <button class="tab-btn" onclick="suite_openTab('corretor')">Corretor de Sinais</button>
+                    <button class="tab-btn" onclick="suite_openTab('corretor_branco')">Corretor de Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
+                    <button class="tab-btn" onclick="suite_openTab('branco')">Analisador Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A. Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('stats')">📊 Estatísticas</button>
+                    <button class="tab-btn" onclick="suite_openTab('config')" title="Configurações">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.62l-1.9-3.3a.5.5 0 0 0-.61-.22l-2.49 1a9.3 9.3 0 0 0-1.64-.94l-.38-2.65a.5.5 0 0 0-.5-.44H9.25a.5.5 0 0 0-.5.44l-.38 2.65a9.3 9.3 0 0 0-1.64.94l-2.49-1a.5.5 0 0 0-.61.22l-1.9 3.3a.5.5 0 0 0 .12.62l2.03 1.58c-.05.3-.07.64-.07.94s.02.64.07.94l-2.03 1.58a.5.5 0 0 0-.12.62l1.9 3.3a.5.5 0 0 0 .61.22l2.49-1c.52.4 1.08.73 1.64.94l.38 2.65a.5.5 0 0 0 .5.44h3.5a.5.5 0 0 0 .5-.44l.38-2.65c.56-.21 1.12-.54 1.64-.94l2.49 1a.5.5 0 0 0 .61-.22l1.9-3.3a.5.5 0 0 0-.12-.62l-2.03-1.58z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+
+                <div id="suite_gerador" class="tab-content active">
+                    <h2>🤖 Gerador I.A</h2>
+                    <div class="inline-controls" style="margin-bottom: 15px;">
+                        <div class="control-group">
+                            <label id="suite_labelQtdSinais">Quantidade de Sinais:</label>
+                            <input type="number" id="suite_qtdSinais" value="10" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Intervalo (Minutos):</label>
+                            <input type="number" id="suite_intervalo" value="2" min="1">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Modo de Operação:</label>
+                        <select id="suite_estrategia" onchange="suite_updateQtdLabel()">
+                            <option value="padrao">Padrão Alternado</option>
+                            <option value="sequenciaInversa">Sequência Inversa</option>
+                            <option value="aleatorio">Aleatório</option>
+                            <option value="xadrez">Modo Xadrez</option>
+                            <option value="surf">Modo Surf</option>
+                            <option value="quebra">Modo Quebra</option>                        
+                            <option value="duplos">Duplos Alternados</option>
+                            <option value="triplos">Triplos Alternados</option>
+                            <option value="focoVermelho">Foco no Vermelho</option>
+                            <option value="focoPreto">Foco no Preto</option>
+                            <option value="jikanSazonal">Ritmo Sazonal (Jikan)</option>
+                        </select>
+                    </div>
+                    <div class="toggle-switch-container">
+                        <label for="suite_filterByBestHour">Filtrar por Melhor Hora (do Histórico):</label>
+                        <label class="switch">
+                            <input type="checkbox" id="suite_filterByBestHour">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="hint" style="margin: 0; font-size: 0.7em;">(Usa dados do painel direito)</div>
+                    </div>
+                    <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
+                    <div class="output-area" id="suite_resGerador" style="margin-bottom: 10px;">Resultado aqui...</div>
+                    <div class="inline-controls" style="margin-top: 0;">
+                        <button class="btn-copy" onclick="copiar('suite_resGerador', this)" style="margin-top: 0; width: 50%;">📋 COPIAR LISTA</button>
+                        <button class="btn-action" onclick="suite_sendToCorrector(this)" style="margin-top: 0; width: 50%; font-size: 0.8rem; background-color: #ff9800;">ENVIAR P/ CORRETOR ➡️</button>
+                    </div>
+                </div>
+
+                <div id="suite_analisador" class="tab-content">
+                    <h2>📊 Analisador de Padrões</h2>
+                    <div class="control-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-bottom: 0;">Cole o Histórico Copiado:</label>
+                            <div class="header-buttons" style="display: flex; gap: 5px;">
+                                <button onclick="suite_limparAnalisador()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                            </div>
+                        </div>
+                        <div class="hint" style="margin-top: 0;">Cole o texto do histórico aqui.</div>
+                        <textarea id="suite_inputHistorico" placeholder="Exemplo do formato esperado:
+02/12/2025 23:56:04
+14
+23:56
+
+02/12/2025 23:55:34
+23:55"></textarea>
+                    </div>
+                    <div class="stats-box" id="suite_analisador_stats" style="display: none; margin-top: 0; margin-bottom: 15px;">
+                        <div class="stat-item stat-dynamic-color"><span class="suite_analisador_platform-emoji">🔴</span> <span id="suite_analisador_count-red">0 (0%)</span></div>
+                        <div class="stat-item">⚫ <span id="suite_analisador_count-black">0 (0%)</span></div>
+                        <div class="stat-item">⚪ <span id="suite_analisador_count-white">0</span></div>
+                        <div class="stat-item" style="font-weight:bold;">Total: <span id="suite_analisador_count-total">0</span></div>
+                    </div>
+                    <div class="control-group">
+                        <label>Estratégia de Análise:</label>
+                        <select id="suite_analiseEstrategia">
+                            <option value="auto">Análise de Tendência (Auto)</option>
+                            <option value="maioria">Seguir a Maioria</option>
+                            <option value="minoria">Seguir a Minoria (Equilíbrio)</option>
+                            <option value="contra">Contrariar o Último Resultado</option>
+                            <option value="alternado">Padrão Alternado (Xadrez)</option>
+                            <option value="euler">Onda de Euler</option>
+                            <option value="gauss">Curva de Gauss (Últimos 7)</option>
+                            <option value="galois">Ciclo de Galois (V-P-V)</option>
+                            <option value="einstein">Relatividade de Einstein (V-P-P-P)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Projeção de Sinais a gerar:</label>
+                        <input type="number" id="suite_qtdProjecoes" value="5">
+                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_analisarEGerar()">🔍 ANALISAR E GERAR</button>
+                        <button class="btn-copy" onclick="copiar('suite_resAnalise', this)" style="margin-top: 10px; font-size: 1.1rem;">📋 COPIAR ANÁLISE</button>
+                    </div>
+                    <div class="output-area" id="suite_resAnalise">Aguardando dados...</div>
+                </div>
+
+                <div id="suite_corretor" class="tab-content">
+                    <h2>✅ Corretor de Sinais</h2>
+                    <div class="control-group">
+                        <label>Cole a Lista de Sinais Gerada:</label>
+                        <textarea id="suite_correctorSignalsInput" placeholder="Cole aqui a lista completa que você gerou..."></textarea>
+                    </div>
+                    <div class="control-group">
+                        <label>Cole o Histórico de Resultados Reais:</label>
+                        <textarea id="suite_correctorResultsInput" oninput="suite_formatCorrectorResultsInput(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_corrigirSinais()">CORRIGIR LISTA</button>
+                        <button class="btn-action" style="background-color: #555;" onclick="suite_limparCorretor()">LIMPAR</button>
+                    </div>
+                    <div class="output-area" id="suite_resCorrector">Aguardando dados para correção...</div>
+                    <button class="btn-copy" onclick="copiar('suite_resCorrector', this)">📋 COPIAR PLACAR</button>
+                </div>
+
+                <div id="suite_corretor_branco" class="tab-content">
+                    <h2>⚪ Corretor de Branco</h2>
+                    <div class="control-group">
+                        <label>Cole a Lista de Sinais de Branco Gerada:</label>
+                        <textarea id="suite_correctorBrancoSignalsInput" placeholder="Cole aqui a lista de sinais para o branco..."></textarea>
+                    </div>
+                    <div class="control-group">
+                        <label>Nº de Entradas para Win:</label>
+                        <input type="number" id="suite_correctorBrancoEntradas" value="3" min="1" placeholder="Ex: 3">
+                        <div class="hint">Quantas casas verificar após o sinal para um acerto.</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Cole o Histórico de Resultados Reais:</label>
+                        <textarea id="suite_correctorBrancoResultsInput" oninput="suite_formatCorrectorResultsInput(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>
+                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_corrigirSinaisBranco()">CORRIGIR LISTA DE BRANCO</button>
+                        <button class="btn-action" style="background-color: #555;" onclick="suite_limparCorretorBranco()">LIMPAR</button>                    </div>
+                    <div class="output-area" id="suite_resCorrectorBranco">Aguardando dados para correção...</div>
+                    <button class="btn-copy" onclick="copiar('suite_resCorrectorBranco', this)">📋 COPIAR PLACAR</button>
+                </div>
+
+                <div id="suite_manual" class="tab-content">
+                    <h2>✍️ Gerador Manual</h2>
+                    <div class="control-group">
+                        <div class="main-color-grid">
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('V')">V</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('P')">P</button>
+                            <button class="manual-btn color-b" onclick="suite_appendToManualPattern('B')">B</button>
+                        </div>
+                        <div class="manual-button-grid">
+                            <button class="manual-btn color-b" onclick="suite_appendToManualPattern('0')">0</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('1')">1</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('2')">2</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('3')">3</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('4')">4</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('5')">5</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('6')">6</button>
+                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('7')">7</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('8')">8</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('9')">9</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('10')">10</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('11')">11</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('12')">12</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('13')">13</button>
+                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('14')">14</button>
+                        </div>
+                        <div class="util-button-grid">
+                            <button class="manual-btn util-btn" onclick="suite_manualBackspace()">⌫ DESFAZER</button>
+                            <button class="manual-btn util-btn" onclick="suite_manualInvert()" style="font-size: 1.2rem;">🔄</button>
+                            <button class="manual-btn util-btn" onclick="suite_manualClear()">LIMPAR TUDO</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Sequência de Sinais:</label>
+                        <textarea id="suite_manualPatternInput" placeholder="Use V, P, B, 0-14. Ex: V P 1 14 B"></textarea>
+                        <div class="hint" style="display: none;">V=Vermelho, P=Preto, B=Branco, 0-14=Nº</div>
+                    </div>
+                    <div class="inline-controls">
+                        <div class="control-group">
+                            <label>Quantidade de Sinais:</label>
+                            <input type="number" id="suite_manualQtdSinais" value="10" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Intervalo (Minutos):</label>
+                            <input type="number" id="suite_manualIntervalo" value="2" min="1">
+                        </div>
+                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_gerarListaManual()" style="font-size: 0.9rem;">✍️ GERAR LISTA MANUAL</button>
+                        <button class="btn-copy" onclick="copiar('suite_resManual', this)" style="margin-top: 10px;">📋 COPIAR LISTA</button>
+                    </div>
+                    <div class="output-area" id="suite_resManual">Aguardando sequência...</div>
+                </div>
+
+                <div id="suite_branco" class="tab-content">
+                    <h2>⚪ Analisador de Branco (24h)</h2>
+                    <div class="control-group">
+                        <label>Estratégia de Análise para Branco:</label>
+                        <select id="suite_estrategiaBranco" onchange="suite_toggleStrategyInputs()">
+                            <option value="media">1. Média dos Intervalos</option>
+                            <option value="minimo">2. Intervalo Mínimo (Agressivo)</option>
+                            <option value="espelho12h">3. Espelhamento de Horário (12h)</option>
+                            <option value="fibonacci">4. Soma Fibonacci</option>
+                            <option value="minutosOuro">5. Minutos de Ouro</option>
+                            <option value="somaTotal">6. Soma Total dos Intervalos</option>
+                            <option value="custom">7. Estratégia Personalizada</option>
+                            <option value="offset">8. Deslocamento Fixo</option>
+                            <option value="padraoHoras">9. Padrão de Horas</option>
+                            <option value="brianTracy">10. Fórmula Ponderada (Brian Tracy)</option>
+                            <option value="pitagoras">11. Teorema de Pitágoras</option>
+                            <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
+                            <option value="ciclosMercado">12. Ciclos de Mercado</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Quantidade de Sinais a Gerar:</label>
+                        <input type="number" id="suite_qtdSinaisBranco" value="15" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Intervalo Mínimo entre Sinais (minutos):</label>
+                        <input type="number" id="suite_intervaloMinimoBranco" value="0" min="0">
+                        <div class="hint">Não gerará sinais dentro deste intervalo de tempo após o sinal anterior. 0 para desativar.</div>
+                    </div>
+                    <div class="control-group" id="suite_customStrategyContainer" style="display:none;">
+                        <label>Padrão Personalizado (minutos, separados por vírgula):</label>
+                        <input type="text" id="suite_customPattern" placeholder="Ex: 10, 25, 12, 40">
+                    </div>
+                    <div class="control-group" id="suite_fixedOffsetContainer" style="display:none;">
+                        <label>Intervalo de Deslocamento (minutos):</label>
+                        <input type="number" id="suite_fixedOffsetValue" placeholder="Ex: 15 (ou -5 para subtrair)">
+                    </div>
+                    <div class="control-group">
+                        <label>Cole o Histórico Copiado:</label>
+                        <div class="hint">Cole a lista de horários (HH:MM) em que o branco saiu. Um por linha.</div>
+                        <textarea id="suite_inputHistoricoBranco" oninput="suite_autoFormatBrancoInput(this)" placeholder="Exemplo:
+10:15
+11:05
+11:30
+12:10"></textarea>
+                    </div>
+                    <div class="inline-controls" style="align-items: center; margin-bottom: 20px;">
+                        <button class="btn-action" style="background-color: #fff; color: #000; border: 1px solid #aaa; font-size: 0.8rem;" onclick="suite_analisarParaBranco()">⚪ LISTA BRANCO</button>
+                        <button class="btn-action" onclick="suite_limparAnalisadorBranco()" style="margin-top: 10px; background-color: #555; font-size: 0.8rem;">LIMPAR</button>
+                    </div>
+                    <div class="output-area" id="suite_resBranco" style="margin-top: 0;">
+                        Aguardando análise para o branco...
+                    </div>
+                    <button id="suite_copy-signals-button-branco" class="btn-copy" onclick="copiar('suite_resBranco', this)">📋 COPIAR SINAIS</button>
+                </div>
+
+                <div id="suite_ia_branco" class="tab-content">
+                    <h2>🤖 I.A. Gerador de Branco</h2>
+                    <div class="control-group">
+                        <label>Cole o Histórico Copiado:</label>
+                        <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
+                        <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
+                    </div>
+                    <div class="inline-controls" style="margin-bottom: 15px;">
+                        <div class="control-group">
+                            <label>Quantidade de Sinais:</label>
+                            <input type="number" id="suite_iaBranco_qtdSinais" value="6" min="1">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Estratégia de I.A. para Branco:</label>
+                        <select id="suite_iaBranco_estrategia">
+                            <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
+                            <option value="produtividadeHora">2. Análise de Produtividade</option>
+                            <option value="horarioPico">3. Análise de Horário de Pico</option>
+                            <option value="velocidadeConclusao">4. Análise de Velocidade</option>
+                            <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
+                            <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
+                            <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
+                        </select>
+                    </div>
+                    <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
+                    <div class="output-area" id="suite_resIABranco">Aguardando geração...</div>
+                    <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
+                </div>
+
+                <div id="suite_stats" class="tab-content">
+                    <h2>📊 Estatísticas de Desempenho</h2>
+                    <div class="control-group">
+                        <label>Fonte dos Dados:</label>
+                        <select id="suite_stats_source" onchange="suite_renderStatsChart()">
+                            <option value="corrector">Corretor de Sinais</option>
+                        <option value="analyzer">Analisador de Sinais (Direita)</option>
+                        </select>
+                        <div class="hint">Os dados são atualizados após usar o "Corretor de Sinais".</div>
+                    </div>
+                    <div style="width: 100%; max-width: 800px; margin: 20px auto; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                         <canvas id="suite_performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="suite_config" class="tab-content">
+                    <h2>⚙️ Configurações Gerais</h2>
+                    <div class="control-group">
+                        <label for="suite_userName">Nome do Operador:</label>
+                        <input type="text" id="suite_userName" placeholder="Digite seu nome ou apelido">
+                        <div class="hint">Este nome pode ser usado para personalizar as listas geradas.</div>
+                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="suite_saveSettings(this)">💾 SALVAR CONFIGURAÇÕES</button>
+                    </div>
+                    <div class="output-area" id="suite_resConfig" style="margin-top: 20px; text-align: center; display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="layout-panel dashboard">
+                <!-- CONTEÚDO DE coressao_de_sinais.html -->
+                <div class="main-header">
+                    <h1>Analisador de Sinais</h1>
+                    <div class="platform-switcher">
+                        <input type="hidden" id="dash_platformSelector" value="blaze">
+                        <button class="platform-btn active" id="dash_btn-blaze" onclick="dash_selectPlatform('blaze')">Blaze</button>
+                        <button class="platform-btn" id="dash_btn-jonbet" onclick="dash_selectPlatform('jonbet')">Jonbet</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="dash_openTab('analise')">Análise</button>
+                    <button class="tab-btn" onclick="dash_openTab('historico')">Histórico</button>
+                    <button class="tab-btn" onclick="dash_openTab('historico_hora')">Histórico por Hora</button>
+                </div>
+
+                <div id="dash_analise" class="tab-content active">
+                    <div class="control-panel">
+                        <h3>Entrada de Dados</h3>
+                        <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Cole o histórico da plataforma aqui.</p>
+                        <textarea id="dash_inputData" placeholder="Cole o histórico aqui..." oninput="dash_limparInput(this)"></textarea>
+                        <div class="control-group" style="margin-top: 15px; margin-bottom: 0;">
+                            <label for="dash_targetHistory" style="font-size: 11px; text-transform: none; opacity: 1; display: block; margin-bottom: 5px;">Enviar Análise Para:</label>
+                            <select id="dash_targetHistory">
+                                <option value="ambos">Ambos (Visual e Por Hora)</option>
+                                <option value="visual">Apenas Histórico Visual</option>
+                                <option value="hora">Apenas Histórico por Hora</option>
+                            </select>
+                        </div>
+                        <div class="action-buttons" style="margin-top: 15px;">
+                            <button onclick="dash_processarDados()">ANALISAR HISTÓRICO</button>
+                            <button onclick="dash_limparTudo()" style="background-color: #555;">LIMPAR TUDO</button>
+                        </div>
+                    </div>
+                    <div class="stats-box">
+                        <div class="stat-item stat-dynamic-color"><span id="dash_platform-emoji">🔴</span> <span id="dash_count-red">0 (0%)</span></div>
+                        <div class="stat-item">⚫ <span id="dash_count-black">0 (0%)</span></div>
+                        <div class="stat-item">⚪ <span id="dash_count-white">0</span></div>
+                        <div class="stat-item" style="font-weight:bold;">Quantidade de Sinais: <span id="dash_count-total">0</span></div>
+                    </div>
+                    <div class="log-container">
+                        <h3>Log de Estratégia</h3>
+                        <div id="dash_log-estrategia">Aguardando dados...</div>
+                    </div>
+                </div>
+
+                <div id="dash_historico" class="tab-content">
+                    <div class="history-container" style="margin-bottom: 0;">
+                        <div class="history-header">
+                            <h3>Histórico Visual</h3>
+                            <div class="header-buttons">
+                                <button onclick="dash_limparHistorico('dash_grid-resultados')" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #dc3545;">LIMPAR</button>
+                                <button onclick="dash_copiarHistorico('dash_grid-resultados', this)" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #28a745;">COPIAR</button>
+                            </div>
+                        </div>
+                        <div class="history-grid" id="dash_grid-resultados"></div>
+                    </div>
+                </div>
+
+                <div id="dash_historico_hora" class="tab-content">
+                    <div class="history-container" style="margin-bottom: 0;">
+                        <div class="history-header">
+                            <h3>Histórico Visual por Hora</h3>
+                            <div class="header-buttons">
+                                <button onclick="dash_limparHistorico('dash_grid-resultados-hora')" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #dc3545;">LIMPAR</button>
+                                <button onclick="dash_copiarHistorico('dash_grid-resultados-hora', this)" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #28a745;">COPIAR</button>
+                            </div>
+                        </div>
+                        <div class="history-grid" id="dash_grid-resultados-hora"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // LÓGICA GERAL E DE COMUNICAÇÃO
+        // ==========================================
+        
+        // Variáveis globais para armazenar as estatísticas por hora de diferentes fontes
+        window.hourlyStats = {}; // Genérico, usado pelo seletor
+        window.hourlyStatsFromCorrector = {}; // Do Corretor de Sinais
+        window.hourlyStatsFromAnalyzer = {}; // Do Analisador de Sinais
+
+        // --- LÓGICA DE TEMA ---
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            document.getElementById('theme-switcher').innerText = isLight ? '🌙' : '☀️';
+        }
+
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('theme-switcher').innerText = '🌙';
+            } else {
+                document.body.classList.remove('light-theme');
+                document.getElementById('theme-switcher').innerText = '☀️';
+            }
+        }
+
+
+
+        // Função que envia a lista gerada no painel SUITE para o painel CORRETOR
+        function enviarListaParaCorretor(listaGerada) {
+            // Pega o textarea do corretor de sinais no painel SUITE
+            const corretorTextareaSuite = document.getElementById('suite_correctorSignalsInput');
+            if (corretorTextareaSuite) {
+                corretorTextareaSuite.value = listaGerada;
+                console.log("Lista enviada para o Corretor de Sinais em segundo plano.");
+            }
+        }
+
+        /**
+         * Função auxiliar para processar o histórico de resultados.
+         * @param {string} resultsInput - O texto do histórico.
+         * @param {boolean} multiplePerMinute - Se deve armazenar múltiplos resultados por minuto (para G1).
+         * @returns {Object} - Um objeto onde as chaves são os horários (HH:MM) e os valores são os resultados.
+         */
+        function parseResultsHistory(resultsInput, multiplePerMinute = false) {
+            const parsedResults = {};
+            const resultRegex = /(\d{2}:\d{2})\s+(VERMELHO|PRETO|BRANCO)/gi;
+            let resultMatch;
+            while ((resultMatch = resultRegex.exec(resultsInput)) !== null) {
+                const time = resultMatch[1];
+                const color = resultMatch[2].toUpperCase();
+                if (multiplePerMinute) {
+                    if (!parsedResults[time]) { parsedResults[time] = []; }
+                    parsedResults[time].push(color);
+                } else {
+                    if (!parsedResults[time]) { parsedResults[time] = color; }
+                }
+            }
+            return parsedResults;
+        }
+
+        // Função de COPIAR genérica
+        function copiar(idElemento, btnElement) {
+            const texto = document.getElementById(idElemento).innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                if (btnElement) {
+                    const originalText = btnElement.innerHTML;
+                    btnElement.innerHTML = '✅ Copiado!';
+                    btnElement.disabled = true;
+                    setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; }, 2000);
+                }
+            }).catch(err => console.error("Erro ao copiar: ", err));
+        }
+
+        // Funções de persistência
+        function saveToStorage(elementId) {
+            try {
+                const content = document.getElementById(elementId).value;
+                localStorage.setItem(elementId, content);
+            } catch (e) {
+                console.error("Não foi possível salvar no localStorage:", e);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                // Carrega dados para a SUITE
+                document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || '';
+                document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
+
+                // Carrega dados para o DASHBOARD
+                const dashInput = document.getElementById('dash_inputData');
+                if (dashInput) {
+                    dashInput.value = localStorage.getItem('historicoInput') || '';
+                }
+
+            } catch (e) {
+                console.error("Não foi possível carregar do localStorage:", e);
+            }
+        }
+
+        function suite_saveSettings(btn) {
+            const userName = document.getElementById('suite_userName').value;
+            localStorage.setItem('suite_userName', userName);
+
+            const resArea = document.getElementById('suite_resConfig');
+            resArea.innerText = 'Configurações salvas com sucesso!';
+            resArea.style.display = 'block';
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ SALVO!';
+            setTimeout(() => {
+                resArea.style.display = 'none';
+                btn.innerHTML = originalText;
+            }, 2500);
+        }
+        // ==========================================
+        // INÍCIO: SCRIPTS DE gerador_de_lista2.html
+        // ==========================================
+
+        // --- LÓGICA DE PLATAFORMA (SUITE) ---
+        function suite_selectPlatform(platform, isSync = false) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+        
+            const suitePanel = document.querySelector('.layout-panel.suite');
+            if (platform === 'blaze') {
+                suitePanel.classList.remove('platform-jonbet');
+            } else { // jonbet
+                suitePanel.classList.add('platform-jonbet');
+            }
+            // Sincroniza com o outro painel, evitando loop infinito
+            if (!isSync) {
+                dash_selectPlatform(platform, true);
+            }
+        }
+
+        // --- LÓGICA DE ABAS (SUITE) ---
+        function suite_openTab(tabName) {
+            let i, content, btns;
+            content = document.querySelectorAll(".suite .tab-content");
+            btns = document.querySelectorAll(".suite .tab-btn");
+
+            for (i = 0; i < content.length; i++) {
+                content[i].classList.remove("active");
+            }
+            for (i = 0; i < btns.length; i++) {
+                btns[i].classList.remove("active");
+            }
+            if (tabName === 'stats') {
+                suite_renderStatsChart();
+            }
+
+            document.getElementById('suite_' + tabName).classList.add("active");
+            document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`).classList.add("active");
+            localStorage.setItem('suite_activeTab', tabName);
+        }
+
+        function suite_clearTextarea(elementId) {
+            const textarea = document.getElementById(elementId);
+            if (textarea) {
+                textarea.value = '';
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
+        function suite_updateAnalyzerStats(counts) {
+            const statsBox = document.getElementById('suite_analisador_stats');
+            const platform = document.getElementById('suite_platformSelector').value;
+
+            if (counts.total > 0) {
+                const totalWithoutWhite = counts.total - counts.white;
+                document.getElementById('suite_analisador_count-red').innerText = `${counts.red} (${totalWithoutWhite > 0 ? ((counts.red / totalWithoutWhite) * 100).toFixed(1) : 0}%)`;
+                document.getElementById('suite_analisador_count-black').innerText = `${counts.black} (${totalWithoutWhite > 0 ? ((counts.black / totalWithoutWhite) * 100).toFixed(1) : 0}%)`;
+                document.getElementById('suite_analisador_count-white').innerText = counts.white;
+                document.getElementById('suite_analisador_count-total').innerText = counts.total;
+                
+                document.querySelector('.suite_analisador_platform-emoji').innerText = platform === 'jonbet' ? '🟢' : '🔴';
+                statsBox.style.display = 'flex';
+            } else {
+                statsBox.style.display = 'none';
+            }
+        }
+
+        function suite_sendToCorrector(btnElement) {
+            const listContent = document.getElementById('suite_resGerador').innerText;
+            const correctorTextarea = document.getElementById('suite_correctorSignalsInput');
+
+            if (listContent.includes("Resultado aqui...") || listContent.trim() === "" || listContent.includes("Filtro por Melhor Hora ativo")) {
+                alert("Gere uma lista válida primeiro antes de enviar para o corretor.");
+                return;
+            }
+
+            correctorTextarea.value = listContent;
+
+            if (btnElement) {
+                const originalText = btnElement.innerHTML;
+                btnElement.innerHTML = '✅ Enviado!';
+                btnElement.disabled = true;
+                setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; }, 2000);
+            }
+            suite_openTab('corretor');
+        }
+
+        function suite_limparAnalisador() {
+            suite_clearTextarea('suite_inputHistorico');
+            document.getElementById('suite_resAnalise').innerText = 'Aguardando dados...';
+        }
+
+        function suite_updateQtdLabel() {
+            const estrategia = document.getElementById('suite_estrategia').value;
+            const label = document.getElementById('suite_labelQtdSinais');
+            if (estrategia === 'branco') {
+                label.innerText = 'Quantidade de Tiros:';
+            } else {
+                label.innerText = 'Quantidade de Sinais:';
+            }
+        }
+
+        function suite_gerarSinaisSimples() {
+            const qtd = parseInt(document.getElementById('suite_qtdSinais').value);
+            const intervalo = parseInt(document.getElementById('suite_intervalo').value);
+            const est = document.getElementById('suite_estrategia').value;
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const selectElement = document.getElementById('suite_estrategia');
+            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const strategyName = selectElement.options[selectElement.selectedIndex].text;
+            const filterByBestHour = document.getElementById('suite_filterByBestHour').checked;
+            
+            let out = `🚀 *LISTA DE OPERAÇÕES*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `👤 Operador: *${userName}*\n`;
+            out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            out += `🎯 Estratégia: *${strategyName}*\n`;
+            if (est === 'branco') {
+                out += `♻️ 06 Entradas\n`;
+            } else {
+                out += `🛡️ Proteção no Branco ⚪️\n`;
+                out += `♻️ ATÉ *G1*\n`;
+            }
+            out += `--------------------------------\n`;
+            let db = new Date();
+            db.setMinutes(db.getMinutes() + 1);
+            db.setSeconds(0);
+            let corAtual = "VERMELHO";
+            let signalsGenerated = 0;
+            let attempts = 0; // Para evitar loop infinito
+
+            const bestHours = filterByBestHour ? getBestPerformingHours() : [];
+            if (filterByBestHour && bestHours.length === 0) {
+                document.getElementById('suite_resGerador').innerText = "Filtro por Melhor Hora ativo, mas nenhuma hora com bom desempenho foi encontrada no histórico. Analise um histórico primeiro ou desative o filtro.";
+                return;
+            }
+
+            while (signalsGenerated < qtd && attempts < (qtd * 100)) {
+                attempts++;
+                let minutosParaAdicionar = intervalo;
+                if (est === 'jikanSazonal') {
+                    const currentHour = db.getHours();
+                    const intervalModifier = (currentHour >= 6 && currentHour < 18) ? 0.8 : 1.2;
+                    minutosParaAdicionar = intervalo * intervalModifier;
+                }
+
+                // Se o filtro estiver ativo, verifica se a hora do sinal é uma das melhores
+                if (filterByBestHour) {
+                    let potentialTime = new Date(db.getTime() + minutosParaAdicionar * 60000);
+                    if (!bestHours.includes(potentialTime.getHours())) {
+                        // Se não for uma boa hora, avança o tempo e tenta de novo
+                        db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+                        continue; // Pula para a próxima iteração do loop
+                    }
+                }
+
+                // Se passou na verificação (ou se o filtro está desligado), gera o sinal
+                signalsGenerated++;
+
+                let i = signalsGenerated - 1; // Para manter a lógica de alternância
+
+                db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+
+                const h1 = db.getHours().toString().padStart(2,'0') + ':' + db.getMinutes().toString().padStart(2,'0');
+
+                let cor, emo;
+                if (est === 'branco') {
+                    cor = "BRANCO";
+                    emo = "⚪";
+                } else {
+                    switch(est) {
+                        case 'padrao': cor = (i % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                        case 'sequenciaInversa': cor = (i % 2 === 0) ? "PRETO" : "VERMELHO"; break;
+                        case 'xadrez': cor = (i % 2 === 0) ? "PRETO" : "VERMELHO"; break;
+                        case 'duplos': cor = (Math.floor(i / 2) % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                        case 'triplos': cor = (Math.floor(i / 3) % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                        case 'focoVermelho': cor = (Math.random() < 0.7) ? "VERMELHO" : "PRETO"; break;
+                        case 'focoPreto': cor = (Math.random() < 0.7) ? "PRETO" : "VERMELHO"; break;
+                        case 'jikanSazonal': cor = (i % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                        default: cor = (Math.random() > 0.5) ? "VERMELHO" : "PRETO";
+                    }
+
+                    if (cor === "VERMELHO") {
+                        emo = (platform === 'jonbet') ? '🟢' : '🔴';
+                    } else {
+                        emo = '⚫';
+                    }
+                }
+                out += `🕒 ${h1} ➔ ${emo}\n`;
+            }
+            out += `--------------------------------\n✅ Gerencie sua banca!`;
+            document.getElementById('suite_resGerador').innerText = out;
+            enviarListaParaCorretor(out);
+
+        }
+        
+        // Função auxiliar para calcular desvio padrão
+        function calculateStandardDeviation(array) {
+            const n = array.length;
+            const mean = array.reduce((a, b) => a + b) / n;
+            return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+        }
+
+        function suite_gerarSinaisBrancoIA() {
+            const qtd = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value);
+            const historicoInput = document.getElementById('suite_iaBranco_historico').value;
+            const est = document.getElementById('suite_iaBranco_estrategia').value;
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const selectElement = document.getElementById('suite_iaBranco_estrategia');
+            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const strategyName = selectElement.options[selectElement.selectedIndex].text;
+
+            let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            out += `👤 Operador: *${userName}*\n`;
+            out += `🎯 Estratégia: *${strategyName}*\n`;
+            out += `♻️ ${qtd} Entradas\n`;
+            out += `--------------------------------\n`;
+
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+            const horarios = historicoInput.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
+            
+            if (horarios.length < 2) {
+                document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que a I.A. possa analisar e gerar os sinais.";
+                return;
+            }
+
+            let db = new Date(); // Ponto de partida é sempre o horário atual para gerar sinais futuros.
+
+            let analysisNote = '';
+            let projectionIntervals = [];
+
+            if (horarios.length > 1) {
+                const intervals = [];
+                for (let i = 1; i < horarios.length; i++) {
+                    intervals.push(timeDifferenceInMinutes(horarios[i-1], horarios[i]));
+                }
+                const mediaIntervalos = intervals.length > 0 ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0; // Garante que não haja divisão por zero
+
+                switch(est) {
+                    case 'iaPreditivaBranco':
+                        if (mediaIntervalos > 0) {
+                            projectionIntervals = [mediaIntervalos];
+                            analysisNote = `🧠 Média Aprendida: ${mediaIntervalos} min`;
+                        }
+                        break;
+                    case 'produtividadeHora':
+                        const firstTime = horarios[0];
+                        const lastTime = horarios[horarios.length - 1];
+                        const totalDurationHours = timeDifferenceInMinutes(firstTime, lastTime) / 60;
+                        if (totalDurationHours > 0) {
+                            const brancosPorHora = horarios.length / totalDurationHours;
+                            const intervaloProdutividade = Math.round(60 / brancosPorHora);
+                            if (intervaloProdutividade > 0) {
+                                projectionIntervals = [intervaloProdutividade];
+                                analysisNote = `📈 Produtividade: ${brancosPorHora.toFixed(2)} brancos/h. Intervalo: ${intervaloProdutividade} min`;
+                            }
+                        }
+                        break;
+                    case 'horarioPico':
+                        const weightedSum = horarios.reduce((sum, time) => {
+                            const [h, m] = time.split(':').map(Number);
+                            const decimalHour = h + m / 60;
+                            return sum + decimalHour; // Peso = 1 para cada ocorrência
+                        }, 0);
+                        const mediaPonderada = weightedSum / horarios.length;
+                        const picoH = Math.floor(mediaPonderada);
+                        const picoM = Math.round((mediaPonderada - picoH) * 60);
+                        analysisNote = `🎯 Horário de Pico (Média): ${picoH.toString().padStart(2,'0')}:${picoM.toString().padStart(2,'0')}`;
+                        // Gera sinais em torno do horário de pico
+                        // O ponto de partida (db) continua sendo o horário atual.
+                        projectionIntervals = [60]; // Gera um sinal por hora perto do pico
+                        break;
+                    case 'velocidadeConclusao':
+                        if (mediaIntervalos > 0) {
+                            const taxaConclusao = 1 / mediaIntervalos; // brancos por minuto
+                            const tempoRestante = 1 / taxaConclusao; // minutos para o próximo
+                            projectionIntervals = [Math.round(tempoRestante)];
+                            analysisNote = `⚡ Taxa: 1 branco a cada ${Math.round(tempoRestante)} min`;
+                        }
+                        break;
+                    case 'pomodoroOtimizado':
+                        const stdDev = calculateStandardDeviation(intervals);
+                        const complexidade = Math.min(10, Math.max(1, Math.round(stdDev / 5))); // Escala de 1 a 10
+                        let pausa;
+                        if (complexidade <= 3) pausa = 5;
+                        else if (complexidade <= 7) pausa = 10;
+                        else pausa = 15;
+                        projectionIntervals = [25, pausa]; // Alterna trabalho e pausa
+                        analysisNote = `🍅 Ciclo Pomodoro: Complexidade ${complexidade} -> Pausa de ${pausa} min`;
+                        break;
+                    case 'eficienciaTemporal':
+                        const duracaoTotal = timeDifferenceInMinutes(horarios[0], horarios[horarios.length - 1]);
+                        const tempoAtivo = intervals.reduce((a, b) => a + b, 0);
+                        if (duracaoTotal > 0) {
+                            const eficiencia = (tempoAtivo / duracaoTotal); // Mais perto de 1 = mais espalhado
+                            const intervaloAjustado = Math.round(mediaIntervalos * eficiencia);
+                            if (intervaloAjustado > 0) {
+                                projectionIntervals = [intervaloAjustado];
+                                analysisNote = `⏱️ Eficiência: ${(100 / eficiencia).toFixed(0)}%. Intervalo ajustado: ${intervaloAjustado} min`;
+                            }
+                        }
+                        break;
+                    case 'distribuicao702010':
+                        const sortedIntervals = [...intervals].sort((a, b) => a - b);
+                        const p70 = sortedIntervals[Math.floor(sortedIntervals.length * 0.7)];
+                        const p90 = sortedIntervals[Math.floor(sortedIntervals.length * 0.9)];
+                        // 70% curtos (até p70), 20% médios (até p90), 10% longos (acima de p90)
+                        const curtos = sortedIntervals.filter(i => i <= p70);
+                        const medios = sortedIntervals.filter(i => i > p70 && i <= p90);
+                        const longos = sortedIntervals.filter(i => i > p90);
+                        const avgCurto = Math.round(curtos.reduce((a, b) => a + b, 0) / (curtos.length || 1));
+                        const avgMedio = Math.round(medios.reduce((a, b) => a + b, 0) / (medios.length || 1));
+                        const avgLongo = Math.round(longos.reduce((a, b) => a + b, 0) / (longos.length || 1));
+                        projectionIntervals = [avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgMedio, avgMedio, avgLongo];
+                        analysisNote = `📊 Distribuição 70/20/10: [${avgCurto}, ${avgMedio}, ${avgLongo}] min`;
+                        break;
+                    default:
+                        // Por padrão, usa a média se nenhuma outra estratégia for correspondida
+                        projectionIntervals = [mediaIntervalos];
+                        break;
+                }
+            }
+
+            if (analysisNote) {
+                out += `${analysisNote}\n--------------------------------\n`;
+            }
+
+            if (projectionIntervals.length === 0 || projectionIntervals.every(p => p <= 0)) {
+                document.getElementById('suite_resIABranco').innerText = "⚠️ Não foi possível calcular um padrão de intervalo com base no histórico fornecido. Verifique os dados.";
+                return;
+            }
+
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000); // Limite de 24 horas
+
+            for (let i = 0; i < qtd; i++) {
+                let minutosParaAdicionar = projectionIntervals[i % projectionIntervals.length];
+
+                if (est === 'iaPreditivaBranco' && minutosParaAdicionar > 0) {
+                    const randomFactor = Math.random();
+                    let dynamicInterval = Math.round(minutosParaAdicionar * (randomFactor > 0.7 ? 1.2 + randomFactor : 0.6 + randomFactor));
+                    minutosParaAdicionar = Math.max(1, dynamicInterval); // Usa o intervalo dinâmico e garante que seja no mínimo 1
+                }
+
+                db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+
+                if (db > endTime) {
+                    out += `\n-- Limite de 24h atingido --\n`;
+                    break; // Para o loop se exceder 24 horas
+                }
+
+                const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
+                out += `🕒 ${h1} ➔ ⚪\n`;
+            }
+
+            out += `--------------------------------\n`;
+            out += `⚠️ Use como base para suas análises.`;
+            document.getElementById('suite_resIABranco').innerText = out;
+
+        }
+
+        function suite_limparGeradorIA() {
+            document.getElementById('suite_qtdSinais').value = "10";
+            document.getElementById('suite_intervalo').value = "2";
+            document.getElementById('suite_estrategia').value = "padrao";
+            document.getElementById('suite_resGerador').innerText = "Resultado aqui...";
+            suite_updateQtdLabel();
+        }
+
+        function suite_analisarEGerar() {
+            const input = document.getElementById('suite_inputHistorico').value.trim();
+            const qtd = parseInt(document.getElementById('suite_qtdProjecoes').value);
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            
+            if (!input) {
+                alert("Por favor, cole os dados do histórico.");
+                return;
+            }
+
+            const linhas = input.split('\n').map(l => l.trim()).filter(l => l); // Filtra linhas vazias
+            let coresProcessadas = [];
+            const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
+            const numberRegex = /^\d{1,2}$/;
+            const timeRegex = /^\d{2}:\d{2}$/;
+
+            try {
+                for (let i = 0; i < linhas.length; i++) {
+                    const linhaAtual = linhas[i];
+
+                    if (fullDateRegex.test(linhaAtual)) {
+                        const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                        let cor = '';
+
+                        if (numberRegex.test(proximaLinha)) {
+                            const numero = parseInt(proximaLinha);
+                            if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
+                            else if (numero >= 8 && numero <= 14) cor = 'PRETO';
+                            i++; // Pula a linha do número, já que foi processada
+                        } else if (timeRegex.test(proximaLinha)) { // Verifica se a próxima linha é um horário (indicando branco)
+                            cor = 'BRANCO';
+                        }
+                        if (cor) {
+                            coresProcessadas.push(cor);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao processar o histórico:", e);
+            }
+
+            let ultimaHora = new Date(); // Ponto de partida é sempre o horário atual.
+            const contagemVermelho = coresProcessadas.filter(c => c === 'VERMELHO').length;
+            const contagemPreto = coresProcessadas.filter(c => c === 'PRETO').length;
+            const contagemBranco = coresProcessadas.filter(c => c === 'BRANCO').length;
+            const estrategiaAnalise = document.getElementById('suite_analiseEstrategia').value;
+
+            suite_updateAnalyzerStats({
+                red: contagemVermelho,
+                black: contagemPreto,
+                white: contagemBranco,
+                total: coresProcessadas.length
+            });
+            let corTendencia;
+            let nomeEstrategia = "";
+            const ultimasCores = coresProcessadas.slice(0, 4).filter(c => c !== 'BRANCO');
+            const strategyEmojis = { auto: '🤖', maioria: '💪', minoria: '⚖️', contra: '🔄', alternado: '♟️', newton: '🍎', euler: '🌊', gauss: '🔔', galois: '⛓️', einstein: '⚛️' };
+
+            switch (estrategiaAnalise) {
+                case 'maioria': corTendencia = (contagemVermelho >= contagemPreto) ? "VERMELHO" : "PRETO"; nomeEstrategia = `Seguindo a Maioria (${corTendencia})`; break;
+                case 'minoria': corTendencia = (contagemVermelho < contagemPreto) ? "VERMELHO" : "PRETO"; nomeEstrategia = `Buscando o Equilíbrio (${corTendencia})`; break;
+                case 'contra': const ultimaCorValida = coresProcessadas.find(c => c !== 'BRANCO'); corTendencia = (ultimaCorValida === "VERMELHO") ? "PRETO" : "VERMELHO"; nomeEstrategia = `Contrariando o Último (${corTendencia})`; break;
+                case 'alternado': nomeEstrategia = "Padrão Alternado (Xadrez)"; break;
+                case 'euler': const ultimas3Euler = ultimasCores.slice(0, 3); if (ultimas3Euler.length === 3 && ultimas3Euler[0] === ultimas3Euler[1] && ultimas3Euler[1] === ultimas3Euler[2]) { corTendencia = (ultimas3Euler[0] === "VERMELHO") ? "PRETO" : "VERMELHO"; nomeEstrategia = `Onda de Euler (Inversão)`; } else { corTendencia = ultimasCores[0]; nomeEstrategia = `Onda de Euler (Continuação)`; } break;
+                case 'gauss': const ultimas7Cores = coresProcessadas.slice(0, 7).filter(c => c !== 'BRANCO'); const contagemV7 = ultimas7Cores.filter(c => c === 'VERMELHO').length; const contagemP7 = ultimas7Cores.filter(c => c === 'PRETO').length; corTendencia = (contagemV7 >= contagemP7) ? "VERMELHO" : "PRETO"; nomeEstrategia = `Curva de Gauss (${corTendencia})`; break;
+                case 'galois': const ultimas3Galois = ultimasCores.slice(0, 3); if (ultimas3Galois.length === 3 && ultimas3Galois[0] !== ultimas3Galois[1] && ultimas3Galois[0] === ultimas3Galois[2]) { corTendencia = ultimas3Galois[1]; nomeEstrategia = `Ciclo de Galois (Padrão VPV)`; } else { corTendencia = (ultimasCores[0] === "VERMELHO") ? "PRETO" : "VERMELHO"; nomeEstrategia = `Ciclo de Galois (Buscando Padrão)`; } break;
+                case 'einstein': const ultimas4Einstein = ultimasCores.slice(0, 4); const vCount = ultimas4Einstein.filter(c => c === 'VERMELHO').length; const pCount = ultimas4Einstein.filter(c => c === 'PRETO').length; if (vCount === 1 && pCount === 3) corTendencia = "VERMELHO"; else if (pCount === 1 && vCount === 3) corTendencia = "PRETO"; else corTendencia = (ultimasCores[0] === "VERMELHO") ? "PRETO" : "VERMELHO"; nomeEstrategia = `Relatividade de Einstein`; break;
+                case 'auto': default: if (ultimasCores.length >= 3 && ultimasCores[0] === ultimasCores[1] && ultimasCores[1] === ultimasCores[2]) { corTendencia = ultimasCores[0]; nomeEstrategia = `Chuva de ${corTendencia}`; } else if (ultimasCores.length >= 4 && ultimasCores[0] !== ultimasCores[1] && ultimasCores[1] !== ultimasCores[2] && ultimasCores[2] !== ultimasCores[3]) { corTendencia = (ultimasCores[0] === "VERMELHO") ? "PRETO" : "VERMELHO"; nomeEstrategia = "Padrão Xadrez Detectado"; } else { corTendencia = (contagemVermelho > contagemPreto) ? "PRETO" : "VERMELHO"; nomeEstrategia = `Equilíbrio (${corTendencia})`; }
+            }
+
+            const emojiEstrategia = strategyEmojis[estrategiaAnalise] || '📈';
+            let out = `📊 **ANÁLISE DE PADRÕES**\n`;
+            out += `🚦 Plataforma: ${platformName}\n`;
+            out += `👤 Operador: *${userName}*\n`;
+            out += `🔎 Base: ${coresProcessadas.length} rodadas analisadas\n`;
+            out += `${emojiEstrategia} Estratégia Aplicada: ${nomeEstrategia}\n`;
+            out += `⚪ Ocorrências de Branco: ${contagemBranco}\n`;
+            out += `🛡️ Proteção: Sempre proteger no BRANCO ⚪\n`;
+            out += `♻️ ATÉ G1\n`;
+            out += `--------------------------------\n`;
+
+            ultimaHora.setMinutes(ultimaHora.getMinutes() + 1); // Inicia a partir do próximo minuto
+
+            for(let i=0; i < qtd; i++) {
+                ultimaHora.setMinutes(ultimaHora.getMinutes() + 2);
+                const h1 = ultimaHora.getHours().toString().padStart(2,'0') + ':' + ultimaHora.getMinutes().toString().padStart(2,'0');
+                let corSinal, emoji;
+                if (estrategiaAnalise === 'alternado') {
+                    corSinal = (i % 2 === 0) ? "VERMELHO" : "PRETO";
+                } else {
+                    if (Math.random() > 0.4) { corSinal = corTendencia; } else { corSinal = (corTendencia === "VERMELHO") ? "PRETO" : "VERMELHO"; }
+                }
+                if (corSinal === "VERMELHO") { emoji = (platform === 'jonbet') ? '🟢' : '🔴'; } else { emoji = '⚫'; }
+                out += `🕒 ${h1} ➔ ${emoji}\n`;
+            }
+
+            out += `--------------------------------\n⚠️ Baseado no histórico fornecido.`;
+            document.getElementById('suite_resAnalise').innerText = out;
+
+        }
+
+        function suite_appendToManualPattern(char) {
+            const textarea = document.getElementById('suite_manualPatternInput');
+            if (textarea.value.length > 0) { textarea.value += ' ' + char; } else { textarea.value = char; }
+        }
+        function suite_manualClear() { document.getElementById('suite_manualPatternInput').value = ''; }
+        function suite_manualBackspace() {
+            const textarea = document.getElementById('suite_manualPatternInput');
+            let value = textarea.value.trim();
+            const lastSpaceIndex = value.lastIndexOf(' ');
+            if (lastSpaceIndex > -1) { textarea.value = value.substring(0, lastSpaceIndex); } else { textarea.value = ''; }
+        }
+        function suite_manualInvert() {
+            const textarea = document.getElementById('suite_manualPatternInput');
+            const sequence = textarea.value.trim().split(/[\s,]+/);
+            const reversedSequence = sequence.reverse().join(' ');
+            textarea.value = reversedSequence;
+        }
+
+        function suite_gerarListaManual() {
+            const pattern = document.getElementById('suite_manualPatternInput').value;
+            const qtd = parseInt(document.getElementById('suite_manualQtdSinais').value);
+            const intervalo = parseInt(document.getElementById('suite_manualIntervalo').value);
+            const platform = document.getElementById('suite_platformSelector').value;
+            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+
+            if (!pattern) { alert("Por favor, insira uma sequência para gerar a lista."); return; }
+            let out = `🚀 *LISTA DE OPERAÇÕES*\n`;
+            out += `👤 Operador: *${userName}*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `📅 Data: ${new Date().toLocaleDateString()}\n`;
+            out += `🛡️ Proteção no Branco ⚪️\n`;
+            out += `♻️ ATÉ *G1*\n--------------------------------\n`;
+            
+            const sequence = pattern.trim().toUpperCase().split(/[\s,]+/);
+            let db = new Date();
+            db.setMinutes(db.getMinutes() + 1);
+
+            for (let i = 0; i < qtd; i++) {
+                const item = sequence[i % sequence.length];
+                db.setMinutes(db.getMinutes() + intervalo);
+                const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
+                let emo = '';
+                let isWhite = false;
+
+                const num = parseInt(item);
+                if (!isNaN(num)) {
+                    if (num >= 1 && num <= 7) { emo = (platform === 'jonbet') ? '🟢' : '🔴'; }
+                    else if (num >= 8 && num <= 14) { emo = '⚫'; }
+                    else if (num === 0) { isWhite = true; }
+                } else {
+                    if (item === 'V') { emo = (platform === 'jonbet') ? '🟢' : '🔴'; }
+                    else if (item === 'P') { emo = '⚫'; }
+                    else if (item === 'B') { isWhite = true; }
+                }
+
+                if (emo && !isWhite) { out += `🕒 ${h1} ➔ ${emo}\n`; }
+            }
+
+            out += `--------------------------------\n✅ Gerencie sua banca!`;
+            document.getElementById('suite_resManual').innerText = out;
+
+        }
+
+        function suite_corrigirSinais() {
+            const signalsInput = document.getElementById('suite_correctorSignalsInput').value;
+            const resultsInput = document.getElementById('suite_correctorResultsInput').value;
+            const resultsDiv = document.getElementById('suite_resCorrector');
+
+            if (!signalsInput || !resultsInput) { alert("Por favor, preencha a lista de sinais e o histórico de resultados."); return; }
+
+            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (🔴|⚫|🟢)/g;
+            const parsedSignals = [];
+            const originalSignalLines = [];
+            let match;
+            while ((match = signalRegex.exec(signalsInput)) !== null) {
+                let color = match[2] === '🔴' ? 'VERMELHO' : (match[2] === '🟢' ? 'VERMELHO' : 'PRETO');
+                parsedSignals.push({ time: match[1], color: color });
+                originalSignalLines.push(match[0]);
+            }
+
+            const parsedResults = parseResultsHistory(resultsInput, true); // Permite múltiplos resultados por minuto
+            let wins = 0, losses = 0, winsDePrimeira = 0, winsNoGale1 = 0;
+            let maxWinStreak = 0, currentWinStreak = 0, maxLossStreak = 0, currentLossStreak = 0;
+            let brancosPagos = 0;
+            let detailedResults = []; 
+            let hourlyStats = {}; // Objeto para rastrear estatísticas por hora
+
+            for (let i = 0; i < parsedSignals.length; i++) {
+                const signal = parsedSignals[i];
+                const hour = signal.time.substring(0, 2);
+                if (!hourlyStats[hour]) {
+                    hourlyStats[hour] = { wins: 0, total: 0 };
+                }
+                hourlyStats[hour].total++;
+
+                const resultsForTime = parsedResults[signal.time] || [];
+                const resultG0 = resultsForTime[0];
+                const resultG1_sameMinute = resultsForTime[1];
+
+                if (resultG0 === 'BRANCO' || resultG0 === signal.color) {
+                    wins++;
+                    hourlyStats[hour].wins++;
+                    if (resultG0 === 'BRANCO') brancosPagos++;
+                    winsDePrimeira++;
+                    detailedResults.push(`${originalSignalLines[i]} ${resultG0 === 'BRANCO' ? '✅⚪️' : '✅'}`);
+                    currentWinStreak++;
+                    currentLossStreak = 0;
+                } else if (resultG0 !== undefined) {
+                    if (resultG1_sameMinute === 'BRANCO' || resultG1_sameMinute === signal.color) {
+                        wins++;
+                        hourlyStats[hour].wins++;
+                        if (resultG1_sameMinute === 'BRANCO') brancosPagos++;
+                        winsNoGale1++;
+                        detailedResults.push(`${originalSignalLines[i]} ${resultG1_sameMinute === 'BRANCO' ? '❇️⚪️' : '❇️'}`);
+                        currentWinStreak++;
+                        currentLossStreak = 0;
+                    } else {
+                        losses++;
+                        detailedResults.push(`${originalSignalLines[i]} ❌`);
+                        currentLossStreak++;
+                        currentWinStreak = 0;
+                    }
+                }
+                maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
+                maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
+            }
+
+            const totalSignals = parsedSignals.length;
+            const assertividade = totalSignals > 0 ? ((wins / totalSignals) * 100).toFixed(1) : 0;
+
+            let out = `✅ **PLACAR FINAL**\n`;
+            out += `(Baseado em ${totalSignals} sinais analisados)\n`;
+            out += `--------------------------------\n`;
+            out += `Assertividade: ${assertividade}% (${wins}W / ${losses}L)\n`;
+            out += `--------------------------------\n`;
+            out += `Total de Sinais: ${totalSignals}\n`;
+            out += `Assertividade: ${assertividade}%\n\n`;
+            out += `Wins: ${wins}\n`;
+            out += `Losses: ${losses}\n`;
+            out += `--------------------------------\n`;
+            out += `Wins de Primeira: ${winsDePrimeira}\n`;
+            out += `Wins no G1: ${winsNoGale1}\n`;
+            out += `Brancos Pagos: ${brancosPagos} ⚪️\n`;
+            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
+            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n`;
+            out += `\n--- ASSERTIVIDADE POR HORA ---\n`;
+
+            const sortedHours = Object.keys(hourlyStats).sort();
+            if (sortedHours.length > 0) {
+                sortedHours.forEach(hour => {
+                    const stats = hourlyStats[hour];
+                    const hourAssert = ((stats.wins / stats.total) * 100).toFixed(1);
+                    out += `• ${hour}h: ${hourAssert}% (${stats.wins}/${stats.total})\n`;
+                });
+            }
+            out += `\n` + detailedResults.join('\n');
+
+            window.hourlyStatsFromCorrector = hourlyStats; // Armazena na variável específica do Corretor
+
+            resultsDiv.innerText = out;
+            suite_renderStatsChart(); // Atualiza o gráfico após a correção
+        }
+
+        function getBestPerformingHours(threshold = 70) {
+            const bestHours = [];
+            if (window.hourlyStatsFromCorrector && Object.keys(window.hourlyStatsFromCorrector).length > 0) {
+                for (const hour in window.hourlyStatsFromCorrector) {
+                    const stats = window.hourlyStatsFromCorrector[hour];
+                    if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) {
+                        bestHours.push(parseInt(hour));
+                    }
+                }
+            }
+            return bestHours;
+        }
+
+        let suite_chartInstance = null;
+        function suite_renderStatsChart() {
+            const ctx = document.getElementById('suite_performanceChart').getContext('2d');
+            const source = document.getElementById('suite_stats_source').value;
+            let data = {};
+
+            if (source === 'corrector') {
+                data = window.hourlyStatsFromCorrector || {};
+            } else if (source === 'analyzer') {
+                data = window.hourlyStatsFromAnalyzer || {};
+            }
+
+            if (suite_chartInstance) {
+                suite_chartInstance.destroy();
+            }
+
+            if (Object.keys(data).length === 0) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.font = "16px 'Segoe UI'";
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-color');
+                ctx.textAlign = "center";
+                ctx.fillText("Nenhum dado para exibir. Use a ferramenta correspondente primeiro.", ctx.canvas.width / 2, 50);
+                return;
+            }
+
+            // Calcula a média geral de assertividade
+            let totalWins = 0;
+            let totalSignals = 0;
+            for (const hour in data) {
+                totalWins += data[hour].wins;
+                totalSignals += data[hour].total;
+            }
+            const overallAverage = totalSignals > 0 ? (totalWins / totalSignals) * 100 : 0;
+
+            // Lógica específica para cada fonte de dados
+            if (source === 'analyzer') {
+                const sortedHours = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
+                const labels = sortedHours.map(h => `${h}h`);
+                const redData = sortedHours.map(h => data[h].vermelho || 0);
+                const blackData = sortedHours.map(h => data[h].preto || 0);
+                const whiteData = sortedHours.map(h => data[h].branco || 0);
+
+                suite_chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Vermelho',
+                                data: redData,
+                                backgroundColor: 'rgba(241, 44, 76, 0.6)',
+                                borderColor: 'rgba(241, 44, 76, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Preto',
+                                data: blackData,
+                                backgroundColor: 'rgba(54, 54, 54, 0.6)',
+                                borderColor: 'rgba(54, 54, 54, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Branco',
+                                data: whiteData,
+                                backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                                borderColor: 'rgba(255, 255, 255, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true }
+                        },
+                        plugins: {
+                            title: { display: true, text: 'Distribuição de Cores por Hora' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        const currentValue = context.raw;
+                                        const dataIndex = context.dataIndex;
+                                        const total = context.chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[dataIndex], 0);
+                                        const percentage = total > 0 ? (currentValue / total * 100).toFixed(1) : 0;
+                                        
+                                        label += `${currentValue} (${percentage}%)`;
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                return; // Finaliza a função para não desenhar o outro gráfico
+            }
+
+            // Lógica para o 'corrector' (Assertividade)
+            const sortedHours = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
+            const labels = sortedHours.map(h => `${h}h`);
+            const assertividadeData = sortedHours.map(h => {
+                const stats = data[h];
+                return stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(1) : 0;
+            });
+            const averageData = Array(labels.length).fill(overallAverage.toFixed(1));
+
+            suite_chartInstance = new Chart(ctx, {
+                type: 'bar', // Tipo principal do gráfico
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Assertividade por Hora (%)',
+                            data: assertividadeData,
+                            backgroundColor: 'rgba(0, 230, 118, 0.6)',
+                            borderColor: 'rgba(0, 230, 118, 1)',
+                            borderWidth: 1,
+                            order: 2 // Garante que as barras fiquem atrás da linha
+                        },
+                        {
+                            label: `Média Geral (${overallAverage.toFixed(1)}%)`,
+                            data: averageData,
+                            type: 'line', // Define este dataset como uma linha
+                            borderColor: 'rgba(255, 99, 132, 0.8)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderWidth: 2,
+                            borderDash: [5, 5], // Linha pontilhada
+                            fill: false,
+                            pointRadius: 0, // Remove os pontos da linha
+                            order: 1 // Garante que a linha fique na frente das barras
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    },
+                    plugins: {
+                        title: { display: true, text: 'Assertividade por Hora (%)' }
+                    }
+                }
+            });
+        }
+
+        function suite_corrigirSinaisBranco() {
+            const signalsInput = document.getElementById('suite_correctorBrancoSignalsInput').value;
+            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;
+            const numEntradas = parseInt(document.getElementById('suite_correctorBrancoEntradas').value) || 1;
+            const resultsDiv = document.getElementById('suite_resCorrectorBranco');
+
+            if (!signalsInput || !resultsInput) { alert("Por favor, preencha a lista de sinais e o histórico de resultados."); return; }
+
+            // ATENÇÃO: A lógica abaixo é uma cópia. Você precisará adaptar as regras para o branco.
+            // Por exemplo, o regex para sinais de branco pode ser diferente.
+            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (⚪)/g; // Regex ajustado para procurar apenas por branco
+            const parsedSignals = [];
+            const originalSignalLines = [];
+            let match;
+            while ((match = signalRegex.exec(signalsInput)) !== null) {
+                parsedSignals.push({ time: match[1], color: "BRANCO" });
+                originalSignalLines.push(match[0]);
+            }
+
+            const parsedResults = parseResultsHistory(resultsInput, true);
+            let wins = 0, losses = 0, winsPorGale = Array(numEntradas).fill(0);
+            let maxWinStreak = 0, currentWinStreak = 0, maxLossStreak = 0, currentLossStreak = 0;
+            let detailedResults = [];
+
+            for (let i = 0; i < parsedSignals.length; i++) {
+                const signal = parsedSignals[i];
+                let foundWin = false;
+
+                const [signalH, signalM] = signal.time.split(':').map(Number);
+                let checkTime = new Date();
+                checkTime.setHours(signalH, signalM, 0, 0);
+
+                for (let gale = 0; gale < numEntradas; gale++) {
+                    const timeStr = checkTime.getHours().toString().padStart(2, '0') + ':' + checkTime.getMinutes().toString().padStart(2, '0');
+                    const resultsForTime = parsedResults[timeStr] || [];
+
+                    if (resultsForTime.includes('BRANCO')) {
+                        wins++;
+                        winsPorGale[gale]++;
+                        detailedResults.push(`${originalSignalLines[i]} ${gale > 0 ? `❇️(G${gale})` : '✅⚪️'}`);
+                        currentWinStreak++;
+                        currentLossStreak = 0;
+                        foundWin = true;
+                        break; // Sai do loop de gales, pois já achou o win
+                    }
+                    // Avança 1 minuto para a próxima tentativa
+                    checkTime.setMinutes(checkTime.getMinutes() + 1);
+                }
+
+                if (!foundWin) {
+                    losses++;
+                    detailedResults.push(`${originalSignalLines[i]} ❌`);
+                    currentLossStreak++;
+                    currentWinStreak = 0;
+                }
+                maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
+                maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
+            }
+
+            const totalSignals = parsedSignals.length;
+            const assertividade = totalSignals > 0 ? ((wins / totalSignals) * 100).toFixed(1) : 0;
+
+            let out = `✅ **PLACAR FINAL (BRANCO)**\n`;
+            out += `--------------------------------\n`;
+            out += `Total de Sinais: ${totalSignals}\n`;
+            out += `Assertividade: ${assertividade}%\n\n`;
+            out += `Wins: ${wins}\n`;
+            out += `Losses: ${losses}\n`;
+            out += `--------------------------------\n`;
+            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
+            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n\n`;
+            out += detailedResults.join('\n');
+
+            resultsDiv.innerText = out;
+        }
+
+
+        function suite_limparCorretor() {
+            document.getElementById('suite_correctorSignalsInput').value = '';
+            document.getElementById('suite_correctorResultsInput').value = '';
+            document.getElementById('suite_resCorrector').innerText = 'Aguardando dados para correção...';
+        }
+
+        function suite_formatCorrectorResultsInput(textarea) {
+            // Aplica a remoção automática de linhas de data/hora SOMENTE para o Corretor de Branco
+            if (textarea.id === 'suite_correctorBrancoResultsInput') {
+                // Regex para encontrar linhas que são exatamente no formato DD/MM/YYYY HH:MM:SS
+                const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4} \d{2}:\d{2}:\d{2}$/;
+                const lines = textarea.value.split('\n');
+                textarea.value = lines.filter(line => !dateRegex.test(line.trim())).join('\n');
+            }
+        }
+
+        function suite_limparCorretorBranco() {
+            document.getElementById('suite_correctorBrancoSignalsInput').value = '';
+            document.getElementById('suite_correctorBrancoResultsInput').value = '';
+            document.getElementById('suite_resCorrectorBranco').innerText = 'Aguardando dados para correção...';
+        }
+
+        function suite_toggleStrategyInputs() {
+            const estrategia = document.getElementById('suite_estrategiaBranco').value;
+            document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';
+            document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
+        }
+
+        let suite_formatTimeout;
+        function suite_autoFormatBrancoInput(textarea) {
+            saveToStorage(textarea.id);
+            clearTimeout(suite_formatTimeout);
+            suite_formatTimeout = setTimeout(() => {
+                const lines = textarea.value.split(/[\n\s,]+/); // Divide por quebras de linha, espaços ou vírgulas
+                const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+                const numberRegex = /^([0-9]|1[0-4])$/; // Regex para números de 0 a 14
+                
+                // 1. Filtra para manter apenas linhas que são horários (HH:MM) ou números (0-14)
+                const validLines = lines.map(l => l.trim()).filter(l => timeRegex.test(l) || numberRegex.test(l));
+                
+                // 2. Insere '0' entre dois horários consecutivos
+                const processedLines = [];
+                for (let i = 0; i < validLines.length; i++) {
+                    processedLines.push(validLines[i]);
+                    // Verifica se a linha atual E a próxima são horários
+                    if (i + 1 < validLines.length && timeRegex.test(validLines[i]) && timeRegex.test(validLines[i+1])) {
+                        processedLines.push('0');
+                    }
+                }
+
+                // 3. Atualiza o textarea, preservando a ordem e as repetições
+                textarea.value = processedLines.join('\n');
+            }, 500);
+        }
+
+        function suite_analisarParaBranco() {
+            const estrategia = document.getElementById('suite_estrategiaBranco').value;
+            const input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
+            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value);
+            const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
+            const resultsDiv = document.getElementById('suite_resBranco');
+
+            if (!input && !useCurrentTime) {
+                alert("Por favor, cole a lista de horários dos brancos ou marque a opção para usar o horário atual.");
+                return;
+            }
+
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+            const horarios = input.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
+
+            if (horarios.length === 0) {
+                alert("Nenhum horário válido encontrado no histórico. É necessário um histórico para a análise."); return;
+            }
+
+            if (horarios.length < 2 && !['custom', 'offset', 'espelho12h', 'minutosOuro'].includes(estrategia)) {
+                resultsDiv.innerText = "⚠️ É necessário fornecer pelo menos 2 horários de branco para analisar.";
+                return;
+            }
+
+            function getIntervals(times) {
+                const intervals = [];
+                for (let i = 1; i < times.length; i++) {
+                    const [h1, m1] = times[i - 1].split(':').map(Number);
+                    const [h2, m2] = times[i].split(':').map(Number);
+                    const date1 = new Date(0, 0, 0, h1, m1);
+                    const date2 = new Date(0, 0, 0, h2, m2);
+                    let diff = (date2 - date1) / (1000 * 60);
+                    if (diff < 0) diff += 24 * 60;
+                    intervals.push(diff);
+                }
+                return intervals;
+            }
+
+            function projectSignals(startTime, intervalPattern, signalLimit, minInterval = 0) {
+                let signals = [];
+                let proximaEntrada = new Date(startTime);
+                let ultimoSinalGerado = null;
+                let patternIndex = 0;
+
+                // Loop para tentar gerar o número de sinais desejado
+                while (signals.length < signalLimit && patternIndex < signalLimit * 5) { // Adicionado um limite de segurança
+                    if (intervalPattern.length === 0) break;
+                    const minutosParaAdicionar = intervalPattern[patternIndex % intervalPattern.length];
+                    patternIndex++;
+
+                    if (minutosParaAdicionar <= 0) break;
+                    proximaEntrada.setMinutes(proximaEntrada.getMinutes() + minutosParaAdicionar);
+
+                    // Verifica se o sinal gerado respeita o intervalo mínimo em relação ao último sinal válido
+                    if (!ultimoSinalGerado || ((proximaEntrada.getTime() - ultimoSinalGerado.getTime()) / (1000 * 60)) >= minInterval) {
+                        signals.push(`🕒 ${proximaEntrada.getHours().toString().padStart(2, '0')}:${proximaEntrada.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
+                        ultimoSinalGerado = new Date(proximaEntrada); // Apenas atualiza a referência do último sinal válido gerado
+                    }
+                }
+                return signals;
+            }
+
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const selectElement = document.getElementById('suite_estrategiaBranco');
+            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dataAmanha = tomorrow.toLocaleDateString('pt-BR');
+
+            let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `👤 Operador: *${userName}*\n`;
+            out += `📅 Data: *${dataAmanha}*\n`;
+            out += `🎯 Estratégia: *${strategyName}*\n🔢 Entradas: *${intervaloMinimo > 0 ? intervaloMinimo : qtdSinais}*\n`;
+
+            let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
+            let pattern = [];
+            let projectedSignals = [];
+
+            // Lógica das estratégias (resumida para brevidade)
+            switch (estrategia) {
+                case 'media': pattern = getIntervals(horarios); if (pattern.length > 0) { const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length); projectedSignals = projectSignals(lastTime, [media], qtdSinais, intervaloMinimo); } break;
+                case 'minimo': pattern = getIntervals(horarios); if (pattern.length > 0) { const min = Math.min(...pattern.filter(i => i > 0)); if(min > 0) projectedSignals = projectSignals(lastTime, [min], qtdSinais, intervaloMinimo); } break;
+                case 'espelho12h': horarios.slice(0, qtdSinais).forEach(h => { let date = new Date(); const [hr, mn] = h.split(':').map(Number); date.setHours(hr + 12, mn); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
+                case 'fibonacci': projectedSignals = projectSignals(lastTime, [5, 8, 13, 21, 34, 55], qtdSinais, intervaloMinimo); break;
+                case 'minutosOuro': const minuteCounts = {}; horarios.forEach(h => { const min = h.split(':')[1]; minuteCounts[min] = (minuteCounts[min] || 0) + 1; }); const goldenMinutes = Object.keys(minuteCounts).sort((a, b) => minuteCounts[b] - minuteCounts[a]).slice(0, 5); let projTime = new Date(lastTime); while(projectedSignals.length < qtdSinais && goldenMinutes.length > 0) { projTime.setHours(projTime.getHours() + 1); if (projectedSignals.length >= qtdSinais) break; goldenMinutes.forEach(min => { if(projectedSignals.length < qtdSinais) projectedSignals.push(`🕒 ${projTime.getHours().toString().padStart(2, '0')}:${min} ➔ ⚪`); }); } break;
+                case 'somaTotal': pattern = getIntervals(horarios); if (pattern.length > 0) { const totalSum = pattern.reduce((a, b) => a + b, 0); let finalTime = new Date(lastTime); finalTime.setMinutes(finalTime.getMinutes() + totalSum); projectedSignals.push(`🕒 ${finalTime.getHours().toString().padStart(2, '0')}:${finalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); } break;
+                case 'custom': const customPatternStr = document.getElementById('suite_customPattern').value; if (!customPatternStr) { projectedSignals = "Insira um padrão."; break; } pattern = customPatternStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0); projectedSignals = projectSignals(lastTime, pattern, qtdSinais, intervaloMinimo); break;
+                case 'offset': const offsetValue = parseInt(document.getElementById('suite_fixedOffsetValue').value); if (isNaN(offsetValue)) { projectedSignals = "Insira um deslocamento."; break; } [...horarios].reverse().slice(0, qtdSinais).forEach(h => { const [hr, mn] = h.split(':').map(Number); let date = new Date(); date.setHours(hr, mn + offsetValue, 0, 0); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
+                case 'padraoHoras':
+                    const hourlyPatterns = {};
+                    horarios.forEach(h => {
+                        const [hr, mn] = h.split(':').map(Number);
+                        if (!hourlyPatterns[hr]) hourlyPatterns[hr] = [];
+                        hourlyPatterns[hr].push(mn);
+                    });
+                    Object.keys(hourlyPatterns).slice(0, qtdSinais).forEach(hr => {
+                        const minutes = hourlyPatterns[hr];
+                        const avgMinute = Math.round(minutes.reduce((a, b) => a + b, 0) / minutes.length);
+                        projectedSignals.push(`🕒 ${hr.toString().padStart(2, '0')}:${avgMinute.toString().padStart(2, '0')} ➔ ⚪`);
+                    });
+                    break;
+                case 'brianTracy':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length > 0) {
+                        // Calcula a média ponderada, dando mais peso aos intervalos recentes
+                        const weightedSum = pattern.reduce((sum, interval, index) => sum + interval * (index + 1), 0);
+                        const totalWeight = pattern.reduce((sum, interval, index) => sum + (index + 1), 0);
+                        const weightedAvg = Math.round(weightedSum / totalWeight);
+
+                        // Usa a média ponderada para o primeiro sinal e os intervalos mais recentes para os seguintes
+                        const projectionPattern = [weightedAvg, ...pattern.slice(-4).reverse()];
+                        projectedSignals = projectSignals(lastTime, projectionPattern, qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'pitagoras':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const a = pattern[pattern.length - 2];
+                        const b = pattern[pattern.length - 1];
+                        const c = Math.round(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
+                        if (c > 0) projectedSignals = projectSignals(lastTime, [c], qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'ciclosMercado':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const lastInterval = pattern[pattern.length - 1];
+                        const secondLastInterval = pattern[pattern.length - 2];
+                        const acceleration = lastInterval - secondLastInterval;
+                        const nextInterval = Math.round(lastInterval + acceleration);
+                        if (nextInterval > 0) projectedSignals = projectSignals(lastTime, [nextInterval], qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'jikan_tradicional':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length);
+                        const desvioPadrao = calculateStandardDeviation(pattern);
+                        // Fórmula Jikan: alterna entre a média e a média ajustada pelo desvio
+                        const jikanPattern = [
+                            Math.max(1, Math.round(media + desvioPadrao / 2)),
+                            Math.max(1, Math.round(media - desvioPadrao / 2))
+                        ];
+                        projectedSignals = projectSignals(lastTime, jikanPattern, qtdSinais, intervaloMinimo);
+                    }
+                    break;
+            }
+
+            out += `--------------------------------\n`;
+            if (projectedSignals && projectedSignals.length > 0) {
+                let signalArray = Array.isArray(projectedSignals) ? projectedSignals : [projectedSignals];
+                let uniqueSignals = [...new Set(signalArray)];
+                uniqueSignals.sort((a, b) => a.localeCompare(b)); // Ordena
+                out += uniqueSignals.join('\n');
+            } else {
+                out += "Nenhum sinal foi gerado.";
+            }
+            out += `\n--------------------------------\n`;
+            out += `⚠️ Use como base para suas análises.`;
+
+            resultsDiv.innerText = out;
+
+        }
+
+        function suite_limparAnalisadorBranco() {
+            suite_clearTextarea('suite_inputHistoricoBranco');
+            document.getElementById('suite_resBranco').innerText = 'Aguardando análise para o branco...';
+        }
+
+        function timeDifferenceInMinutes(time1, time2) {
+            const [h1, m1] = time1.split(':').map(Number);
+            const [h2, m2] = time2.split(':').map(Number);
+            const date1 = new Date(0, 0, 0, h1, m1);
+            const date2 = new Date(0, 0, 0, h2, m2);
+            let diff = (date2 - date1) / (1000 * 60);
+            if (diff < 0) diff += 24 * 60;
+            return diff;
+        }
+
+        // ==========================================
+        // FIM: SCRIPTS DE gerador_de_lista2.html
+        // ==========================================
+
+
+        // ==========================================
+        // INÍCIO: SCRIPTS DE coressao_de_sinais.html
+        // ==========================================
+
+        function dash_openTab(tabName) {
+            let i, content, btns;
+            content = document.querySelectorAll(".dashboard .tab-content");
+            btns = document.querySelectorAll(".dashboard .tab-btn");
+
+            for (i = 0; i < content.length; i++) { content[i].classList.remove("active"); }
+            for (i = 0; i < btns.length; i++) { btns[i].classList.remove("active"); }
+
+            document.getElementById('dash_' + tabName).classList.add("active");
+            document.querySelector(`.dashboard .tab-btn[onclick="dash_openTab('${tabName}')"]`).classList.add("active");
+            localStorage.setItem('dashboardActiveTab', tabName);
+        }
+
+        function dash_limparTudo() {
+            document.getElementById('dash_inputData').value = '';
+            document.getElementById('dash_grid-resultados').innerHTML = '';
+            localStorage.removeItem('historicoInput');
+            document.getElementById('dash_count-red').innerText = '0';
+            document.getElementById('dash_count-black').innerText = '0';
+            document.getElementById('dash_count-white').innerText = '0';
+            document.getElementById('dash_count-total').innerText = '0';
+            document.getElementById('dash_log-estrategia').innerHTML = 'Aguardando dados...';
+        }
+
+        let dash_timeoutLimpeza;
+        function dash_limparInput(textarea) {
+            clearTimeout(dash_timeoutLimpeza);
+            dash_timeoutLimpeza = setTimeout(() => {
+                const valorOriginal = textarea.value.trim();
+                const linhas = valorOriginal.split('\n');
+                const resultadosFinais = [];
+                const timeRegex = /^\d{2}:\d{2}$/;
+                const numberRegex = /^\d{1,2}$/;
+                const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
+
+                for (let i = 0; i < linhas.length; i++) {
+                    const linhaAtual = linhas[i].trim();
+                    if (fullDateRegex.test(linhaAtual)) {
+                        const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                        if (timeRegex.test(proximaLinha)) {
+                            resultadosFinais.push('0', proximaLinha);
+                            i++;
+                        } else if (numberRegex.test(proximaLinha)) {
+                            const linhaDoHorario = linhas[i + 2] ? linhas[i + 2].trim() : '';
+                            if (timeRegex.test(linhaDoHorario)) {
+                                resultadosFinais.push(proximaLinha, linhaDoHorario);
+                                i += 2;
+                            }
+                        }
+                    }
+                }
+                textarea.value = resultadosFinais.join('\n');
+            }, 300);
+        }
+
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function dash_processarDados(carregandoPagina = false) {
+            const textarea = document.getElementById('dash_inputData');
+            let rawData = textarea.value;
+
+            if (!carregandoPagina) {
+                localStorage.setItem('historicoInput', rawData);
+            } else {
+                rawData = localStorage.getItem('historicoInput') || '';
+                textarea.value = rawData;
+            }
+
+            const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
+            const resultadosPorMinuto = {};
+
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i];
+                const proximoToken = tokens[i + 1];
+                let numero, horario;
+
+                if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
+                    numero = parseInt(token);
+                    horario = proximoToken;
+                    i++;
+                } else if (token.includes(':') && proximoToken && !isNaN(parseInt(proximoToken))) {
+                    horario = token;
+                    numero = parseInt(proximoToken);
+                    i++;
+                }
+
+                if (numero !== undefined && horario) {
+                    if (!resultadosPorMinuto[horario]) { resultadosPorMinuto[horario] = []; }
+                    resultadosPorMinuto[horario].push({ numero, horario });
+                }
+            }
+
+            const resultados = Object.values(resultadosPorMinuto).flat().reverse();
+            const numerosPuros = resultados.map(r => r.numero);
+
+            const target = document.getElementById('dash_targetHistory').value;
+            dash_atualizarDashboard(resultados, numerosPuros.length, target);
+            dash_executarEstrategia(numerosPuros);
+            suite_renderStatsChart(); // Atualiza o gráfico se a aba de stats estiver visível
+        }
+
+        function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
+            const grid = document.getElementById('dash_grid-resultados');
+            const gridHora = document.getElementById('dash_grid-resultados-hora');
+            if (target === 'ambos' || target === 'visual') grid.innerHTML = '';
+            if (target === 'ambos' || target === 'hora') gridHora.innerHTML = '';
+            let r = 0, b = 0, w = 0, hourlyResults = {}, analyzerHourlyStats = {};
+            window.hourlyStatsFromAnalyzer = {}; // Limpa os dados antigos
+
+            resultados.forEach((item, index) => {
+                const cor = dash_identificarCor(item.numero);
+                if (cor === 'vermelho') r++; else if (cor === 'preto') b++; else if (cor === 'branco') w++;
+
+                const div = document.createElement('div');
+                div.className = `badge ${cor}`;
+                div.id = `dash-${item.horario}-${item.numero}-${index}`;
+                div.innerText = item.numero;
+                div.title = `Número: ${item.numero} | Cor: ${cor.toUpperCase()} | Horário: ${item.horario}`;
+                
+                if (item.horario) {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'time-overlay';
+                    timeDiv.innerText = item.horario;
+                    div.appendChild(timeDiv);
+                }
+
+                // Popula as estatísticas por hora para o gráfico
+                const hour = item.horario.split(':')[0];
+                if (!analyzerHourlyStats[hour]) {
+                    analyzerHourlyStats[hour] = { vermelho: 0, preto: 0, branco: 0, total: 0 };
+                }
+                analyzerHourlyStats[hour][cor]++;
+
+                if (target === 'ambos' || target === 'hora') {
+                    // Agrupa resultados por hora
+                    const hour = item.horario.split(':')[0];
+                    if (!hourlyResults[hour]) {
+                        hourlyResults[hour] = [];
+                    }
+                    const badgeForHour = div.cloneNode(true); // Clona para a lista por hora
+                    badgeForHour.addEventListener('click', () => dash_toggleDeleteOption(badgeForHour));
+                    hourlyResults[hour].push(badgeForHour);
+                }
+
+                // Adiciona o item original (com listener) à grid visual principal
+                if (target === 'ambos' || target === 'visual') {
+                    div.addEventListener('click', () => dash_toggleDeleteOption(div));
+                    grid.prepend(div);
+                }
+            });
+
+            if (target === 'ambos' || target === 'hora') {
+                // Popula a grid por hora
+                Object.keys(hourlyResults).sort().reverse().forEach(hour => {
+                    hourlyResults[hour].forEach(badge => gridHora.prepend(badge));
+                });
+            }
+
+            document.getElementById('dash_count-red').innerText = r + ` (${totalNumeros > 0 ? ((r/totalNumeros)*100).toFixed(1) : 0}%)`;
+            document.getElementById('dash_count-black').innerText = b + ` (${totalNumeros > 0 ? ((b/totalNumeros)*100).toFixed(1) : 0}%)`;
+            document.getElementById('dash_count-white').innerText = w;
+            document.getElementById('dash_count-total').innerText = totalNumeros;
+            window.hourlyStatsFromAnalyzer = analyzerHourlyStats; // Armazena os novos dados
+        }
+
+        function dash_toggleDeleteOption(badgeElement) {
+            document.querySelectorAll('.dashboard .delete-overlay').forEach(overlay => {
+                if (overlay.parentElement !== badgeElement) { overlay.remove(); }
+            });
+
+            const existingOverlay = badgeElement.querySelector('.delete-overlay');
+            if (existingOverlay) { existingOverlay.remove(); return; }
+
+            const deleteOverlay = document.createElement('div');
+            deleteOverlay.className = 'delete-overlay';
+            deleteOverlay.innerHTML = '&#128465;';
+            
+            deleteOverlay.onclick = function(event) {
+                event.stopPropagation();
+                const textarea = document.getElementById('dash_inputData');
+                // Lógica de remoção simplificada: apenas processa novamente
+                badgeElement.remove();
+                // A remoção do textarea é complexa, uma nova análise após remoção visual é mais simples
+                // Para uma remoção real, seria necessário reconstruir o valor do textarea a partir dos badges restantes.
+            };
+            badgeElement.appendChild(deleteOverlay);
+        }
+
+        function dash_executarEstrategia(historico) {
+            if (historico.length < 3) return;
+            const n1 = dash_identificarCor(historico[0]);
+            const n2 = dash_identificarCor(historico[1]);
+            const n3 = dash_identificarCor(historico[2]);
+            const logBox = document.getElementById('dash_log-estrategia');
+            logBox.innerHTML = '>> Iniciando análise de padrões...<br>';
+            if (n1 !== n2 && n2 !== n3) { logBox.innerHTML += `<span style="color:yellow">[PADRÃO DETECTADO]</span> Possível alternância de cores.<br>`; }
+            if (n2 === 'branco') { logBox.innerHTML += `<span style="color:#00e701">[SINAL]</span> Branco recente! Atenção para entrada.<br>`; }
+            logBox.innerHTML += '>> Análise concluída.';
+        }
+
+        function dash_selectPlatform(platform, isSync = false) {
+            document.getElementById('dash_platformSelector').value = platform;
+            document.getElementById('dash_btn-blaze').classList.remove('active');
+            document.getElementById('dash_btn-jonbet').classList.remove('active');
+            document.getElementById(`dash_btn-${platform}`).classList.add('active');
+            const platformEmoji = document.getElementById('dash_platform-emoji');
+            const dashPanel = document.querySelector('.layout-panel.dashboard');
+        
+            if (platform === 'blaze') {
+                dashPanel.classList.remove('platform-jonbet');
+                if (platformEmoji) platformEmoji.innerText = '🔴';
+            } else {
+                dashPanel.classList.add('platform-jonbet');
+                if (platformEmoji) platformEmoji.innerText = '🟢';
+            }
+            localStorage.setItem('dashboardPlatform', platform);
+            // Sincroniza com o outro painel, evitando loop infinito
+            if (!isSync) {
+                suite_selectPlatform(platform, true);
+            }
+        }
+
+        function dash_limparHistorico(gridId) {
+            const grid = document.getElementById(gridId);
+            if (grid) {
+                grid.innerHTML = '';
+            }
+        }
+
+        function dash_copiarHistorico(gridId, btnElement) {
+            const grid = document.getElementById(gridId);
+            const badges = Array.from(grid.children).reverse();
+            let exportText = '';
+            const platform = document.getElementById('dash_platformSelector').value;
+
+            if (badges.length === 0) { alert('Não há histórico para copiar.'); return; }
+
+            badges.forEach(badge => {
+                const timeElement = badge.querySelector('.time-overlay');
+                if (timeElement) {
+                    const horario = timeElement.innerText;
+                    let cor;
+                    if (badge.classList.contains('vermelho')) { cor = (platform === 'jonbet') ? 'VERDE' : 'VERMELHO'; }
+                    else if (badge.classList.contains('preto')) { cor = 'PRETO'; }
+                    else if (badge.classList.contains('branco')) { cor = 'BRANCO'; }
+                    else { cor = 'DESCONHECIDO'; }
+                    exportText += `${horario} ${cor}\n`;
+                }
+            });
+
+            // Executa a cópia e atualiza o botão diretamente aqui
+            navigator.clipboard.writeText(exportText).then(() => {
+                if (btnElement) {
+                    const originalText = btnElement.innerHTML;
+                    btnElement.innerHTML = '✅ Copiado!';
+                    btnElement.disabled = true;
+                    setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; }, 2000);
+                }
+            }).catch(err => console.error("Erro ao copiar histórico: ", err));
+        }
+
+        // ==========================================
+        // FIM: SCRIPTS DE coressao_de_sinais.html
+        // ==========================================
+
+
+        // ==========================================
+        // INICIALIZAÇÃO DA PÁGINA
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LÓGICA DE LOGIN ---
+            // Verifica se o usuário já está logado na sessão
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                // Se já logado, configura o nome do operador e mostra o app
+                const operatorName = sessionStorage.getItem('operatorName');
+                setupOperatorInfo(operatorName);
+                showApp();
+            }
+
+            loadFromStorage();
+            applySavedTheme();
+
+            document.getElementById('theme-switcher').addEventListener('click', toggleTheme);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('logout-button').addEventListener('click', handleLogout);
+            document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
+            
+            // Inicializa o app principal
+            initializeApp();
+        });
+
+        function handleLogout() {
+            // Limpa toda a sessão para garantir um logout completo
+            sessionStorage.clear();
+            sessionStorage.removeItem('isLoggedIn'); // Remove o estado de login
+            window.location.reload(); // Recarrega a página para voltar ao estado de login
+        }
+
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            alert('Funcionalidade de recuperação de senha ainda não implementada.');
+        }
+
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            const loginButton = document.getElementById('login-button');
+            const buttonText = loginButton.querySelector('.login-button-text');
+            const spinner = loginButton.querySelector('.login-spinner');
+
+            // Inicia o estado de carregamento
+            loginButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+            errorDiv.textContent = '';
+
+            // Simula uma verificação de rede (ex: 500ms)
+            setTimeout(() => {
+                // Credenciais fixas (substitua por uma verificação real se necessário)
+                if (user === 'admin' && pass === '1234') {
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('operatorName', user);
+                    showApp();
+                } else {
+                    errorDiv.textContent = 'Usuário ou senha inválidos.';
+                    // Restaura o botão ao estado original
+                    loginButton.disabled = false;
+                    buttonText.style.display = 'inline';
+                    spinner.style.display = 'none';
+                }
+            }, 500);
+        }
+
+        function showApp() {
+            // Esconde o login e mostra o container principal do app
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            
+            const operatorName = sessionStorage.getItem('operatorName');
+            setupOperatorInfo(operatorName);
+        }
+
+        function setupOperatorInfo(operatorName) {
+             if (!operatorName) return;
+
+             // Mostra a mensagem de boas-vindas
+             const welcomeMessage = document.getElementById('welcome-message');
+             welcomeMessage.textContent = `Bem-vindo, ${operatorName.toUpperCase()}!`;
+             welcomeMessage.style.display = 'block';
+             setTimeout(() => {
+                 welcomeMessage.style.display = 'none';
+             }, 3000);
+
+             // Atualiza o título principal com o nome do operador
+             document.getElementById('main-title').textContent = `PAINEL DE ANÁLISE - ${operatorName.toUpperCase()}`;
+        }
+
+        function initializeApp() {
+
+            // Restaura abas e plataformas
+            const suiteActiveTab = localStorage.getItem('suite_activeTab') || 'gerador';
+            suite_openTab(suiteActiveTab);
+
+            dash_openTab(localStorage.getItem('dashboardActiveTab') || 'analise');
+            dash_selectPlatform(localStorage.getItem('dashboardPlatform') || 'blaze');
+            dash_processarDados(true);
+        }
+    </script>
+</body>
+</html>
