@@ -290,6 +290,9 @@
         .dashboard .badge.branco { background-color: #fff; color: #333; }
     </style>
     <style>
+        body.light-theme .dashboard .badge .time-overlay { color: var(--text-color); }
+    </style>
+    <style>
         /* ================================== */
         /* ESTILOS DO LOGIN                   */
         /* ================================== */
@@ -667,6 +670,7 @@
                             <option value="brianTracy">10. Fórmula Ponderada (Brian Tracy)</option>
                             <option value="pitagoras">11. Teorema de Pitágoras</option>
                             <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
+                            <option value="intervaloFixo">13. Intervalo Fixo</option>
                             <option value="ciclosMercado">12. Ciclos de Mercado</option>
                         </select>
                     </div>
@@ -686,6 +690,10 @@
                     <div class="control-group" id="suite_fixedOffsetContainer" style="display:none;">
                         <label>Intervalo de Deslocamento (minutos):</label>
                         <input type="number" id="suite_fixedOffsetValue" placeholder="Ex: 15 (ou -5 para subtrair)">
+                    </div>
+                    <div class="control-group" id="suite_intervaloFixoContainer" style="display:none;">
+                        <label>Intervalo Fixo (minutos):</label>
+                        <input type="number" id="suite_intervaloFixoValue" value="30" placeholder="Ex: 30">
                     </div>
                     <div class="control-group">
                         <label>Cole o Histórico Copiado:</label>
@@ -718,6 +726,11 @@
                             <label>Quantidade de Sinais:</label>
                             <input type="number" id="suite_iaBranco_qtdSinais" value="6" min="1">
                         </div>
+                        <div class="control-group">
+                            <label>Intervalo Mínimo (minutos):</label>
+                            <input type="number" id="suite_iaBranco_intervaloMinimo" value="0" min="0">
+                            <div class="hint" style="font-size: 0.7em;">0 para desativar.</div>
+                        </div>
                     </div>
                     <div class="control-group">
                         <label>Estratégia de I.A. para Branco:</label>
@@ -729,6 +742,7 @@
                             <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
                             <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
                             <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
+                            <option value="fibonacciInvertido">8. Sequência de Fibonacci Invertida</option>
                         </select>
                     </div>
                     <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
@@ -1170,6 +1184,7 @@
 
         function suite_gerarSinaisBrancoIA() {
             const qtd = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value);
+            const intervaloMinimo = parseInt(document.getElementById('suite_iaBranco_intervaloMinimo').value) || 0;
             const historicoInput = document.getElementById('suite_iaBranco_historico').value;
             const est = document.getElementById('suite_iaBranco_estrategia').value;
             const platform = document.getElementById('suite_platformSelector').value;
@@ -1178,23 +1193,30 @@
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
 
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dataAmanha = tomorrow.toLocaleDateString('pt-BR');
+
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            out += `📅 Data: *${dataAmanha}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
-            out += `♻️ ${qtd} Entradas\n`;
+            out += `♻️ 6 Entradas\n`;
             out += `--------------------------------\n`;
 
             const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
             const horarios = historicoInput.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
-            
-            if (horarios.length < 2) {
-                document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que a I.A. possa analisar e gerar os sinais.";
-                return;
+
+            // Lista de estratégias que NÃO precisam de histórico
+            const noHistoryStrategies = ['fibonacciInvertido'];
+
+            if (horarios.length < 2 && !noHistoryStrategies.includes(est)) {
+                 document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que esta estratégia de I.A. possa analisar e gerar os sinais.";
+                 return;
             }
 
-            let db = new Date(); // Ponto de partida é sempre o horário atual para gerar sinais futuros.
+            let db = new Date(tomorrow); // Ponto de partida agora é a data de amanhã, como no cabeçalho.
 
             let analysisNote = '';
             let projectionIntervals = [];
@@ -1284,11 +1306,19 @@
                         projectionIntervals = [avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgMedio, avgMedio, avgLongo];
                         analysisNote = `📊 Distribuição 70/20/10: [${avgCurto}, ${avgMedio}, ${avgLongo}] min`;
                         break;
+                    case 'fibonacciInvertido':
+                        projectionIntervals = [55, 34, 21, 13, 8, 5];
+                        analysisNote = `⏳ Usando sequência de Fibonacci Invertida.`;
+                        break;
                     default:
                         // Por padrão, usa a média se nenhuma outra estratégia for correspondida
                         projectionIntervals = [mediaIntervalos];
                         break;
                 }
+            } else if (est === 'fibonacciInvertido') {
+                // Estratégias que não usam histórico, mas precisam de um padrão inicial
+                projectionIntervals = [55, 34, 21, 13, 8, 5];
+                analysisNote = `⏳ Usando sequência de Fibonacci Invertida.`;
             }
 
             if (analysisNote) {
@@ -1300,27 +1330,30 @@
                 return;
             }
 
-            const startTime = new Date();
-            const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000); // Limite de 24 horas
+            let ultimoSinalGerado = null;
+            let attempts = 0; // Para evitar loop infinito
 
-            for (let i = 0; i < qtd; i++) {
-                let minutosParaAdicionar = projectionIntervals[i % projectionIntervals.length];
+            while ((out.match(/🕒/g) || []).length < qtd && attempts < (qtd * 20)) { // Aumentado limite de tentativas
+                attempts++;
+                let minutosParaAdicionar = projectionIntervals[attempts % projectionIntervals.length];
 
                 if (est === 'iaPreditivaBranco' && minutosParaAdicionar > 0) {
                     const randomFactor = Math.random();
                     let dynamicInterval = Math.round(minutosParaAdicionar * (randomFactor > 0.7 ? 1.2 + randomFactor : 0.6 + randomFactor));
                     minutosParaAdicionar = Math.max(1, dynamicInterval); // Usa o intervalo dinâmico e garante que seja no mínimo 1
                 }
+                
+                if (minutosParaAdicionar <= 0) continue;
 
                 db.setMinutes(db.getMinutes() + minutosParaAdicionar);
 
-                if (db > endTime) {
-                    out += `\n-- Limite de 24h atingido --\n`;
-                    break; // Para o loop se exceder 24 horas
+                // Verifica se o sinal gerado respeita o intervalo mínimo
+                if (!ultimoSinalGerado || ((db.getTime() - ultimoSinalGerado.getTime()) / (1000 * 60)) >= intervaloMinimo) {
+                    const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
+                    out += `🕒 ${h1} ➔ ⚪\n`;
+                    ultimoSinalGerado = new Date(db);
                 }
 
-                const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
-                out += `🕒 ${h1} ➔ ⚪\n`;
             }
 
             out += `--------------------------------\n`;
@@ -1867,6 +1900,7 @@
             const estrategia = document.getElementById('suite_estrategiaBranco').value;
             document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';
             document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
+            document.getElementById('suite_intervaloFixoContainer').style.display = (estrategia === 'intervaloFixo') ? 'block' : 'none';
         }
 
         let suite_formatTimeout;
@@ -1899,23 +1933,26 @@
         function suite_analisarParaBranco() {
             const estrategia = document.getElementById('suite_estrategiaBranco').value;
             const input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
-            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value);
             const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
             const resultsDiv = document.getElementById('suite_resBranco');
+            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value);
+ 
+            // Estratégias que não dependem de histórico
+            const noHistoryStrategies = ['fibonacci', 'intervaloFixo'];
 
-            if (!input && !useCurrentTime) {
-                alert("Por favor, cole a lista de horários dos brancos ou marque a opção para usar o horário atual.");
+            if (!input && !noHistoryStrategies.includes(estrategia)) {
+                alert("Por favor, cole a lista de horários dos brancos.");
                 return;
             }
 
             const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
             const horarios = input.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
 
-            if (horarios.length === 0) {
+            if (horarios.length === 0 && !noHistoryStrategies.includes(estrategia)) {
                 alert("Nenhum horário válido encontrado no histórico. É necessário um histórico para a análise."); return;
             }
 
-            if (horarios.length < 2 && !['custom', 'offset', 'espelho12h', 'minutosOuro'].includes(estrategia)) {
+            if (horarios.length < 2 && !['custom', 'offset', 'espelho12h', 'minutosOuro', ...noHistoryStrategies].includes(estrategia)) {
                 resultsDiv.innerText = "⚠️ É necessário fornecer pelo menos 2 horários de branco para analisar.";
                 return;
             }
@@ -1941,19 +1978,21 @@
                 let patternIndex = 0;
 
                 // Loop para tentar gerar o número de sinais desejado
-                while (signals.length < signalLimit && patternIndex < signalLimit * 5) { // Adicionado um limite de segurança
+                while (signals.length < signalLimit && patternIndex < signalLimit * 10) { // Aumentado o limite de segurança
                     if (intervalPattern.length === 0) break;
                     const minutosParaAdicionar = intervalPattern[patternIndex % intervalPattern.length];
                     patternIndex++;
 
                     if (minutosParaAdicionar <= 0) break;
-                    proximaEntrada.setMinutes(proximaEntrada.getMinutes() + minutosParaAdicionar);
+                    let potentialSignalTime = new Date(proximaEntrada);
+                    potentialSignalTime.setMinutes(potentialSignalTime.getMinutes() + minutosParaAdicionar);
 
                     // Verifica se o sinal gerado respeita o intervalo mínimo em relação ao último sinal válido
-                    if (!ultimoSinalGerado || ((proximaEntrada.getTime() - ultimoSinalGerado.getTime()) / (1000 * 60)) >= minInterval) {
-                        signals.push(`🕒 ${proximaEntrada.getHours().toString().padStart(2, '0')}:${proximaEntrada.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
-                        ultimoSinalGerado = new Date(proximaEntrada); // Apenas atualiza a referência do último sinal válido gerado
+                    if (!ultimoSinalGerado || ((potentialSignalTime.getTime() - ultimoSinalGerado.getTime()) / (1000 * 60)) >= minInterval) {
+                        signals.push(`🕒 ${potentialSignalTime.getHours().toString().padStart(2, '0')}:${potentialSignalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
+                        ultimoSinalGerado = new Date(potentialSignalTime); // Atualiza a referência do último sinal válido
                     }
+                    proximaEntrada = new Date(potentialSignalTime); // Avança o tempo base para a próxima iteração
                 }
                 return signals;
             }
@@ -1984,6 +2023,7 @@
                 case 'minimo': pattern = getIntervals(horarios); if (pattern.length > 0) { const min = Math.min(...pattern.filter(i => i > 0)); if(min > 0) projectedSignals = projectSignals(lastTime, [min], qtdSinais, intervaloMinimo); } break;
                 case 'espelho12h': horarios.slice(0, qtdSinais).forEach(h => { let date = new Date(); const [hr, mn] = h.split(':').map(Number); date.setHours(hr + 12, mn); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
                 case 'fibonacci': projectedSignals = projectSignals(lastTime, [5, 8, 13, 21, 34, 55], qtdSinais, intervaloMinimo); break;
+                case 'intervaloFixo': const fixedInterval = parseInt(document.getElementById('suite_intervaloFixoValue').value); if (!isNaN(fixedInterval) && fixedInterval > 0) { projectedSignals = projectSignals(lastTime, [fixedInterval], qtdSinais, intervaloMinimo); } else { projectedSignals = "Insira um intervalo fixo válido."; } break;
                 case 'minutosOuro': const minuteCounts = {}; horarios.forEach(h => { const min = h.split(':')[1]; minuteCounts[min] = (minuteCounts[min] || 0) + 1; }); const goldenMinutes = Object.keys(minuteCounts).sort((a, b) => minuteCounts[b] - minuteCounts[a]).slice(0, 5); let projTime = new Date(lastTime); while(projectedSignals.length < qtdSinais && goldenMinutes.length > 0) { projTime.setHours(projTime.getHours() + 1); if (projectedSignals.length >= qtdSinais) break; goldenMinutes.forEach(min => { if(projectedSignals.length < qtdSinais) projectedSignals.push(`🕒 ${projTime.getHours().toString().padStart(2, '0')}:${min} ➔ ⚪`); }); } break;
                 case 'somaTotal': pattern = getIntervals(horarios); if (pattern.length > 0) { const totalSum = pattern.reduce((a, b) => a + b, 0); let finalTime = new Date(lastTime); finalTime.setMinutes(finalTime.getMinutes() + totalSum); projectedSignals.push(`🕒 ${finalTime.getHours().toString().padStart(2, '0')}:${finalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); } break;
                 case 'custom': const customPatternStr = document.getElementById('suite_customPattern').value; if (!customPatternStr) { projectedSignals = "Insira um padrão."; break; } pattern = customPatternStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0); projectedSignals = projectSignals(lastTime, pattern, qtdSinais, intervaloMinimo); break;
