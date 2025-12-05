@@ -244,6 +244,33 @@
             .suite .inline-controls { flex-direction: column; gap: 15px; }
         }
 
+        /* Estilos para o Dashboard Geral */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .dashboard-card {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        /* Estilo para o seletor de data do analisador de branco */
+        .suite .suite-date-switcher {
+            display: flex;
+            background-color: #000;
+            border-radius: 8px;
+            padding: 4px;
+            max-width: 250px;
+        }
+        .suite .suite-date-switcher .date-btn {
+            flex: 1; padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase;
+        }
+        .suite .suite-date-switcher .date-btn.active { background-color: #fff; color: #000; }
+        body.light-theme .suite .suite-date-switcher { background-color: #e4e6eb;
+        }
         /* ================================== */
         /* ESTILOS DO CORRETOR (coressao_de_sinais.html) */
         /* ================================== */
@@ -459,6 +486,7 @@
                     <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
                     <button class="tab-btn" onclick="suite_openTab('branco')">Analisador Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A. Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('general_dashboard')">📊 Dashboard Geral</button>
                     <button class="tab-btn" onclick="suite_openTab('stats')">📊 Estatísticas</button>
                     <button class="tab-btn" onclick="suite_openTab('config')" title="Configurações">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.62l-1.9-3.3a.5.5 0 0 0-.61-.22l-2.49 1a9.3 9.3 0 0 0-1.64-.94l-.38-2.65a.5.5 0 0 0-.5-.44H9.25a.5.5 0 0 0-.5.44l-.38 2.65a9.3 9.3 0 0 0-1.64.94l-2.49-1a.5.5 0 0 0-.61.22l-1.9 3.3a.5.5 0 0 0 .12.62l2.03 1.58c-.05.3-.07.64-.07.94s.02.64.07.94l-2.03 1.58a.5.5 0 0 0-.12.62l1.9 3.3a.5.5 0 0 0 .61.22l2.49-1c.52.4 1.08.73 1.64.94l.38 2.65a.5.5 0 0 0 .5.44h3.5a.5.5 0 0 0 .5-.44l.38-2.65c.56-.21 1.12-.54 1.64-.94l2.49 1a.5.5 0 0 0 .61-.22l1.9-3.3a.5.5 0 0 0-.12-.62l-2.03-1.58z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -656,6 +684,14 @@
                 <div id="suite_branco" class="tab-content">
                     <h2>⚪ Analisador de Branco (24h)</h2>
                     <div class="control-group">
+                        <label>Data da Lista:</label>
+                        <div class="suite-date-switcher">
+                            <input type="hidden" id="suite_branco_date_selector" value="amanha">
+                            <button class="date-btn active" id="suite_btn_branco_amanha" onclick="suite_selectBrancoDate('amanha')">Amanhã</button>
+                            <button class="date-btn" id="suite_btn_branco_hoje" onclick="suite_selectBrancoDate('hoje')">Hoje</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
                         <label>Estratégia de Análise para Branco:</label>
                         <select id="suite_estrategiaBranco" onchange="suite_toggleStrategyInputs()">
                             <option value="media">1. Média dos Intervalos</option>
@@ -717,6 +753,14 @@
                 <div id="suite_ia_branco" class="tab-content">
                     <h2>🤖 I.A. Gerador de Branco</h2>
                     <div class="control-group">
+                        <label>Data da Lista:</label>
+                        <div class="suite-date-switcher">
+                            <input type="hidden" id="suite_ia_branco_date_selector" value="amanha">
+                            <button class="date-btn active" id="suite_btn_ia_branco_amanha" onclick="suite_selectIABrancoDate('amanha')">Amanhã</button>
+                            <button class="date-btn" id="suite_btn_ia_branco_hoje" onclick="suite_selectIABrancoDate('hoje')">Hoje</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
                         <label>Cole o Histórico Copiado:</label>
                         <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
                         <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
@@ -750,15 +794,46 @@
                     <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
                 </div>
 
+                <div id="suite_general_dashboard" class="tab-content">
+                    <h2>📊 Dashboard Geral</h2>
+                    <p class="hint">Um resumo das últimas atividades nas ferramentas. Os dados são atualizados quando as ferramentas são usadas.</p>
+                    <button class="btn-action" onclick="suite_updateGeneralDashboard(this)" style="margin-top: 15px; margin-bottom: 20px;">🔄 ATUALIZAR DASHBOARD</button>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>Analisador de Sinais (Direito)</h3>
+                            <p>Total de Sinais: <strong id="gd_analyzer_total">N/A</strong></p>
+                            <p>🔴 Vermelho: <strong id="gd_analyzer_red">N/A</strong></p>
+                            <p>⚫ Preto: <strong id="gd_analyzer_black">N/A</strong></p>
+                            <p>⚪ Branco: <strong id="gd_analyzer_white">N/A</strong></p>
+                        </div>
+            
+                        <div class="dashboard-card">
+                            <h3>Corretor de Sinais</h3>
+                            <p>Assertividade: <strong id="gd_corrector_accuracy">N/A</strong></p>
+                            <p>Placar: <strong id="gd_corrector_score">N/A</strong></p>
+                            <p>Maior Seq. Wins: <strong id="gd_corrector_winstreak">N/A</strong></p>
+                            <p>Maior Seq. Losses: <strong id="gd_corrector_lossstreak">N/A</strong></p>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3>Corretor de Branco</h3>
+                            <p>Assertividade: <strong id="gd_corrector_branco_accuracy">N/A</strong></p>
+                            <p>Placar: <strong id="gd_corrector_branco_score">N/A</strong></p>
+                            <p>Total de Sinais: <strong id="gd_corrector_branco_total">N/A</strong></p>
+                            <p>Wins de Primeira: <strong id="gd_corrector_branco_g0">N/A</strong></p>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="suite_stats" class="tab-content">
                     <h2>📊 Estatísticas de Desempenho</h2>
                     <div class="control-group">
                         <label>Fonte dos Dados:</label>
                         <select id="suite_stats_source" onchange="suite_renderStatsChart()">
-                            <option value="corrector">Corretor de Sinais</option>
-                        <option value="analyzer">Analisador de Sinais (Direita)</option>
+                            <option value="analyzer">Analisador de Sinais (Painel Direito)</option>
                         </select>
-                        <div class="hint">Os dados são atualizados após usar o "Corretor de Sinais".</div>
+                        <div class="hint">Os dados são atualizados após usar o "Analisador de Sinais".</div>
                     </div>
                     <div style="width: 100%; max-width: 800px; margin: 20px auto; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #444;">
                          <canvas id="suite_performanceChart"></canvas>
@@ -1010,6 +1085,10 @@
             for (i = 0; i < btns.length; i++) {
                 btns[i].classList.remove("active");
             }
+            if (tabName === 'general_dashboard') {
+                suite_updateGeneralDashboard();
+            }
+
             if (tabName === 'stats') {
                 suite_renderStatsChart();
             }
@@ -1017,6 +1096,87 @@
             document.getElementById('suite_' + tabName).classList.add("active");
             document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`).classList.add("active");
             localStorage.setItem('suite_activeTab', tabName);
+        }
+
+        function suite_selectIABrancoDate(option) {
+            document.getElementById('suite_ia_branco_date_selector').value = option;
+            document.getElementById('suite_btn_ia_branco_hoje').classList.remove('active');
+            document.getElementById('suite_btn_ia_branco_amanha').classList.remove('active');
+            document.getElementById(`suite_btn_ia_branco_${option}`).classList.add('active');
+        }
+
+        function suite_updateGeneralDashboard(btn) {
+            // 1. Puxar dados do Analisador de Sinais (Painel Direito)
+            const analyzerTotal = document.getElementById('dash_count-total').innerText;
+            const analyzerRed = document.getElementById('dash_count-red').innerText;
+            const analyzerBlack = document.getElementById('dash_count-black').innerText;
+            const analyzerWhite = document.getElementById('dash_count-white').innerText;
+
+            document.getElementById('gd_analyzer_total').innerText = analyzerTotal || 'N/A';
+            document.getElementById('gd_analyzer_red').innerText = analyzerRed || 'N/A';
+            document.getElementById('gd_analyzer_black').innerText = analyzerBlack || 'N/A';
+            document.getElementById('gd_analyzer_white').innerText = analyzerWhite || 'N/A';
+
+            // 2. Puxar dados do Corretor de Sinais
+            const correctorResult = document.getElementById('suite_resCorrector').innerText;
+            if (correctorResult && !correctorResult.includes("Aguardando")) {
+                const accuracyMatch = correctorResult.match(/Assertividade: (\d+\.\d+)%/);
+                const scoreMatch = correctorResult.match(/\((\d+W \/ \d+L)\)/);
+                const winStreakMatch = correctorResult.match(/Maior Seq\. de Wins: (\d+)/);
+                const lossStreakMatch = correctorResult.match(/Maior Seq\. de Losses: (\d+)/);
+
+                document.getElementById('gd_corrector_accuracy').innerText = accuracyMatch ? `${accuracyMatch[1]}%` : 'N/A';
+                document.getElementById('gd_corrector_score').innerText = scoreMatch ? scoreMatch[1] : 'N/A';
+                document.getElementById('gd_corrector_winstreak').innerText = winStreakMatch ? winStreakMatch[1] : 'N/A';
+                document.getElementById('gd_corrector_lossstreak').innerText = lossStreakMatch ? lossStreakMatch[1] : 'N/A';
+            } else {
+                document.getElementById('gd_corrector_accuracy').innerText = 'N/A';
+                document.getElementById('gd_corrector_score').innerText = 'N/A';
+                document.getElementById('gd_corrector_winstreak').innerText = 'N/A';
+                document.getElementById('gd_corrector_lossstreak').innerText = 'N/A';
+            }
+
+            // 3. Puxar dados do Corretor de Branco
+            const correctorBrancoResult = document.getElementById('suite_resCorrectorBranco').innerText;
+            if (correctorBrancoResult && !correctorBrancoResult.includes("Aguardando")) {
+                const accuracyMatch = correctorBrancoResult.match(/Assertividade: (\d+\.\d+)%/);
+                const winsMatch = correctorBrancoResult.match(/Wins: (\d+)/);
+                const lossesMatch = correctorBrancoResult.match(/Losses: (\d+)/);
+                const totalMatch = correctorBrancoResult.match(/Total de Sinais: (\d+)/);
+                const g0WinsMatch = correctorBrancoResult.match(/✅⚪️/g);
+
+                document.getElementById('gd_corrector_branco_accuracy').innerText = accuracyMatch ? `${accuracyMatch[1]}%` : 'N/A';
+                document.getElementById('gd_corrector_branco_score').innerText = (winsMatch && lossesMatch) ? `${winsMatch[1]}W / ${lossesMatch[1]}L` : 'N/A';
+                document.getElementById('gd_corrector_branco_total').innerText = totalMatch ? totalMatch[1] : 'N/A';
+                document.getElementById('gd_corrector_branco_g0').innerText = g0WinsMatch ? g0WinsMatch.length : '0';
+
+            } else {
+                document.getElementById('gd_corrector_branco_accuracy').innerText = 'N/A';
+                document.getElementById('gd_corrector_branco_score').innerText = 'N/A';
+                document.getElementById('gd_corrector_branco_total').innerText = 'N/A';
+                document.getElementById('gd_corrector_branco_g0').innerText = 'N/A';
+            }
+
+
+
+
+            if (btn) {
+                const originalText = btn.innerHTML; // "🔄 ATUALIZAR DASHBOARD"
+                btn.disabled = true;
+                btn.innerHTML = '🔄 ATUALIZANDO...';
+
+                // Simula um pequeno delay para o efeito de loading ser visível
+                setTimeout(() => {
+                    // Após o "loading", mostra a mensagem de sucesso
+                    btn.innerHTML = '✅ ATUALIZADO!';
+
+                    // Volta ao estado original após 2 segundos
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                }, 500);
+            }
         }
 
         function suite_clearTextarea(elementId) {
@@ -1193,13 +1353,16 @@
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
 
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const dataAmanha = tomorrow.toLocaleDateString('pt-BR');
+            const dateOption = document.getElementById('suite_ia_branco_date_selector').value;
+            const targetDate = new Date();
+            if (dateOption === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            const dataLista = targetDate.toLocaleDateString('pt-BR');
 
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `📅 Data: *${dataAmanha}*\n`;
+            out += `📅 Data: *${dataLista}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
             out += `♻️ 6 Entradas\n`;
@@ -1216,7 +1379,7 @@
                  return;
             }
 
-            let db = new Date(tomorrow); // Ponto de partida agora é a data de amanhã, como no cabeçalho.
+            let db = new Date(targetDate); // Ponto de partida com base na seleção do usuário.
 
             let analysisNote = '';
             let projectionIntervals = [];
@@ -1635,6 +1798,7 @@
 
             resultsDiv.innerText = out;
             suite_renderStatsChart(); // Atualiza o gráfico após a correção
+            suite_updateGeneralDashboard(); // Atualiza o dashboard geral
         }
 
         function getBestPerformingHours(threshold = 70) {
@@ -1871,6 +2035,7 @@
             out += detailedResults.join('\n');
 
             resultsDiv.innerText = out;
+            suite_updateGeneralDashboard(); // Atualiza o dashboard geral
         }
 
 
@@ -2003,14 +2168,17 @@
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
 
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const dataAmanha = tomorrow.toLocaleDateString('pt-BR');
+            const dateOption = document.getElementById('suite_branco_date_selector').value;
+            const targetDate = new Date();
+            if (dateOption === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            const dataLista = targetDate.toLocaleDateString('pt-BR');
 
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
             out += `👤 Operador: *${userName}*\n`;
-            out += `📅 Data: *${dataAmanha}*\n`;
+            out += `📅 Data: *${dataLista}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n🔢 Entradas: *${intervaloMinimo > 0 ? intervaloMinimo : qtdSinais}*\n`;
 
             let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
@@ -2108,6 +2276,14 @@
             suite_clearTextarea('suite_inputHistoricoBranco');
             document.getElementById('suite_resBranco').innerText = 'Aguardando análise para o branco...';
         }
+
+        function suite_selectBrancoDate(option) {
+            document.getElementById('suite_branco_date_selector').value = option;
+            document.getElementById('suite_btn_branco_hoje').classList.remove('active');
+            document.getElementById('suite_btn_branco_amanha').classList.remove('active');
+            document.getElementById(`suite_btn_branco_${option}`).classList.add('active');
+        }
+
 
         function timeDifferenceInMinutes(time1, time2) {
             const [h1, m1] = time1.split(':').map(Number);
@@ -2232,6 +2408,7 @@
             const target = document.getElementById('dash_targetHistory').value;
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
+            suite_updateGeneralDashboard(); // Atualiza o dashboard geral
             suite_renderStatsChart(); // Atualiza o gráfico se a aba de stats estiver visível
         }
 
@@ -2423,6 +2600,12 @@
             
             // Inicializa o app principal
             initializeApp();
+
+            // Inicia a atualização automática do Dashboard Geral a cada 1 minuto
+            setInterval(() => {
+                // A função é chamada sem argumento 'btn', então não mostrará a animação do botão.
+                suite_updateGeneralDashboard();
+            }, 60000); // 60000 ms = 1 minuto
         });
 
         function handleLogout() {
