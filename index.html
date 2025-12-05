@@ -835,9 +835,25 @@
                         </select>
                         <div class="hint">Os dados são atualizados após usar o "Analisador de Sinais".</div>
                     </div>
+                    <div class="control-group">
+                        <label>Período de Análise:</label>
+                        <select id="suite_stats_period" onchange="suite_renderStatsChart()">
+                            <option value="all">Todo o Período</option>
+                            <option value="24h">Últimas 24h</option>
+                            <option value="7d">Últimos 7 dias</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Tipo de Gráfico:</label>
+                        <select id="suite_stats_chart_type" onchange="suite_renderStatsChart()">
+                            <option value="bar">Barras</option>
+                            <option value="line">Linha</option>
+                        </select>
+                    </div>
                     <div style="width: 100%; max-width: 800px; margin: 20px auto; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #444;">
                          <canvas id="suite_performanceChart"></canvas>
                     </div>
+                    <button class="btn-action" onclick="suite_exportChart(this)" style="max-width: 800px; margin: 10px auto; display: block; background-color: #28a745;">🖼️ EXPORTAR GRÁFICO (PNG)</button>
                 </div>
 
                 <div id="suite_config" class="tab-content">
@@ -1817,12 +1833,14 @@
         let suite_chartInstance = null;
         function suite_renderStatsChart() {
             const ctx = document.getElementById('suite_performanceChart').getContext('2d');
+            const chartType = document.getElementById('suite_stats_chart_type').value;
             const source = document.getElementById('suite_stats_source').value;
             let data = {};
 
             if (source === 'corrector') {
                 data = window.hourlyStatsFromCorrector || {};
             } else if (source === 'analyzer') {
+                // A lógica de filtragem por período será aplicada a 'data'
                 data = window.hourlyStatsFromAnalyzer || {};
             }
 
@@ -1850,6 +1868,32 @@
 
             // Lógica específica para cada fonte de dados
             if (source === 'analyzer') {
+                const period = document.getElementById('suite_stats_period').value;
+                const now = new Date();
+                let filteredData = {};
+
+                if (period === 'all') {
+                    filteredData = data;
+                } else {
+                    const cutoff = new Date();
+                    if (period === '24h') {
+                        cutoff.setHours(now.getHours() - 24);
+                    } else if (period === '7d') {
+                        cutoff.setDate(now.getDate() - 7);
+                    }
+
+                    for (const hour in data) {
+                        const hourData = data[hour];
+                        if (hourData.timestamps && hourData.timestamps.some(ts => new Date(ts) >= cutoff)) {
+                            filteredData[hour] = hourData; // Mantém a hora se algum evento nela estiver no período
+                        }
+                    }
+                }
+
+                // Usa os dados filtrados para o resto da função
+                data = filteredData;
+
+
                 const sortedHours = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
                 const labels = sortedHours.map(h => `${h}h`);
                 const redData = sortedHours.map(h => data[h].vermelho || 0);
@@ -1857,7 +1901,7 @@
                 const whiteData = sortedHours.map(h => data[h].branco || 0);
 
                 suite_chartInstance = new Chart(ctx, {
-                    type: 'bar',
+                    type: chartType,
                     data: {
                         labels: labels,
                         datasets: [
@@ -1866,21 +1910,24 @@
                                 data: redData,
                                 backgroundColor: 'rgba(241, 44, 76, 0.6)',
                                 borderColor: 'rgba(241, 44, 76, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                fill: chartType === 'line'
                             },
                             {
                                 label: 'Preto',
                                 data: blackData,
                                 backgroundColor: 'rgba(54, 54, 54, 0.6)',
                                 borderColor: 'rgba(54, 54, 54, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                fill: chartType === 'line'
                             },
                             {
                                 label: 'Branco',
                                 data: whiteData,
                                 backgroundColor: 'rgba(255, 255, 255, 0.6)',
                                 borderColor: 'rgba(255, 255, 255, 1)',
-                                borderWidth: 1
+                                borderWidth: 1,
+                                fill: chartType === 'line'
                             }
                         ]
                     },
@@ -1924,7 +1971,7 @@
             const averageData = Array(labels.length).fill(overallAverage.toFixed(1));
 
             suite_chartInstance = new Chart(ctx, {
-                type: 'bar', // Tipo principal do gráfico
+                type: chartType, // Tipo principal do gráfico
                 data: {
                     labels: labels,
                     datasets: [
@@ -1934,7 +1981,8 @@
                             backgroundColor: 'rgba(0, 230, 118, 0.6)',
                             borderColor: 'rgba(0, 230, 118, 1)',
                             borderWidth: 1,
-                            order: 2 // Garante que as barras fiquem atrás da linha
+                            order: 2, // Garante que as barras fiquem atrás da linha
+                            fill: chartType === 'line'
                         },
                         {
                             label: `Média Geral (${overallAverage.toFixed(1)}%)`,
@@ -1959,6 +2007,34 @@
                     }
                 }
             });
+        }
+
+        function suite_exportChart(btn) {
+            const canvas = document.getElementById('suite_performanceChart');
+            if (!canvas || !suite_chartInstance) {
+                alert("O gráfico ainda não foi gerado. Analise alguns dados primeiro.");
+                return;
+            }
+
+            // Para garantir que o fundo seja incluído na imagem exportada
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+
+            const bgColor = getComputedStyle(document.body).getPropertyValue('--bg-color').trim();
+            tempCtx.fillStyle = bgColor;
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.drawImage(canvas, 0, 0);
+
+            const imageURL = tempCanvas.toDataURL('image/png');
+
+            const link = document.createElement('a');
+            link.href = imageURL;
+            link.download = 'grafico_desempenho.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function suite_corrigirSinaisBranco() {
@@ -2440,7 +2516,7 @@
                 // Popula as estatísticas por hora para o gráfico
                 const hour = item.horario.split(':')[0];
                 if (!analyzerHourlyStats[hour]) {
-                    analyzerHourlyStats[hour] = { vermelho: 0, preto: 0, branco: 0, total: 0 };
+                    analyzerHourlyStats[hour] = { vermelho: 0, preto: 0, branco: 0, total: 0, timestamps: [] };
                 }
                 analyzerHourlyStats[hour][cor]++;
 
@@ -2460,6 +2536,10 @@
                     div.addEventListener('click', () => dash_toggleDeleteOption(div));
                     grid.prepend(div);
                 }
+
+                // Adiciona o timestamp ao objeto de estatísticas para filtragem por período
+                const timestamp = new Date(); // Assume que a análise é feita com dados "atuais"
+                analyzerHourlyStats[hour].timestamps.push(timestamp.toISOString());
             });
 
             if (target === 'ambos' || target === 'hora') {
