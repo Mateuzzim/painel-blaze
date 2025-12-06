@@ -285,13 +285,11 @@
         .suite .manual-btn.color-b { background-color: #fff; color: #000; }
         .suite .manual-btn.color-x { background-color: #2979ff; }
         .suite .manual-btn.util-btn { background-color: #555; color: #fff; }
-        body.light-theme .suite .manual-btn.util-btn { background-color: #ddd; color: #333; }
-        .suite.platform-jonbet .manual-btn.color-v { background-color: #00e676; }
-        .suite .manual-button-grid {
-            grid-template-columns: repeat(5, 1fr);
-        }
+        body.light-theme .suite .manual-btn.util-btn { background-color: #ddd; color: #333; }        .suite.platform-jonbet .manual-btn.color-v { background-color: #00e676; }
+        .suite .manual-button-grid { grid-template-columns: repeat(5, 1fr); }
+
         /* Quando o cadastro está na tela de login, ele se adapta */
-        #login-container #suite_cadastro {
+        #self-register-form {
             background-color: var(--card-bg);
             padding: 40px;
             border-radius: 12px;
@@ -299,6 +297,7 @@
             width: 100%;
             max-width: 400px; /* Mesmo tamanho do login */
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
         }
 
         /* ================================== */
@@ -473,7 +472,7 @@
             z-index: 1000;
             transition: opacity 0.5s ease-out;
         }
-        #login-form {
+        #login-form, #self-register-form {
             background-color: var(--card-bg);
             padding: 40px;
             border-radius: 12px;
@@ -482,6 +481,9 @@
             max-width: 400px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex; /* Garante que seja flexível */
+            flex-direction: column; /* Organiza os itens em coluna */
+            align-items: center; /* Centraliza o conteúdo interno */
         }
         body.light-theme #login-form { border-color: var(--border-color); }
         #login-form h2 {
@@ -499,6 +501,10 @@
             opacity: 0.8;
             text-transform: uppercase;
         }
+        .login-input-group {
+            width: 100%; /* Garante que o grupo ocupe toda a largura */
+        }
+
         #login-form input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); font-size: 1rem; }
         #login-form button { width: 100%; padding: 15px; border: none; border-radius: 8px; background-color: var(--accent-blaze); color: #fff; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
         #login-form button:disabled { background-color: #8e1a2e; cursor: not-allowed; }
@@ -568,8 +574,8 @@
         .toggle-password {
             position: absolute;
             right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 15px; /* Alinha a partir da base do input */
+            transform: translateY(0); /* Remove o transform vertical */
             cursor: pointer;
             opacity: 0.6;
             transition: opacity 0.2s;
@@ -621,11 +627,11 @@
             <div class="forgot-password-container">
                 <a href="#" id="forgot-password-link">Esqueci minha senha</a>
             </div>
-            <div id="login-error"></div>
             <div class="toggle-form-container">
                 <a href="#" id="show-register-link" class="toggle-form-link">Não tem uma conta? Cadastre-se</a>
             </div>
         </form>
+        <div id="login-error" style="width: 100%; max-width: 400px; text-align: center;"></div>
 
         <!-- Formulário de Auto-Cadastro (inicialmente oculto) -->
         <form id="self-register-form" style="display: none;">
@@ -931,9 +937,9 @@
                     <div class="control-group">
                         <label>Data da Lista:</label>
                         <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
-                            <input type="hidden" id="suite_branco_date_selector" value="amanha">
-                            <button class="platform-btn" id="suite_branco_btn_hoje" onclick="suite_selectDate('branco', 'hoje')">Hoje</button>
-                            <button class="platform-btn active" id="suite_branco_btn_amanha" onclick="suite_selectDate('branco', 'amanha')">Amanhã</button>
+                            <input type="hidden" id="suite_branco_date_selector" value="hoje">
+                            <button class="platform-btn active" id="suite_branco_btn_hoje" onclick="suite_selectDate('branco', 'hoje')">Hoje</button>
+                            <button class="platform-btn" id="suite_branco_btn_amanha" onclick="suite_selectDate('branco', 'amanha')">Amanhã</button>
                         </div>
                     </div>
 
@@ -958,11 +964,28 @@
 
                 <div id="suite_ia_branco" class="tab-content">
                     <h2>🤖 I.A. Gerador de Branco</h2>
-                    <div class="control-group">
+                    <div class="toggle-switch-container" style="margin-bottom: 20px;">
+                        <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
+                        <label class="switch">
+                            <input type="checkbox" id="suite_iaBranco_autoMode" onchange="suite_toggleIaBrancoMode(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-group" id="suite_iaBranco_agressividade_container" style="display: none;">
+                        <label>Nível de Agressividade (Automático):</label>
+                        <select id="suite_iaBranco_agressividade">
+                            <option value="moderado" selected>Moderado</option>
+                            <option value="conservador">Conservador</option>
+                            <option value="agressivo">Agressivo</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="suite_iaBranco_historico_container">
                         <label>Cole o Histórico Copiado:</label>
                         <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
                         <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
                     </div>
+
                     <div class="inline-controls" style="margin-bottom: 15px;">
                         <div class="control-group">
                             <label>Quantidade de Sinais:</label>
@@ -972,9 +995,9 @@
                     <div class="control-group">
                         <label>Data da Lista:</label>
                         <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
-                            <input type="hidden" id="suite_ia_branco_date_selector" value="amanha">
-                            <button class="platform-btn" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
-                            <button class="platform-btn active" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
+                            <input type="hidden" id="suite_ia_branco_date_selector" value="hoje">
+                            <button class="platform-btn active" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
+                            <button class="platform-btn" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
                         </div>
                     </div>
                     <div class="control-group">
@@ -1003,6 +1026,7 @@
                         <p><strong>Usuário:</strong> <span id="config_username">--</span></p>
                         <p><strong>Nível de Acesso:</strong> <span id="config_accessLevel">--</span></p>
                         <p><strong>Acesso Válido até:</strong> <span id="config_expiresAt">--</span></p>
+                        <p><strong>ID do Usuário:</strong> <span id="config_telegramId">--</span></p>
                     </div>
 
                     <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Personalização</h3>
@@ -1059,6 +1083,10 @@
                             <input type="text" id="reg_username" required>
                         </div>
                         <div class="control-group">
+                            <label for="reg_contact">Contato (Opcional)</label>
+                            <input type="text" id="reg_contact">
+                        </div>
+                        <div class="control-group">
                             <label for="reg_accessLevel">Nível de Acesso</label>
                             <select id="reg_accessLevel">
                                 <option value="guest">Convidado</option>
@@ -1096,7 +1124,7 @@
                             <thead>
                                 <tr>
                                     <th id="sort-by-username" class="sortable-header" onclick="sortUserList('username')">Usuário</th>
-                                    <th>Nível</th><th id="sort-by-expiresAt" class="sortable-header" onclick="sortUserList('expiresAt')">Expira em</th><th>Ações</th>
+                                    <th>Contato</th><th>ID do Usuário</th><th>Nível</th><th id="sort-by-expiresAt" class="sortable-header" onclick="sortUserList('expiresAt')">Expira em</th><th>Ações</th>
                                 </tr></thead>
                             <tbody id="user-list-tbody"></tbody>
                         </table>
@@ -1107,12 +1135,12 @@
                         </div>
                     </div>
 
-                    <div id="pending-users-container" style="margin-top: 40px;">
+                    <div id="pending-users-container" style="margin-top: 60px;">
                         <h3>⏳ Cadastros Pendentes de Aprovação</h3>
                         <table id="pending-user-list-table" class="user-list-table">
-                            <thead>
-                                <tr><th>Usuário</th><th>Aprovar como</th><th>Duração (dias)</th><th>Ações</th></tr>
-                            </thead>
+                            <thead><tr>
+                                <th>Usuário</th><th>Contato</th><th>Aprovar como</th><th>Duração (dias)</th><th>Ações</th>
+                            </tr></thead>
                             <tbody id="pending-user-list-tbody"></tbody>
                         </table>
                     </div>
@@ -1385,27 +1413,34 @@
             document.getElementById('config_accessLevel').textContent = accessLevel;
 
             let expirationText = 'Permanente'; // Padrão para admin
+            let telegramIdText = 'N/A'; // Padrão
 
-            // Busca os detalhes do usuário no localStorage para encontrar a data de expiração
+            // Busca os detalhes do usuário no localStorage para encontrar a data de expiração e o ID
             if (accessLevel !== 'admin') {
                 try {
                     const users = JSON.parse(localStorage.getItem('app_users')) || [];
                     const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
-                    if (currentUser && currentUser.expiresAt) {
-                        expirationText = new Date(currentUser.expiresAt).toLocaleString('pt-BR', {
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                        });
-                    } else if (currentUser) {
-                        expirationText = 'Permanente';
+                    if (currentUser) {
+                        if (currentUser.expiresAt) {
+                            expirationText = new Date(currentUser.expiresAt).toLocaleString('pt-BR', {
+                                day: '2-digit', month: '2-digit', year: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                        } else {
+                            expirationText = 'Permanente';
+                        }
+                        // Pega o ID do Telegram do usuário
+                        telegramIdText = currentUser.telegramId || 'Não vinculado';
                     }
                 } catch (e) {
                     console.error("Erro ao buscar dados do usuário:", e);
                     expirationText = 'Erro ao carregar';
+                    telegramIdText = 'Erro ao carregar';
                 }
             }
             document.getElementById('config_expiresAt').textContent = expirationText;
+            document.getElementById('config_telegramId').textContent = telegramIdText;
         }
 
         function suite_clearTextarea(elementId) {
@@ -1552,6 +1587,15 @@
             return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
         }
 
+        function suite_toggleIaBrancoMode(isAuto) {
+            const historicoContainer = document.getElementById('suite_iaBranco_historico_container');
+            const estrategiaSelect = document.getElementById('suite_iaBranco_estrategia');
+            const agressividadeContainer = document.getElementById('suite_iaBranco_agressividade_container');
+            historicoContainer.style.display = isAuto ? 'none' : 'block';
+            agressividadeContainer.style.display = isAuto ? 'block' : 'none';
+            // estrategiaSelect.disabled = isAuto; // Mantém o seletor de estratégia habilitado
+        }
+
         function suite_gerarSinaisBrancoIA() {
             const qtd = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value);
             const historicoInput = document.getElementById('suite_iaBranco_historico').value;
@@ -1562,6 +1606,8 @@
             const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
+            const isAutoMode = document.getElementById('suite_iaBranco_autoMode').checked;
+            const agressividade = document.getElementById('suite_iaBranco_agressividade').value;
 
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
@@ -1572,19 +1618,24 @@
             }
             out += `📅 Data: *${targetDate.toLocaleDateString('pt-BR')}*\n`;
             out += `👤 Operador: *${userName}*\n`;
-            out += `🎯 Estratégia: *${strategyName}*\n`;
+            if (isAutoMode) {
+                out += `🎯 Estratégia: *${strategyName} (Auto ${agressividade})*\n`;
+            } else {
+                out += `🎯 Estratégia: *${strategyName}*\n`;
+            }
             out += `♻️ 6 Entradas\n`;
             out += `--------------------------------\n`;
 
             const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
             const horarios = historicoInput.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
             
-            if (horarios.length < 2) {
+            if (!isAutoMode && horarios.length < 2) {
                 document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que a I.A. possa analisar e gerar os sinais.";
                 return;
             }
 
             let db = new Date(); // Ponto de partida é sempre o horário atual para gerar sinais futuros.
+
 
             let analysisNote = '';
             let projectionIntervals = [];
@@ -1597,13 +1648,13 @@
                 const mediaIntervalos = intervals.length > 0 ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0; // Garante que não haja divisão por zero
 
                 switch(est) {
-                    case 'iaPreditivaBranco':
+                    case 'iaPreditivaBranco': // 1. I.A. Preditiva
                         if (mediaIntervalos > 0) {
                             projectionIntervals = [mediaIntervalos];
                             analysisNote = `🧠 Média Aprendida: ${mediaIntervalos} min`;
                         }
                         break;
-                    case 'produtividadeHora':
+                    case 'produtividadeHora': // 2. Análise de Produtividade
                         const firstTime = horarios[0];
                         const lastTime = horarios[horarios.length - 1];
                         const totalDurationHours = timeDifferenceInMinutes(firstTime, lastTime) / 60;
@@ -1616,7 +1667,7 @@
                             }
                         }
                         break;
-                    case 'horarioPico':
+                    case 'horarioPico': // 3. Análise de Horário de Pico
                         const weightedSum = horarios.reduce((sum, time) => {
                             const [h, m] = time.split(':').map(Number);
                             const decimalHour = h + m / 60;
@@ -1630,7 +1681,7 @@
                         // O ponto de partida (db) continua sendo o horário atual.
                         projectionIntervals = [60]; // Gera um sinal por hora perto do pico
                         break;
-                    case 'velocidadeConclusao':
+                    case 'velocidadeConclusao': // 4. Análise de Velocidade
                         if (mediaIntervalos > 0) {
                             const taxaConclusao = 1 / mediaIntervalos; // brancos por minuto
                             const tempoRestante = 1 / taxaConclusao; // minutos para o próximo
@@ -1638,7 +1689,7 @@
                             analysisNote = `⚡ Taxa: 1 branco a cada ${Math.round(tempoRestante)} min`;
                         }
                         break;
-                    case 'pomodoroOtimizado':
+                    case 'pomodoroOtimizado': // 5. Análise de Ciclo (Pomodoro)
                         const stdDev = calculateStandardDeviation(intervals);
                         const complexidade = Math.min(10, Math.max(1, Math.round(stdDev / 5))); // Escala de 1 a 10
                         let pausa;
@@ -1648,7 +1699,7 @@
                         projectionIntervals = [25, pausa]; // Alterna trabalho e pausa
                         analysisNote = `🍅 Ciclo Pomodoro: Complexidade ${complexidade} -> Pausa de ${pausa} min`;
                         break;
-                    case 'eficienciaTemporal':
+                    case 'eficienciaTemporal': // 6. Análise de Eficiência Temporal
                         const duracaoTotal = timeDifferenceInMinutes(horarios[0], horarios[horarios.length - 1]);
                         const tempoAtivo = intervals.reduce((a, b) => a + b, 0);
                         if (duracaoTotal > 0) {
@@ -1660,7 +1711,7 @@
                             }
                         }
                         break;
-                    case 'distribuicao702010':
+                    case 'distribuicao702010': // 7. Análise de Distribuição (70/20/10)
                         const sortedIntervals = [...intervals].sort((a, b) => a - b);
                         const p70 = sortedIntervals[Math.floor(sortedIntervals.length * 0.7)];
                         const p90 = sortedIntervals[Math.floor(sortedIntervals.length * 0.9)];
@@ -1677,6 +1728,53 @@
                     default:
                         // Por padrão, usa a média se nenhuma outra estratégia for correspondida
                         projectionIntervals = [mediaIntervalos];
+                        break;
+                }
+            }
+            
+            // Lógica para MODO AUTOMÁTICO (sem histórico)
+            if (isAutoMode) {
+                analysisNote = `🤖 Modo Automático (${agressividade}) Ativado`;
+                const intervalos = {
+                    conservador: {
+                        iaPreditivaBranco: [40, 50, 60],
+                        produtividadeHora: [30],
+                        horarioPico: [60, 75],
+                        velocidadeConclusao: [25, 35],
+                        pomodoroOtimizado: [45, 15],
+                        eficienciaTemporal: [40, 50],
+                        distribuicao702010: [30, 30, 45, 45, 60, 90]
+                    },
+                    moderado: {
+                        iaPreditivaBranco: [25, 35, 45],
+                        produtividadeHora: [20],
+                        horarioPico: [60],
+                        velocidadeConclusao: [15, 20],
+                        pomodoroOtimizado: [25, 5, 25, 15],
+                        eficienciaTemporal: [30, 40],
+                        distribuicao702010: [15, 15, 15, 30, 30, 60]
+                    },
+                    agressivo: {
+                        iaPreditivaBranco: [15, 20, 25],
+                        produtividadeHora: [10],
+                        horarioPico: [45],
+                        velocidadeConclusao: [8, 12],
+                        pomodoroOtimizado: [20, 5],
+                        eficienciaTemporal: [15, 25],
+                        distribuicao702010: [10, 10, 15, 15, 20, 30]
+                    }
+                };
+
+                switch(est) {
+                    case 'iaPreditivaBranco': projectionIntervals = intervalos[agressividade].iaPreditivaBranco; break;
+                    case 'produtividadeHora': projectionIntervals = intervalos[agressividade].produtividadeHora; break;
+                    case 'horarioPico': projectionIntervals = intervalos[agressividade].horarioPico; break;
+                    case 'velocidadeConclusao': projectionIntervals = intervalos[agressividade].velocidadeConclusao; break;
+                    case 'pomodoroOtimizado': projectionIntervals = intervalos[agressividade].pomodoroOtimizado; break;
+                    case 'eficienciaTemporal': projectionIntervals = intervalos[agressividade].eficienciaTemporal; break;
+                    case 'distribuicao702010': projectionIntervals = intervalos[agressividade].distribuicao702010; break;
+                    default:
+                        projectionIntervals = intervalos[agressividade].iaPreditivaBranco; // Padrão genérico
                         break;
                 }
             }
@@ -2692,6 +2790,7 @@
             
             const username = document.getElementById('reg_username').value.trim();
             const password = document.getElementById('reg_password').value;
+            const contact = document.getElementById('reg_contact').value.trim();
             const confirmPassword = document.getElementById('reg_confirmPassword').value;
             const accessLevel = document.getElementById('reg_accessLevel').value;
 
@@ -2729,6 +2828,7 @@
                 const newUser = {
                     username: username,
                     password: password, // Em um app real, isso deve ser hasheado no servidor
+                    contact: contact || null, // Salva o contato ou null se estiver vazio
                     accessLevel: accessLevel,
                     expiresAt: expirationDate
                 };
@@ -2739,6 +2839,11 @@
                 outputArea.innerText = `✅ SUCESSO: Usuário "${username}" cadastrado.`;
                 outputArea.style.color = 'var(--accent-jonbet)';
                 form.reset();
+                // Limpa a mensagem de sucesso após alguns segundos
+                setTimeout(() => {
+                    outputArea.style.display = 'none';
+                    outputArea.innerText = '';
+                }, 5000);
                 populateUserList(); // Atualiza a lista de usuários
             } catch (e) {
                 console.error("Erro ao salvar usuário:", e);
@@ -2778,6 +2883,22 @@
             try {
                 const allUsers = JSON.parse(localStorage.getItem('app_users')) || [];
                 const pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
+                let telegramId = null;
+
+                // Tenta obter o ID do usuário do Telegram
+                try {
+                    const tg = window.Telegram.WebApp;
+                    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        telegramId = tg.initDataUnsafe.user.id;
+                    }
+                } catch (e) {
+                    console.log("Não foi possível obter o ID do Telegram, cadastro continua sem vínculo.");
+                }
+
+                if (telegramId && (allUsers.some(u => u.telegramId === telegramId) || pendingUsers.some(u => u.telegramId === telegramId))) {
+                    errorDiv.textContent = 'Você já possui uma conta ou um pedido de cadastro pendente.';
+                    return;
+                }
 
                 // Verifica se o usuário já existe na lista de ativos ou pendentes
                 const userExists = allUsers.some(u => u.username.toLowerCase() === username.toLowerCase()) ||
@@ -2791,6 +2912,7 @@
                 const newUserRequest = {
                     username: username,
                     password: password, // A senha é armazenada para o admin aprovar
+                    telegramId: telegramId, // Salva o ID do Telegram
                     contact: contact,
                     requestedAt: new Date().toISOString()
                 };
@@ -2801,7 +2923,7 @@
                 // Limpa o formulário e mostra mensagem de sucesso
                 document.getElementById('self-register-form').style.display = 'none';
                 const loginForm = document.getElementById('login-form');
-                loginForm.style.display = 'block';
+                loginForm.style.display = 'flex'; // Usa flex para manter o alinhamento do container
                 document.getElementById('login-error').textContent = '✅ Cadastro enviado! Aguarde a aprovação do administrador.';
                 document.getElementById('login-error').style.color = 'var(--accent-jonbet)';
                 document.getElementById('self-register-form').reset();
@@ -2884,6 +3006,8 @@
 
                 row.innerHTML = `
                     <td>${user.username}</td>
+                    <td>${user.contact || '-'}</td>
+                    <td>${user.telegramId || 'N/A'}</td>
                     <td>${user.accessLevel}</td>
                     <td>${expirationText}</td>
                 `;
@@ -2927,32 +3051,22 @@
             tbody.innerHTML = '';
 
             pendingUsers.forEach((user, index) => {
-                // Garante que o cabeçalho de 'Contato' exista se algum usuário pendente tiver contato
-                if (user.contact) {
-                    const headerRow = document.getElementById('pending-user-list-table').querySelector('thead tr');
-                    if (!headerRow.querySelector('.contact-header')) {
-                         // Adiciona a classe para evitar duplicatas
-                        headerRow.cells[1].insertAdjacentHTML('afterend', '<th class="contact-header">Contato</th>');
-                    }
-                }
-
                 const row = tbody.insertRow();
-                let rowHTML = `
+                row.innerHTML = `
                     <td>${user.username}</td>
-                    ${user.contact ? `<td>${user.contact}</td>` : '<td>-</td>'}
+                    <td>${user.contact || '-'}</td>
                     <td>
                         <select id="approve_level_${index}" style="padding: 5px;">
                             <option value="operator">Operador</option>
                             <option value="guest">Convidado</option>
                         </select>
                     </td>
-                    <td>
-                        <input type="number" id="approve_days_${index}" value="2" min="1" style="width: 80px; padding: 5px;">
-                    </td><td>
+                    <td><input type="number" id="approve_days_${index}" value="7" min="1" style="width: 80px; padding: 5px;"></td>
+                    <td style="white-space: nowrap;">
                         <button onclick="approveUser('${user.username}', ${index})" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; border: none; border-radius: 4px; color: white; cursor: pointer;">Aprovar</button>
                         <button onclick="denyUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; border-radius: 4px; color: white; cursor: pointer;">Negar</button>
-                    </td>`;
-                row.innerHTML = rowHTML;
+                    </td>
+                `;
             });
         }
 
@@ -3181,12 +3295,12 @@
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('self-register-form');
             
-            if (showRegister) {
+            if (showRegister) { // Quando for para mostrar o formulário de registro
                 loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-            } else {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
+                registerForm.style.display = 'flex'; // Mostra o de registro
+            } else { // Quando for para mostrar o formulário de login
+                loginForm.style.display = 'flex'; // Usar flex para manter o alinhamento
+                registerForm.style.display = 'none'; // Esconde o de registro
             }
         }
 
@@ -3368,6 +3482,12 @@
             const operatorName = sessionStorage.getItem('operatorName');
             setupOperatorInfo(operatorName);
             applyAccessControl(); // Aplica as restrições de acesso
+
+            // Inicia o temporizador para recarregar a página a cada 10 minutos
+            setInterval(() => {
+                console.log("Recarregando a página automaticamente...");
+                location.reload();
+            }, 10 * 60 * 1000); // 10 minutos
         }
 
         function setupOperatorInfo(operatorName) {
