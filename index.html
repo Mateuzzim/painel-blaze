@@ -450,6 +450,9 @@
         .dashboard .badge .time-overlay { position: absolute; bottom: -20px; font-size: 9px; color: #fff; white-space: nowrap; left: 50%; transform: translateX(-50%); }
         .dashboard .delete-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: rgba(220, 53, 69, 0.9); display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-size: 11px; cursor: pointer; border: 1px solid white; transition: transform 0.2s ease; }
         .dashboard .delete-overlay:hover { transform: translate(-50%, -50%) scale(1.1); }
+        body.light-theme .dashboard .badge .time-overlay {
+            color: var(--text-color);
+        }
         .dashboard .badge.vermelho { background-color: var(--accent); }
         .dashboard .badge.preto { background-color: #333; border: 1px solid #555; }
         .dashboard .badge.branco { background-color: #fff; color: #333; }
@@ -628,42 +631,6 @@
             <div class="forgot-password-container">
                 <a href="#" id="forgot-password-link">Esqueci minha senha</a>
             </div>
-            <div class="toggle-form-container">
-                <a href="#" id="show-register-link" class="toggle-form-link">Não tem uma conta? Cadastre-se</a>
-            </div>
-        </form>
-        <!-- Formulário de Auto-Cadastro (inicialmente oculto) -->
-        <form id="self-register-form" style="display: none;">
-            <h2>CRIAR CONTA</h2>
-            <div class="login-input-group">
-                <label for="self_reg_username">Nome de Usuário</label>
-                <input type="text" id="self_reg_username" required>
-            </div>
-            <div class="login-input-group">
-                <label for="self_reg_contact">Contato (Ex: Telegram)</label>
-                <input type="text" id="self_reg_contact" required>
-            </div>
-            <div class="login-input-group password-input-container">
-                <label for="self_reg_password">Senha</label>
-                <input type="password" id="self_reg_password" required style="padding-right: 40px;">
-                <span class="toggle-password" data-target="self_reg_password">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </span>
-            </div>
-            <div class="login-input-group password-input-container">
-                <label for="self_reg_confirmPassword">Confirmar Senha</label>
-                <input type="password" id="self_reg_confirmPassword" required style="padding-right: 40px;">
-                <span class="toggle-password" data-target="self_reg_confirmPassword">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </span>
-            </div>
-            <button type="submit">CADASTRAR</button>
-            <div id="register-error" style="color: var(--accent-blaze); margin-top: 15px; font-weight: bold; min-height: 20px;"></div>
-            <div class="toggle-form-container">
-                <a href="#" id="show-login-link" class="toggle-form-link">Já tem uma conta? Faça login</a>
-            </div>
         </form>
     </div>
 
@@ -714,7 +681,6 @@
                     </button>
                     <button class="tab-btn" id="suite_tab_usuarios" onclick="suite_openTab('usuarios')" title="Gerenciar Usuários" style="display: none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <span id="pending-users-badge" class="notification-badge" style="display: none;">0</span>
                     </button>
                 </div>
 
@@ -1132,6 +1098,7 @@
                                 <input type="file" id="import-users-input" accept=".json" style="display: none;">
                                 <button onclick="triggerUserImport()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #28a745;">IMPORTAR</button>
                                 <button onclick="exportUserData()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0;">EXPORTAR</button>
+                                <button onclick="copyUserIds(this)" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #17a2b8;">COPIAR IDs</button>
                             </div>
                         </div>
                         <table id="user-list-table">
@@ -1149,19 +1116,12 @@
                         </div>
                     </div>
 
-                    <div id="pending-users-container" style="margin-top: 60px;">
-                        <h3>⏳ Cadastros Pendentes de Aprovação</h3>
-                        <table id="pending-user-list-table" class="user-list-table">
-                            <thead><tr>
-                                <th>Usuário</th><th>Contato</th><th>Aprovar como</th><th>Duração (dias)</th><th>Ações</th>
-                            </tr></thead>
-                            <tbody id="pending-user-list-tbody"></tbody>
-                        </table>
-                    </div>
-
                     <div id="activity-log-container">
                         <h3>📜 Log de Atividades Recentes</h3>
-                        <button onclick="clearActivityLog()" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer;">Limpar Log</button>
+                        <div class="header-buttons" style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 10px;">
+                            <button onclick="exportActivityLog()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #17a2b8;">EXPORTAR LOG</button>
+                            <button onclick="clearActivityLog()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #dc3545;">LIMPAR LOG</button>
+                        </div>
                         <table id="activity-log-table">
                             <thead>
                                 <tr><th>Data/Hora</th><th>Usuário</th><th>Evento</th><th>Status</th></tr>
@@ -2787,7 +2747,6 @@
             
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             
-            document.getElementById('show-register-link').addEventListener('click', (e) => { e.preventDefault(); toggleLoginRegister(true); });
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
 
@@ -2800,9 +2759,6 @@
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
             initializeApp();
 
-            // Novos listeners para o formulário de auto-registro
-            document.getElementById('self-register-form').addEventListener('submit', handleSelfRegistration);
-            document.getElementById('show-login-link').addEventListener('click', (e) => { e.preventDefault(); toggleLoginRegister(false); });
             // Listener para o input de importação de arquivo
             document.getElementById('import-users-input').addEventListener('change', handleUserImport);
         });
@@ -2879,96 +2835,11 @@
         }
 
         let currentUserListPage = 1;
-        const usersPerPage = 5;
+        const usersPerPage = 999; // Aumentado para um número grande para mostrar todos os usuários
         let userListSort = {
             column: 'username', // Coluna de ordenação padrão
             direction: 'asc'    // Direção padrão
         };
-
-
-        function handleSelfRegistration(event) {
-            event.preventDefault();
-            const errorDiv = document.getElementById('register-error');
-            const username = document.getElementById('self_reg_username').value.trim();
-            const contact = document.getElementById('self_reg_contact').value.trim();
-            const password = document.getElementById('self_reg_password').value;
-            const button = event.target.querySelector('button[type="submit"]');
-            const confirmPassword = document.getElementById('self_reg_confirmPassword').value;
-
-            errorDiv.textContent = '';
-
-            if (!username || !password || !contact) {
-                errorDiv.textContent = 'Todos os campos são obrigatórios.';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                errorDiv.textContent = 'As senhas não coincidem.';
-                return;
-            }
-
-            // Desabilita o botão para evitar múltiplos envios
-            if (button) button.disabled = true;
-
-            try {
-                const allUsers = JSON.parse(localStorage.getItem('app_users')) || [];
-                let telegramId = null;
-
-                // Tenta obter o ID do usuário do Telegram
-                try {
-                    const tg = window.Telegram.WebApp;
-                    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) telegramId = tg.initDataUnsafe.user.id;
-                } catch (e) {
-                    console.log("Não foi possível obter o ID do Telegram, cadastro continua sem vínculo.");
-                }
-
-                if (telegramId && allUsers.some(u => u.telegramId === telegramId)) {
-                    errorDiv.textContent = 'Você já possui uma conta cadastrada.';
-                    if (button) button.disabled = false;
-                    return;
-                }
-
-                // Verifica se o nome de usuário já existe na lista de ativos
-                const userExists = allUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
-                if (userExists) {
-                    errorDiv.textContent = 'Este nome de usuário já está em uso.';
-                    if (button) button.disabled = false;
-                    return;
-                }
-
-                // Define um período de teste padrão (ex: 7 dias)
-                const expirationDate = new Date();
-                expirationDate.setDate(expirationDate.getDate() + 3);
-
-                const newUser = {
-                    username: username,
-                    password: password,
-                    telegramId: telegramId, // Salva o ID do Telegram
-                    contact: contact,
-                    accessLevel: 'guest', // Acesso imediato como convidado
-                    expiresAt: expirationDate.toISOString() // Define a data de expiração
-                };
-
-                allUsers.push(newUser);
-                localStorage.setItem('app_users', JSON.stringify(allUsers));
-
-                // Limpa o formulário e mostra mensagem de sucesso
-                toggleLoginRegister(false); // Volta para a tela de login
-                document.getElementById('login-error').textContent = '✅ Cadastro realizado! Você já pode fazer o login.';
-                document.getElementById('login-error').style.color = 'var(--accent-jonbet)';
-                document.getElementById('self-register-form').reset();
-
-                // Envia uma notificação para o administrador
-                sendAdminNotification('✅ Novo Usuário Cadastrado', `O usuário '${username}' se cadastrou e já tem acesso ao sistema.`);
-
-            } catch (e) {
-                console.error("Erro durante o auto-cadastro:", e);
-                errorDiv.textContent = 'Ocorreu um erro inesperado. Tente novamente.';
-            } finally {
-                // Reabilita o botão no final
-                if (button) button.disabled = false;
-            }
-        }
 
         function populateUserList(page = 1) {
             const tbody = document.getElementById('user-list-tbody');
@@ -3068,82 +2939,6 @@
             populateUserList(1); // Volta para a primeira página e reaplica a ordenação
         }
 
-        function populatePendingUserList() {
-            const tbody = document.getElementById('pending-user-list-tbody');
-            if (!tbody) return;
-
-            const pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
-            const badge = document.getElementById('pending-users-badge');
-
-            // Atualiza o badge de notificação
-            if (badge) {
-                if (pendingUsers.length > 0) {
-                    badge.textContent = pendingUsers.length;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-            tbody.innerHTML = '';
-
-            pendingUsers.forEach((user, index) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.contact || '-'}</td>
-                    <td>
-                        <select id="approve_level_${index}" style="padding: 5px;">
-                            <option value="operator">Operador</option>
-                            <option value="guest">Convidado</option>
-                        </select>
-                    </td>
-                    <td><input type="number" id="approve_days_${index}" value="7" min="1" style="width: 80px; padding: 5px;"></td>
-                    <td style="white-space: nowrap;">
-                        <button onclick="approveUser('${user.username}', ${index})" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; border: none; border-radius: 4px; color: white; cursor: pointer;">Aprovar</button>
-                        <button onclick="denyUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; border-radius: 4px; color: white; cursor: pointer;">Negar</button>
-                    </td>
-                `;
-            });
-        }
-
-        function approveUser(username, index) {
-            const accessLevel = document.getElementById(`approve_level_${index}`).value;
-            const trialDays = document.getElementById(`approve_days_${index}`).value;
-
-            let pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
-            const userToApprove = pendingUsers.find(u => u.username === username);
-
-            if (!userToApprove) {
-                alert('Usuário pendente não encontrado.');
-                return;
-            }
-
-            let expirationDate = null;
-            if (trialDays && !isNaN(parseInt(trialDays))) {
-                const expDate = new Date();
-                expDate.setDate(expDate.getDate() + parseInt(trialDays));
-                expirationDate = expDate.toISOString();
-            }
-
-            const newUser = {
-                ...userToApprove,
-                accessLevel: accessLevel,
-                expiresAt: expirationDate,
-                telegramId: userToApprove.telegramId || null // Garante que o ID do Telegram seja mantido
-            };
-
-            let activeUsers = JSON.parse(localStorage.getItem('app_users')) || [];
-            activeUsers.push(newUser);
-            localStorage.setItem('app_users', JSON.stringify(activeUsers));
-
-            // Remove from pending
-            const updatedPendingUsers = pendingUsers.filter(u => u.username !== username);
-            localStorage.setItem('pending_users', JSON.stringify(updatedPendingUsers));
-
-            populateUserList();
-            populatePendingUserList();
-        }
-
         function nextUserPage() {
             const users = JSON.parse(localStorage.getItem('app_users')) || [];
             const totalPages = Math.ceil(users.length / usersPerPage);
@@ -3155,6 +2950,29 @@
         function prevUserPage() {
             if (currentUserListPage > 1) {
                 populateUserList(currentUserListPage - 1);
+            }
+        }
+
+        function copyUserIds(btnElement) {
+            try {
+                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                let idListText = 'Lista de Usuários e IDs do Telegram:\n\n';
+
+                users.forEach(user => {
+                    if (user.telegramId) { // Inclui apenas usuários que têm um ID
+                        idListText += `Usuário: ${user.username}, ID: ${user.telegramId}\n`;
+                    }
+                });
+
+                navigator.clipboard.writeText(idListText).then(() => {
+                    const originalText = btnElement.innerHTML;
+                    btnElement.innerHTML = '✅ Copiado!';
+                    setTimeout(() => { btnElement.innerHTML = originalText; }, 2000);
+                }).catch(err => console.error("Erro ao copiar IDs: ", err));
+
+            } catch (e) {
+                console.error("Erro ao gerar lista de IDs:", e);
+                alert("Ocorreu uma falha ao tentar gerar a lista de IDs.");
             }
         }
 
@@ -3197,15 +3015,6 @@
                 console.error("Erro ao renovar o acesso do usuário:", e);
                 alert("Ocorreu uma falha ao tentar renovar o acesso.");
             }
-        }
-
-        function denyUser(username) {
-            if (!confirm(`Tem certeza que deseja negar o cadastro de "${username}"?`)) return;
-
-            let pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
-            const updatedPendingUsers = pendingUsers.filter(u => u.username !== username);
-            localStorage.setItem('pending_users', JSON.stringify(updatedPendingUsers));
-            populatePendingUserList();
         }
 
         function deleteUser(username) {
@@ -3270,7 +3079,6 @@
 
                 const dataToExport = {
                     app_users: JSON.parse(appUsers),
-                    pending_users: JSON.parse(pendingUsers),
                     guest_permissions: JSON.parse(guestPermissions)
                 };
 
@@ -3307,7 +3115,6 @@
                     const data = JSON.parse(e.target.result);
                     if (data.app_users && confirm('Você tem certeza que deseja importar os dados? Isso substituirá todos os usuários e configurações atuais.')) {
                         localStorage.setItem('app_users', JSON.stringify(data.app_users || []));
-                        localStorage.setItem('pending_users', JSON.stringify(data.pending_users || []));
                         localStorage.setItem('guest_permissions', JSON.stringify(data.guest_permissions || {}));
                         alert('Dados importados com sucesso! A página será recarregada.');
                         location.reload();
@@ -3390,6 +3197,38 @@
             }
         }
 
+        function exportActivityLog() {
+            try {
+                const activityLog = JSON.parse(localStorage.getItem('app_activity_log')) || [];
+
+                if (activityLog.length === 0) {
+                    alert("Não há atividades no log para exportar.");
+                    return;
+                }
+
+                let logText = "Log de Atividades\n";
+                logText += "========================================\n\n";
+
+                activityLog.forEach(log => {
+                    const timestamp = new Date(log.timestamp).toLocaleString('pt-BR');
+                    const status = log.success ? 'Sucesso' : 'Falha';
+                    logText += `Data/Hora: ${timestamp}\n`;
+                    logText += `Usuário:    ${log.username}\n`;
+                    logText += `Evento:     ${log.event}\n`;
+                    logText += `Status:     ${status}\n`;
+                    logText += "----------------------------------------\n";
+                });
+
+                const blob = new Blob([logText], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `log_atividades_${new Date().toISOString().slice(0, 10)}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) { console.error("Erro ao exportar log de atividades:", e); alert("Falha ao exportar o log."); }
+        }
+
         function setupPasswordToggles() {
             document.querySelectorAll('.toggle-password').forEach(toggle => {
                 toggle.addEventListener('click', () => {
@@ -3409,19 +3248,6 @@
                     }
                 });
             });
-        }
-
-        function toggleLoginRegister(showRegister) {
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('self-register-form');
-            
-            if (showRegister) { // Quando for para mostrar o formulário de registro
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'flex'; // Mostra o de registro
-            } else { // Quando for para mostrar o formulário de login
-                loginForm.style.display = 'flex'; // Usar flex para manter o alinhamento
-                registerForm.style.display = 'none'; // Esconde o de registro
-            }
         }
 
         function checkManualLogin() {
@@ -3654,17 +3480,6 @@
             const accessLevel = sessionStorage.getItem('accessLevel');
             const userTab = document.getElementById('suite_tab_usuarios');
 
-            // Garante que a aba de admin esteja sempre oculta por padrão
-            if (userTab) userTab.style.display = 'none';
-            // Lógica para Admin
-            if (accessLevel === 'admin') {
-                if (userTab) userTab.style.display = 'block'; // <-- CORREÇÃO: Mostra a aba para o admin
-                populateUserList(); // Popula a lista de usuários para o admin
-                populatePendingUserList(); // Popula a lista de pendentes
-                setupPermissionControls(); // Carrega as checkboxes de permissão
-                populateActivityLog(); // Popula o log de atividades
-            }
-
             // Lógica para Convidado
             // A lógica para 'operator' também cairá aqui, escondendo a aba de admin corretamente.
             if (accessLevel === 'guest') {
@@ -3693,6 +3508,15 @@
 
                 suite_openTab(firstVisibleTab || 'gerador'); // Abre a primeira aba permitida
             }
+            // Lógica para Admin (movida para o final para garantir a execução correta)
+            else if (accessLevel === 'admin') {
+                if (userTab) userTab.style.display = 'block';
+                // Popula as listas que o admin precisa ver
+                populateUserList();
+                populateActivityLog();
+                setupPermissionControls();
+            }
+
         }
 
         function initializeApp() {
