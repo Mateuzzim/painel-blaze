@@ -620,6 +620,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                 </span>
             </div>
+            <div id="login-error" style="width: 100%; max-width: 400px; text-align: center; color: var(--accent-blaze); margin-bottom: 15px; font-weight: bold; min-height: 20px;"></div>
             <button type="submit" id="login-button">
                 <span class="login-button-text">ENTRAR</span>
                 <div class="login-spinner"></div>
@@ -631,8 +632,6 @@
                 <a href="#" id="show-register-link" class="toggle-form-link">Não tem uma conta? Cadastre-se</a>
             </div>
         </form>
-        <div id="login-error" style="width: 100%; max-width: 400px; text-align: center;"></div>
-
         <!-- Formulário de Auto-Cadastro (inicialmente oculto) -->
         <form id="self-register-form" style="display: none;">
             <h2>CRIAR CONTA</h2>
@@ -683,6 +682,10 @@
             <a id="support-link" href="#" target="_blank" style="color: var(--text-color); text-decoration: none; opacity: 0.8;">
                 Precisa de ajuda? Fale com o Suporte
             </a>
+        </div>
+        <!-- SUGESTÃO: Notificação de Expiração de Acesso -->
+        <div id="expiration-notification" style="display: none; background-color: #ffc107; color: #333; padding: 10px 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold;">
+            Seu acesso está prestes a expirar. <a id="renew-link" href="#" target="_blank" style="color: #0056b3; text-decoration: underline;">Clique aqui para renovar</a>.
         </div>
 
         <div class="main-container">
@@ -1119,7 +1122,14 @@
                     <div class="output-area" id="suite_resCadastro" style="margin-top: 20px; text-align: center; display: none;"></div>
 
                     <div id="user-list-container">
-                        <h3>Usuários Cadastrados</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3>Usuários Cadastrados</h3>
+                            <div class="header-buttons">
+                                <input type="file" id="import-users-input" accept=".json" style="display: none;">
+                                <button onclick="triggerUserImport()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #28a745;">IMPORTAR</button>
+                                <button onclick="exportUserData()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0;">EXPORTAR</button>
+                            </div>
+                        </div>
                         <table id="user-list-table">
                             <thead>
                                 <tr>
@@ -1437,6 +1447,28 @@
                     console.error("Erro ao buscar dados do usuário:", e);
                     expirationText = 'Erro ao carregar';
                     telegramIdText = 'Erro ao carregar';
+                }
+            }
+
+            // SUGESTÃO: Adiciona destaque visual para data de expiração próxima
+            const expiresAtSpan = document.getElementById('config_expiresAt');
+            expiresAtSpan.style.color = ''; // Reseta a cor
+            expiresAtSpan.style.fontWeight = ''; // Reseta o peso da fonte
+
+            if (accessLevel !== 'admin' && expirationText !== 'Permanente' && expirationText.includes('/')) {
+                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+                if (currentUser && currentUser.expiresAt) {
+                    const expirationDate = new Date(currentUser.expiresAt);
+                    const daysLeft = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
+
+                    if (daysLeft <= 1) { // Menos de 1 dia
+                        expiresAtSpan.style.color = 'var(--accent-blaze)';
+                        expiresAtSpan.style.fontWeight = 'bold';
+                    } else if (daysLeft <= 3) { // Menos de 3 dias
+                        expiresAtSpan.style.color = '#ffc107'; // Amarelo
+                        expiresAtSpan.style.fontWeight = 'bold';
+                    }
                 }
             }
             document.getElementById('config_expiresAt').textContent = expirationText;
@@ -2767,6 +2799,8 @@
             // Novos listeners para o formulário de auto-registro
             document.getElementById('self-register-form').addEventListener('submit', handleSelfRegistration);
             document.getElementById('show-login-link').addEventListener('click', (e) => { e.preventDefault(); toggleLoginRegister(false); });
+            // Listener para o input de importação de arquivo
+            document.getElementById('import-users-input').addEventListener('change', handleUserImport);
         });
 
         function registerUser(event) {
@@ -2913,6 +2947,9 @@
                 document.getElementById('login-error').textContent = '✅ Cadastro enviado! Aguarde a aprovação do administrador.';
                 document.getElementById('login-error').style.color = 'var(--accent-jonbet)';
                 document.getElementById('self-register-form').reset();
+
+                // Envia uma notificação para o administrador
+                sendAdminNotification('Novo Cadastro Pendente', `O usuário '${username}' acabou de se cadastrar e aguarda aprovação.`);
 
             } catch (e) {
                 console.error("Erro durante o auto-cadastro:", e);
@@ -3181,6 +3218,89 @@
                 console.error("Erro ao excluir usuário:", e);
                 alert("Falha ao excluir o usuário.");
             }
+        }
+
+        /**
+         * Envia uma notificação no navegador para o administrador.
+         * @param {string} title - O título da notificação.
+         * @param {string} body - O corpo (mensagem) da notificação.
+         */
+        function sendAdminNotification(title, body) {
+            // Verifica se o usuário logado é o administrador
+            const accessLevel = sessionStorage.getItem('accessLevel');
+            if (accessLevel !== 'admin') {
+                return; // Só envia notificação se for o admin
+            }
+
+            // Verifica se o navegador suporta notificações
+            if (!("Notification" in window)) {
+                console.log("Este navegador não suporta notificações de desktop.");
+            } else if (Notification.permission === "granted") {
+                // Se a permissão já foi concedida, cria a notificação
+                new Notification(title, { body: body, icon: 'https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg' });
+            } else if (Notification.permission !== "denied") {
+                // Pede permissão ao usuário
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(title, { body: body, icon: 'https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg' });
+                    }
+                });
+            }
+        }
+
+        function exportUserData() {
+            try {
+                const appUsers = localStorage.getItem('app_users') || '[]';
+                const pendingUsers = localStorage.getItem('pending_users') || '[]';
+                const guestPermissions = localStorage.getItem('guest_permissions') || '{}';
+
+                const dataToExport = {
+                    app_users: JSON.parse(appUsers),
+                    pending_users: JSON.parse(pendingUsers),
+                    guest_permissions: JSON.parse(guestPermissions)
+                };
+
+                const jsonString = JSON.stringify(dataToExport, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                const date = new Date().toISOString().slice(0, 10);
+                a.download = `backup_usuarios_${date}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+            } catch (e) {
+                console.error("Erro ao exportar dados dos usuários:", e);
+                alert("Ocorreu uma falha ao tentar exportar os dados.");
+            }
+        }
+
+        function triggerUserImport() {
+            document.getElementById('import-users-input').click();
+        }
+
+        function handleUserImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.app_users && confirm('Você tem certeza que deseja importar os dados? Isso substituirá todos os usuários e configurações atuais.')) {
+                        localStorage.setItem('app_users', JSON.stringify(data.app_users || []));
+                        localStorage.setItem('pending_users', JSON.stringify(data.pending_users || []));
+                        localStorage.setItem('guest_permissions', JSON.stringify(data.guest_permissions || {}));
+                        alert('Dados importados com sucesso! A página será recarregada.');
+                        location.reload();
+                    } else { alert('Arquivo de importação inválido ou operação cancelada.'); }
+                } catch (err) { alert('Erro ao ler o arquivo. Verifique se é um JSON válido.'); }
+            };
+            reader.readAsText(file);
         }
 
         function toggleTrialDurationField() {
@@ -3464,6 +3584,31 @@
             // Esconde o login e mostra o container principal do app
             document.getElementById('login-container').style.display = 'none';
             document.getElementById('app-container').style.display = 'block';
+
+            // SUGESTÃO: Verifica a expiração do acesso ao mostrar o app
+            const accessLevel = sessionStorage.getItem('accessLevel');
+            if (accessLevel !== 'admin') {
+                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const currentUser = users.find(u => u.username.toLowerCase() === sessionStorage.getItem('operatorName').toLowerCase());
+
+                if (currentUser && currentUser.expiresAt) {
+                    const expirationDate = new Date(currentUser.expiresAt);
+                    const daysLeft = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
+
+                    if (daysLeft <= 3) { // Notifica se faltam 3 dias ou menos
+                        const notificationDiv = document.getElementById('expiration-notification');
+                        const renewLink = document.getElementById('renew-link');
+                        const message = `Olá, meu acesso para o usuário '${currentUser.username}' está expirando. Gostaria de renovar.`;
+                        renewLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}&text=${encodeURIComponent(message)}`;
+                        
+                        if (daysLeft <= 1) {
+                            notificationDiv.style.backgroundColor = 'var(--accent-blaze)';
+                            notificationDiv.style.color = '#fff';
+                        }
+                        notificationDiv.style.display = 'block';
+                    }
+                }
+            }
 
             const operatorName = sessionStorage.getItem('operatorName');
             setupOperatorInfo(operatorName);
