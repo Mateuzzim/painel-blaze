@@ -1090,6 +1090,10 @@
                             <input type="text" id="reg_contact">
                         </div>
                         <div class="control-group">
+                            <label for="reg_telegram_id">ID do Telegram (Opcional)</label>
+                            <input type="text" id="reg_telegram_id" placeholder="Apenas números">
+                        </div>
+                        <div class="control-group">
                             <label for="reg_accessLevel">Nível de Acesso</label>
                             <select id="reg_accessLevel">
                                 <option value="guest">Convidado</option>
@@ -1098,7 +1102,7 @@
                         </div>
                         <div class="control-group" id="trial-duration-group">
                             <label for="reg_trial_days">Duração do Acesso (dias)</label>
-                            <input type="number" id="reg_trial_days" value="7" min="1">
+                            <input type="number" id="reg_trial_days" value="3" min="1">
                             <div class="hint">Deixe em branco para acesso permanente.</div>
                         </div>
                         <div class="control-group password-input-container">
@@ -2811,6 +2815,7 @@
             const username = document.getElementById('reg_username').value.trim();
             const password = document.getElementById('reg_password').value;
             const contact = document.getElementById('reg_contact').value.trim();
+            const telegramId = document.getElementById('reg_telegram_id').value.trim();
             const confirmPassword = document.getElementById('reg_confirmPassword').value;
             const accessLevel = document.getElementById('reg_accessLevel').value;
 
@@ -2849,6 +2854,7 @@
                     username: username,
                     password: password, // Em um app real, isso deve ser hasheado no servidor
                     contact: contact || null, // Salva o contato ou null se estiver vazio
+                    telegramId: telegramId || null,
                     accessLevel: accessLevel,
                     expiresAt: expirationDate
                 };
@@ -2886,6 +2892,7 @@
             const username = document.getElementById('self_reg_username').value.trim();
             const contact = document.getElementById('self_reg_contact').value.trim();
             const password = document.getElementById('self_reg_password').value;
+            const button = event.target.querySelector('button[type="submit"]');
             const confirmPassword = document.getElementById('self_reg_confirmPassword').value;
 
             errorDiv.textContent = '';
@@ -2900,60 +2907,66 @@
                 return;
             }
 
+            // Desabilita o botão para evitar múltiplos envios
+            if (button) button.disabled = true;
+
             try {
                 const allUsers = JSON.parse(localStorage.getItem('app_users')) || [];
-                const pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
                 let telegramId = null;
 
                 // Tenta obter o ID do usuário do Telegram
                 try {
                     const tg = window.Telegram.WebApp;
-                    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        telegramId = tg.initDataUnsafe.user.id;
-                    }
+                    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) telegramId = tg.initDataUnsafe.user.id;
                 } catch (e) {
                     console.log("Não foi possível obter o ID do Telegram, cadastro continua sem vínculo.");
                 }
 
-                if (telegramId && (allUsers.some(u => u.telegramId === telegramId) || pendingUsers.some(u => u.telegramId === telegramId))) {
-                    errorDiv.textContent = 'Você já possui uma conta ou um pedido de cadastro pendente.';
+                if (telegramId && allUsers.some(u => u.telegramId === telegramId)) {
+                    errorDiv.textContent = 'Você já possui uma conta cadastrada.';
+                    if (button) button.disabled = false;
                     return;
                 }
 
-                // Verifica se o usuário já existe na lista de ativos ou pendentes
-                const userExists = allUsers.some(u => u.username.toLowerCase() === username.toLowerCase()) ||
-                                   pendingUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
-
+                // Verifica se o nome de usuário já existe na lista de ativos
+                const userExists = allUsers.some(u => u.username.toLowerCase() === username.toLowerCase());
                 if (userExists) {
                     errorDiv.textContent = 'Este nome de usuário já está em uso.';
+                    if (button) button.disabled = false;
                     return;
                 }
 
-                const newUserRequest = {
+                // Define um período de teste padrão (ex: 7 dias)
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 3);
+
+                const newUser = {
                     username: username,
-                    password: password, // A senha é armazenada para o admin aprovar
+                    password: password,
                     telegramId: telegramId, // Salva o ID do Telegram
                     contact: contact,
-                    requestedAt: new Date().toISOString()
+                    accessLevel: 'guest', // Acesso imediato como convidado
+                    expiresAt: expirationDate.toISOString() // Define a data de expiração
                 };
 
-                pendingUsers.push(newUserRequest);
-                localStorage.setItem('pending_users', JSON.stringify(pendingUsers));
+                allUsers.push(newUser);
+                localStorage.setItem('app_users', JSON.stringify(allUsers));
 
                 // Limpa o formulário e mostra mensagem de sucesso
-                document.getElementById('self-register-form').style.display = 'none';
-                const loginForm = document.getElementById('login-form');
-                loginForm.style.display = 'flex'; // Usa flex para manter o alinhamento do container
-                document.getElementById('login-error').textContent = '✅ Cadastro enviado! Aguarde a aprovação do administrador.';
+                toggleLoginRegister(false); // Volta para a tela de login
+                document.getElementById('login-error').textContent = '✅ Cadastro realizado! Você já pode fazer o login.';
                 document.getElementById('login-error').style.color = 'var(--accent-jonbet)';
                 document.getElementById('self-register-form').reset();
 
                 // Envia uma notificação para o administrador
-                sendAdminNotification('Novo Cadastro Pendente', `O usuário '${username}' acabou de se cadastrar e aguarda aprovação.`);
+                sendAdminNotification('✅ Novo Usuário Cadastrado', `O usuário '${username}' se cadastrou e já tem acesso ao sistema.`);
 
             } catch (e) {
                 console.error("Erro durante o auto-cadastro:", e);
                 errorDiv.textContent = 'Ocorreu um erro inesperado. Tente novamente.';
+            } finally {
+                // Reabilita o botão no final
+                if (button) button.disabled = false;
             }
         }
 
@@ -3115,7 +3128,8 @@
             const newUser = {
                 ...userToApprove,
                 accessLevel: accessLevel,
-                expiresAt: expirationDate
+                expiresAt: expirationDate,
+                telegramId: userToApprove.telegramId || null // Garante que o ID do Telegram seja mantido
             };
 
             let activeUsers = JSON.parse(localStorage.getItem('app_users')) || [];
