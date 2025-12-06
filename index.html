@@ -1087,11 +1087,20 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                             </span>
                         </div>
-                        <button type="submit" class="btn-action">CADASTRAR USUÁRIO</button>
+                        <div class="full-width" style="display: flex; gap: 10px;">
+                            <button type="submit" id="user-form-submit-btn" class="btn-action" style="flex: 1;">CADASTRAR USUÁRIO</button>
+                            <button type="button" id="user-form-cancel-btn" class="btn-action" onclick="resetUserForm()" style="flex: 1; display: none; background-color: #555;">CANCELAR EDIÇÃO</button>
+                        </div>
                     </form>
                     <div class="output-area" id="suite_resCadastro" style="margin-top: 20px; text-align: center; display: none;"></div>
 
                     <div id="user-list-container">
+                        <!-- SUGESTÃO: Campo de busca para usuários -->
+                        <div class="control-group" style="margin-top: 30px; margin-bottom: 15px;">
+                            <label for="user-search-input">🔍 Buscar Usuário por Nome:</label>
+                            <input type="text" id="user-search-input" onkeyup="populateUserList(1)" placeholder="Digite o nome para filtrar...">
+                        </div>
+
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Usuários Cadastrados</h3>
                             <div class="header-buttons">
@@ -2775,6 +2784,166 @@
             const confirmPassword = document.getElementById('reg_confirmPassword').value;
             const accessLevel = document.getElementById('reg_accessLevel').value;
 
+            const isEditMode = document.getElementById('reg_username').disabled;
+            outputArea.style.display = 'block'; // Mostra a área de output
+
+            if (!username || !password) {
+                outputArea.innerText = '❌ ERRO: Nome de usuário e senha são obrigatórios!';
+                outputArea.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            if (telegramId && !/^\d+$/.test(telegramId)) {
+                outputArea.innerText = '❌ ERRO: O ID do Telegram deve conter apenas números!';
+                outputArea.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                outputArea.innerText = '❌ ERRO: As senhas não coincidem!';
+                outputArea.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            try {
+                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+
+                if (isEditMode) {
+                    // --- MODO DE EDIÇÃO ---
+                    const userIndex = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+                    if (userIndex === -1) {
+                        outputArea.innerText = `❌ ERRO: Usuário "${username}" não encontrado para editar!`;
+                        outputArea.style.color = 'var(--accent-blaze)';
+                        return;
+                    }
+
+                    // Atualiza os dados
+                    users[userIndex].contact = contact || null;
+                    users[userIndex].telegramId = telegramId || null;
+                    users[userIndex].accessLevel = accessLevel;
+
+                    // Atualiza a senha SOMENTE se uma nova foi digitada
+                    if (password) {
+                        users[userIndex].password = btoa(password);
+                    }
+
+                    localStorage.setItem('app_users', JSON.stringify(users));
+                    outputArea.innerText = `✅ SUCESSO: Usuário "${username}" atualizado.`;
+                    outputArea.style.color = 'var(--accent-jonbet)';
+                    resetUserForm(); // Reseta o formulário para o modo de criação
+
+                } else {
+                    // --- MODO DE CRIAÇÃO ---
+                    if (users.find(u => u.username.toLowerCase() === username.toLowerCase()) || username.toLowerCase() === 'operador') {
+                        outputArea.innerText = `❌ ERRO: O nome de usuário "${username}" já existe!`;
+                        outputArea.style.color = 'var(--accent-blaze)';
+                        return;
+                    }
+
+                    const trialDays = document.getElementById('reg_trial_days').value;
+                    let expirationDate = null;
+                    if (trialDays && !isNaN(parseInt(trialDays))) {
+                        const expDate = new Date();
+                        expDate.setDate(expDate.getDate() + parseInt(trialDays));
+                        expirationDate = expDate.toISOString();
+                    }
+
+                    const newUser = {
+                        username: username,
+                        password: btoa(password), // Ofusca a senha usando Base64
+                        contact: contact || null, // Salva o contato ou null se estiver vazio
+                        telegramId: telegramId || null,
+                        accessLevel: accessLevel,
+                        expiresAt: expirationDate
+                    };
+
+                    users.push(newUser);
+                    outputArea.innerText = `✅ SUCESSO: Usuário "${username}" cadastrado.`;
+                    outputArea.style.color = 'var(--accent-jonbet)';
+                    form.reset();
+                    sendAdminNotification('✅ Novo Usuário Criado', `O usuário '${username}' foi cadastrado com sucesso.`);
+                }
+
+                localStorage.setItem('app_users', JSON.stringify(users));
+                
+                // Limpa a mensagem de sucesso após alguns segundos
+                setTimeout(() => {
+                    outputArea.style.display = 'none';
+                    outputArea.innerText = '';
+                }, 5000);
+                populateUserList(); // Atualiza a lista de usuários
+
+            } catch (e) {
+                console.error("Erro ao salvar usuário:", e);
+                outputArea.innerText = '❌ ERRO: Falha ao salvar o usuário no armazenamento local.';
+                outputArea.style.color = 'var(--accent-blaze)';
+            }
+        }
+
+        function editUser(username) {
+            try {
+                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const userToEdit = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+                if (!userToEdit) {
+                    alert('Usuário não encontrado para edição.');
+                    return;
+                }
+
+                // Preenche o formulário
+                document.getElementById('reg_username').value = userToEdit.username;
+                document.getElementById('reg_contact').value = userToEdit.contact || '';
+                document.getElementById('reg_telegram_id').value = userToEdit.telegramId || '';
+                document.getElementById('reg_accessLevel').value = userToEdit.accessLevel;
+
+                // Limpa e ajusta os campos de senha
+                document.getElementById('reg_password').value = '';
+                document.getElementById('reg_confirmPassword').value = '';
+                document.getElementById('reg_password').required = false; // Senha não é obrigatória na edição
+                document.getElementById('reg_confirmPassword').required = false;
+                document.getElementById('reg_password').placeholder = "Deixe em branco para não alterar";
+
+                // Ajusta o formulário para o modo de edição
+                document.getElementById('reg_username').disabled = true; // Impede a alteração do nome de usuário
+                document.getElementById('trial-duration-group').style.display = 'none'; // Oculta a duração do acesso
+                document.getElementById('user-form-submit-btn').textContent = 'SALVAR ALTERAÇÕES';
+                document.getElementById('user-form-cancel-btn').style.display = 'block';
+
+                // Rola a página para o topo para mostrar o formulário
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (e) {
+                console.error("Erro ao preparar edição do usuário:", e);
+                alert("Ocorreu uma falha ao carregar os dados do usuário para edição.");
+            }
+        }
+
+        function resetUserForm() {
+            const form = document.getElementById('suite_userRegistrationForm');
+            form.reset();
+
+            document.getElementById('reg_username').disabled = false;
+            document.getElementById('reg_password').required = true;
+            document.getElementById('reg_confirmPassword').required = true;
+            document.getElementById('reg_password').placeholder = "";
+
+            document.getElementById('user-form-submit-btn').textContent = 'CADASTRAR USUÁRIO';
+            document.getElementById('user-form-cancel-btn').style.display = 'none';
+            toggleTrialDurationField(); // Mostra/oculta o campo de duração conforme o nível de acesso
+        }
+
+        function registerUser_OLD(event) {
+            event.preventDefault();
+            const form = document.getElementById('suite_userRegistrationForm');
+            const outputArea = document.getElementById('suite_resCadastro');            
+            
+            const username = document.getElementById('reg_username').value.trim();
+            const password = document.getElementById('reg_password').value;
+            const contact = document.getElementById('reg_contact').value.trim();
+            const telegramId = document.getElementById('reg_telegram_id').value.trim();
+            const confirmPassword = document.getElementById('reg_confirmPassword').value;
+            const accessLevel = document.getElementById('reg_accessLevel').value;
+
             outputArea.style.display = 'block'; // Mostra a área de output
 
             if (!username || !password) {
@@ -2858,6 +3027,14 @@
             if (!tbody || !paginationControls) return;
             
             let users = JSON.parse(localStorage.getItem('app_users')) || [];
+
+            // SUGESTÃO: Filtra usuários com base na busca
+            const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
+            if (searchTerm) {
+                users = users.filter(user => 
+                    user.username.toLowerCase().includes(searchTerm)
+                );
+            }
 
             // Lógica de Ordenação
             users.sort((a, b) => {
