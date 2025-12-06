@@ -3418,6 +3418,30 @@
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('operatorName', user);
                     sessionStorage.setItem('accessLevel', accessLevel);
+
+                    // SUGESTÃO: Captura o ID do Telegram no primeiro login
+                    if (accessLevel !== 'admin') {
+                        try {
+                            const tg = window.Telegram.WebApp;
+                            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                                const telegramId = tg.initDataUnsafe.user.id;
+                                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                                const userIndex = users.findIndex(u => u.username.toLowerCase() === user.toLowerCase());
+
+                                // Verifica se o usuário foi encontrado e se o ID ainda não foi salvo
+                                if (userIndex !== -1 && !users[userIndex].telegramId) {
+                                    users[userIndex].telegramId = telegramId;
+                                    localStorage.setItem('app_users', JSON.stringify(users));
+                                    
+                                    // Envia uma notificação para o administrador sobre o novo ID vinculado
+                                    sendAdminNotification('✅ ID de Usuário Vinculado', `O ID do Telegram para '${user}' foi capturado: ${telegramId}`);
+                                }
+                            }
+                        } catch (e) {
+                            console.log("Não foi possível obter o ID do Telegram (pode não estar no ambiente do Telegram).");
+                        }
+                    }
+
                     showApp();
                 } else {
                     errorDiv.textContent = 'Usuário ou senha inválidos.';
