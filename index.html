@@ -3393,8 +3393,16 @@
                     let storedUsers = [];
                     try {
                         storedUsers = JSON.parse(localStorage.getItem('app_users')) || [];
-                    } catch(e) { console.error("Erro ao ler usuários:", e); }
-                    const foundUser = storedUsers.find(u => u.username.toLowerCase() === user.toLowerCase() && (u.password === pass || atob(u.password) === pass));
+                    } catch (e) { console.error("Erro ao ler usuários:", e); }
+
+                    const foundUser = storedUsers.find(u => {
+                        if (u.username.toLowerCase() !== user.toLowerCase()) return false;
+                        try {
+                            // Apenas senhas codificadas em Base64 serão válidas.
+                            return atob(u.password) === pass;
+                        } catch (e) { return false; } // Ignora senhas em texto puro (formato antigo)
+                    });
+
                     if (foundUser) {
                         // Verifica se a conta expirou
                         if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {                            
