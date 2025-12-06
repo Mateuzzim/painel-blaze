@@ -2783,6 +2783,12 @@
                 return;
             }
 
+            if (telegramId && !/^\d+$/.test(telegramId)) {
+                outputArea.innerText = '❌ ERRO: O ID do Telegram deve conter apenas números!';
+                outputArea.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
             if (password !== confirmPassword) {
                 outputArea.innerText = '❌ ERRO: As senhas não coincidem!';
                 outputArea.style.color = 'var(--accent-blaze)';
@@ -2808,7 +2814,7 @@
 
                 const newUser = {
                     username: username,
-                    password: password, // Em um app real, isso deve ser hasheado no servidor
+                    password: btoa(password), // Ofusca a senha usando Base64
                     contact: contact || null, // Salva o contato ou null se estiver vazio
                     telegramId: telegramId || null,
                     accessLevel: accessLevel,
@@ -2827,6 +2833,7 @@
                     outputArea.innerText = '';
                 }, 5000);
                 populateUserList(); // Atualiza a lista de usuários
+                sendAdminNotification('✅ Novo Usuário Criado', `O usuário '${username}' foi cadastrado com sucesso.`);
             } catch (e) {
                 console.error("Erro ao salvar usuário:", e);
                 outputArea.innerText = '❌ ERRO: Falha ao salvar o usuário no armazenamento local.';
@@ -3383,8 +3390,11 @@
                     accessLevel = 'admin';
                 } else {
                     // 2. Se não for admin, verifica a lista de usuários cadastrados
-                    const storedUsers = JSON.parse(localStorage.getItem('app_users')) || [];
-                    const foundUser = storedUsers.find(u => u.username === user && u.password === pass);
+                    let storedUsers = [];
+                    try {
+                        storedUsers = JSON.parse(localStorage.getItem('app_users')) || [];
+                    } catch(e) { console.error("Erro ao ler usuários:", e); }
+                    const foundUser = storedUsers.find(u => u.username.toLowerCase() === user.toLowerCase() && (u.password === pass || atob(u.password) === pass));
                     if (foundUser) {
                         // Verifica se a conta expirou
                         if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {                            
