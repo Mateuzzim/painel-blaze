@@ -152,17 +152,18 @@
         #logout-button {
             position: absolute;
             left: 0;
-            background: none;
-            border: 1px solid #444;
-            color: var(--text-color);
+            background: #f0f2f5; /* Fundo branco/cinza claro */
+            border: 1px solid #ddd;
+            color: #121212; /* Texto escuro para contraste */
             padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
             transition: background-color 0.3s, color 0.3s;
+            font-weight: 600; /* Deixa o texto um pouco mais forte */
         }
-        #logout-button:hover { background-color: #333; }
-        body.light-theme #logout-button:hover { background-color: #ddd; }
+        #logout-button:hover { background-color: #e0e0e0; }
+        body.light-theme #logout-button:hover { background-color: #dcdcdc; }
         #logout-button svg {
             width: 18px;
             height: 18px;
@@ -206,6 +207,24 @@
             stroke-width: 2;
             vertical-align: middle;
             margin-bottom: 2px;
+        }
+        .suite .tab-btn {
+            position: relative; /* Necessário para o posicionamento do badge */
+        }
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: var(--accent-blaze);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         /* Estilos para o Toggle Switch */
         .suite .toggle-switch-container {
@@ -338,6 +357,20 @@
             text-transform: uppercase;
             font-size: 0.9em;
         }
+        .suite #user-list-table .sortable-header {
+            cursor: pointer;
+            position: relative;
+            user-select: none; /* Impede a seleção de texto ao clicar */
+        }
+        .suite #user-list-table .sortable-header::after {
+            content: ' ↕️';
+            font-size: 0.8em;
+            position: absolute;
+            right: 10px;
+            opacity: 0.5;
+        }
+        .suite #user-list-table .sortable-header.asc::after { content: ' 🔼'; opacity: 1; }
+        .suite #user-list-table .sortable-header.desc::after { content: ' 🔽'; opacity: 1; }
 
         .suite #guest-permissions-container {
             margin-top: 40px;
@@ -543,7 +576,7 @@
             line-height: 0; /* Para alinhar o SVG perfeitamente */
         }
         #login-logo {
-            width: 150px; /* Ajuste a largura conforme necessário */
+            width: 120px; /* Ajuste a largura conforme necessário */
             height: auto;
             margin-bottom: 25px;
             border-radius: 8px; /* Opcional: para bordas arredondadas */
@@ -566,7 +599,7 @@
     <div id="welcome-message"></div>
     <div id="login-container">
         <!-- LOGO DA EMPRESA - Troque a URL em 'src' pela URL da sua imagem -->
-        <img src="https://via.placeholder.com/250x100.png?text=Sua+Logo+Aqui" alt="Logo da Empresa" id="login-logo">
+        <img src="https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg" alt="Logo da Empresa" id="login-logo">
         <form id="login-form">
             <h2>LOGIN USUÁRIO</h2>
             <div class="login-input-group">
@@ -639,6 +672,12 @@
                 </svg> Sair
             </button>
         </div>
+        <!-- SUGESTÃO: Botão de Suporte -->
+        <div style="text-align: center; margin-bottom: 10px;">
+            <a id="support-link" href="#" target="_blank" style="color: var(--text-color); text-decoration: none; opacity: 0.8;">
+                Precisa de ajuda? Fale com o Suporte
+            </a>
+        </div>
 
         <div class="main-container">
             <div class="layout-panel suite">
@@ -666,6 +705,7 @@
                     </button>
                     <button class="tab-btn" id="suite_tab_usuarios" onclick="suite_openTab('usuarios')" title="Gerenciar Usuários" style="display: none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span id="pending-users-badge" class="notification-badge" style="display: none;">0</span>
                     </button>
                 </div>
 
@@ -889,6 +929,15 @@
                         <input type="number" id="suite_fixedOffsetValue" placeholder="Ex: 15 (ou -5 para subtrair)">
                     </div>
                     <div class="control-group">
+                        <label>Data da Lista:</label>
+                        <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
+                            <input type="hidden" id="suite_branco_date_selector" value="amanha">
+                            <button class="platform-btn" id="suite_branco_btn_hoje" onclick="suite_selectDate('branco', 'hoje')">Hoje</button>
+                            <button class="platform-btn active" id="suite_branco_btn_amanha" onclick="suite_selectDate('branco', 'amanha')">Amanhã</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
                         <label>Cole o Histórico Copiado:</label>
                         <div class="hint">Cole a lista de horários (HH:MM) em que o branco saiu. Um por linha.</div>
                         <textarea id="suite_inputHistoricoBranco" oninput="suite_autoFormatBrancoInput(this)" placeholder="Exemplo:
@@ -921,6 +970,14 @@
                         </div>
                     </div>
                     <div class="control-group">
+                        <label>Data da Lista:</label>
+                        <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
+                            <input type="hidden" id="suite_ia_branco_date_selector" value="amanha">
+                            <button class="platform-btn" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
+                            <button class="platform-btn active" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
                         <label>Estratégia de I.A. para Branco:</label>
                         <select id="suite_iaBranco_estrategia">
                             <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
@@ -939,8 +996,18 @@
 
                 <div id="suite_config" class="tab-content">
                     <h2>⚙️ Configurações Gerais</h2>
+
+                    <!-- Seção de Dados do Usuário -->
+                    <div id="user-account-details" style="margin-bottom: 30px; padding: 15px; border: 1px solid #444; border-radius: 8px;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Dados da Conta</h3>
+                        <p><strong>Usuário:</strong> <span id="config_username">--</span></p>
+                        <p><strong>Nível de Acesso:</strong> <span id="config_accessLevel">--</span></p>
+                        <p><strong>Acesso Válido até:</strong> <span id="config_expiresAt">--</span></p>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Personalização</h3>
                     <div class="control-group">
-                        <label for="suite_userName">Nome do Operador:</label>
+                        <label for="suite_userName">Nome do Operador (para listas):</label>
                         <input type="text" id="suite_userName" placeholder="Digite seu nome ou apelido">
                         <div class="hint">Este nome pode ser usado para personalizar as listas geradas.</div>
                     </div>
@@ -948,6 +1015,39 @@
                         <button class="btn-action" onclick="suite_saveSettings(this)">💾 SALVAR CONFIGURAÇÕES</button>
                     </div>
                     <div class="output-area" id="suite_resConfig" style="margin-top: 20px; text-align: center; display: none;">
+                    </div>
+
+                    <!-- Seção de Alteração de Senha -->
+                    <div id="change-password-section" style="margin-top: 40px; border-top: 1px solid #444; padding-top: 20px;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Alterar Senha</h3>
+                        <form id="change-password-form" onsubmit="handleChangePassword(event)">
+                            <div class="control-group password-input-container">
+                                <label for="current_password">Senha Atual</label>
+                                <input type="password" id="current_password" required style="padding-right: 40px;">
+                                <span class="toggle-password" data-target="current_password">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                </span>
+                            </div>
+                            <div class="control-group password-input-container">
+                                <label for="new_password">Nova Senha</label>
+                                <input type="password" id="new_password" required style="padding-right: 40px;">
+                                <span class="toggle-password" data-target="new_password">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                </span>
+                            </div>
+                            <div class="control-group password-input-container">
+                                <label for="confirm_new_password">Confirmar Nova Senha</label>
+                                <input type="password" id="confirm_new_password" required style="padding-right: 40px;">
+                                <span class="toggle-password" data-target="confirm_new_password">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                </span>
+                            </div>
+                            <button type="submit" class="btn-action">ALTERAR SENHA</button>
+                        </form>
+                        <div id="change-password-result" class="output-area" style="margin-top: 20px; text-align: center; display: none;"></div>
                     </div>
                 </div>
 
@@ -993,9 +1093,18 @@
                     <div id="user-list-container">
                         <h3>Usuários Cadastrados</h3>
                         <table id="user-list-table">
-                            <thead><tr><th>Usuário</th><th>Nível</th><th>Expira em</th><th>Ações</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th id="sort-by-username" class="sortable-header" onclick="sortUserList('username')">Usuário</th>
+                                    <th>Nível</th><th id="sort-by-expiresAt" class="sortable-header" onclick="sortUserList('expiresAt')">Expira em</th><th>Ações</th>
+                                </tr></thead>
                             <tbody id="user-list-tbody"></tbody>
                         </table>
+                        <div id="user-list-pagination" style="margin-top: 15px; text-align: center; display: none;">
+                            <button id="prev-user-page" onclick="prevUserPage()" class="manual-btn util-btn" style="padding: 5px 10px;">Anterior</button>
+                            <span id="user-page-indicator" style="margin: 0 10px; vertical-align: middle;"></span>
+                            <button id="next-user-page" onclick="nextUserPage()" class="manual-btn util-btn" style="padding: 5px 10px;">Próximo</button>
+                        </div>
                     </div>
 
                     <div id="pending-users-container" style="margin-top: 40px;">
@@ -1106,6 +1215,9 @@
         // CONTROLE DE MANUTENÇÃO: Defina como 'true' para bloquear o login e mostrar a mensagem.
         const MAINTENANCE_MODE = false;
 
+        // CONTATO DE SUPORTE: Defina seu nome de usuário do Telegram aqui (sem o @).
+        const TELEGRAM_SUPPORT_USERNAME = 'branco_futuro_oficial';
+
         // Variáveis globais para armazenar as estatísticas por hora de diferentes fontes
         window.hourlyStats = {}; // Genérico, usado pelo seletor
         window.hourlyStatsFromCorrector = {}; // Do Corretor de Sinais
@@ -1191,15 +1303,11 @@
         function loadFromStorage() {
             try {
                 // Carrega dados para a SUITE
-                document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || '';
+                // document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || ''; // Removido para não carregar histórico
                 document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
 
                 // Carrega dados para o DASHBOARD
-                const dashInput = document.getElementById('dash_inputData');
-                if (dashInput) {
-                    dashInput.value = localStorage.getItem('historicoInput') || '';
-                }
-
+                // O histórico do dashboard ('historicoInput') não será mais carregado automaticamente.
             } catch (e) {
                 console.error("Não foi possível carregar do localStorage:", e);
             }
@@ -1257,9 +1365,47 @@
                 btns[i].classList.remove("active");
             }
 
+            // Popula os dados do usuário quando a aba de configurações é aberta
+            if (tabName === 'config') {
+                populateUserSettings();
+            }
+
             document.getElementById('suite_' + tabName).classList.add("active");
             document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`).classList.add("active");
             localStorage.setItem('suite_activeTab', tabName);
+        }
+
+        function populateUserSettings() {
+            const username = sessionStorage.getItem('operatorName');
+            const accessLevel = sessionStorage.getItem('accessLevel');
+
+            if (!username) return;
+
+            document.getElementById('config_username').textContent = username;
+            document.getElementById('config_accessLevel').textContent = accessLevel;
+
+            let expirationText = 'Permanente'; // Padrão para admin
+
+            // Busca os detalhes do usuário no localStorage para encontrar a data de expiração
+            if (accessLevel !== 'admin') {
+                try {
+                    const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                    const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+                    if (currentUser && currentUser.expiresAt) {
+                        expirationText = new Date(currentUser.expiresAt).toLocaleString('pt-BR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                    } else if (currentUser) {
+                        expirationText = 'Permanente';
+                    }
+                } catch (e) {
+                    console.error("Erro ao buscar dados do usuário:", e);
+                    expirationText = 'Erro ao carregar';
+                }
+            }
+            document.getElementById('config_expiresAt').textContent = expirationText;
         }
 
         function suite_clearTextarea(elementId) {
@@ -1413,15 +1559,21 @@
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_iaBranco_estrategia');
+            const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
             const userName = localStorage.getItem('suite_userName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
 
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            
+            const targetDate = new Date();
+            if (dateChoice === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            out += `📅 Data: *${targetDate.toLocaleDateString('pt-BR')}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
-            out += `♻️ ${qtd} Entradas\n`;
+            out += `♻️ 6 Entradas\n`;
             out += `--------------------------------\n`;
 
             const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
@@ -2055,16 +2207,19 @@
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_estrategiaBranco');
             const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const dateChoice = document.getElementById('suite_branco_date_selector').value;
             const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
 
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const dataAmanha = tomorrow.toLocaleDateString('pt-BR');
+            const targetDate = new Date();
+            if (dateChoice === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            const dataLista = targetDate.toLocaleDateString('pt-BR');
 
             let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
             out += `👤 Operador: *${userName}*\n`;
-            out += `📅 Data: *${dataAmanha}*\n`;
+            out += `📅 Data: *${dataLista}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n🔢 Entradas: *${intervaloMinimo > 0 ? intervaloMinimo : qtdSinais}*\n`;
 
             let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
@@ -2173,6 +2328,13 @@
             return diff;
         }
 
+        function suite_selectDate(tabPrefix, choice) {
+            document.getElementById(`suite_${tabPrefix}_date_selector`).value = choice;
+            document.getElementById(`suite_${tabPrefix}_btn_hoje`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_amanha`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_${choice}`).classList.add('active');
+        }
+
         // ==========================================
         // FIM: SCRIPTS DE gerador_de_lista2.html
         // ==========================================
@@ -2192,6 +2354,11 @@
 
             document.getElementById('dash_' + tabName).classList.add("active");
             document.querySelector(`.dashboard .tab-btn[onclick="dash_openTab('${tabName}')"]`).classList.add("active");
+
+            // Popula os dados do usuário quando a aba de configurações é aberta
+            if (tabName === 'config') {
+                populateUserSettings();
+            }
             localStorage.setItem('dashboardActiveTab', tabName);
         }
 
@@ -2455,12 +2622,12 @@
             if (MAINTENANCE_MODE) {
                 document.getElementById('username').disabled = true;
                 document.getElementById('password').disabled = true;
-                const loginButton = document.getElementById('login-button');
-                loginButton.disabled = true;
-                loginButton.querySelector('.login-button-text').textContent = 'MANUTENÇÃO';
+                const loginButtonMaintenance = document.getElementById('login-button');
+                loginButtonMaintenance.disabled = true;
+                loginButtonMaintenance.querySelector('.login-button-text').textContent = 'MANUTENÇÃO';
                 document.getElementById('login-error').textContent = 'Sistema em manutenção. Tente novamente mais tarde.';
-            } else if (isLogout) {
-                // Se for um logout, apenas mostra a tela de login e não faz mais nada.
+                return; // Para a execução aqui se estiver em manutenção
+            } else if (isLogout) { // Se for um logout, apenas mostra a tela de login e não faz mais nada.
                 return;
             }
             // --- LÓGICA DE LOGIN E INICIALIZAÇÃO ---
@@ -2503,6 +2670,12 @@
             document.getElementById('show-register-link').addEventListener('click', (e) => { e.preventDefault(); toggleLoginRegister(true); });
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
+
+            // SUGESTÃO: Configura o link de suporte dinamicamente
+            const supportLink = document.getElementById('support-link');
+            if (supportLink) {
+                supportLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
+            }
             // Inicializa o app principal
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
             initializeApp();
@@ -2574,6 +2747,14 @@
             }
         }
 
+        let currentUserListPage = 1;
+        const usersPerPage = 5;
+        let userListSort = {
+            column: 'username', // Coluna de ordenação padrão
+            direction: 'asc'    // Direção padrão
+        };
+
+
         function handleSelfRegistration(event) {
             event.preventDefault();
             const errorDiv = document.getElementById('register-error');
@@ -2631,29 +2812,100 @@
             }
         }
 
-        function populateUserList() {
+        function populateUserList(page = 1) {
             const tbody = document.getElementById('user-list-tbody');
-            if (!tbody) return;
+            const paginationControls = document.getElementById('user-list-pagination');
+            const pageIndicator = document.getElementById('user-page-indicator');
+            const prevButton = document.getElementById('prev-user-page');
+            const nextButton = document.getElementById('next-user-page');
 
-            const users = JSON.parse(localStorage.getItem('app_users')) || [];
+            if (!tbody || !paginationControls) return;
+            
+            let users = JSON.parse(localStorage.getItem('app_users')) || [];
+
+            // Lógica de Ordenação
+            users.sort((a, b) => {
+                let valA = a[userListSort.column];
+                let valB = b[userListSort.column];
+
+                // Tratamento especial para datas de expiração
+                if (userListSort.column === 'expiresAt') {
+                    // Usuários permanentes (null) são considerados "maiores" que qualquer data
+                    if (valA === null) return 1;
+                    if (valB === null) return -1;
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                } else {
+                    // Ordenação de texto padrão (case-insensitive)
+                    valA = String(valA).toLowerCase();
+                    valB = String(valB).toLowerCase();
+                }
+
+                if (valA < valB) return userListSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return userListSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Atualiza os indicadores visuais nos cabeçalhos
+            document.querySelectorAll('.sortable-header').forEach(th => th.classList.remove('asc', 'desc'));
+            const activeHeader = document.getElementById(`sort-by-${userListSort.column}`);
+            if (activeHeader) {
+                activeHeader.classList.add(userListSort.direction);
+            }
+
+
+            currentUserListPage = page;
+
+            const totalPages = Math.ceil(users.length / usersPerPage);
+            if (totalPages <= 1) {
+                paginationControls.style.display = 'none';
+            } else {
+                paginationControls.style.display = 'block';
+            }
+
+            pageIndicator.textContent = `Página ${currentUserListPage} de ${totalPages}`;
+            prevButton.disabled = (currentUserListPage === 1);
+            nextButton.disabled = (currentUserListPage === totalPages);
+
+            const startIndex = (currentUserListPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const paginatedUsers = users.slice(startIndex, endIndex);
+
             tbody.innerHTML = ''; // Limpa a lista
 
-            users.forEach(user => {
+            paginatedUsers.forEach(user => {
                 const expirationText = user.expiresAt 
                     ? new Date(user.expiresAt).toLocaleString('pt-BR') 
                     : 'Permanente';
 
                 const row = tbody.insertRow();
+                const actionsCell = row.insertCell();
+                actionsCell.style.whiteSpace = 'nowrap';
+
                 row.innerHTML = `
                     <td>${user.username}</td>
                     <td>${user.accessLevel}</td>
                     <td>${expirationText}</td>
-                    <td>
-                        <button onclick="renewUser('${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Renovar</button>
-                        <button onclick="deleteUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
-                    </td>
                 `;
+
+                actionsCell.innerHTML = `
+                    <button onclick="renewUser('${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Renovar</button>
+                    <button onclick="deleteUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
+                `;
+                row.appendChild(actionsCell);
             });
+        }
+
+        function sortUserList(column) {
+            if (userListSort.column === column) {
+                // Se clicar na mesma coluna, inverte a direção
+                userListSort.direction = userListSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Se clicar em uma nova coluna, define como ascendente
+                userListSort.column = column;
+                userListSort.direction = 'asc';
+            }
+            populateUserList(1); // Volta para a primeira página e reaplica a ordenação
         }
 
         function populatePendingUserList() {
@@ -2661,6 +2913,17 @@
             if (!tbody) return;
 
             const pendingUsers = JSON.parse(localStorage.getItem('pending_users')) || [];
+            const badge = document.getElementById('pending-users-badge');
+
+            // Atualiza o badge de notificação
+            if (badge) {
+                if (pendingUsers.length > 0) {
+                    badge.textContent = pendingUsers.length;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
             tbody.innerHTML = '';
 
             pendingUsers.forEach((user, index) => {
@@ -2730,6 +2993,20 @@
             populatePendingUserList();
         }
 
+        function nextUserPage() {
+            const users = JSON.parse(localStorage.getItem('app_users')) || [];
+            const totalPages = Math.ceil(users.length / usersPerPage);
+            if (currentUserListPage < totalPages) {
+                populateUserList(currentUserListPage + 1);
+            }
+        }
+
+        function prevUserPage() {
+            if (currentUserListPage > 1) {
+                populateUserList(currentUserListPage - 1);
+            }
+        }
+
         function renewUser(username) {
             const daysToAdd = prompt(`Quantos dias de acesso você deseja adicionar para o usuário "${username}"?`, "7");
 
@@ -2763,7 +3040,7 @@
                 user.expiresAt = startDate.toISOString();
 
                 localStorage.setItem('app_users', JSON.stringify(users));
-                populateUserList(); // Refresh the list to show the new expiration date
+                populateUserList(currentUserListPage); // Refresh the list to show the new expiration date
 
             } catch (e) {
                 console.error("Erro ao renovar o acesso do usuário:", e);
@@ -2789,12 +3066,16 @@
                 let users = JSON.parse(localStorage.getItem('app_users')) || [];
                 const updatedUsers = users.filter(u => u.username !== username);
                 localStorage.setItem('app_users', JSON.stringify(updatedUsers));
-                populateUserList(); // Atualiza a lista na tela
+                populateUserList(1); // Atualiza a lista na tela, voltando para a primeira página
 
-                const outputArea = document.getElementById('suite_resCadastro');
+                if (!outputArea) return;
                 outputArea.innerText = `✅ SUCESSO: Usuário "${username}" excluído.`;
                 outputArea.style.color = 'var(--accent-jonbet)';
                 outputArea.style.display = 'block';
+                // Limpa a mensagem após alguns segundos
+                setTimeout(() => {
+                    outputArea.style.display = 'none';
+                }, 3000);
 
             } catch (e) {
                 console.error("Erro ao excluir usuário:", e);
@@ -2929,8 +3210,86 @@
 
         function handleForgotPassword(event) {
             event.preventDefault();
-            alert('Funcionalidade de recuperação de senha ainda não implementada.');
+            const username = prompt("Por favor, digite seu nome de usuário para iniciar a recuperação da senha:");
+
+            if (!username || username.trim() === '') {
+                alert("O nome de usuário não pode ser vazio.");
+                return;
+            }
+
+            // Gera uma mensagem pré-preenchida para o usuário enviar ao suporte via Telegram.
+            const message = `Olá, esqueci minha senha para o usuário '${username.trim()}'. Poderia me ajudar a recuperá-la?`;
+            const telegramUrl = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}&text=${encodeURIComponent(message)}`;
+
+            // Informa ao usuário para entrar em contato com o suporte.
+            document.getElementById('login-error').innerHTML = `Para redefinir sua senha, <a href="${telegramUrl}" target="_blank" style="color: var(--accent-jonbet); text-decoration: underline;">clique aqui para contatar o suporte via Telegram</a> e informe seu nome de usuário.`;
         }
+
+        function handleChangePassword(event) {
+            event.preventDefault();
+            const resultDiv = document.getElementById('change-password-result');
+            const form = document.getElementById('change-password-form');
+
+            const currentPassword = document.getElementById('current_password').value;
+            const newPassword = document.getElementById('new_password').value;
+            const confirmNewPassword = document.getElementById('confirm_new_password').value;
+
+            resultDiv.style.display = 'block';
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                resultDiv.textContent = '❌ ERRO: Todos os campos são obrigatórios.';
+                resultDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            if (newPassword !== confirmNewPassword) {
+                resultDiv.textContent = '❌ ERRO: A nova senha e a confirmação não coincidem.';
+                resultDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            const username = sessionStorage.getItem('operatorName');
+            const accessLevel = sessionStorage.getItem('accessLevel');
+
+            // Caso especial para o administrador
+            if (accessLevel === 'admin') {
+                resultDiv.textContent = '❌ ERRO: A senha do administrador não pode ser alterada por aqui.';
+                resultDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            try {
+                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const userIndex = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+
+                if (userIndex === -1) {
+                    resultDiv.textContent = '❌ ERRO: Usuário não encontrado no sistema.';
+                    resultDiv.style.color = 'var(--accent-blaze)';
+                    return;
+                }
+
+                const user = users[userIndex];
+                if (user.password !== currentPassword) {
+                    resultDiv.textContent = '❌ ERRO: A senha atual está incorreta.';
+                    resultDiv.style.color = 'var(--accent-blaze)';
+                    return;
+                }
+
+                // Atualiza a senha
+                user.password = newPassword;
+                localStorage.setItem('app_users', JSON.stringify(users));
+
+                resultDiv.textContent = '✅ SUCESSO: Senha alterada!';
+                resultDiv.style.color = 'var(--accent-jonbet)';
+                form.reset();
+
+            } catch (e) {
+                console.error("Erro ao alterar senha:", e);
+                resultDiv.textContent = '❌ ERRO: Ocorreu uma falha inesperada ao tentar alterar a senha.';
+                resultDiv.style.color = 'var(--accent-blaze)';
+            }
+        }
+
 
 
         function handleLogin(event) {
@@ -2968,8 +3327,10 @@
                     const foundUser = storedUsers.find(u => u.username === user && u.password === pass);
                     if (foundUser) {
                         // Verifica se a conta expirou
-                        if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {
-                            errorDiv.textContent = 'Seu período de acesso de teste expirou.';
+                        if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {                            
+                            const contactMessage = `Seu período de acesso expirou. <a href="tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}&text=Olá, meu acesso para o usuário '${user}' expirou. Gostaria de renovar." target="_blank" style="color: var(--accent-jonbet); text-decoration: underline;">Clique aqui para renovar via Telegram</a>.`;
+                            errorDiv.innerHTML = contactMessage;
+
                             logActivity(user, 'Login Falhou (Expirado)', false);
                             loginButton.disabled = false;
                             buttonText.style.display = 'inline';
@@ -3026,10 +3387,13 @@
 
         function applyAccessControl() {
             const accessLevel = sessionStorage.getItem('accessLevel');
+            const userTab = document.getElementById('suite_tab_usuarios');
 
+            // Garante que a aba de admin esteja sempre oculta por padrão
+            if (userTab) userTab.style.display = 'none';
             // Lógica para Admin
             if (accessLevel === 'admin') {
-                document.getElementById('suite_tab_usuarios').style.display = 'block';
+                if (userTab) userTab.style.display = 'block'; // <-- CORREÇÃO: Mostra a aba para o admin
                 populateUserList(); // Popula a lista de usuários para o admin
                 populatePendingUserList(); // Popula a lista de pendentes
                 setupPermissionControls(); // Carrega as checkboxes de permissão
@@ -3037,6 +3401,7 @@
             }
 
             // Lógica para Convidado
+            // A lógica para 'operator' também cairá aqui, escondendo a aba de admin corretamente.
             if (accessLevel === 'guest') {
                 const permissions = getGuestPermissions();
                 let firstVisibleTab = null;
