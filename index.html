@@ -2731,26 +2731,12 @@
             // --- LÓGICA DE LOGIN E INICIALIZAÇÃO ---
             try {
                 const tg = window.Telegram.WebApp;
-                tg.ready(); // Informa ao Telegram que o app está pronto
-
-                const tgUser = tg.initDataUnsafe.user;
-
-                if (tgUser) {
-                    // Se encontrou um usuário do Telegram, faz o login automático
-                    console.log("Acesso via Telegram por:", tgUser); // Monitoramento no console
-                    const operatorName = tgUser.username || `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
-                    
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('operatorName', operatorName);
-                    
-                    showApp();
-                } else {
-                    // Se não está no Telegram, usa a lógica de login manual
-                    checkManualLogin();
-                }
+                tg.ready();
+                console.log("App pronto no Telegram, aguardando login manual.");
+                checkManualLogin(); // Força a verificação de login manual sempre
             } catch (e) {
                 // Se o objeto do Telegram não existir, cai aqui e usa o login manual
-                console.log("App não está rodando no Telegram, usando login manual.");
+                console.log("App não está no Telegram ou objeto não encontrado, usando login manual.");
                 checkManualLogin();
             }
 
