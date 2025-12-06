@@ -2449,6 +2449,9 @@
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
             // Verifica o modo de manutenção ao carregar a página
+            const urlParams = new URLSearchParams(window.location.search);
+            const isLogout = urlParams.get('logout') === 'true';
+
             if (MAINTENANCE_MODE) {
                 document.getElementById('username').disabled = true;
                 document.getElementById('password').disabled = true;
@@ -2456,6 +2459,9 @@
                 loginButton.disabled = true;
                 loginButton.querySelector('.login-button-text').textContent = 'MANUTENÇÃO';
                 document.getElementById('login-error').textContent = 'Sistema em manutenção. Tente novamente mais tarde.';
+            } else if (isLogout) {
+                // Se for um logout, apenas mostra a tela de login e não faz mais nada.
+                return;
             }
             // --- LÓGICA DE LOGIN E INICIALIZAÇÃO ---
             try {
@@ -2916,8 +2922,9 @@
         function handleLogout() {
             // Limpa toda a sessão para garantir um logout completo
             sessionStorage.clear();
-            sessionStorage.removeItem('isLoggedIn'); // Remove o estado de login
-            window.location.reload(); // Recarrega a página para voltar ao estado de login
+            // Redireciona para a página com um parâmetro de logout para forçar a tela de login,
+            // mesmo em ambiente Telegram.
+            window.location.href = window.location.pathname + '?logout=true';
         }
 
         function handleForgotPassword(event) {
