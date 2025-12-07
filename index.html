@@ -3039,18 +3039,25 @@
             direction: 'asc'    // Direção padrão
         };
 
-        function populateUserList(page = 1) {
+        async function populateUserList(page = 1) {
             const tbody = document.getElementById('user-list-tbody');
             const paginationControls = document.getElementById('user-list-pagination');
             const pageIndicator = document.getElementById('user-page-indicator');
             const prevButton = document.getElementById('prev-user-page');
             const nextButton = document.getElementById('next-user-page');
-
+        
             if (!tbody || !paginationControls) return;
             
-            let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-
-            // SUGESTÃO: Filtra usuários com base na busca
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Carregando usuários da nuvem...</td></tr>';
+        
+            try {
+                const querySnapshot = await db.collection("users").get();
+                let users = [];
+                querySnapshot.forEach((doc) => {
+                    // Adiciona o ID do documento do Firebase, que é útil para editar/excluir
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+        
             const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
             if (searchTerm) {
                 users = users.filter(user => 
@@ -3058,7 +3065,7 @@
                 );
             }
 
-            // Lógica de Ordenação
+            // Lógica de Ordenação (existente)
             users.sort((a, b) => {
                 let valA = a[userListSort.column];
                 let valB = b[userListSort.column];
@@ -3081,13 +3088,11 @@
                 return 0;
             });
 
-            // Atualiza os indicadores visuais nos cabeçalhos
             document.querySelectorAll('.sortable-header').forEach(th => th.classList.remove('asc', 'desc'));
             const activeHeader = document.getElementById(`sort-by-${userListSort.column}`);
             if (activeHeader) {
                 activeHeader.classList.add(userListSort.direction);
             }
-
 
             currentUserListPage = page;
 
@@ -3107,7 +3112,7 @@
             const paginatedUsers = users.slice(startIndex, endIndex);
 
             tbody.innerHTML = ''; // Limpa a lista
-
+        
             paginatedUsers.forEach(user => {
                 const expirationText = user.expiresAt 
                     ? new Date(user.expiresAt).toLocaleString('pt-BR') 
@@ -3126,12 +3131,17 @@
                 `;
 
                 actionsCell.innerHTML = `
-                    <button onclick="editUser('${user.username}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Editar</button>
-                    <button onclick="renewUser('${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
-                    <button onclick="deleteUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
+                    <button onclick="editUser('${user.id}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Editar</button>
+                    <button onclick="renewUser('${user.id}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
+                    <button onclick="deleteUser('${user.id}', '${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
                 `;
                 row.appendChild(actionsCell);
             });
+
+            } catch (error) {
+                console.error("Erro ao buscar usuários do Firebase: ", error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--accent-blaze);">Falha ao carregar usuários.</td></tr>';
+            }
         }
 
         function sortUserList(column) {
