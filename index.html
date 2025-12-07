@@ -603,6 +603,11 @@
             margin-top: 20px;
         }
     </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div id="welcome-message"></div>
@@ -1229,6 +1234,49 @@
         // CONTATO DE SUPORTE: Defina seu nome de usuário do Telegram aqui (sem o @).
         const TELEGRAM_SUPPORT_USERNAME = 'branco_futuro_oficial';
 
+        // ==========================================
+        // INICIALIZAÇÃO DO FIREBASE (COM ALERTA VISUAL)
+        // ==========================================
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAoRK_QV01Dvfr0HVwFH5UsKE1SY1uB5Ho",
+          authDomain: "meu-painel-app-9f7ab.firebaseapp.com",
+          projectId: "meu-painel-app-9f7ab",
+          storageBucket: "meu-painel-app-9f7ab.firebasestorage.app",
+          messagingSenderId: "972379366884",
+          appId: "1:972379366884:web:1f657522d8cdb8699d93f1"
+        };
+
+        // Variáveis globais para o banco de dados
+        let db, auth;
+
+        try {
+            // 1. Inicializa o Firebase
+            if (typeof firebase === 'undefined') {
+                throw new Error("Erro de carregamento: O Firebase não foi encontrado.");
+            }
+            
+            firebase.initializeApp(firebaseConfig);
+
+            // 2. Inicializa os serviços
+            db = firebase.firestore();
+            auth = firebase.auth();
+
+            // 3. MOSTRA O ALERTA DE SUCESSO NA TELA
+            // Isso vai fazer uma janela aparecer!
+            alert("✅ SUCESSO!\n\nO Firebase foi conectado corretamente.\nAgora seu painel está pronto para salvar dados na nuvem.");
+            console.log("🔥 Firebase conectado com sucesso!");
+
+        } catch (erro) {
+            // Se der erro, mostra um alerta vermelho
+            alert("❌ ERRO AO CONECTAR:\n" + erro.message);
+            console.error(erro);
+        }
+
+        // ==========================================
+        // FIM DA INICIALIZAÇÃO
+        // ==========================================
+
         // Variáveis globais para armazenar as estatísticas por hora de diferentes fontes
         window.hourlyStats = {}; // Genérico, usado pelo seletor
         window.hourlyStatsFromCorrector = {}; // Do Corretor de Sinais
@@ -1238,13 +1286,14 @@
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             const isLight = document.body.classList.contains('light-theme');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            // localStorage.setItem('theme', isLight ? 'light' : 'dark');
             document.getElementById('theme-switcher').innerText = isLight ? '🌙' : '☀️';
         }
 
         function applySavedTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
+            // const savedTheme = localStorage.getItem('theme');
+            // if (savedTheme === 'light') {
+            if (false) { // Desativado
                 document.body.classList.add('light-theme');
                 document.getElementById('theme-switcher').innerText = '🌙';
             } else {
@@ -1305,28 +1354,28 @@
         function saveToStorage(elementId) {
             try {
                 const content = document.getElementById(elementId).value;
-                localStorage.setItem(elementId, content);
+                // localStorage.setItem(elementId, content);
             } catch (e) {
                 console.error("Não foi possível salvar no localStorage:", e);
             }
         }
 
         function loadFromStorage() {
-            try {
-                // Carrega dados para a SUITE
-                // document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || ''; // Removido para não carregar histórico
-                document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
+            // try {
+            //     // Carrega dados para a SUITE
+            //     // document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || ''; // Removido para não carregar histórico
+            //     document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
 
-                // Carrega dados para o DASHBOARD
-                // O histórico do dashboard ('historicoInput') não será mais carregado automaticamente.
-            } catch (e) {
-                console.error("Não foi possível carregar do localStorage:", e);
-            }
+            //     // Carrega dados para o DASHBOARD
+            //     // O histórico do dashboard ('historicoInput') não será mais carregado automaticamente.
+            // } catch (e) {
+            //     console.error("Não foi possível carregar do localStorage:", e);
+            // }
         }
 
         function suite_saveSettings(btn) {
-            const userName = document.getElementById('suite_userName').value;
-            localStorage.setItem('suite_userName', userName);
+            // const userName = document.getElementById('suite_userName').value;
+            // localStorage.setItem('suite_userName', userName);
 
             const resArea = document.getElementById('suite_resConfig');
             resArea.innerText = 'Configurações salvas com sucesso!';
@@ -1383,7 +1432,7 @@
 
             document.getElementById('suite_' + tabName).classList.add("active");
             document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`).classList.add("active");
-            localStorage.setItem('suite_activeTab', tabName);
+            // localStorage.setItem('suite_activeTab', tabName);
         }
 
         function populateUserSettings() {
@@ -1400,8 +1449,8 @@
 
             // Busca os detalhes do usuário no localStorage para encontrar a data de expiração e o ID
             if (accessLevel !== 'admin') {
-                try {
-                    const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                try { // A lógica de usuários agora dependerá da sessão
+                    const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                     const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
                     if (currentUser) {
@@ -1429,7 +1478,7 @@
             expiresAtSpan.style.fontWeight = ''; // Reseta o peso da fonte
 
             if (accessLevel !== 'admin' && expirationText !== 'Permanente' && expirationText.includes('/')) {
-                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
                 if (currentUser && currentUser.expiresAt) {
                     const expirationDate = new Date(currentUser.expiresAt);
@@ -1496,7 +1545,7 @@
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_estrategia');
-            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
             const filterByBestHour = document.getElementById('suite_filterByBestHour').checked;
             
@@ -1609,7 +1658,7 @@
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_iaBranco_estrategia');
             const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
-            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
             const isAutoMode = document.getElementById('suite_iaBranco_autoMode').checked;
             const agressividade = document.getElementById('suite_iaBranco_agressividade').value;
@@ -1836,7 +1885,7 @@
             const qtd = parseInt(document.getElementById('suite_qtdProjecoes').value);
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const userName = sessionStorage.getItem('operatorName') || 'Operador';
             
             if (!input) {
                 alert("Por favor, cole os dados do histórico.");
@@ -1958,7 +2007,7 @@
             const qtd = parseInt(document.getElementById('suite_manualQtdSinais').value);
             const intervalo = parseInt(document.getElementById('suite_manualIntervalo').value);
             const platform = document.getElementById('suite_platformSelector').value;
-            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
 
             if (!pattern) { alert("Por favor, insira uma sequência para gerar a lista."); return; }
@@ -2309,7 +2358,7 @@
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_estrategiaBranco');
-            const userName = localStorage.getItem('suite_userName') || 'Operador';
+            const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const dateChoice = document.getElementById('suite_branco_date_selector').value;
             const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
 
@@ -2458,17 +2507,17 @@
             document.getElementById('dash_' + tabName).classList.add("active");
             document.querySelector(`.dashboard .tab-btn[onclick="dash_openTab('${tabName}')"]`).classList.add("active");
 
-            // Popula os dados do usuário quando a aba de configurações é aberta
-            if (tabName === 'config') {
-                populateUserSettings();
-            }
-            localStorage.setItem('dashboardActiveTab', tabName);
+            // // Popula os dados do usuário quando a aba de configurações é aberta
+            // if (tabName === 'config') {
+            //     populateUserSettings();
+            // }
+            // localStorage.setItem('dashboardActiveTab', tabName);
         }
 
         function dash_limparTudo() {
-            document.getElementById('dash_inputData').value = '';
-            document.getElementById('dash_grid-resultados').innerHTML = '';
-            localStorage.removeItem('historicoInput');
+            // document.getElementById('dash_inputData').value = '';
+            // document.getElementById('dash_grid-resultados').innerHTML = '';
+            // localStorage.removeItem('historicoInput');
             document.getElementById('dash_count-red').innerText = '0';
             document.getElementById('dash_count-black').innerText = '0';
             document.getElementById('dash_count-white').innerText = '0';
@@ -2519,12 +2568,12 @@
             const textarea = document.getElementById('dash_inputData');
             let rawData = textarea.value;
 
-            if (!carregandoPagina) {
-                localStorage.setItem('historicoInput', rawData);
-            } else {
-                rawData = localStorage.getItem('historicoInput') || '';
-                textarea.value = rawData;
-            }
+            // if (!carregandoPagina) {
+            //     // localStorage.setItem('historicoInput', rawData);
+            // } else {
+            //     // rawData = localStorage.getItem('historicoInput') || '';
+            //     textarea.value = rawData;
+            // }
 
             const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
             const resultadosPorMinuto = {};
@@ -2663,7 +2712,7 @@
                 dashPanel.classList.add('platform-jonbet');
                 if (platformEmoji) platformEmoji.innerText = '🟢';
             }
-            localStorage.setItem('dashboardPlatform', platform);
+            // localStorage.setItem('dashboardPlatform', platform);
             // Sincroniza com o outro painel, evitando loop infinito
             if (!isSync) {
                 suite_selectPlatform(platform, true);
@@ -2772,117 +2821,90 @@
             document.getElementById('import-users-input').addEventListener('change', handleUserImport);
         });
 
+        // ==========================================
+        // NOVA FUNÇÃO: SALVAR NO FIREBASE
+        // ==========================================
         function registerUser(event) {
             event.preventDefault();
             const form = document.getElementById('suite_userRegistrationForm');
-            const outputArea = document.getElementById('suite_resCadastro');            
+            const outputArea = document.getElementById('suite_resCadastro');
             
+            // Pega os dados do formulário
             const username = document.getElementById('reg_username').value.trim();
             const password = document.getElementById('reg_password').value;
             const contact = document.getElementById('reg_contact').value.trim();
             const telegramId = document.getElementById('reg_telegram_id').value.trim();
             const confirmPassword = document.getElementById('reg_confirmPassword').value;
             const accessLevel = document.getElementById('reg_accessLevel').value;
+            const trialDays = document.getElementById('reg_trial_days').value;
 
-            const isEditMode = document.getElementById('reg_username').disabled;
-            outputArea.style.display = 'block'; // Mostra a área de output
+            // --- Validações Básicas ---
+            outputArea.style.display = 'block';
+            outputArea.innerText = '⏳ Salvando no banco de dados...';
+            outputArea.style.color = '#fff';
 
             if (!username || !password) {
                 outputArea.innerText = '❌ ERRO: Nome de usuário e senha são obrigatórios!';
                 outputArea.style.color = 'var(--accent-blaze)';
                 return;
             }
-
-            if (telegramId && !/^\d+$/.test(telegramId)) {
-                outputArea.innerText = '❌ ERRO: O ID do Telegram deve conter apenas números!';
-                outputArea.style.color = 'var(--accent-blaze)';
-                return;
-            }
-
             if (password !== confirmPassword) {
                 outputArea.innerText = '❌ ERRO: As senhas não coincidem!';
                 outputArea.style.color = 'var(--accent-blaze)';
                 return;
             }
 
-            try {
-                let users = JSON.parse(localStorage.getItem('app_users')) || [];
-
-                if (isEditMode) {
-                    // --- MODO DE EDIÇÃO ---
-                    const userIndex = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-                    if (userIndex === -1) {
-                        outputArea.innerText = `❌ ERRO: Usuário "${username}" não encontrado para editar!`;
-                        outputArea.style.color = 'var(--accent-blaze)';
-                        return;
-                    }
-
-                    // Atualiza os dados
-                    users[userIndex].contact = contact || null;
-                    users[userIndex].telegramId = telegramId || null;
-                    users[userIndex].accessLevel = accessLevel;
-
-                    // Atualiza a senha SOMENTE se uma nova foi digitada
-                    if (password) {
-                        users[userIndex].password = btoa(password);
-                    }
-
-                    localStorage.setItem('app_users', JSON.stringify(users));
-                    outputArea.innerText = `✅ SUCESSO: Usuário "${username}" atualizado.`;
-                    outputArea.style.color = 'var(--accent-jonbet)';
-                    resetUserForm(); // Reseta o formulário para o modo de criação
-
-                } else {
-                    // --- MODO DE CRIAÇÃO ---
-                    if (users.find(u => u.username.toLowerCase() === username.toLowerCase()) || username.toLowerCase() === 'operador') {
-                        outputArea.innerText = `❌ ERRO: O nome de usuário "${username}" já existe!`;
-                        outputArea.style.color = 'var(--accent-blaze)';
-                        return;
-                    }
-
-                    const trialDays = document.getElementById('reg_trial_days').value;
-                    let expirationDate = null;
-                    if (trialDays && !isNaN(parseInt(trialDays))) {
-                        const expDate = new Date();
-                        expDate.setDate(expDate.getDate() + parseInt(trialDays));
-                        expirationDate = expDate.toISOString();
-                    }
-
-                    const newUser = {
-                        username: username,
-                        password: btoa(password), // Ofusca a senha usando Base64
-                        contact: contact || null, // Salva o contato ou null se estiver vazio
-                        telegramId: telegramId || null,
-                        accessLevel: accessLevel,
-                        expiresAt: expirationDate
-                    };
-
-                    users.push(newUser);
-                    outputArea.innerText = `✅ SUCESSO: Usuário "${username}" cadastrado.`;
-                    outputArea.style.color = 'var(--accent-jonbet)';
-                    form.reset();
-                    sendAdminNotification('✅ Novo Usuário Criado', `O usuário '${username}' foi cadastrado com sucesso.`);
-                }
-
-                localStorage.setItem('app_users', JSON.stringify(users));
-                
-                // Limpa a mensagem de sucesso após alguns segundos
-                setTimeout(() => {
-                    outputArea.style.display = 'none';
-                    outputArea.innerText = '';
-                }, 5000);
-                populateUserList(); // Atualiza a lista de usuários
-
-            } catch (e) {
-                console.error("Erro ao salvar usuário:", e);
-                outputArea.innerText = '❌ ERRO: Falha ao salvar o usuário no armazenamento local.';
-                outputArea.style.color = 'var(--accent-blaze)';
+            // --- Cálculo da Data de Expiração ---
+            let expirationDate = null;
+            if (trialDays && !isNaN(parseInt(trialDays))) {
+                const expDate = new Date();
+                expDate.setDate(expDate.getDate() + parseInt(trialDays));
+                expirationDate = expDate.toISOString();
             }
+
+            // --- Cria o Objeto do Usuário ---
+            // Nota: Não precisamos usar btoa() aqui se o banco for seguro, 
+            // mas mantive para compatibilidade com sua lógica.
+            const newUser = {
+                username: username,
+                password: btoa(password), 
+                contact: contact || null,
+                telegramId: telegramId || null,
+                accessLevel: accessLevel,
+                expiresAt: expirationDate,
+                createdAt: new Date().toISOString() // Bom para saber quando foi criado
+            };
+
+            // --- SALVA NO FIREBASE (A Mágica Acontece Aqui) ---
+            // 1. Primeiro verificamos se o usuário já existe
+            db.collection("users").where("username", "==", username).get()
+            .then((querySnapshot) => {
+                if (!querySnapshot.empty) {
+                    throw new Error("Este nome de usuário já existe!");
+                }
+                // 2. Se não existe, adiciona o novo
+                return db.collection("users").add(newUser);
+            })
+            .then((docRef) => {
+                // Sucesso!
+                console.log("Usuário salvo com ID: ", docRef.id);
+                outputArea.innerText = `✅ SUCESSO: Usuário "${username}" salvo na nuvem!`;
+                outputArea.style.color = 'var(--accent-jonbet)';
+                form.reset();
+                
+                // Atualiza a lista (vamos ajustar essa função depois para ler do Firebase)
+                // populateUserList(); 
+            })
+            .catch((error) => {
+                console.error("Erro ao adicionar usuário: ", error);
+                outputArea.innerText = `❌ ERRO: ${error.message}`;
+                outputArea.style.color = 'var(--accent-blaze)';
+            });
         }
 
         function editUser(username) {
             try {
-                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const userToEdit = users.find(u => u.username.toLowerCase() === username.toLowerCase());
 
                 if (!userToEdit) {
@@ -2965,8 +2987,8 @@
             }
             
             // Lógica para cadastro pelo administrador (acesso imediato)
-            try {
-                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+            try { // A lógica de usuários agora dependerá da sessão
+                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 if (users.find(u => u.username.toLowerCase() === username.toLowerCase()) || username.toLowerCase() === 'operador') {
                     outputArea.innerText = `❌ ERRO: O nome de usuário "${username}" já existe!`;
                     outputArea.style.color = 'var(--accent-blaze)';
@@ -2991,7 +3013,7 @@
                 };
 
                 users.push(newUser);
-                localStorage.setItem('app_users', JSON.stringify(users));
+                sessionStorage.setItem('app_users_temp', JSON.stringify(users));
 
                 outputArea.innerText = `✅ SUCESSO: Usuário "${username}" cadastrado.`;
                 outputArea.style.color = 'var(--accent-jonbet)';
@@ -3026,7 +3048,7 @@
 
             if (!tbody || !paginationControls) return;
             
-            let users = JSON.parse(localStorage.getItem('app_users')) || [];
+            let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
 
             // SUGESTÃO: Filtra usuários com base na busca
             const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
@@ -3104,7 +3126,8 @@
                 `;
 
                 actionsCell.innerHTML = `
-                    <button onclick="renewUser('${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Renovar</button>
+                    <button onclick="editUser('${user.username}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Editar</button>
+                    <button onclick="renewUser('${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
                     <button onclick="deleteUser('${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
                 `;
                 row.appendChild(actionsCell);
@@ -3124,7 +3147,7 @@
         }
 
         function nextUserPage() {
-            const users = JSON.parse(localStorage.getItem('app_users')) || [];
+            const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
             const totalPages = Math.ceil(users.length / usersPerPage);
             if (currentUserListPage < totalPages) {
                 populateUserList(currentUserListPage + 1);
@@ -3139,7 +3162,7 @@
 
         function copyUserIds(btnElement) {
             try {
-                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 let idListText = 'Lista de Usuários e IDs do Telegram:\n\n';
 
                 users.forEach(user => {
@@ -3174,7 +3197,7 @@
             }
 
             try {
-                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const userIndex = users.findIndex(u => u.username === username);
 
                 if (userIndex === -1) {
@@ -3192,7 +3215,7 @@
                 startDate.setDate(startDate.getDate() + days);
                 user.expiresAt = startDate.toISOString();
 
-                localStorage.setItem('app_users', JSON.stringify(users));
+                sessionStorage.setItem('app_users_temp', JSON.stringify(users));
                 populateUserList(currentUserListPage); // Refresh the list to show the new expiration date
 
             } catch (e) {
@@ -3207,9 +3230,9 @@
             }
 
             try {
-                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const updatedUsers = users.filter(u => u.username !== username);
-                localStorage.setItem('app_users', JSON.stringify(updatedUsers));
+                sessionStorage.setItem('app_users_temp', JSON.stringify(updatedUsers));
                 populateUserList(1); // Atualiza a lista na tela, voltando para a primeira página
 
                 if (!outputArea) return;
@@ -3257,14 +3280,14 @@
 
         function exportUserData() {
             try {
-                const appUsers = localStorage.getItem('app_users') || '[]';
-                const pendingUsers = localStorage.getItem('pending_users') || '[]';
-                const guestPermissions = localStorage.getItem('guest_permissions') || '{}';
+                const appUsers = sessionStorage.getItem('app_users_temp') || '[]';
+                // const pendingUsers = localStorage.getItem('pending_users') || '[]';
+                const guestPermissions = sessionStorage.getItem('guest_permissions_temp') || '{}';
 
                 const dataToExport = {
                     app_users: JSON.parse(appUsers),
                     guest_permissions: JSON.parse(guestPermissions)
-                };
+                }; 
 
                 const jsonString = JSON.stringify(dataToExport, null, 2);
                 const blob = new Blob([jsonString], { type: 'application/json' });
@@ -3298,8 +3321,8 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     if (data.app_users && confirm('Você tem certeza que deseja importar os dados? Isso substituirá todos os usuários e configurações atuais.')) {
-                        localStorage.setItem('app_users', JSON.stringify(data.app_users || []));
-                        localStorage.setItem('guest_permissions', JSON.stringify(data.guest_permissions || {}));
+                        sessionStorage.setItem('app_users_temp', JSON.stringify(data.app_users || []));
+                        sessionStorage.setItem('guest_permissions_temp', JSON.stringify(data.guest_permissions || {}));
                         alert('Dados importados com sucesso! A página será recarregada.');
                         location.reload();
                     } else { alert('Arquivo de importação inválido ou operação cancelada.'); }
@@ -3317,29 +3340,29 @@
             const permissionsGrid = document.getElementById('guest-permissions-grid');
             if (!permissionsGrid) return;
 
-            const savedPermissions = JSON.parse(localStorage.getItem('guest_permissions')) || { gerador: true }; // Padrão: Gerador I.A ativado
+            const savedPermissions = JSON.parse(sessionStorage.getItem('guest_permissions_temp')) || { gerador: true }; // Padrão: Gerador I.A ativado
 
             permissionsGrid.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 const tabName = checkbox.dataset.tab;
                 checkbox.checked = savedPermissions[tabName] || false;
 
                 checkbox.addEventListener('change', () => {
-                    const currentPermissions = JSON.parse(localStorage.getItem('guest_permissions')) || {};
+                    const currentPermissions = JSON.parse(sessionStorage.getItem('guest_permissions_temp')) || {};
                     currentPermissions[tabName] = checkbox.checked;
-                    localStorage.setItem('guest_permissions', JSON.stringify(currentPermissions));
+                    sessionStorage.setItem('guest_permissions_temp', JSON.stringify(currentPermissions));
                 });
             });
         }
 
         function getGuestPermissions() {
-            const permissions = JSON.parse(localStorage.getItem('guest_permissions'));
+            const permissions = JSON.parse(sessionStorage.getItem('guest_permissions_temp'));
             // Se não houver permissões salvas, libera apenas o gerador por padrão.
             return permissions || { gerador: true };
         }
 
         function logActivity(username, eventType, success) {
             try {
-                let activityLog = JSON.parse(localStorage.getItem('app_activity_log')) || [];
+                let activityLog = JSON.parse(sessionStorage.getItem('app_activity_log_temp')) || [];
                 const logEntry = {
                     timestamp: new Date().toISOString(),
                     username: username,
@@ -3353,7 +3376,7 @@
                     activityLog.pop();
                 }
 
-                localStorage.setItem('app_activity_log', JSON.stringify(activityLog));
+                sessionStorage.setItem('app_activity_log_temp', JSON.stringify(activityLog));
             } catch (e) {
                 console.error("Erro ao registrar atividade:", e);
             }
@@ -3363,7 +3386,7 @@
             const tbody = document.getElementById('activity-log-tbody');
             if (!tbody) return;
 
-            const activityLog = JSON.parse(localStorage.getItem('app_activity_log')) || [];
+            const activityLog = JSON.parse(sessionStorage.getItem('app_activity_log_temp')) || [];
             tbody.innerHTML = '';
 
             activityLog.forEach(log => {
@@ -3376,14 +3399,14 @@
 
         function clearActivityLog() {
             if (confirm('Tem certeza que deseja limpar todo o log de atividades?')) {
-                localStorage.removeItem('app_activity_log');
+                sessionStorage.removeItem('app_activity_log_temp');
                 populateActivityLog();
             }
         }
 
         function exportActivityLog() {
             try {
-                const activityLog = JSON.parse(localStorage.getItem('app_activity_log')) || [];
+                const activityLog = JSON.parse(sessionStorage.getItem('app_activity_log_temp')) || [];
 
                 if (activityLog.length === 0) {
                     alert("Não há atividades no log para exportar.");
@@ -3503,7 +3526,7 @@
             }
 
             try {
-                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const userIndex = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
 
                 if (userIndex === -1) {
@@ -3521,7 +3544,7 @@
 
                 // Atualiza a senha
                 user.password = newPassword;
-                localStorage.setItem('app_users', JSON.stringify(users));
+                sessionStorage.setItem('app_users_temp', JSON.stringify(users));
 
                 resultDiv.textContent = '✅ SUCESSO: Senha alterada!';
                 resultDiv.style.color = 'var(--accent-jonbet)';
@@ -3568,8 +3591,8 @@
                 } else {
                     // 2. Se não for admin, verifica a lista de usuários cadastrados
                     let storedUsers = [];
-                    try {
-                        storedUsers = JSON.parse(localStorage.getItem('app_users')) || [];
+                    try { // A lógica de usuários agora dependerá da sessão
+                        storedUsers = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                     } catch (e) { console.error("Erro ao ler usuários:", e); }
 
                     const foundUser = storedUsers.find(u => {
@@ -3610,13 +3633,13 @@
                             const tg = window.Telegram.WebApp;
                             if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
                                 const telegramId = tg.initDataUnsafe.user.id;
-                                let users = JSON.parse(localStorage.getItem('app_users')) || [];
+                                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                                 const userIndex = users.findIndex(u => u.username.toLowerCase() === user.toLowerCase());
 
                                 // Verifica se o usuário foi encontrado e se o ID ainda não foi salvo
                                 if (userIndex !== -1 && !users[userIndex].telegramId) {
                                     users[userIndex].telegramId = telegramId;
-                                    localStorage.setItem('app_users', JSON.stringify(users));
+                                    sessionStorage.setItem('app_users_temp', JSON.stringify(users));
                                     
                                     // Envia uma notificação para o administrador sobre o novo ID vinculado
                                     sendAdminNotification('✅ ID de Usuário Vinculado', `O ID do Telegram para '${user}' foi capturado: ${telegramId}`);
@@ -3647,7 +3670,7 @@
             // SUGESTÃO: Verifica a expiração do acesso ao mostrar o app
             const accessLevel = sessionStorage.getItem('accessLevel');
             if (accessLevel !== 'admin') {
-                const users = JSON.parse(localStorage.getItem('app_users')) || [];
+                const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
                 const currentUser = users.find(u => u.username.toLowerCase() === sessionStorage.getItem('operatorName').toLowerCase());
 
                 if (currentUser && currentUser.expiresAt) {
@@ -3741,11 +3764,11 @@
         function initializeApp() {
 
             // Restaura abas e plataformas
-            const suiteActiveTab = localStorage.getItem('suite_activeTab') || 'gerador';
+            const suiteActiveTab = 'gerador'; // Padrão, já que não há mais localStorage
             suite_openTab(suiteActiveTab);
 
-            dash_openTab(localStorage.getItem('dashboardActiveTab') || 'analise');
-            dash_selectPlatform(localStorage.getItem('dashboardPlatform') || 'blaze');
+            dash_openTab('analise');
+            dash_selectPlatform('blaze');
             dash_processarDados(true);
         }
     </script>
