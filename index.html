@@ -2902,36 +2902,40 @@
             });
         }
 
-        function editUser(username) {
+        async function editUser(userId) {
             try {
-                const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                const userToEdit = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-
-                if (!userToEdit) {
-                    alert('Usuário não encontrado para edição.');
+                // 1. Busca os dados mais recentes do usuário no Firebase
+                const userDoc = await db.collection("users").doc(userId).get();
+                if (!userDoc.exists) {
+                    alert('Erro: Usuário não encontrado no banco de dados.');
                     return;
                 }
+                const userToEdit = userDoc.data();
 
-                // Preenche o formulário
+                // 2. Preenche o formulário com os dados do usuário
                 document.getElementById('reg_username').value = userToEdit.username;
                 document.getElementById('reg_contact').value = userToEdit.contact || '';
                 document.getElementById('reg_telegram_id').value = userToEdit.telegramId || '';
                 document.getElementById('reg_accessLevel').value = userToEdit.accessLevel;
 
-                // Limpa e ajusta os campos de senha
+                // 3. Limpa e ajusta os campos de senha
                 document.getElementById('reg_password').value = '';
                 document.getElementById('reg_confirmPassword').value = '';
                 document.getElementById('reg_password').required = false; // Senha não é obrigatória na edição
                 document.getElementById('reg_confirmPassword').required = false;
                 document.getElementById('reg_password').placeholder = "Deixe em branco para não alterar";
 
-                // Ajusta o formulário para o modo de edição
+                // 4. Ajusta o formulário para o modo de edição
                 document.getElementById('reg_username').disabled = true; // Impede a alteração do nome de usuário
                 document.getElementById('trial-duration-group').style.display = 'none'; // Oculta a duração do acesso
                 document.getElementById('user-form-submit-btn').textContent = 'SALVAR ALTERAÇÕES';
                 document.getElementById('user-form-cancel-btn').style.display = 'block';
 
-                // Rola a página para o topo para mostrar o formulário
+                // 5. Armazena o ID do documento para ser usado na hora de salvar
+                const form = document.getElementById('suite_userRegistrationForm');
+                form.dataset.editingUserId = userId; // Usando dataset para guardar o ID
+
+                // 6. Rola a página para o topo para mostrar o formulário
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
             } catch (e) {
@@ -2943,6 +2947,7 @@
         function resetUserForm() {
             const form = document.getElementById('suite_userRegistrationForm');
             form.reset();
+            delete form.dataset.editingUserId; // Limpa o ID de edição
 
             document.getElementById('reg_username').disabled = false;
             document.getElementById('reg_password').required = true;
@@ -3132,7 +3137,7 @@
 
                 actionsCell.innerHTML = `
                     <button onclick="editUser('${user.id}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Editar</button>
-                    <button onclick="renewUser('${user.id}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
+                    <button onclick="renewUser('${user.id}', '${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
                     <button onclick="deleteUser('${user.id}', '${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
                 `;
                 row.appendChild(actionsCell);
@@ -3193,11 +3198,11 @@
             }
         }
 
-        function renewUser(username) {
+        async function renewUser(userId, username) {
             const daysToAdd = prompt(`Quantos dias de acesso você deseja adicionar para o usuário "${username}"?`, "7");
 
             if (daysToAdd === null || daysToAdd.trim() === '') {
-                return; // User cancelled or entered nothing
+                return; // Usuário cancelou ou não digitou nada
             }
 
             const days = parseInt(daysToAdd);
@@ -3207,15 +3212,13 @@
             }
 
             try {
-                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                const userIndex = users.findIndex(u => u.username === username);
-
-                if (userIndex === -1) {
-                    alert('Usuário não encontrado.');
+                const userDoc = await db.collection("users").doc(userId).get();
+                if (!userToEdit) {
+                    alert('Erro: Usuário não encontrado no banco de dados.');
                     return;
                 }
+                const user = userDoc.data();
 
-                const user = users[userIndex];
                 // Se a conta já expirou ou é permanente, a renovação começa a partir de hoje.
                 // Se ainda não expirou, adiciona dias à data de expiração existente.
                 const startDate = (user.expiresAt && new Date(user.expiresAt) > new Date()) 
@@ -3223,10 +3226,13 @@
                     : new Date();
                 
                 startDate.setDate(startDate.getDate() + days);
-                user.expiresAt = startDate.toISOString();
+                const newExpirationDate = startDate.toISOString();
 
-                sessionStorage.setItem('app_users_temp', JSON.stringify(users));
-                populateUserList(currentUserListPage); // Refresh the list to show the new expiration date
+                // Atualiza no Firebase
+                await db.collection("users").doc(userId).update({ expiresAt: newExpirationDate });
+
+                console.log(`Acesso do usuário ${username} renovado até ${newExpirationDate}`);
+                populateUserList(currentUserListPage); // Atualiza a lista para mostrar a nova data
 
             } catch (e) {
                 console.error("Erro ao renovar o acesso do usuário:", e);
@@ -3234,30 +3240,31 @@
             }
         }
 
-        function deleteUser(username) {
+        function deleteUser(userId, username) {
             if (!confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
                 return;
             }
 
-            try {
-                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                const updatedUsers = users.filter(u => u.username !== username);
-                sessionStorage.setItem('app_users_temp', JSON.stringify(updatedUsers));
+            // --- DELETAR NO FIREBASE ---
+            db.collection("users").doc(userId).delete()
+            .then(() => {
+                console.log("Usuário excluído com sucesso!");
                 populateUserList(1); // Atualiza a lista na tela, voltando para a primeira página
 
+                const outputArea = document.getElementById('suite_resCadastro');
                 if (!outputArea) return;
-                outputArea.innerText = `✅ SUCESSO: Usuário "${username}" excluído.`;
+                outputArea.innerText = `✅ SUCESSO: Usuário "${username}" excluído da nuvem.`;
                 outputArea.style.color = 'var(--accent-jonbet)';
                 outputArea.style.display = 'block';
                 // Limpa a mensagem após alguns segundos
                 setTimeout(() => {
                     outputArea.style.display = 'none';
                 }, 3000);
-
-            } catch (e) {
+            })
+            .catch((error) => {
                 console.error("Erro ao excluir usuário:", e);
-                alert("Falha ao excluir o usuário.");
-            }
+                alert("Falha ao excluir o usuário do banco de dados.");
+            });
         }
 
         /**
@@ -3569,107 +3576,94 @@
 
 
 
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             const errorDiv = document.getElementById('login-error');
-            if (MAINTENANCE_MODE) {
-                errorDiv.textContent = 'Sistema em manutenção. Tente novamente mais tarde.';
-                return;
-            }
-
-            const user = document.getElementById('username').value;
+            const username = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
             const loginButton = document.getElementById('login-button');
             const buttonText = loginButton.querySelector('.login-button-text');
             const spinner = loginButton.querySelector('.login-spinner');
-
+        
+            if (MAINTENANCE_MODE) {
+                errorDiv.textContent = 'Sistema em manutenção. Tente novamente mais tarde.';
+                return;
+            }
+        
             // Inicia o estado de carregamento
             loginButton.disabled = true;
             buttonText.style.display = 'none';
             spinner.style.display = 'block';
             errorDiv.textContent = '';
-
-            // Simula uma verificação de rede (ex: 500ms)
-            setTimeout(() => {
-                let loggedIn = false;
-                let accessLevel = 'guest'; // Padrão
-
-                // 1. Verifica credenciais fixas de admin
-                if (user === 'operador' && pass === 'senha123') {
-                    loggedIn = true;
-                    accessLevel = 'admin';
-                } else {
-                    // 2. Se não for admin, verifica a lista de usuários cadastrados
-                    let storedUsers = [];
-                    try { // A lógica de usuários agora dependerá da sessão
-                        storedUsers = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                    } catch (e) { console.error("Erro ao ler usuários:", e); }
-
-                    const foundUser = storedUsers.find(u => {
-                        if (u.username.toLowerCase() !== user.toLowerCase()) return false;
-                        try {
-                            // Apenas senhas codificadas em Base64 serão válidas.
-                            return atob(u.password) === pass;
-                        } catch (e) { return false; } // Ignora senhas em texto puro (formato antigo)
-                    });
-
-                    if (foundUser) {
-                        // Verifica se a conta expirou
-                        if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {                            
-                            const contactMessage = `Seu período de acesso expirou. <a href="tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}&text=Olá, meu acesso para o usuário '${user}' expirou. Gostaria de renovar." target="_blank" style="color: var(--accent-jonbet); text-decoration: underline;">Clique aqui para renovar via Telegram</a>.`;
-                            errorDiv.innerHTML = contactMessage;
-
-                            logActivity(user, 'Login Falhou (Expirado)', false);
-                            loginButton.disabled = false;
-                            buttonText.style.display = 'inline';
-                            spinner.style.display = 'none';
-                            return; // Interrompe o login
-                        }
-
-                        loggedIn = true;
-                        accessLevel = foundUser.accessLevel;
-                    }
+        
+            // 1. Verifica credenciais fixas de admin (mantido como caso especial)
+            if (username === 'operador' && pass === 'senha123') {
+                logActivity(username, 'Login (Admin)', true);
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('operatorName', username);
+                sessionStorage.setItem('accessLevel', 'admin');
+                showApp();
+                return;
+            }
+        
+            // 2. Se não for admin, consulta o Firebase
+            try {
+                const querySnapshot = await db.collection("users").where("username", "==", username).get();
+        
+                if (querySnapshot.empty) {
+                    throw new Error('Usuário ou senha inválidos.');
                 }
-
-                if (loggedIn) {
-                    logActivity(user, 'Login', true);
+        
+                const userDoc = querySnapshot.docs[0];
+                const foundUser = userDoc.data();
+                const userId = userDoc.id;
+        
+                // Verifica a senha (decodificando de Base64)
+                if (atob(foundUser.password) !== pass) {
+                    throw new Error('Usuário ou senha inválidos.');
+                }
+        
+                // Verifica se a conta expirou
+                if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {
+                    const contactMessage = `Seu período de acesso expirou. <a href="tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}&text=Olá, meu acesso para o usuário '${username}' expirou. Gostaria de renovar." target="_blank" style="color: var(--accent-jonbet); text-decoration: underline;">Clique aqui para renovar via Telegram</a>.`;
+                    errorDiv.innerHTML = contactMessage;
+                    logActivity(username, 'Login Falhou (Expirado)', false);
+                } else {
+                    // Login bem-sucedido
+                    logActivity(username, 'Login', true);
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('operatorName', user);
-                    sessionStorage.setItem('accessLevel', accessLevel);
-
+                    sessionStorage.setItem('operatorName', username);
+                    sessionStorage.setItem('accessLevel', foundUser.accessLevel);
+        
                     // SUGESTÃO: Captura o ID do Telegram no primeiro login
-                    if (accessLevel !== 'admin') {
-                        try {
-                            const tg = window.Telegram.WebApp;
-                            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                                const telegramId = tg.initDataUnsafe.user.id;
-                                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                                const userIndex = users.findIndex(u => u.username.toLowerCase() === user.toLowerCase());
-
-                                // Verifica se o usuário foi encontrado e se o ID ainda não foi salvo
-                                if (userIndex !== -1 && !users[userIndex].telegramId) {
-                                    users[userIndex].telegramId = telegramId;
-                                    sessionStorage.setItem('app_users_temp', JSON.stringify(users));
-                                    
-                                    // Envia uma notificação para o administrador sobre o novo ID vinculado
-                                    sendAdminNotification('✅ ID de Usuário Vinculado', `O ID do Telegram para '${user}' foi capturado: ${telegramId}`);
-                                }
-                            }
-                        } catch (e) {
-                            console.log("Não foi possível obter o ID do Telegram (pode não estar no ambiente do Telegram).");
+                    if (foundUser.accessLevel !== 'admin' && !foundUser.telegramId) {
+                        const tg = window.Telegram.WebApp;
+                        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                            const telegramId = tg.initDataUnsafe.user.id;
+                            // Atualiza o documento do usuário no Firebase com o novo ID
+                            db.collection("users").doc(userId).update({ telegramId: telegramId })
+                            .then(() => {
+                                console.log(`ID do Telegram (${telegramId}) vinculado ao usuário ${username}.`);
+                                sendAdminNotification('✅ ID de Usuário Vinculado', `O ID do Telegram para '${username}' foi capturado: ${telegramId}`);
+                            })
+                            .catch(err => {
+                                console.error("Erro ao vincular ID do Telegram:", err);
+                            });
                         }
                     }
-
+        
                     showApp();
-                } else {
-                    errorDiv.textContent = 'Usuário ou senha inválidos.';
-                    logActivity(user, 'Login', false);
-                    // Restaura o botão ao estado original
-                    loginButton.disabled = false;
-                    buttonText.style.display = 'inline';
-                    spinner.style.display = 'none';
                 }
-            }, 500);
+        
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                logActivity(username, 'Login Falhou', false);
+            } finally {
+                // Restaura o botão ao estado original, independentemente do resultado
+                loginButton.disabled = false;
+                buttonText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
         }
 
         function showApp() {
