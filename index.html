@@ -636,6 +636,43 @@
             <div class="forgot-password-container">
                 <a href="#" id="forgot-password-link">Esqueci minha senha</a>
             </div>
+            <div class="toggle-form-container">
+                <a href="#" id="show-register-link" class="toggle-form-link">Não tem uma conta? Cadastre-se</a>
+            </div>
+        </form>
+
+        <!-- Formulário de Cadastro (inicialmente oculto) -->
+        <form id="self-register-form" style="display: none;" onsubmit="handleSelfRegister(event)">
+            <h2>CRIAR CONTA</h2>
+            <div class="login-input-group">
+                <label for="self_reg_username">Nome de Usuário</label>
+                <input type="text" id="self_reg_username" required>
+            </div>
+            <div class="login-input-group">
+                <label for="self_reg_contact">Contato (Opcional)</label>
+                <input type="text" id="self_reg_contact" placeholder="Seu Telegram ou WhatsApp">
+            </div>
+            <div class="login-input-group password-input-container">
+                <label for="self_reg_password">Senha</label>
+                <input type="password" id="self_reg_password" required style="padding-right: 40px;">
+                <span class="toggle-password" data-target="self_reg_password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </span>
+            </div>
+            <div class="login-input-group password-input-container">
+                <label for="self_reg_confirm_password">Repita a Senha</label>
+                <input type="password" id="self_reg_confirm_password" required style="padding-right: 40px;">
+                <span class="toggle-password" data-target="self_reg_confirm_password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-eye-off" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </span>
+            </div>
+            <div id="self-register-error" style="width: 100%; text-align: center; color: var(--accent-blaze); margin-bottom: 15px; font-weight: bold; min-height: 20px;"></div>
+            <button type="submit" class="btn-action" style="width: 100%; background-color: var(--accent-jonbet);">CRIAR MINHA CONTA</button>
+            <div class="toggle-form-container">
+                <a href="#" id="show-login-link" class="toggle-form-link">Já tem uma conta? Faça Login</a>
+            </div>
         </form>
     </div>
 
@@ -1264,12 +1301,12 @@
 
             // 3. MOSTRA O ALERTA DE SUCESSO NA TELA
             // Isso vai fazer uma janela aparecer!
-            alert("✅ SUCESSO!\n\nO Firebase foi conectado corretamente.\nAgora seu painel está pronto para salvar dados na nuvem.");
+            // alert("✅ SUCESSO!\n\nO Firebase foi conectado corretamente.\nAgora seu painel está pronto para salvar dados na nuvem.");
             console.log("🔥 Firebase conectado com sucesso!");
 
         } catch (erro) {
             // Se der erro, mostra um alerta vermelho
-            alert("❌ ERRO AO CONECTAR:\n" + erro.message);
+            // alert("❌ ERRO AO CONECTAR:\n" + erro.message);
             console.error(erro);
         }
 
@@ -2805,6 +2842,24 @@
             
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             
+            // --- LÓGICA PARA ALTERNAR ENTRE LOGIN E CADASTRO ---
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('self-register-form');
+            const showRegisterLink = document.getElementById('show-register-link');
+            const showLoginLink = document.getElementById('show-login-link');
+
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'flex';
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'flex';
+            });
+
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
 
@@ -3666,6 +3721,63 @@
             }
         }
 
+        async function handleSelfRegister(event) {
+            event.preventDefault();
+            const errorDiv = document.getElementById('self-register-error');
+            errorDiv.textContent = '⏳ Criando sua conta...';
+            errorDiv.style.color = 'var(--text-color)';
+
+            const username = document.getElementById('self_reg_username').value.trim();
+            const contact = document.getElementById('self_reg_contact').value.trim();
+            const password = document.getElementById('self_reg_password').value;
+            const confirmPassword = document.getElementById('self_reg_confirm_password').value;
+
+            // --- Validações ---
+            if (!username || !password) {
+                errorDiv.textContent = '❌ Nome de usuário e senha são obrigatórios.';
+                errorDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+            if (password !== confirmPassword) {
+                errorDiv.textContent = '❌ As senhas não coincidem.';
+                errorDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+            // --- Prepara dados do novo usuário ---
+            const expDate = new Date();
+            expDate.setDate(expDate.getDate() + 3); // Adiciona 3 dias de acesso
+
+            const newUser = {
+                username: username,
+                password: btoa(password), // Codifica a senha
+                contact: contact || null,
+                telegramId: null,
+                accessLevel: 'operator', // Nível de acesso definido como operador
+                expiresAt: expDate.toISOString(),
+                createdAt: new Date().toISOString()
+            };
+
+            // --- Salva no Firebase ---
+            try {
+                const querySnapshot = await db.collection("users").where("username", "==", username).get();
+                if (!querySnapshot.empty) {
+                    throw new Error("Este nome de usuário já está em uso.");
+                }
+
+                await db.collection("users").add(newUser);
+
+                errorDiv.innerHTML = `✅ Conta criada com sucesso! Você já pode fazer o login.`;
+                errorDiv.style.color = 'var(--accent-jonbet)';
+                document.getElementById('self-register-form').reset();
+
+            } catch (error) {
+                console.error("Erro no auto-cadastro: ", error);
+                errorDiv.textContent = `❌ ERRO: ${error.message}`;
+                errorDiv.style.color = 'var(--accent-blaze)';
+            }
+        }
+
         function showApp() {
             // Esconde o login e mostra o container principal do app
             document.getElementById('login-container').style.display = 'none';
@@ -3710,13 +3822,13 @@
         function setupOperatorInfo(operatorName) {
              if (!operatorName) return;
 
-             // Mostra a mensagem de boas-vindas
-             const welcomeMessage = document.getElementById('welcome-message');
-             welcomeMessage.textContent = `Bem-vindo, ${operatorName.toUpperCase()}!`;
-             welcomeMessage.style.display = 'block';
-             setTimeout(() => {
-                 welcomeMessage.style.display = 'none';
-             }, 3000);
+             // // Mostra a mensagem de boas-vindas (OCULTADO A PEDIDO)
+             // const welcomeMessage = document.getElementById('welcome-message');
+             // welcomeMessage.textContent = `Bem-vindo, ${operatorName.toUpperCase()}!`;
+             // welcomeMessage.style.display = 'block';
+             // setTimeout(() => {
+             //     welcomeMessage.style.display = 'none';
+             // }, 3000);
 
              // Atualiza o título principal com o nome do operador
              document.getElementById('main-title').textContent = `PAINEL DE ANÁLISE - ${operatorName.toUpperCase()}`;
