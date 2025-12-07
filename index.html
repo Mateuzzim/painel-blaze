@@ -1202,23 +1202,49 @@
                 </div>
 
                 <div id="dash_analise" class="tab-content active">
-                    <div class="control-panel">
-                        <h3>Entrada de Dados</h3>
-                        <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Cole o histórico da plataforma aqui.</p>
-                        <textarea id="dash_inputData" placeholder="Cole o histórico aqui..." oninput="dash_limparInput(this)"></textarea>
-                        <div class="control-group" style="margin-top: 15px; margin-bottom: 0;">
-                            <label for="dash_targetHistory" style="font-size: 11px; text-transform: none; opacity: 1; display: block; margin-bottom: 5px;">Enviar Análise Para:</label>
-                            <select id="dash_targetHistory">
-                                <option value="ambos">Ambos (Visual e Por Hora)</option>
-                                <option value="visual">Apenas Histórico Visual</option>
-                                <option value="hora">Apenas Histórico por Hora</option>
-                            </select>
-                        </div>
-                        <div class="action-buttons" style="margin-top: 15px;">
-                            <button onclick="dash_processarDados()">ANALISAR HISTÓRICO</button>
-                            <button onclick="dash_limparTudo()" style="background-color: #555;">LIMPAR TUDO</button>
-                        </div>
-                    </div>
+<div class="control-panel">
+    <div id="auto-import-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+            <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta Automática</h3>
+            <button onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
+                🔄 BUSCAR DADOS
+            </button>
+        </div>
+
+        <p style="font-size: 10px; color: #aaa; margin-bottom: 5px;">1. Busque os dados. 2. Filtre. 3. Envie para análise.</p>
+        
+        <textarea id="dash_autoInput" readonly style="height: 80px; background-color: #111; border: 1px solid #444; color: #aaa; font-size: 0.8rem;" placeholder="Clique em 'Buscar Dados' para preencher aqui..."></textarea>
+
+        <div style="display:flex; gap: 5px; margin-top: 5px;">
+            <button onclick="dash_filtrarAuto('hoje')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">📅 Só Hoje</button>
+            <button onclick="dash_filtrarAuto('ontem')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">📅 Só Ontem</button>
+            <button onclick="dash_filtrarAuto('todos')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">👁️ Todos</button>
+        </div>
+
+        <button onclick="dash_enviarParaAnalise()" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+            ⬇️ ENVIAR PARA O ANALISADOR ⬇️
+        </button>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+    <h3>Entrada Manual / Análise Final</h3>
+    <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Os dados para análise aparecerão aqui.</p>
+    <textarea id="dash_inputData" placeholder="Cole o histórico manual ou receba do automático..." oninput="dash_limparInput(this)"></textarea>
+    
+    <div class="control-group" style="margin-top: 15px; margin-bottom: 0;">
+        <label for="dash_targetHistory" style="font-size: 11px; display: block; margin-bottom: 5px;">Enviar Análise Para:</label>
+        <select id="dash_targetHistory">
+            <option value="ambos">Ambos (Visual e Por Hora)</option>
+            <option value="visual">Apenas Histórico Visual</option>
+            <option value="hora">Apenas Histórico por Hora</option>
+        </select>
+    </div>
+    <div class="action-buttons" style="margin-top: 15px;">
+        <button onclick="dash_processarDados()">ANALISAR HISTÓRICO</button>
+        <button onclick="dash_limparTudo()" style="background-color: #555;">LIMPAR TUDO</button>
+    </div>
+</div>
                     <div class="stats-box">
                         <div class="stat-item stat-dynamic-color"><span id="dash_platform-emoji">🔴</span> <span id="dash_count-red">0 (0%)</span></div>
                         <div class="stat-item">⚫ <span id="dash_count-black">0 (0%)</span></div>
@@ -2303,6 +2329,14 @@
             document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
         }
 
+        function suite_toggleQtdSinaisBranco() {
+            const intervaloMinimo = document.getElementById('suite_intervaloMinimoBranco').value;
+            const qtdSinaisInput = document.getElementById('suite_qtdSinaisBranco');
+            const hasInterval = intervaloMinimo && parseInt(intervaloMinimo) > 0;
+            qtdSinaisInput.disabled = hasInterval;
+            qtdSinaisInput.style.backgroundColor = hasInterval ? '#555' : '';
+        }
+
         let suite_formatTimeout;
         function suite_autoFormatBrancoInput(textarea) {
             saveToStorage(textarea.id);
@@ -2333,8 +2367,11 @@
         function suite_analisarParaBranco() {
             const estrategia = document.getElementById('suite_estrategiaBranco').value;
             const input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
-            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value);
             const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
+            // O intervalo mínimo agora também define a quantidade de sinais.
+            const qtdSinais = intervaloMinimo > 0 
+                ? intervaloMinimo 
+                : parseInt(document.getElementById('suite_qtdSinaisBranco').value);
             const resultsDiv = document.getElementById('suite_resBranco');
 
             if (!input && !useCurrentTime) {
@@ -2371,22 +2408,26 @@
             function projectSignals(startTime, intervalPattern, signalLimit, minInterval = 0) {
                 let signals = [];
                 let proximaEntrada = new Date(startTime);
-                let ultimoSinalGerado = null;
+                let ultimoSinalGeradoTime = null;
                 let patternIndex = 0;
-
-                // Loop para tentar gerar o número de sinais desejado
-                while (signals.length < signalLimit && patternIndex < signalLimit * 5) { // Adicionado um limite de segurança
+                let attempts = 0;
+        
+                while (signals.length < signalLimit && attempts < signalLimit * 100) { // Limite de segurança
+                    attempts++;
                     if (intervalPattern.length === 0) break;
                     const minutosParaAdicionar = intervalPattern[patternIndex % intervalPattern.length];
                     patternIndex++;
-
-                    if (minutosParaAdicionar <= 0) break;
+        
+                    if (minutosParaAdicionar <= 0) continue;
                     proximaEntrada.setMinutes(proximaEntrada.getMinutes() + minutosParaAdicionar);
-
-                    // Verifica se o sinal gerado respeita o intervalo mínimo em relação ao último sinal válido
-                    if (!ultimoSinalGerado || ((proximaEntrada.getTime() - ultimoSinalGerado.getTime()) / (1000 * 60)) >= minInterval) {
+        
+                    // Se um intervalo mínimo foi definido, verifica se o novo sinal o respeita.
+                    // Se não houver último sinal, ou se o tempo decorrido for maior ou igual ao intervalo, o sinal é válido.
+                    const isIntervalRespected = !ultimoSinalGeradoTime || ((proximaEntrada.getTime() - ultimoSinalGeradoTime.getTime()) / (1000 * 60)) >= minInterval;
+        
+                    if (isIntervalRespected) {
                         signals.push(`🕒 ${proximaEntrada.getHours().toString().padStart(2, '0')}:${proximaEntrada.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
-                        ultimoSinalGerado = new Date(proximaEntrada); // Apenas atualiza a referência do último sinal válido gerado
+                        ultimoSinalGeradoTime = new Date(proximaEntrada); // Atualiza a referência de tempo do último sinal gerado
                     }
                 }
                 return signals;
@@ -2409,7 +2450,10 @@
             out += `🚦 Plataforma: *${platformName}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `📅 Data: *${dataLista}*\n`;
-            out += `🎯 Estratégia: *${strategyName}*\n🔢 Entradas: *${intervaloMinimo > 0 ? intervaloMinimo : qtdSinais}*\n`;
+            out += `🎯 Estratégia: *${strategyName}*\n`;
+            if (intervaloMinimo > 0) {
+                out += `🔢 Entradas: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
+            }
 
             let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
             let pattern = [];
@@ -2533,6 +2577,236 @@
         // INÍCIO: SCRIPTS DE coressao_de_sinais.html
         // ==========================================
 
+        // ==========================================
+        //  LÓGICA CORRIGIDA DE AUTO-IMPORTAÇÃO
+        // ==========================================
+
+        // 1. FUNÇÃO PRINCIPAL DO BOTÃO (ROTEADOR)
+        // Essa é a função que o botão do HTML chama.
+        async function dash_autoFetchBlaze() {
+            const platform = document.getElementById('dash_platformSelector').value;
+            
+            if (platform === 'jonbet') {
+                await dash_impl_Jonbet();
+            } else {
+                await dash_impl_Blaze();
+            }
+        }
+
+        // 2. IMPLEMENTAÇÃO BLAZE (V9 - FAILOVER INTELIGENTE + VALIDAÇÃO DE DATA)
+        // 2. IMPLEMENTAÇÃO BLAZE (V13 - LINK ESPECÍFICO SALA 1)
+        // 2. IMPLEMENTAÇÃO BLAZE (V16 - TESTE DO LINK DE HISTÓRICO)
+        async function dash_impl_Blaze() {
+            const statusBtn = document.querySelector('button[onclick="dash_autoFetchBlaze()"]');
+            const originalText = statusBtn.innerText;
+            const autoTextarea = document.getElementById('dash_autoInput');
+            
+            try {
+                statusBtn.innerText = "⏳ Testando Histórico...";
+                statusBtn.disabled = true;
+        
+                // 1. Configura as datas dinamicamente (Agora e 24h atrás)
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24); // Pega as últimas 24h
+        
+                // A Blaze usa formato ISO (ex: 2025-12-07T...)
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+        
+                // 2. SEU LINK NOVO (Montado dinamicamente)
+                // Endpoint: /recent/history/1
+                const baseUrl = 'https://blaze.com/api/singleplayer-originals/originals/roulette_games/recent/history/1';
+                const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1`;
+                
+                // Adicionamos um número aleatório para evitar o cache do Proxy
+                const timeStamp = new Date().getTime();
+                const targetUrl = `${baseUrl}${params}&t=${timeStamp}`;
+                
+                // 3. Proxy (CorsProxy)
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        
+                console.log("Testando URL:", targetUrl);
+        
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`Erro Proxy: ${response.status}`);
+        
+                const blazeData = await response.json();
+                console.log("Resposta:", blazeData);
+        
+                // 4. Validação
+                // Esse endpoint costuma retornar { records: [...] } ou direto [...]
+                let gamesArray = [];
+                if (Array.isArray(blazeData)) {
+                    gamesArray = blazeData;
+                } else if (blazeData.records && Array.isArray(blazeData.records)) {
+                    gamesArray = blazeData.records;
+                }
+        
+                // SE VIER VAZIO, É PORQUE PRECISA DE LOGIN
+                if (gamesArray.length === 0) {
+                    throw new Error("A lista veio vazia. Esse link exige login e não funciona via Proxy.");
+                }
+        
+                // 5. Formatação
+                let formattedText = "";
+                gamesArray.forEach(game => {
+                    if (game.created_at && game.roll !== undefined) {
+                        const dateObj = new Date(game.created_at);
+                        
+                        const hours = dateObj.getHours().toString().padStart(2, '0');
+                        const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+                        const timeStr = `${hours}:${minutes}`;
+                        
+                        const day = dateObj.getDate().toString().padStart(2, '0');
+                        const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        const dateStr = `${day}/${month}/${year}`;
+
+                        formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`; 
+                    }
+                });
+
+                autoTextarea.value = formattedText;
+                statusBtn.innerText = `✅ ${gamesArray.length} Jogos!`;
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+        
+            } catch (error) {
+                console.error("Erro V16:", error);
+                
+                if (error.message.includes("vazia")) {
+                    statusBtn.innerText = "🔒 Bloqueado";
+                    alert("TESTE FALHOU: Esse link exige autenticação (login).\n\nVolte para a versão de Loop (Página por Página) ou use o Google Script.");
+                } else {
+                    statusBtn.innerText = "❌ Erro";
+                    alert(`Falha: ${error.message}`);
+                }
+            } finally {
+                setTimeout(() => {
+                    statusBtn.innerText = originalText;
+                    statusBtn.disabled = false;
+                }, 3000);
+            }
+        }
+
+
+
+        // 3. IMPLEMENTAÇÃO JONBET
+        async function dash_impl_Jonbet() {
+            const statusBtn = document.querySelector('button[onclick="dash_autoFetchBlaze()"]');
+            const originalText = statusBtn.innerText;
+            const autoTextarea = document.getElementById('dash_autoInput'); 
+            
+            try {
+                statusBtn.innerText = "⏳ Jonbet...";
+                statusBtn.disabled = true;
+
+                const timeStamp = new Date().getTime(); 
+                // URL Exemplo Jonbet (Ajuste se souber a correta)
+                const targetUrl = `https://jonbet.com/api/roulette_games/recent?t=${timeStamp}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const jonbetData = await response.json();
+                
+                if (!Array.isArray(jonbetData)) throw new Error("Formato inválido (Não é array)");
+                
+                let formattedText = "";
+                
+                jonbetData.forEach(game => {
+                    const dateObj = new Date(game.created_at);
+                    const hours = dateObj.getHours().toString().padStart(2, '0');
+                    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+                    const timeStr = `${hours}:${minutes}`;
+                    const day = dateObj.getDate().toString().padStart(2, '0');
+                    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                    const year = dateObj.getFullYear();
+                    const dateStr = `${day}/${month}/${year}`;
+
+                    formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`; 
+                });
+
+                autoTextarea.value = formattedText;
+                statusBtn.innerText = "✅ Sucesso!";
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+
+            } catch (error) {
+                console.error("Erro Auto Jonbet:", error);
+                alert("Erro Jonbet: Verifique o console.");
+                statusBtn.innerText = "❌";
+            } finally {
+                setTimeout(() => {
+                    statusBtn.innerText = originalText;
+                    statusBtn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // 4. FILTRA O CAMPO DE PREPARAÇÃO (Mantido igual)
+        function dash_filtrarAuto(modo) {
+            const autoTextarea = document.getElementById('dash_autoInput');
+            
+            let textoBase = sessionStorage.getItem('raw_blaze_data');
+            if (!textoBase) {
+                textoBase = autoTextarea.value;
+                if (!textoBase.trim()) { alert("Busque os dados primeiro."); return; }
+            }
+
+            const dataHoje = new Date();
+            const dataOntem = new Date();
+            dataOntem.setDate(dataOntem.getDate() - 1);
+
+            const strHoje = dataHoje.toLocaleDateString('pt-BR'); 
+            const strOntem = dataOntem.toLocaleDateString('pt-BR');
+
+            let blocos = textoBase.split('\n\n');
+            let blocosFiltrados = [];
+
+            blocos.forEach(bloco => {
+                const linhas = bloco.split('\n');
+                if (linhas.length >= 3) {
+                    const dataRegistro = linhas[0].trim();
+                    if (modo === 'todos') {
+                        blocosFiltrados.push(bloco);
+                    } else if (modo === 'hoje' && dataRegistro === strHoje) {
+                        blocosFiltrados.push(bloco);
+                    } else if (modo === 'ontem' && dataRegistro === strOntem) {
+                        blocosFiltrados.push(bloco);
+                    }
+                }
+            });
+
+            if (blocosFiltrados.length === 0) {
+                alert(`Nada encontrado para "${modo}".`);
+                return;
+            }
+
+            autoTextarea.value = blocosFiltrados.join('\n\n') + '\n\n';
+        }
+
+        // 5. TRANSFERE DO CAMPO DE PREPARAÇÃO PARA O ANALISADOR (Mantido igual)
+        function dash_enviarParaAnalise() {
+            const autoTextarea = document.getElementById('dash_autoInput');
+            const mainTextarea = document.getElementById('dash_inputData');
+            
+            const dadosParaEnviar = autoTextarea.value.trim();
+
+            if (!dadosParaEnviar) {
+                alert("O campo automático está vazio. Busque dados primeiro.");
+                return;
+            }
+
+            mainTextarea.value = dadosParaEnviar;
+            dash_limparInput(mainTextarea);
+            
+            setTimeout(() => {
+                dash_processarDados();
+                document.querySelector('.stats-box').scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        }
+
         function dash_openTab(tabName) {
             let i, content, btns;
             content = document.querySelectorAll(".dashboard .tab-content");
@@ -2552,14 +2826,15 @@
         }
 
         function dash_limparTudo() {
-            // document.getElementById('dash_inputData').value = '';
-            // document.getElementById('dash_grid-resultados').innerHTML = '';
-            // localStorage.removeItem('historicoInput');
+            document.getElementById('dash_inputData').value = '';
+            document.getElementById('dash_grid-resultados').innerHTML = '';
+            // A linha abaixo foi comentada para não limpar o histórico por hora, conforme solicitado.
+            // document.getElementById('dash_grid-resultados-hora').innerHTML = '';
             document.getElementById('dash_count-red').innerText = '0';
             document.getElementById('dash_count-black').innerText = '0';
             document.getElementById('dash_count-white').innerText = '0';
             document.getElementById('dash_count-total').innerText = '0';
-            document.getElementById('dash_log-estrategia').innerHTML = 'Aguardando dados...';
+            document.getElementById('dash_log-estrategia').innerHTML = 'Aguardando dados...';            
         }
 
         let dash_timeoutLimpeza;
@@ -2866,6 +3141,9 @@
             // SUGESTÃO: Configura o link de suporte dinamicamente
             const supportLink = document.getElementById('support-link');
             if (supportLink) {
+                // Adiciona o listener para o novo controle do input de quantidade de sinais
+                document.getElementById('suite_intervaloMinimoBranco').addEventListener('input', suite_toggleQtdSinaisBranco);
+                suite_toggleQtdSinaisBranco(); // Chama uma vez para definir o estado inicial
                 supportLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
             }
             // Inicializa o app principal
