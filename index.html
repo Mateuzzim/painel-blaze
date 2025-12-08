@@ -50,7 +50,7 @@
             display: flex;
             flex-direction: column;
             transition: color 0.5s ease-in-out; /* Transição da cor do texto */
-            padding: 15px;
+            padding: 30px;
         }
 
         /* Pseudo-elementos para as imagens de fundo com blur */
@@ -116,7 +116,7 @@
         .layout-panel::-webkit-scrollbar-thumb:hover { background: #777; }
 
         @media (max-width: 768px) {
-            body { padding: 10px; }
+            body { padding: 20px; }
             .main-container { flex-direction: column; }
             h1 { font-size: 1.2rem; }
         }
@@ -499,14 +499,14 @@
         }
         #login-form, #self-register-form {
             background-color: var(--card-bg);
-            padding: 40px;
+            padding: 25px;
             border-radius: 12px;
             border: 1px solid #333;
             width: 100%;
-            max-width: 400px;
+            max-width: 360px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            display: flex; /* Garante que seja flexível */
+            display: flex;
             flex-direction: column; /* Organiza os itens em coluna */
             align-items: center; /* Centraliza o conteúdo interno */
         }
@@ -516,7 +516,7 @@
             color: var(--text-color);
             text-transform: uppercase;
         }
-        .login-input-group { margin-bottom: 20px; text-align: left; }
+        .login-input-group { margin-bottom: 15px; text-align: left; }
         .login-input-group label {
             display: block;
             margin-bottom: 8px;
@@ -531,7 +531,7 @@
         }
 
         #login-form input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); font-size: 1rem; }
-        #login-form button { width: 100%; padding: 15px; border: none; border-radius: 8px; background-color: var(--accent-blaze); color: #fff; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
+        #login-form button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #333; color: #fff; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
         #login-form button:disabled { background-color: #8e1a2e; cursor: not-allowed; }
         #login-error { color: var(--accent-blaze); margin-top: 15px; font-weight: bold; min-height: 20px; }
 
@@ -607,9 +607,9 @@
             line-height: 0; /* Para alinhar o SVG perfeitamente */
         }
         #login-logo {
-            width: 150px; /* Aumentei a largura para dar mais destaque */
+            width: 120px; /* Aumentei a largura para dar mais destaque */
             height: auto;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border-radius: 90px; /* Opcional: para bordas arredondadas */
         }
         .forgot-password-container a:hover { opacity: 1; text-decoration: underline; }
@@ -620,10 +620,7 @@
         .toggle-form-link {
             color: var(--text-color);
         }
-        .toggle-form-container {
-            text-align: center;
-            margin-top: 20px;
-        }
+        .toggle-form-container { text-align: center; margin-top: 15px; }
         /* SUGESTÃO: Animação de transição para formulários de login/cadastro */
         #login-form, #self-register-form {
             transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
@@ -727,8 +724,7 @@
         </a>
         <!-- LOGO DA EMPRESA - Troque a URL em 'src' pela URL da sua imagem -->
         <img src="https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg" alt="Logo da Empresa" id="login-logo">
-        <form id="login-form">
-        <form id="login-form" class="form-active">
+        <form id="login-form" class="form-active" onsubmit="handleLogin(event)">
             <h2>LOGIN USUÁRIO</h2>
             <div class="login-input-group">
                 <label for="username">Usuário</label>
@@ -756,7 +752,6 @@
         </form>
 
         <!-- Formulário de Cadastro (inicialmente oculto) -->
-        <form id="self-register-form" style="display: none;" onsubmit="handleSelfRegister(event)">
         <form id="self-register-form" class="form-inactive" onsubmit="handleSelfRegister(event)">
             <h2>CRIAR CONTA</h2>
             <div class="login-input-group">
@@ -1189,7 +1184,7 @@ function suite_formatarInputHistorico(textarea) {
                     </div>
                     <div class="control-group">
                         <label>Estratégia de I.A. para Branco:</label>
-                        <select id="suite_iaBranco_estrategia">
+                        <select id="suite_iaBranco_estrategia" onchange="suite_toggleBrancoProximoOptions()">
                             <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
                             <option value="produtividadeHora">2. Análise de Produtividade</option>
                             <option value="horarioPico">3. Análise de Horário de Pico</option>
@@ -1197,7 +1192,19 @@ function suite_formatarInputHistorico(textarea) {
                             <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
                             <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
                             <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
+                            <option value="brancoProximo">8. Branco Próximo (Análise por Minuto)</option>
                         </select>
+                    </div>
+                    <!-- SUGESTÃO: Opções específicas para a estratégia "Branco Próximo" -->
+                    <div class="control-group" id="suite_brancoProximo_options_container" style="display: none; border-left: 3px solid var(--accent); padding-left: 15px; margin-top: 20px;">
+                        <label for="suite_brancoProximo_patternSize">TAMANHO DO PADRÃO</label>
+                        <select id="suite_brancoProximo_patternSize">
+                            <option value="1">1 Pedra</option>
+                            <option value="2">2 Pedras</option>
+                            <option value="3" selected>3 Pedras</option>
+                            <option value="4">4 Pedras</option>
+                        </select>
+                        <div class="hint">Quantas pedras (números) antes do branco a I.A. deve procurar como padrão.</div>
                     </div>
                     <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
                     <div class="output-area" id="suite_resIABranco">Aguardando geração...</div>
@@ -2123,6 +2130,12 @@ function suite_formatarInputHistorico(textarea) {
             agressividadeContainer.style.display = isAuto ? 'block' : 'none';
             // estrategiaSelect.disabled = isAuto; // Mantém o seletor de estratégia habilitado
         }
+        // SUGESTÃO: Função para mostrar/ocultar opções da estratégia "Branco Próximo"
+        function suite_toggleBrancoProximoOptions() {
+            const estrategia = document.getElementById('suite_iaBranco_estrategia').value;
+            const optionsContainer = document.getElementById('suite_brancoProximo_options_container');
+            optionsContainer.style.display = (estrategia === 'brancoProximo') ? 'block' : 'none';
+        }
 
         function suite_gerarSinaisBrancoIA() {
             const qtd = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value);
@@ -2157,13 +2170,15 @@ function suite_formatarInputHistorico(textarea) {
             const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
             const horarios = historicoInput.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
             
-            if (!isAutoMode && horarios.length < 2) {
+            // CORREÇÃO: Move a verificação para dentro do 'else', permitindo que a estratégia 'brancoProximo'
+            // execute sua própria lógica de verificação de dados sem ser bloqueada aqui.
+            if (est !== 'brancoProximo' && !isAutoMode && horarios.length < 2) {
                 document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que a I.A. possa analisar e gerar os sinais.";
                 return;
             }
 
             let db = new Date(); // Ponto de partida é sempre o horário atual para gerar sinais futuros.
-
+ 
 
             let analysisNote = '';
             let projectionIntervals = [];
@@ -2253,6 +2268,24 @@ function suite_formatarInputHistorico(textarea) {
                         projectionIntervals = [avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgMedio, avgMedio, avgLongo];
                         analysisNote = `📊 Distribuição 70/20/10: [${avgCurto}, ${avgMedio}, ${avgLongo}] min`;
                         break;
+                    case 'brancoProximo': // 8. Branco Próximo (Análise por Hora)
+                        analysisNote = `🎯 Análise de Padrões de Cores pré-Branco`;
+                        
+                        // SUGESTÃO: Agora busca o histórico do campo "Entrada Manual / Análise Final"
+                        const historyText = document.getElementById('dash_inputData').value;
+                        if (!historyText || historyText.trim().length < 10) { // Verifica se há conteúdo suficiente
+                            document.getElementById('suite_resIABranco').innerText = "⚠️ Para a estratégia 'Branco Próximo', é necessário ter um histórico válido no campo 'Entrada Manual / Análise Final' do painel direito.";
+                            return;
+                        }
+                        // A verificação de conteúdo foi movida para a lógica principal da estratégia.
+                        // const fullHistoryForPatterns = document.getElementById('suite_inputHistorico').value;
+                        // if (!fullHistoryForPatterns.trim()) {
+                        //     document.getElementById('suite_resIABranco').innerText = "⚠️ Para a estratégia 'Branco Próximo', cole o histórico completo de cores na aba 'Analisar Histórico' primeiro.";
+                        //     return;
+                        // }
+                        // Esta estratégia não usa um intervalo de projeção, ela gera sinais diretamente.
+                        // A lógica será tratada após este bloco switch.
+                        break;
                     default:
                         // Por padrão, usa a média se nenhuma outra estratégia for correspondida
                         projectionIntervals = [mediaIntervalos];
@@ -2311,28 +2344,172 @@ function suite_formatarInputHistorico(textarea) {
                 out += `${analysisNote}\n--------------------------------\n`;
             }
 
-            if (projectionIntervals.length === 0 || projectionIntervals.every(p => p <= 0)) {
-                document.getElementById('suite_resIABranco').innerText = "⚠️ Não foi possível calcular um padrão de intervalo com base no histórico fornecido. Verifique os dados.";
-                return;
+            // CORREÇÃO: A estratégia 'brancoProximo' tem sua própria lógica de geração e não usa 'projectionIntervals'.
+            // Portanto, esta verificação de intervalo deve ser pulada para essa estratégia específica,
+            // permitindo que ela prossiga para sua lógica de análise de padrões de cores.
+            if (est !== 'brancoProximo') {
+                if (projectionIntervals.length === 0 || projectionIntervals.every(p => p <= 0)) {
+                    document.getElementById('suite_resIABranco').innerText = "⚠️ Não foi possível calcular um padrão de intervalo com base no histórico fornecido. Verifique os dados.";
+                    return;
+                }
             }
 
+            // Lógica específica para a nova estratégia "Branco Próximo"
+            // SUGESTÃO: Lógica completamente refeita para analisar padrões de cores
+            // CORREÇÃO: Lógica ajustada para ler do painel direito (Entrada Manual / Análise Final)
+            if (est === 'brancoProximo') {
+                const rawData = document.getElementById('dash_inputData').value;
+                // CORREÇÃO: Se a estratégia for 'brancoProximo', a lógica de geração de sinais é diferente.
+                // O resultado é gerado aqui e a função deve terminar para não ser sobrescrito.
+                // Por isso, a variável 'out' é reiniciada e a função retorna no final deste bloco.
+                out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n` + out.split('\n').slice(1, 6).join('\n') + '\n';
+
+
+                const platform = document.getElementById('dash_platformSelector').value;
+
+                // 1. Processa o texto do histórico para extrair os números
+                const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
+                const numeros = [];
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    const proximoToken = tokens[i + 1];
+                    if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
+                        numeros.push(parseInt(token));
+                        i++; // Pula o horário
+                    }
+                }
+
+                // 2. Mantém os números (pedras) para análise, revertendo para a ordem cronológica
+                const historyNumbers = numeros.reverse();
+
+                if (historyNumbers.length < 5) {
+                    document.getElementById('suite_resIABranco').innerText = "⚠️ Histórico insuficiente para análise de padrões. São necessários pelo menos 5 resultados.";
+                    return;
+                }
+
+                // SUGESTÃO: Pega o tamanho do padrão selecionado pelo usuário
+                const patternSize = parseInt(document.getElementById('suite_brancoProximo_patternSize').value);
+
+                // 3. Análise de Padrões (agora com números)
+                const patterns = {};
+                // Encontra todos os padrões de NÚMEROS do tamanho escolhido que antecedem um branco (número 0)
+                for (let i = patternSize; i < historyNumbers.length; i++) {
+                    // Verifica se o número atual é um branco (0)
+                    if (historyNumbers[i] === 0) {
+                        // Pega o padrão de números anteriores
+                        const patternSequence = historyNumbers.slice(i - patternSize, i);
+                        
+                        // Garante que o padrão não contenha outro branco
+                        if (patternSequence.every(num => num !== 0)) {
+                            const pattern = patternSequence.join('-');
+                            patterns[pattern] = (patterns[pattern] || 0) + 1;
+                        }
+                    }
+                }
+
+                // 4. Encontra o padrão de números mais frequente
+                let mostFrequentPattern = null;
+                let maxCount = 0;
+                for (const p in patterns) {
+                    if (patterns[p] > maxCount) {
+                        mostFrequentPattern = p;
+                        maxCount = patterns[p];
+                    }
+                }
+
+                if (mostFrequentPattern) {
+                    // REFINAMENTO: Em vez de mostrar apenas o padrão dominante, agora listamos todos os padrões encontrados.
+                    out += `🎯 Padrões Encontrados (que antecedem o 0):\n`;
+                    const sortedPatterns = Object.entries(patterns).sort(([,a],[,b]) => b-a); // Ordena por frequência
+
+                    sortedPatterns.forEach(([pattern, count]) => {
+                        const isDominant = pattern === mostFrequentPattern ? ' (Dominante 🔥)' : '';
+                        out += `   - ${pattern.replace(/-/g, ' → ')} (x${count})${isDominant}\n`;
+                    });
+                    out += `\n`; // Adiciona uma linha em branco para separar
+
+                    out += `--------------------------------\n`;
+
+                    // REFINAMENTO: A lógica de projeção inteligente foi restaurada.
+                    // 1. Calcula o intervalo médio específico do padrão encontrado.
+                    const patternIntervals = [];
+                    const patternOccurrences = historyNumbers.map((num, i) => (num === 0 && historyNumbers.slice(i - patternSize, i).join('-') === mostFrequentPattern) ? i : -1).filter(i => i !== -1);
+                    for (let i = 1; i < patternOccurrences.length; i++) {
+                        patternIntervals.push(patternOccurrences[i] - patternOccurrences[i-1]);
+                    }
+                    const patternAvgInterval = patternIntervals.length > 0 ? Math.round(patternIntervals.reduce((a, b) => a + b, 0) / patternIntervals.length) : 0;
+                    
+                    // 2. Calcula o intervalo médio geral de todos os brancos como um fallback.
+                    const allIntervals = [];
+                    let lastWhiteIndex = -1;
+                    for (let i = 0; i < historyNumbers.length; i++) {
+                        if (historyNumbers[i] === 0) {
+                            if (lastWhiteIndex !== -1) allIntervals.push(i - lastWhiteIndex);
+                            lastWhiteIndex = i;
+                        }
+                    }
+                    const generalAvgInterval = allIntervals.length > 0 ? Math.round(allIntervals.reduce((a, b) => a + b, 0) / allIntervals.length) : 15;
+                    
+                    // 3. NOVO CÁLCULO: Soma os números do padrão dominante para criar um novo fator de intervalo.
+                    const patternSumInterval = mostFrequentPattern.split('-').map(Number).reduce((a, b) => a + b, 0);
+
+                    // 4. REFINAMENTO: Em vez de escolher um intervalo, agora combinamos os três em uma média ponderada.
+                    // Isso "soma" todas as lógicas em um único cálculo final.
+                    const baseInterval = patternAvgInterval > 0 ? patternAvgInterval : generalAvgInterval;
+                    const projectionInterval = Math.round((baseInterval * 0.6) + (patternSumInterval * 0.4)); // 60% peso para o tempo, 40% para a soma
+
+                    out += `🔥 Padrão dominante identificado!\n`;
+                    out += `Projetando com base no intervalo de ${projectionInterval} min.\n`;
+                    out += `(Cálculo híbrido: Média de tempo: ${baseInterval}min, Soma do padrão: ${patternSumInterval})\n`;
+                    out += `\n`;
+                    
+                    // REFINAMENTO: Adiciona um limite de tempo para a geração de sinais.
+                    // A lista não se estenderá por mais de 1 hora a partir do momento da geração.
+                    let signalTime = new Date();
+                    const timeLimit = new Date(signalTime.getTime() + 60 * 60 * 1000); // Limite de 1 hora
+
+                    if (projectionInterval <= 0) out += 'Intervalo de projeção inválido (0 min). Nenhum sinal gerado.\n';
+
+                    // REFINAMENTO: Aumenta o número de iterações para garantir que a lista seja preenchida
+                    // com o máximo de sinais possível dentro do limite de 1 hora.
+                    for (let i = 0; i < 30 && projectionInterval > 0; i++) { // Tenta gerar até 30 sinais, mas o limite de tempo prevalece.
+                        signalTime.setMinutes(signalTime.getMinutes() + projectionInterval);
+                        // Se o próximo sinal ultrapassar o limite de 1 hora, para a geração.
+                        if (signalTime > timeLimit) break;
+                        const timeString = signalTime.getHours().toString().padStart(2, '0') + ':' + signalTime.getMinutes().toString().padStart(2, '0');
+                        out += `🕒 ${timeString} ➔ ⚪\n`;
+                    }
+                } else {
+                    out += `Nenhum padrão de ${patternSize} pedras antes de um branco foi encontrado no histórico fornecido.\n`;
+                }
+                out += `--------------------------------\n`
+                out += `Abra o 💬Comentario para ver o Flacar Final\n`;
+                out += `⚠️ Use como base para suas análises.`;
+                document.getElementById('suite_resIABranco').innerText = out;
+                return; // Finaliza a execução para não sobrescrever o resultado.
+            }
+
+            // CORREÇÃO: Este bloco de geração de sinais foi movido para cá.
+            // Ele agora é executado para todas as estratégias que usam 'projectionIntervals',
+            // pois a estratégia 'brancoProximo' já retornou e finalizou sua execução.
             const startTime = new Date();
             const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000); // Limite de 24 horas
 
             for (let i = 0; i < qtd; i++) {
+                if (projectionIntervals.length === 0) break; // Segurança
                 let minutosParaAdicionar = projectionIntervals[i % projectionIntervals.length];
 
                 if (est === 'iaPreditivaBranco' && minutosParaAdicionar > 0) {
                     const randomFactor = Math.random();
                     let dynamicInterval = Math.round(minutosParaAdicionar * (randomFactor > 0.7 ? 1.2 + randomFactor : 0.6 + randomFactor));
-                    minutosParaAdicionar = Math.max(1, dynamicInterval); // Usa o intervalo dinâmico e garante que seja no mínimo 1
+                    minutosParaAdicionar = Math.max(1, dynamicInterval);
                 }
 
                 db.setMinutes(db.getMinutes() + minutosParaAdicionar);
 
                 if (db > endTime) {
                     out += `\n-- Limite de 24h atingido --\n`;
-                    break; // Para o loop se exceder 24 horas
+                    break;
                 }
 
                 const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
@@ -2637,15 +2814,13 @@ function suite_formatarInputHistorico(textarea) {
 
         function suite_corrigirSinaisBranco() {
             const signalsInput = document.getElementById('suite_correctorBrancoSignalsInput').value;
-            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;
+            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;10
             const numEntradas = parseInt(document.getElementById('suite_correctorBrancoEntradas').value) || 1;
             const resultsDiv = document.getElementById('suite_resCorrectorBranco');
 
             if (!signalsInput || !resultsInput) { alert("Por favor, preencha a lista de sinais e o histórico de resultados."); return; }
 
-            // ATENÇÃO: A lógica abaixo é uma cópia. Você precisará adaptar as regras para o branco.
-            // Por exemplo, o regex para sinais de branco pode ser diferente.
-            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (⚪)/g; // Regex ajustado para procurar apenas por branco
+            const signalRegex = new RegExp('🕒 (\\d{2}:\\d{2}) ➔ (⚪)', 'g');
             const parsedSignals = [];
             const originalSignalLines = [];
             let match;
@@ -2654,41 +2829,59 @@ function suite_formatarInputHistorico(textarea) {
                 originalSignalLines.push(match[0]);
             }
 
-            const parsedResults = parseResultsHistory(resultsInput, true);
+            // 1. Processa o histórico de resultados em uma lista ordenada de objetos {time, color}
+            const allResults = [];
+            const resultRegex = new RegExp('(\\d{2}:\\d{2})', 'g'); // Regex para capturar apenas horários HH:MM
+            let resultMatch;
+            while ((resultMatch = resultRegex.exec(resultsInput)) !== null) {
+                // Adiciona o horário encontrado à lista. A cor é sempre BRANCO.
+                allResults.push({ time: resultMatch[1], color: 'BRANCO' });
+            }
+
             let wins = 0, losses = 0, winsPorGale = Array(numEntradas).fill(0);
             let maxWinStreak = 0, currentWinStreak = 0, maxLossStreak = 0, currentLossStreak = 0;
             let detailedResults = [];
 
             for (let i = 0; i < parsedSignals.length; i++) {
                 const signal = parsedSignals[i];
-                let foundWin = false;
 
+                // 2. Define o tempo de início e fim da janela de verificação para este sinal.
                 const [signalH, signalM] = signal.time.split(':').map(Number);
-                let checkTime = new Date();
-                checkTime.setHours(signalH, signalM, 0, 0);
+                const signalStartTime = new Date(0, 0, 0, signalH, signalM);
+                const signalEndTime = new Date(signalStartTime.getTime() + numEntradas * 60 * 1000); // Janela de N minutos
 
-                for (let gale = 0; gale < numEntradas; gale++) {
-                    const timeStr = checkTime.getHours().toString().padStart(2, '0') + ':' + checkTime.getMinutes().toString().padStart(2, '0');
-                    const resultsForTime = parsedResults[timeStr] || [];
+                // 3. Procura por um resultado de BRANCO dentro da janela de tempo.
+                let foundWinInGale = false;
+                let winGale = -1;
+                for (const result of allResults) {
+                    const [resultH, resultM] = result.time.split(':').map(Number);
+                    const resultTime = new Date(0, 0, 0, resultH, resultM);
 
-                    if (resultsForTime.includes('BRANCO')) {
-                        wins++;
-                        winsPorGale[gale]++;
-                        detailedResults.push(`${originalSignalLines[i]} ${gale > 0 ? `❇️(G${gale})` : '✅⚪️'}`);
-                        currentWinStreak++;
-                        currentLossStreak = 0;
-                        foundWin = true;
-                        break; // Sai do loop de gales, pois já achou o win
+                    // Verifica se o resultado está dentro da janela de N minutos a partir do sinal
+                    if (resultTime >= signalStartTime && resultTime < signalEndTime) {
+                        foundWinInGale = true;
+                        // Calcula em qual "gale" (minuto) o win ocorreu
+                        const diffMinutes = (resultTime - signalStartTime) / (1000 * 60);
+                        winGale = Math.floor(diffMinutes);
+                        break; // Encontrou o win, para de procurar
                     }
-                    // Avança 1 minuto para a próxima tentativa
-                    checkTime.setMinutes(checkTime.getMinutes() + 1);
                 }
 
-                if (!foundWin) {
+                if (foundWinInGale) {
+                    wins++;
+                    winsPorGale[winGale]++;
+                    currentWinStreak++;
+                    currentLossStreak = 0;
+                    // Adiciona o resultado detalhado para o WIN
+                    // Se winGale for 0, é um win de primeira. Se for > 0, é um gale.
+                    const winText = winGale > 0 ? '❇️' : '✅⚪️';
+                    detailedResults.push(`${originalSignalLines[i]} ${winText}`);
+                } else {
                     losses++;
-                    detailedResults.push(`${originalSignalLines[i]} ❌`);
                     currentLossStreak++;
                     currentWinStreak = 0;
+                    // Adiciona o resultado detalhado para o LOSS
+                    detailedResults.push(`${originalSignalLines[i]} ❌`);
                 }
                 maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
                 maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
@@ -3013,10 +3206,12 @@ function suite_formatarInputHistorico(textarea) {
             const autoTextarea = document.getElementById('dash_autoInput');
             
             try {
-                statusBtn.innerText = "⏳ Testando Histórico...";
+                statusBtn.innerText = "⏳ Buscando...";
                 statusBtn.disabled = true;
         
                 // 1. Configura as datas dinamicamente (Agora e 24h atrás)
+                // SUGESTÃO: Mover a lógica de teste de link para uma etapa inicial para melhor feedback.
+                statusBtn.innerText = "⏳ Testando Histórico...";
                 const agora = new Date();
                 const ontem = new Date();
                 ontem.setHours(ontem.getHours() - 24); // Pega as últimas 24h
@@ -3522,7 +3717,6 @@ function suite_formatarInputHistorico(textarea) {
             // Os listeners são movidos para fora para sempre serem ativados
 
             document.getElementById('theme-switcher').addEventListener('click', toggleTheme);
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
             document.getElementById('logout-button').addEventListener('click', handleLogout);
             document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
             
@@ -4581,11 +4775,11 @@ function suite_formatarInputHistorico(textarea) {
             setupOperatorInfo(operatorName);
             applyAccessControl(); // Aplica as restrições de acesso
 
-            // Inicia o temporizador para recarregar a página a cada 10 minutos
-            setInterval(() => {
-                console.log("Recarregando a página automaticamente...");
-                location.reload();
-            }, 10 * 60 * 1000); // 10 minutos
+            // REMOVIDO: O código abaixo recarregava a página a cada 10 minutos, o que causava interrupções.
+            // setInterval(() => {
+            //     console.log("Recarregando a página automaticamente...");
+            //     location.reload();
+            // }, 10 * 60 * 1000); // 10 minutos
         }
 
         function setupOperatorInfo(operatorName) {
@@ -4663,28 +4857,18 @@ function suite_formatarInputHistorico(textarea) {
 
             showRegisterLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                loginForm.style.display = 'none'; // Esconde o formulário de login
-                registerForm.style.display = 'flex'; // Mostra o formulário de cadastro
                 loginForm.classList.remove('form-active');
                 loginForm.classList.add('form-inactive');
-                
-                setTimeout(() => {
-                    registerForm.classList.remove('form-inactive');
-                    registerForm.classList.add('form-active');
-                }, 100); // Pequeno delay para a transição
+                registerForm.classList.remove('form-inactive');
+                registerForm.classList.add('form-active');
             });
 
             showLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'flex';
                 registerForm.classList.remove('form-active');
                 registerForm.classList.add('form-inactive');
-
-                setTimeout(() => {
-                    loginForm.classList.remove('form-inactive');
-                    loginForm.classList.add('form-active');
-                }, 100);
+                loginForm.classList.remove('form-inactive');
+                loginForm.classList.add('form-active');
             });
             // Restaura abas e plataformas
             const suiteActiveTab = 'gerador'; // Padrão, já que não há mais localStorage
