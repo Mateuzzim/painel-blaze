@@ -642,8 +642,9 @@
             display: flex !important; /* Garante que seja exibido como flex */
         }
         #login-container {
-            /* Garante que o container se ajuste à altura do formulário ativo */
-            min-height: 650px; 
+            /* Garante que o container se ajuste ao conteúdo, mas sem forçar uma altura mínima grande */
+            /* min-height: 650px; */ /* REMOVIDO: Esta linha causava o problema de layout em telas menores */
+            overflow-y: auto; /* Adicionado: Permite rolagem interna se o formulário for maior que a tela */
         }
     </style>
     <style>
