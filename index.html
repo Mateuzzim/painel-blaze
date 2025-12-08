@@ -371,6 +371,13 @@
         .suite #user-list-table .sortable-header.asc::after { content: ' 🔼'; opacity: 1; }
         .suite #user-list-table .sortable-header.desc::after { content: ' 🔽'; opacity: 1; }
 
+        /* SUGESTÃO: Estilo para a linha de usuário bloqueado */
+        .suite #user-list-table tr.blocked-user td {
+            background-color: rgba(220, 53, 69, 0.15);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
         .suite #guest-permissions-container {
             margin-top: 40px;
             border-top: 1px solid #444;
@@ -402,11 +409,26 @@
             text-align: left;
             font-size: 0.85em;
         }
+        /* SUGESTÃO: Melhorar responsividade da tabela de usuários */
+        .suite #user-list-container {
+            overflow-x: auto; /* Permite rolagem horizontal na tabela sempre que necessário */
+        }
+        @media (max-width: 768px) {
+            .suite #user-list-table {
+                min-width: 600px; /* Garante que a tabela tenha uma largura mínima */
+            }
+        }
 
         @media (max-width: 600px) {
             .suite .main-header { flex-direction: column; gap: 15px; }
             .suite .tabs .tab-btn { width: 30%; font-size: 0.7rem; }
             .suite .inline-controls { flex-direction: column; gap: 15px; }
+        }
+        /* SUGESTÃO: Melhorar responsividade do formulário de usuários */
+        @media (max-width: 600px) {
+            .suite #suite_userRegistrationForm {
+                grid-template-columns: 1fr; /* Uma coluna em telas pequenas */
+            }
         }
 
         /* ================================== */
@@ -585,10 +607,10 @@
             line-height: 0; /* Para alinhar o SVG perfeitamente */
         }
         #login-logo {
-            width: 120px; /* Ajuste a largura conforme necessário */
+            width: 150px; /* Aumentei a largura para dar mais destaque */
             height: auto;
             margin-bottom: 25px;
-            border-radius: 8px; /* Opcional: para bordas arredondadas */
+            border-radius: 90px; /* Opcional: para bordas arredondadas */
         }
         .forgot-password-container a:hover { opacity: 1; text-decoration: underline; }
     </style>
@@ -602,6 +624,84 @@
             text-align: center;
             margin-top: 20px;
         }
+        /* SUGESTÃO: Animação de transição para formulários de login/cadastro */
+        #login-form, #self-register-form {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+        .form-inactive {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none; /* Impede interação com o formulário oculto */
+            position: absolute; /* Permite que os formulários se sobreponham durante a transição */
+            display: none !important; /* Garante que seja ocultado após a animação */
+        }
+        .form-active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            display: flex !important; /* Garante que seja exibido como flex */
+        }
+        #login-container {
+            /* Garante que o container se ajuste à altura do formulário ativo */
+            min-height: 650px; 
+        }
+    </style>
+    <style>
+        /* Botão de Suporte Telegram Animado */
+        #telegram-support-button {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background-color: #0088cc; /* Azul do Telegram */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.4);
+            z-index: 1001; /* Garante que fique acima de outros elementos do login */
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            /* A animação 'shake' é aplicada em intervalos para não ser constante */
+            animation: shake-periodic 5s ease-in-out infinite;
+        }
+        #telegram-support-button:hover {
+            transform: scale(1.1);
+            animation: none; /* Remove a animação durante o hover para uma interação mais suave */
+        }
+        /* Keyframes para a animação de 'shake' */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-1deg); }
+            20%, 80% { transform: translate3d(2px, 0, 0) rotate(2deg); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-3deg); }
+            40%, 60% { transform: translate3d(3px, 0, 0) rotate(3deg); }
+        }
+        /* Keyframes para controlar quando a animação 'shake' acontece */
+        @keyframes shake-periodic {
+            0%, 90%, 100% { transform: rotate(0deg); } /* Estado de repouso */
+            92%, 96% { animation-name: shake; animation-duration: 0.4s; } /* Aplica o shake */
+        }
+    </style>
+    <style>
+        /* Botão de Suporte Instagram (similar ao do Telegram) */
+        #instagram-support-button {
+            position: fixed;
+            top: 95px; /* Posição abaixo do botão do Telegram (25px + 60px + 10px de espaço) */
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            /* Fundo branco e borda para destaque */
+            background: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 50%; /* Adicionado para tornar o botão redondo */
+            animation: shake-periodic 5s ease-in-out infinite;
+            animation-delay: 0.5s; /* Atraso para não animar junto com o outro botão */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
     
     <!-- Firebase SDK -->
@@ -612,9 +712,22 @@
 <body>
     <div id="welcome-message"></div>
     <div id="login-container">
+        <!-- Botão de Suporte Telegram -->
+        <a id="telegram-support-button" title="Fale com o Suporte">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="white">
+                <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.3.98.19.82.93l-2.69 12.8c-.19.91-.74 1.13-1.5.7l-4.21-3.11-2.04 1.97c-.23.23-.42.42-.83.42z"></path>
+            </svg>
+        </a>
+        <!-- Botão do Instagram -->
+        <a id="instagram-support-button" class="telegram-support-button" href="https://www.instagram.com/cortex_virtual?igsh=NTltcmdnMHlqZnQw&utm_source=qr" target="_blank" title="Siga-nos no Instagram">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="black">
+                <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"></path>
+            </svg>
+        </a>
         <!-- LOGO DA EMPRESA - Troque a URL em 'src' pela URL da sua imagem -->
         <img src="https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg" alt="Logo da Empresa" id="login-logo">
         <form id="login-form">
+        <form id="login-form" class="form-active">
             <h2>LOGIN USUÁRIO</h2>
             <div class="login-input-group">
                 <label for="username">Usuário</label>
@@ -643,6 +756,7 @@
 
         <!-- Formulário de Cadastro (inicialmente oculto) -->
         <form id="self-register-form" style="display: none;" onsubmit="handleSelfRegister(event)">
+        <form id="self-register-form" class="form-inactive" onsubmit="handleSelfRegister(event)">
             <h2>CRIAR CONTA</h2>
             <div class="login-input-group">
                 <label for="self_reg_username">Nome de Usuário</label>
@@ -711,13 +825,13 @@
                 </div>
 
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="suite_openTab('gerador')">Gerador I.A</button>
+                    <button class="tab-btn active" onclick="suite_openTab('gerador')">I.A Cores</button>
                     <button class="tab-btn" onclick="suite_openTab('analisador')">Analisar Histórico</button>
-                    <button class="tab-btn" onclick="suite_openTab('corretor')">Corretor de Sinais</button>
-                    <button class="tab-btn" onclick="suite_openTab('corretor_branco')">Corretor de Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('corretor')">Corretor Cores</button>
+                    <button class="tab-btn" onclick="suite_openTab('corretor_branco')">Corretor Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
                     <button class="tab-btn" onclick="suite_openTab('branco')">Analisador Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A. Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('config')" title="Configurações">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
                     </button>
@@ -727,7 +841,7 @@
                 </div>
 
                 <div id="suite_gerador" class="tab-content active">
-                    <h2>🤖 Gerador I.A</h2>
+                    <h2>🤖 I.A Cores</h2>
                     <div class="inline-controls" style="margin-bottom: 15px;">
                         <div class="control-group">
                             <label id="suite_labelQtdSinais">Quantidade de Sinais:</label>
@@ -764,7 +878,10 @@
                     </div>
                     <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
                     <div class="output-area" id="suite_resGerador">Resultado aqui...</div>
-                    <button class="btn-copy" onclick="copiar('suite_resGerador', this)">📋 COPIAR LISTA</button>
+                    <div class="inline-controls" style="margin-top: 10px;">
+                        <button class="btn-copy" onclick="copiar('suite_resGerador', this)" style="margin-top: 0; width: 100%;">📋 COPIAR LISTA</button>
+                        <button id="send-generated-list-to-telegram-btn" class="btn-copy" style="background-color: #0088cc; display: none; margin-top: 0; width: 100%;" onclick="sendGeneratedListToTelegram(this)">🚀 ENVIAR PARA TELEGRAM</button>
+                    </div>
                 </div>
 
                 <div id="suite_analisador" class="tab-content">
@@ -777,13 +894,7 @@
                             </div>
                         </div>
                         <div class="hint" style="margin-top: 0;">Cole o texto do histórico aqui.</div>
-                        <textarea id="suite_inputHistorico" placeholder="Exemplo do formato esperado:
-02/12/2025 23:56:04
-14
-23:56
-
-02/12/2025 23:55:34
-23:55"></textarea>
+                        <textarea id="suite_inputHistorico" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui a lista copiada..."></textarea>
                     </div>
                     <div class="stats-box" id="suite_analisador_stats" style="display: none; margin-top: 0; margin-bottom: 15px;">
                         <div class="stat-item stat-dynamic-color"><span class="suite_analisador_platform-emoji">🔴</span> <span id="suite_analisador_count-red">0 (0%)</span></div>
@@ -811,19 +922,73 @@
                     </div>
                     <div class="inline-controls">
                         <button class="btn-action" onclick="suite_analisarEGerar()">🔍 ANALISAR E GERAR</button>
-                        <button class="btn-copy" onclick="copiar('suite_resAnalise', this)" style="margin-top: 10px; font-size: 1.1rem;">📋 COPIAR ANÁLISE</button>
                     </div>
                     <div class="output-area" id="suite_resAnalise">Aguardando dados...</div>
+                    <div class="inline-controls" style="margin-top: 10px;"><button class="btn-copy" onclick="copiar('suite_resAnalise', this)" style="margin-top: 0; width: 100%;">📋 COPIAR ANÁLISE</button><button id="send-analysis-to-telegram-btn" class="btn-copy" style="background-color: #0088cc; display: none; margin-top: 0; width: 100%;" onclick="sendAnalysisToTelegram(this)">🚀 ENVIAR PARA TELEGRAM</button></div>
                 </div>
 
+                <script>// SUGESTÃO: Função para formatar o histórico do analisador automaticamente
+let suite_formatarTimeout;
+function suite_formatarInputHistorico(textarea) {
+    clearTimeout(suite_formatarTimeout);
+    suite_formatarTimeout = setTimeout(() => {
+        const valorOriginal = textarea.value.trim();
+        const linhas = valorOriginal.split('\n');
+        const resultadosFinais = [];
+        const timeRegex = /^\d{2}:\d{2}$/;
+        const numberRegex = /^\d{1,2}$/;
+        const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
+
+         for (let i = 0; i < linhas.length; i++) {
+             const linhaAtual = linhas[i].trim();
+             if (fullDateRegex.test(linhaAtual)) {
+                 const linha1 = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                 const linha2 = linhas[i + 2] ? linhas[i + 2].trim() : '';
+ 
+                 let numero, horario, cor;
+                 if (numberRegex.test(linha1) && timeRegex.test(linha2)) {
+                     numero = parseInt(linha1);
+                     horario = linha2;
+                     i += 2; // Pula as próximas duas linhas
+                 } else if (timeRegex.test(linha1)) {
+                     numero = 0; // O número está oculto, então é BRANCO
+                     horario = linha1;
+                     i += 1; // Pula apenas a próxima linha
+                 }
+ 
+                 if (horario) {
+                     if (numero === 0) cor = 'BRANCO';
+                     else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
+                     else if (numero >= 8 && numero <= 14) cor = 'PRETO';
+                     resultadosFinais.push(`${horario} ${cor}`);
+                 }
+             } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
+                 resultadosFinais.push(linhaAtual.toUpperCase());
+             }
+         }
+        textarea.value = resultadosFinais.join('\n');
+    }, 500); // Aguarda 500ms após o usuário parar de digitar
+}
+</script>
+
                 <div id="suite_corretor" class="tab-content">
-                    <h2>✅ Corretor de Sinais</h2>
-                    <div class="control-group">
-                        <label>Cole a Lista de Sinais Gerada:</label>
+                    <h2>✅ Corretor Cores</h2>
+                     <div class="control-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-bottom: 0;">Cole a Lista de Sinais Gerada:</label>
+                            <div class="header-buttons">
+                                <button onclick="suite_clearTextarea('suite_correctorSignalsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                            </div>
+                        </div>
                         <textarea id="suite_correctorSignalsInput" placeholder="Cole aqui a lista completa que você gerou..."></textarea>
                     </div>
-                    <div class="control-group">
-                        <label>Cole o Histórico de Resultados Reais:</label>
+                     <div class="control-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-bottom: 0;">Cole o Histórico de Resultados Reais:</label>
+                            <div class="header-buttons">
+                                <button onclick="suite_clearTextarea('suite_correctorResultsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                            </div>
+                        </div>
                         <textarea id="suite_correctorResultsInput" oninput="suite_formatCorrectorResultsInput(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>                    </div>
                     <div class="inline-controls">
                         <button class="btn-action" onclick="suite_corrigirSinais()">CORRIGIR LISTA</button>
@@ -834,9 +999,14 @@
                 </div>
 
                 <div id="suite_corretor_branco" class="tab-content">
-                    <h2>⚪ Corretor de Branco</h2>
-                    <div class="control-group">
-                        <label>Cole a Lista de Sinais de Branco Gerada:</label>
+                    <h2>⚪ Corretor Branco</h2>
+                     <div class="control-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-bottom: 0;">Cole a Lista de Sinais de Branco Gerada:</label>
+                            <div class="header-buttons">
+                                <button onclick="suite_clearTextarea('suite_correctorBrancoSignalsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                            </div>
+                        </div>
                         <textarea id="suite_correctorBrancoSignalsInput" placeholder="Cole aqui a lista de sinais para o branco..."></textarea>
                     </div>
                     <div class="control-group">
@@ -844,8 +1014,13 @@
                         <input type="number" id="suite_correctorBrancoEntradas" value="3" min="1" placeholder="Ex: 3">
                         <div class="hint">Quantas casas verificar após o sinal para um acerto.</div>
                     </div>
-                    <div class="control-group">
-                        <label>Cole o Histórico de Resultados Reais:</label>
+                     <div class="control-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-bottom: 0;">Cole o Histórico de Resultados Reais:</label>
+                            <div class="header-buttons">
+                                <button onclick="suite_clearTextarea('suite_correctorBrancoResultsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                            </div>
+                        </div>
                         <textarea id="suite_correctorBrancoResultsInput" oninput="suite_formatCorrectorResultsInput(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>
                     </div>
                     <div class="inline-controls">
@@ -974,7 +1149,7 @@
                 </div>
 
                 <div id="suite_ia_branco" class="tab-content">
-                    <h2>🤖 I.A. Gerador de Branco</h2>
+                    <h2>🤖 I.A Gerador de Branco</h2>
                     <div class="toggle-switch-container" style="margin-bottom: 20px;">
                         <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
                         <label class="switch">
@@ -1283,6 +1458,38 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NOVO PAINEL PARA TELEGRAM (ADMIN) -->
+            <div id="telegram-panel" class="layout-panel" style="display: none;">
+                <h1><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 8px;"><path d="M21.19,2.81,2.81,11.39,9.38,14.61l8.23-7.82L10.93,16l3.68,6.13Z"/></svg>Conexão com Telegram</h1>
+                <div class="suite" style="padding: 0;"> <!-- Reutiliza estilos da suite -->
+                    <div class="control-group">
+                        <label for="telegram_bot_token">Token do Bot do Telegram:</label>
+                        <input type="password" id="telegram_bot_token" placeholder="Cole seu token do bot aqui">
+                        <div class="hint">O token fornecido pelo BotFather.</div>
+                    </div>
+                    <div class="control-group">
+                        <label for="telegram_chat_id">ID do Chat/Canal de Notificações:</label>
+                        <input type="text" id="telegram_chat_id" placeholder="ID do seu chat ou canal">
+                        <div class="hint">O bot enviará as notificações para este ID.</div>
+                    </div>
+                    <div class="inline-controls">
+                        <button class="btn-action" style="background-color: #0088cc;" onclick="saveTelegramSettings(this)">💾 SALVAR</button>
+                        <button class="btn-action" style="background-color: #555;" onclick="testTelegramConnection(this)">📡 TESTAR CONEXÃO</button>
+                    </div>
+                    <div class="output-area" id="resTelegramConfig" style="margin-top: 20px; text-align: center; display: none;"></div>
+
+                    <hr style="border: 0; border-top: 1px solid #444; margin: 30px 0;">
+
+                    <h3 style="color: #00aaff; text-transform: uppercase; font-size: 1rem; margin-bottom: 15px;">🚀 Enviar Lista para o Grupo</h3>
+                    <div class="control-group">
+                        <label for="telegram_list_message">Cole a lista para enviar:</label>
+                        <textarea id="telegram_list_message" class="suite" style="height: 150px;" placeholder="Cole aqui a lista de sinais gerada em qualquer uma das abas..."></textarea>
+                    </div>
+                    <button class="btn-action" style="background-color: #28a745;" onclick="sendTelegramList(this)">ENVIAR LISTA</button>
+
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1450,6 +1657,209 @@
                 resArea.style.display = 'none';
                 btn.innerHTML = originalText;
             }, 2500);
+        }
+
+        function saveTelegramSettings(btn) {
+            // Aqui você adicionaria a lógica para salvar o token e o ID do chat.
+            // Por enquanto, apenas simularemos o salvamento.
+            const token = document.getElementById('telegram_bot_token').value;
+            const chatId = document.getElementById('telegram_chat_id').value;
+            console.log("Salvando Configs do Telegram:", { token, chatId });
+
+            const resArea = document.getElementById('resTelegramConfig');
+            resArea.innerText = 'Configurações do Telegram salvas com sucesso!';
+            resArea.style.display = 'block';
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ SALVO!';
+            setTimeout(() => { resArea.style.display = 'none'; btn.innerHTML = originalText; }, 2500);
+        }
+
+        async function testTelegramConnection(btn) {
+            const token = document.getElementById('telegram_bot_token').value;
+            const chatId = document.getElementById('telegram_chat_id').value;
+            const resArea = document.getElementById('resTelegramConfig');
+
+            if (!token || !chatId) {
+                resArea.innerText = '❌ Preencha o Token e o ID do Chat primeiro.';
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+                setTimeout(() => { resArea.style.display = 'none'; }, 3000);
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Enviando...';
+            btn.disabled = true;
+            resArea.style.display = 'none';
+
+            const message = "✅ *Teste de Conexão*\n\nOlá! Se você recebeu esta mensagem, suas configurações do Telegram no painel estão funcionando corretamente.";
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    resArea.innerText = '✅ Mensagem de teste enviada com sucesso!';
+                    resArea.style.color = 'var(--accent-jonbet)';
+                } else {
+                    throw new Error(data.description || 'Erro desconhecido.');
+                }
+            } catch (error) {
+                resArea.innerText = `❌ Falha ao enviar: ${error.message}`;
+                resArea.style.color = 'var(--accent-blaze)';
+            } finally {
+                resArea.style.display = 'block';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                setTimeout(() => { resArea.style.display = 'none'; }, 5000);
+            }
+        }
+
+        async function sendTelegramList(btn) {
+            const token = document.getElementById('telegram_bot_token').value;
+            const chatId = document.getElementById('telegram_chat_id').value;
+            const message = document.getElementById('telegram_list_message').value;
+            const resArea = document.getElementById('resTelegramConfig'); // Reutiliza a área de resultado
+
+            if (!token || !chatId) {
+                resArea.innerText = '❌ Preencha o Token e o ID do Chat nas configurações acima.';
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+                setTimeout(() => { resArea.style.display = 'none'; }, 4000);
+                return;
+            }
+            if (!message.trim()) {
+                resArea.innerText = '❌ A caixa de mensagem da lista está vazia.';
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+                setTimeout(() => { resArea.style.display = 'none'; }, 4000);
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Enviando...';
+            btn.disabled = true;
+            resArea.style.display = 'none';
+
+            try {
+                // Reutiliza a função de notificação, enviando a mensagem para o chat de admin
+                await sendTelegramNotification(message);
+                resArea.innerText = '✅ Lista enviada com sucesso para o seu grupo/canal!';
+                resArea.style.color = 'var(--accent-jonbet)';
+                document.getElementById('telegram_list_message').value = ''; // Limpa o campo após o envio
+            } catch (error) {
+                resArea.innerText = `❌ Falha ao enviar a lista: ${error.message}`;
+                resArea.style.color = 'var(--accent-blaze)';
+            } finally {
+                resArea.style.display = 'block';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                setTimeout(() => { resArea.style.display = 'none'; }, 5000);
+            }
+        }
+        async function getTelegramSettings() {
+            try {
+                const doc = await db.collection("settings").doc("telegram").get();
+                if (doc.exists) {
+                    return doc.data();
+                }
+                return null; // No settings found
+            } catch (error) {
+                console.error("Erro ao buscar configurações do Telegram:", error);
+                return null;
+            }
+        }
+
+        async function sendTelegramNotification(message, targetChatId = null) {
+            const settings = await getTelegramSettings();
+            if (!settings || !settings.bot_token || !settings.chat_id) {
+                console.log("Notificação do Telegram não enviada: configurações ausentes.");
+                return;
+            }
+
+            const { bot_token: token, chat_id: adminChatId } = settings;
+            const finalChatId = targetChatId || adminChatId; // Usa o alvo específico ou o do admin
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: finalChatId, text: message, parse_mode: 'Markdown', disable_web_page_preview: true })
+                });
+                const data = await response.json();
+                if (data.ok) console.log("Notificação enviada para o admin via Telegram.");
+                else throw new Error(data.description);
+            } catch (error) { console.error("Falha ao enviar notificação do Telegram:", error.message); }
+        }
+
+        async function sendGeneratedListToTelegram(btn) {
+            const listContent = document.getElementById('suite_resGerador').innerText;
+            const defaultText = "Resultado aqui...";
+
+            if (!listContent || listContent.trim() === defaultText || listContent.trim() === "") {
+                alert("Gere uma lista primeiro antes de enviar para o Telegram.");
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Enviando...';
+            btn.disabled = true;
+
+            try {
+                // Reutiliza a função de notificação, que já busca as credenciais do Firebase
+                await sendTelegramNotification(listContent);
+                btn.innerHTML = '✅ Enviado!';
+            } catch (error) {
+                alert(`Falha ao enviar para o Telegram: ${error.message}`);
+                btn.innerHTML = originalText;
+            } finally {
+                // Habilita o botão novamente e restaura o texto original após um tempo
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
+        }
+
+        async function sendAnalysisToTelegram(btn) {
+            const analysisContent = document.getElementById('suite_resAnalise').innerText;
+            const defaultText = "Aguardando dados...";
+
+            if (!analysisContent || analysisContent.trim() === defaultText || analysisContent.trim() === "") {
+                alert("Gere uma análise primeiro antes de enviar para o Telegram.");
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Enviando...';
+            btn.disabled = true;
+
+            try {
+                // Reutiliza a função de notificação, que já busca as credenciais do Firebase
+                await sendTelegramNotification(analysisContent);
+                btn.innerHTML = '✅ Enviado!';
+            } catch (error) {
+                alert(`Falha ao enviar para o Telegram: ${error.message}`);
+                btn.innerHTML = originalText;
+            } finally {
+                // Habilita o botão novamente e restaura o texto original após um tempo
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }, 3000);
+            }
         }
 
         // ==========================================
@@ -1942,6 +2352,18 @@
             document.getElementById('suite_resGerador').innerText = "Resultado aqui...";
             suite_updateQtdLabel();
         }
+        function suite_clearTextarea(elementId) {
+            const textarea = document.getElementById(elementId);
+            if (textarea) {
+                textarea.value = '';
+                // Dispara um evento de input para que qualquer lógica associada seja acionada
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+        function suite_updateAnalyzerStats(counts) {
+            const statsBox = document.getElementById('suite_analisador_stats');
+            const platform = document.getElementById('suite_platformSelector').value;
+        }
 
         function suite_analisarEGerar() {
             const input = document.getElementById('suite_inputHistorico').value.trim();
@@ -1956,32 +2378,20 @@
             }
 
             const linhas = input.split('\n').map(l => l.trim()).filter(l => l); // Filtra linhas vazias
-            let coresProcessadas = [];
-            const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
-            const numberRegex = /^\d{1,2}$/;
-            const timeRegex = /^\d{2}:\d{2}$/;
+            const coresProcessadas = [];
 
             try {
-                for (let i = 0; i < linhas.length; i++) {
-                    const linhaAtual = linhas[i];
-
-                    if (fullDateRegex.test(linhaAtual)) {
-                        const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                        let cor = '';
-
-                        if (numberRegex.test(proximaLinha)) {
-                            const numero = parseInt(proximaLinha);
-                            if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
-                            else if (numero >= 8 && numero <= 14) cor = 'PRETO';
-                            i++; // Pula a linha do número, já que foi processada
-                        } else if (timeRegex.test(proximaLinha)) { // Verifica se a próxima linha é um horário (indicando branco)
-                            cor = 'BRANCO';
+                linhas.forEach(linha => {
+                    const match = linha.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i);
+                    if (match) {
+                        let cor = match[1].toUpperCase();
+                        // Normaliza VERDE para VERMELHO para a lógica de análise
+                        if (cor === 'VERDE') {
+                            cor = 'VERMELHO';
                         }
-                        if (cor) {
-                            coresProcessadas.push(cor);
-                        }
+                        coresProcessadas.push(cor);
                     }
-                }
+                });
             } catch (e) {
                 console.error("Erro ao processar o histórico:", e);
             }
@@ -3115,26 +3525,6 @@
             document.getElementById('logout-button').addEventListener('click', handleLogout);
             document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
             
-            setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
-            
-            // --- LÓGICA PARA ALTERNAR ENTRE LOGIN E CADASTRO ---
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('self-register-form');
-            const showRegisterLink = document.getElementById('show-register-link');
-            const showLoginLink = document.getElementById('show-login-link');
-
-            showRegisterLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'flex';
-            });
-
-            showLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'flex';
-            });
-
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
 
@@ -3147,12 +3537,20 @@
                 supportLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
             }
             // Inicializa o app principal
+            setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
             initializeApp();
 
             // Listener para o input de importação de arquivo
             document.getElementById('import-users-input').addEventListener('change', handleUserImport);
         });
+
+        // Configura o link do botão de suporte do Telegram
+        const supportButton = document.getElementById('telegram-support-button');
+        if (supportButton) {
+            const supportURL = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
+            supportButton.href = supportURL;
+        }
 
         // ==========================================
         // NOVA FUNÇÃO: SALVAR NO FIREBASE
@@ -3166,7 +3564,7 @@
             const username = document.getElementById('reg_username').value.trim();
             const password = document.getElementById('reg_password').value;
             const contact = document.getElementById('reg_contact').value.trim();
-            const telegramId = document.getElementById('reg_telegram_id').value.trim();
+            const telegramId = document.getElementById('reg_telegram_id').value.trim() || null;
             const confirmPassword = document.getElementById('reg_confirmPassword').value;
             const accessLevel = document.getElementById('reg_accessLevel').value;
             const trialDays = document.getElementById('reg_trial_days').value;
@@ -3202,7 +3600,7 @@
                 username: username,
                 password: btoa(password), 
                 contact: contact || null,
-                telegramId: telegramId || null,
+                telegramId: telegramId,
                 accessLevel: accessLevel,
                 expiresAt: expirationDate,
                 createdAt: new Date().toISOString() // Bom para saber quando foi criado
@@ -3224,6 +3622,26 @@
                 outputArea.innerText = `✅ SUCESSO: Usuário "${username}" salvo na nuvem!`;
                 outputArea.style.color = 'var(--accent-jonbet)';
                 form.reset();
+                populateUserList(1); // Atualiza a lista de usuários
+
+                // Envia a mensagem de boas-vindas se o ID do Telegram foi fornecido
+                if (telegramId) {
+                    getTelegramSettings().then(settings => {
+                        if (settings && settings.welcome_message) {
+                            let welcomeMsg = settings.welcome_message;
+                            const expirationDisplay = expirationDate 
+                                ? new Date(expirationDate).toLocaleDateString('pt-BR')
+                                : 'Permanente';
+
+                            welcomeMsg = welcomeMsg.replace('{username}', username);
+                            welcomeMsg = welcomeMsg.replace('{password}', password);
+                            welcomeMsg = welcomeMsg.replace('{expiration_date}', expirationDisplay);
+
+                            // Envia a mensagem para o ID do novo usuário
+                            sendTelegramNotification(welcomeMsg, telegramId);
+                        }
+                    });
+                }
                 
                 // Atualiza a lista (vamos ajustar essa função depois para ler do Firebase)
                 // populateUserList(); 
@@ -3456,6 +3874,12 @@
                     ? new Date(user.expiresAt).toLocaleString('pt-BR') 
                     : 'Permanente';
 
+                const isBlocked = user.isBlocked === true;
+                const blockButtonText = isBlocked ? 'Desbloquear' : 'Bloquear';
+                const blockButtonStyle = isBlocked ? 'background: #28a745;' : 'background: #ffc107; color: #111;';
+                const expirationDisplay = isBlocked ? 'BLOQUEADO' : (user.expiresAt ? new Date(user.expiresAt).toLocaleString('pt-BR')
+                    : 'Permanente');
+
                 const row = tbody.insertRow();
                 const actionsCell = row.insertCell();
                 actionsCell.style.whiteSpace = 'nowrap';
@@ -3465,14 +3889,20 @@
                     <td>${user.contact || '-'}</td>
                     <td>${user.telegramId || 'N/A'}</td>
                     <td>${user.accessLevel}</td>
-                    <td>${expirationText}</td>
+                    <td>${expirationDisplay}</td>
                 `;
 
+                if (isBlocked) {
+                    row.classList.add('blocked-user');
+                    row.title = 'Este usuário está bloqueado manualmente.';
+                }
+
                 actionsCell.innerHTML = `
-                    <button onclick="editUser('${user.id}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">Editar</button>
-                    <button onclick="renewUser('${user.id}', '${user.username}')" style="background: #28a745; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
+                    <button onclick="toggleUserBlock('${user.id}', ${isBlocked}, '${user.username}')" style="${blockButtonStyle} padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">${blockButtonText}</button>
+                    <button onclick="renewUser('${user.id}', '${user.username}')" style="background: #17a2b8; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 4px; cursor: pointer;">+ Dias</button>
                     <button onclick="deleteUser('${user.id}', '${user.username}')" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em; border: none; color: white; border-radius: 4px; cursor: pointer;">Excluir</button>
                 `;
+                // O botão de editar foi removido para simplificar, mas pode ser adicionado de volta se necessário.
                 row.appendChild(actionsCell);
             });
 
@@ -3570,6 +4000,31 @@
             } catch (e) {
                 console.error("Erro ao renovar o acesso do usuário:", e);
                 alert("Ocorreu uma falha ao tentar renovar o acesso.");
+            }
+        }
+
+        async function toggleUserBlock(userId, isCurrentlyBlocked, username) {
+            const action = isCurrentlyBlocked ? 'desbloquear' : 'bloquear';
+            if (!confirm(`Tem certeza que deseja ${action} o usuário "${username}"?`)) {
+                return;
+            }
+        
+            const newBlockedState = !isCurrentlyBlocked;
+        
+            try {
+                // Atualiza o estado 'isBlocked' no Firebase
+                await db.collection("users").doc(userId).update({ isBlocked: newBlockedState });
+        
+                console.log(`Usuário ${username} foi ${action} com sucesso.`);
+                
+                // Envia notificação para o admin
+                const adminMessage = `O usuário *${username}* foi ${action.toUpperCase()} manualmente.`;
+                sendTelegramNotification(adminMessage);
+
+                populateUserList(currentUserListPage); // Atualiza a lista para refletir a mudança
+            } catch (e) {
+                console.error(`Erro ao ${action} o usuário:`, e);
+                alert(`Ocorreu uma falha ao tentar ${action} o usuário.`);
             }
         }
 
@@ -3951,6 +4406,12 @@
                 const foundUser = userDoc.data();
                 const userId = userDoc.id;
         
+                // NOVO: Verifica se a conta está bloqueada manualmente
+                if (foundUser.isBlocked === true) {
+                    logActivity(username, 'Login Falhou (Bloqueado)', false);
+                    throw new Error('Esta conta foi bloqueada manualmente. Contate o suporte.');
+                }
+
                 // Verifica a senha (decodificando de Base64)
                 if (atob(foundUser.password) !== pass) {
                     throw new Error('Usuário ou senha inválidos.');
@@ -3967,6 +4428,13 @@
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('operatorName', username);
                     sessionStorage.setItem('accessLevel', foundUser.accessLevel);
+
+                    // Envia notificação para o admin sobre o login do usuário
+                    const now = new Date();
+                    const loginTime = now.toLocaleString('pt-BR');
+                    const notificationMessage = `👤 *Login Detectado*\n\n*Usuário:* \`${username}\`\n*Nível:* ${foundUser.accessLevel}\n*Data/Hora:* ${loginTime}`;
+                    sendTelegramNotification(notificationMessage);
+
         
                     // SUGESTÃO: Captura o ID do Telegram no primeiro login
                     if (foundUser.accessLevel !== 'admin' && !foundUser.telegramId) {
@@ -4038,12 +4506,34 @@
 
             // --- Salva no Firebase ---
             try {
+                // VERIFICAÇÃO DE ID DE TELEGRAM DUPLICADO
+                const tg = window.Telegram.WebApp;
+                let capturedTelegramId = null;
+                if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    capturedTelegramId = tg.initDataUnsafe.user.id;
+
+                    // Procura por usuários existentes com o mesmo ID do Telegram
+                    const telegramIdQuery = await db.collection("users").where("telegramId", "==", capturedTelegramId).get();
+
+                    if (!telegramIdQuery.empty) {
+                        // Se encontrar, bloqueia o cadastro
+                        throw new Error("Você já possui uma conta cadastrada com este usuário do Telegram.");
+                    }
+                }
+
                 const querySnapshot = await db.collection("users").where("username", "==", username).get();
                 if (!querySnapshot.empty) {
                     throw new Error("Este nome de usuário já está em uso.");
                 }
 
+                // Adiciona o ID do Telegram capturado ao novo usuário
+                newUser.telegramId = capturedTelegramId;
+
                 await db.collection("users").add(newUser);
+
+                // Notifica o administrador sobre o novo cadastro
+                const adminMessage = `🎉 *Novo Cadastro Realizado*\n\n*Usuário:* \`${username}\`\n*Contato:* ${contact || 'Não informado'}\n*Acesso até:* ${expDate.toLocaleDateString('pt-BR')}`;
+                sendTelegramNotification(adminMessage);
 
                 errorDiv.innerHTML = `✅ Conta criada com sucesso! Você já pode fazer o login.`;
                 errorDiv.style.color = 'var(--accent-jonbet)';
@@ -4147,6 +4637,12 @@
             // Lógica para Admin (movida para o final para garantir a execução correta)
             else if (accessLevel === 'admin') {
                 if (userTab) userTab.style.display = 'block';
+                const telegramPanel = document.getElementById('telegram-panel');
+                if (telegramPanel) telegramPanel.style.display = 'block';
+                const sendListBtn = document.getElementById('send-generated-list-to-telegram-btn');
+                if (sendListBtn) sendListBtn.style.display = 'block';
+                const sendAnalysisBtn = document.getElementById('send-analysis-to-telegram-btn');
+                if (sendAnalysisBtn) sendAnalysisBtn.style.display = 'block';
                 // Popula as listas que o admin precisa ver
                 populateUserList();
                 populateActivityLog();
@@ -4157,6 +4653,38 @@
 
         function initializeApp() {
 
+            // --- LÓGICA PARA ALTERNAR ENTRE LOGIN E CADASTRO ---
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('self-register-form');
+            const showRegisterLink = document.getElementById('show-register-link');
+            const showLoginLink = document.getElementById('show-login-link');
+ 
+
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginForm.style.display = 'none'; // Esconde o formulário de login
+                registerForm.style.display = 'flex'; // Mostra o formulário de cadastro
+                loginForm.classList.remove('form-active');
+                loginForm.classList.add('form-inactive');
+                
+                setTimeout(() => {
+                    registerForm.classList.remove('form-inactive');
+                    registerForm.classList.add('form-active');
+                }, 100); // Pequeno delay para a transição
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'flex';
+                registerForm.classList.remove('form-active');
+                registerForm.classList.add('form-inactive');
+
+                setTimeout(() => {
+                    loginForm.classList.remove('form-inactive');
+                    loginForm.classList.add('form-active');
+                }, 100);
+            });
             // Restaura abas e plataformas
             const suiteActiveTab = 'gerador'; // Padrão, já que não há mais localStorage
             suite_openTab(suiteActiveTab);
