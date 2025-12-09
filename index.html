@@ -124,14 +124,31 @@
         /* Theme Switcher */
         .top-header-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* SUGESTÃO: Altera a direção para empilhar os itens */
+            justify-content: center; /* Mantém o alinhamento horizontal */
             align-items: center;
             margin-bottom: 15px;
             position: relative;
         }
+        /* SUGESTÃO: Animação de gradiente para o título */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         #main-title {
-            margin: 0; /* Reset margin as it's now in a flex container */
-            color: #fff; /* Garante que o título principal seja sempre branco */
+            margin: 0;
+            font-size: 1.8rem; /* Um pouco maior para destacar o efeito */
+            font-weight: 900;
+            /* Efeito de Gradiente Animado */
+            background: linear-gradient(90deg, var(--accent-jonbet), var(--accent-blaze), #00aaff, var(--accent-jonbet));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient-animation 6s ease infinite;
+            /* SUGESTÃO: Adiciona um brilho sutil ao redor do texto */
+            text-shadow: 0 0 8px color-mix(in srgb, var(--accent-jonbet) 40%, transparent), 0 0 12px color-mix(in srgb, var(--accent-blaze) 25%, transparent);
         }
         #theme-switcher {
             position: absolute; /* Alterado */
@@ -170,6 +187,18 @@
             vertical-align: middle;
             stroke-width: 2.5;
             margin-right: 5px; /* Espaço entre o ícone e o texto */
+        }
+        /* SUGESTÃO: Estilo para o Relógio Digital */
+        #digital-clock {
+            font-size: 1.0rem; /* SUGESTÃO: Tamanho do relógio diminuído */
+            font-weight: bold;
+            color: var(--text-color);
+            background-color: rgba(0,0,0,0.25);
+            padding: 4px 12px; /* SUGESTÃO: Padding diminuído */
+            border-radius: 8px;
+            border: 1px solid #444;
+            margin-top: 5px; /* SUGESTÃO: Espaço entre o título e o relógio */
+            font-family: 'Courier New', monospace; /* Fonte monoespaçada para o relógio */
         }
 
         /* ================================== */
@@ -475,6 +504,21 @@
         body.light-theme .dashboard .badge .time-overlay {
             color: var(--text-color);
         }
+        /* SUGESTÃO: Estilos para o Toggle Switch no Dashboard (reutilizado da Suite) */
+        .dashboard .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dashboard .toggle-switch-container label { font-size: 0.8em; margin-bottom: 0; }
+        .dashboard .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .dashboard .switch input { opacity: 0; width: 0; height: 0; }
+        .dashboard .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 22px; }
+        .dashboard .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .dashboard input:checked + .slider { background-color: var(--accent); }
+        .dashboard input:checked + .slider:before { transform: translateX(22px); }
+        body.light-theme .dashboard .toggle-switch-container { border-color: var(--border-color); }
+
         .dashboard .badge.vermelho { background-color: var(--accent); }
         .dashboard .badge.preto { background-color: #333; border: 1px solid #555; }
         .dashboard .badge.branco { background-color: #fff; color: #333; }
@@ -701,6 +745,25 @@
             justify-content: center;
         }
     </style>
+    <style>
+        /* Estilo para o Anúncio de Atualização */
+        #update-announcement {
+            background-color: color-mix(in srgb, var(--accent-jonbet) 80%, #000 20%); /* Verde com fundo escuro */
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            width: 100%;
+            max-width: 360px; /* Mesmo tamanho do login */
+            border: 1px solid var(--accent-jonbet);
+            box-shadow: 0 4px 15px rgba(0, 230, 118, 0.2);
+            transition: opacity 0.5s ease-out, margin 0.5s ease-out; /* Adiciona transição para o desaparecimento */
+        }
+        #update-announcement h3 { margin: 0 0 5px 0; text-transform: uppercase; font-size: 1.1rem; }
+        #update-announcement p { font-size: 0.9rem; font-weight: normal; margin: 0; }
+    </style>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -724,6 +787,13 @@
         </a>
         <!-- LOGO DA EMPRESA - Troque a URL em 'src' pela URL da sua imagem -->
         <img src="https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg" alt="Logo da Empresa" id="login-logo">
+
+        <!-- Anúncio de Atualização -->
+        <div id="update-announcement">
+            <h3>🚀 NOVA ATUALIZAÇÃO!</h3>
+            <p>O painel foi atualizado com novas funcionalidades e melhorias. Explore as novidades!</p>
+        </div>
+
         <form id="login-form" class="form-active" onsubmit="handleLogin(event)">
             <h2>LOGIN USUÁRIO</h2>
             <div class="login-input-group">
@@ -788,19 +858,15 @@
 
     <div id="app-container" style="display: none;">
         <div class="top-header-container">
-            <h1 id="main-title">PAINEL DE ANÁLISE</h1>
+            <h1 id="main-title">CORTEX VIRTUAL</h1>
+            <!-- SUGESTÃO: Elemento para o Relógio Digital -->
+            <div id="digital-clock">00:00:00</div>
             <button id="theme-switcher" title="Mudar Tema">☀️</button>
             <button id="logout-button" title="Sair">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg> Sair
             </button>
-        </div>
-        <!-- SUGESTÃO: Botão de Suporte -->
-        <div style="text-align: center; margin-bottom: 10px;">
-            <a id="support-link" href="#" target="_blank" style="color: var(--text-color); text-decoration: none; opacity: 0.8;">
-                Precisa de ajuda? Fale com o Suporte
-            </a>
         </div>
         <!-- SUGESTÃO: Notificação de Expiração de Acesso -->
         <div id="expiration-notification" style="display: none; background-color: #ffc107; color: #333; padding: 10px 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold;">
@@ -862,15 +928,29 @@
                             <option value="focoVermelho">Foco no Vermelho</option>
                             <option value="focoPreto">Foco no Preto</option>
                             <option value="jikanSazonal">Ritmo Sazonal (Jikan)</option>
+                            <option value="cacadorBranco">Caçador de Branco</option>
                         </select>
                     </div>
-                    <div class="toggle-switch-container">
-                        <label for="suite_filterByBestHour">Filtrar por Melhor Hora (do Histórico):</label>
-                        <label class="switch">
-                            <input type="checkbox" id="suite_filterByBestHour">
-                            <span class="slider"></span>
-                        </label>
-                        <div class="hint" style="margin: 0; font-size: 0.7em;">(Usa dados do painel direito)</div>
+                    <!-- SUGESTÃO: Agrupa os controles de filtro -->
+                    <div class="toggle-switch-container" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label for="suite_filterByBestMinute" style="margin-bottom:0;">Filtrar por Melhor Minuto:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="suite_filterByBestMinute">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
+                            <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
+                        </div>
+                        <div class="hint" style="width: 100%; margin-top: 5px; font-size: 0.7em;">(Usa dados do painel direito)</div>
+                    </div>
+                    <!-- SUGESTÃO: Log para os melhores minutos -->
+                    <div id="suite_bestMinutesLogContainer" style="margin-bottom: 15px; display: none;">
+                        <label style="font-size: 0.85em; text-transform: uppercase; opacity: 0.8;">🔎 Log de Minutos (Assertividade):</label>
+                        <div id="suite_bestMinutesLog" class="output-area" style="margin-top: 5px; min-height: 50px; max-height: 120px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6;">
+                        </div>
                     </div>
                     <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
                     <div class="output-area" id="suite_resGerador">Resultado aqui...</div>
@@ -1387,22 +1467,35 @@ function suite_formatarInputHistorico(textarea) {
                 <div id="dash_analise" class="tab-content active">
 <div class="control-panel">
     <div id="auto-import-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
-            <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta Automática</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+            <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
             <button onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
                 🔄 BUSCAR DADOS
             </button>
         </div>
 
+        <!-- SUGESTÃO: Toggle para busca automática -->
+        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start;">
+            <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800;">Auto-Busca (1 min):</label>
+            <label class="switch">
+                <input type="checkbox" id="dash_autoFetchToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- SUGESTÃO: Toggle para análise automática -->
+        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start;">
+            <label for="dash_autoAnalyzeToggle" style="font-weight: bold; color: #28a745;">Análise Automática:</label>
+            <label class="switch">
+                <input type="checkbox" id="dash_autoAnalyzeToggle">
+                <span class="slider" style="background-color: #555;"></span>
+            </label>
+            <div class="hint" style="margin: 0; font-size: 0.7em;">(Requer Auto-Busca)</div>
+        </div>
+
         <p style="font-size: 10px; color: #aaa; margin-bottom: 5px;">1. Busque os dados. 2. Filtre. 3. Envie para análise.</p>
         
         <textarea id="dash_autoInput" readonly style="height: 80px; background-color: #111; border: 1px solid #444; color: #aaa; font-size: 0.8rem;" placeholder="Clique em 'Buscar Dados' para preencher aqui..."></textarea>
-
-        <div style="display:flex; gap: 5px; margin-top: 5px;">
-            <button onclick="dash_filtrarAuto('hoje')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">📅 Só Hoje</button>
-            <button onclick="dash_filtrarAuto('ontem')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">📅 Só Ontem</button>
-            <button onclick="dash_filtrarAuto('todos')" style="flex:1; padding: 5px; font-size: 0.7rem; background-color: #333; border: 1px solid #555; color: white;">👁️ Todos</button>
-        </div>
 
         <button onclick="dash_enviarParaAnalise()" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
             ⬇️ ENVIAR PARA O ANALISADOR ⬇️
@@ -2021,20 +2114,26 @@ function suite_formatarInputHistorico(textarea) {
 
         function suite_gerarSinaisSimples() {
             const qtd = parseInt(document.getElementById('suite_qtdSinais').value);
-            const intervalo = parseInt(document.getElementById('suite_intervalo').value);
+            let intervalo = parseInt(document.getElementById('suite_intervalo').value);
             const est = document.getElementById('suite_estrategia').value;
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const selectElement = document.getElementById('suite_estrategia');
             const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const strategyName = selectElement.options[selectElement.selectedIndex].text;
-            const filterByBestHour = document.getElementById('suite_filterByBestHour').checked;
+            const filterByBestMinute = document.getElementById('suite_filterByBestMinute').checked;
+            const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
             
             let out = `🚀 *LISTA DE OPERAÇÕES*\n`;
             out += `🚦 Plataforma: *${platformName}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
+
+            if (est === 'cacadorBranco') {
+                intervalo = 15; // Força o intervalo para 15 minutos
+            }
+
             if (est === 'branco') {
                 out += `♻️ 06 Entradas\n`;
             } else {
@@ -2049,13 +2148,30 @@ function suite_formatarInputHistorico(textarea) {
             let signalsGenerated = 0;
             let attempts = 0; // Para evitar loop infinito
 
-            const bestHours = filterByBestHour ? getBestPerformingHours() : [];
-            if (filterByBestHour && bestHours.length === 0) {
-                document.getElementById('suite_resGerador').innerText = "Filtro por Melhor Hora ativo, mas nenhuma hora com bom desempenho foi encontrada no histórico. Analise um histórico primeiro ou desative o filtro.";
-                return;
+            let bestMinutes = filterByBestMinute ? getBestPerformingMinutes(minAssertiveness) : [];
+            if (filterByBestMinute && bestMinutes.length === 0) {
+                // Se o filtro estiver ativo e nenhuma hora boa for encontrada,
+                // tenta forçar uma análise do histórico disponível no painel direito.
+                // Isso garante que getBestPerformingMinutes tenha dados para trabalhar.
+                dash_enviarParaAnalise(); // Isso irá processar os dados em dash_inputData
+                bestMinutes = getBestPerformingMinutes(minAssertiveness); // Tenta novamente após a análise
+
+                if (bestMinutes.length === 0) {
+                    // SUGESTÃO: Adiciona um botão para desativar o filtro e tentar novamente.
+                    const resGerador = document.getElementById('suite_resGerador');
+                    resGerador.innerHTML = `
+                        <div style="padding: 15px; background-color: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; color: #ffc107;">
+                            <p style="margin: 0 0 10px 0;"><strong>Aviso:</strong> Nenhum minuto com bom desempenho foi encontrado no histórico.</p>
+                            <button onclick="document.getElementById('suite_filterByBestMinute').checked = false; suite_gerarSinaisSimples();" style="padding: 8px 12px; border: none; border-radius: 5px; background-color: #ff9800; color: #000; font-weight: bold; cursor: pointer;">
+                                Desativar Filtro e Gerar Lista
+                            </button>
+                        </div>`;
+                    return;
+                }
             }
 
-            while (signalsGenerated < qtd && attempts < (qtd * 100)) {
+            // Aumenta o limite de tentativas para acomodar a busca por minutos ideais
+            while (signalsGenerated < qtd && attempts < (qtd * 500)) { // Aumentado de 100 para 500
                 attempts++;
                 let minutosParaAdicionar = intervalo;
                 if (est === 'jikanSazonal') {
@@ -2064,10 +2180,10 @@ function suite_formatarInputHistorico(textarea) {
                     minutosParaAdicionar = intervalo * intervalModifier;
                 }
 
-                // Se o filtro estiver ativo, verifica se a hora do sinal é uma das melhores
-                if (filterByBestHour) {
-                    let potentialTime = new Date(db.getTime() + minutosParaAdicionar * 60000);
-                    if (!bestHours.includes(potentialTime.getHours())) {
+                // Se o filtro estiver ativo, verifica se o minuto do sinal é um dos melhores
+                if (filterByBestMinute) {
+                    let potentialTime = new Date(db.getTime() + (minutosParaAdicionar * 60000));
+                    if (!bestMinutes.includes(potentialTime.getMinutes())) {
                         // Se não for uma boa hora, avança o tempo e tenta de novo
                         db.setMinutes(db.getMinutes() + minutosParaAdicionar);
                         continue; // Pula para a próxima iteração do loop
@@ -2084,7 +2200,8 @@ function suite_formatarInputHistorico(textarea) {
                 const h1 = db.getHours().toString().padStart(2,'0') + ':' + db.getMinutes().toString().padStart(2,'0');
 
                 let cor, emo;
-                if (est === 'branco') {
+                // SUGESTÃO: Agrupa as estratégias de branco
+                if (est === 'branco' || est === 'cacadorBranco') {
                     cor = "BRANCO";
                     emo = "⚪";
                 } else {
@@ -2109,7 +2226,6 @@ function suite_formatarInputHistorico(textarea) {
                 out += `🕒 ${h1} ➔ ${emo}\n`;
             }
             out += `--------------------------------\n✅ Gerencie sua banca!\n`;
-            out += `Abra o 💬 Comentário abaixo para ver o Placar Final!`;
             document.getElementById('suite_resGerador').innerText = out;
             enviarListaParaCorretor(out);
 
@@ -2462,7 +2578,6 @@ function suite_formatarInputHistorico(textarea) {
                     out += `Projetando com base no intervalo de ${projectionInterval} min.\n`;
                     out += `(Cálculo híbrido: Média de tempo: ${baseInterval}min, Soma do padrão: ${patternSumInterval})\n`;
                     out += `\n`;
-                    
                     // REFINAMENTO: Adiciona um limite de tempo para a geração de sinais.
                     // A lista não se estenderá por mais de 1 hora a partir do momento da geração.
                     let signalTime = new Date();
@@ -2483,7 +2598,6 @@ function suite_formatarInputHistorico(textarea) {
                     out += `Nenhum padrão de ${patternSize} pedras antes de um branco foi encontrado no histórico fornecido.\n`;
                 }
                 out += `--------------------------------\n`
-                out += `Abra o 💬Comentario para ver o Flacar Final\n`;
                 out += `⚠️ Use como base para suas análises.`;
                 document.getElementById('suite_resIABranco').innerText = out;
                 return; // Finaliza a execução para não sobrescrever o resultado.
@@ -2517,7 +2631,6 @@ function suite_formatarInputHistorico(textarea) {
             }
 
             out += `--------------------------------\n`
-            out += `Abra o 💬Comentario para ver o Flacar Final\n`;
             out += `⚠️ Use como base para suas análises.`;
             document.getElementById('suite_resIABranco').innerText = out;
 
@@ -2630,7 +2743,6 @@ function suite_formatarInputHistorico(textarea) {
             }
 
             out += `--------------------------------\n⚠️ Baseado no histórico fornecido.\n`;
-            out += `Abra o 💬Comentario para ver o Flacar Final`;
             document.getElementById('suite_resAnalise').innerText = out;
 
         }
@@ -2695,7 +2807,6 @@ function suite_formatarInputHistorico(textarea) {
             }
 
             out += `--------------------------------\n✅ Gerencie sua banca!\n`;
-            out += `Abra o 💬Comentario para ver o Flacar Final`;
             document.getElementById('suite_resManual').innerText = out;
 
         }
@@ -2799,22 +2910,101 @@ function suite_formatarInputHistorico(textarea) {
             resultsDiv.innerText = out;
         }
 
-        function getBestPerformingHours(threshold = 70) {
-            const bestHours = [];
-            if (window.hourlyStatsFromCorrector && Object.keys(window.hourlyStatsFromCorrector).length > 0) {
-                for (const hour in window.hourlyStatsFromCorrector) {
-                    const stats = window.hourlyStatsFromCorrector[hour];
+        function getBestPerformingMinutes(threshold = 75, logElementId = null) {
+            const bestMinutes = [];
+            const rawData = document.getElementById('dash_inputData').value;
+            if (!rawData || rawData.trim() === '') {
+                console.log("getBestPerformingMinutes: O campo de análise manual está vazio.");
+                return [];
+            }
+
+            const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i];
+                const proximoToken = tokens[i + 1];
+                if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
+                    results.push({ numero: parseInt(token), horario: proximoToken });
+                    i++;
+                }
+            }
+
+            if (results.length < 2) {
+                console.log("getBestPerformingMinutes: Histórico insuficiente para análise de minutos.");
+                return [];
+            }
+
+            const minuteStats = {}; // { "05": { wins: 5, total: 7 }, ... }
+            for (let i = 1; i < results.length; i++) {
+                const previousResult = results[i - 1];
+                const currentResult = results[i];
+                const minute = currentResult.horario.split(':')[1];
+
+                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
+
+                const previousColor = dash_identificarCor(previousResult.numero);
+                const currentColor = dash_identificarCor(currentResult.numero);
+
+                if (previousColor !== 'branco' && currentColor !== 'branco' && previousColor !== currentColor) {
+                    minuteStats[minute].wins++;
+                }
+                minuteStats[minute].total++;
+            }
+
+            // SUGESTÃO: Lógica para popular o log
+            const logContainer = document.getElementById('suite_bestMinutesLogContainer');
+            const logElement = logElementId ? document.getElementById(logElementId) : null;
+            if (logElement && logContainer) {
+                logElement.innerHTML = ''; // Limpa o log anterior
+ 
+                // SUGESTÃO: Encontra o minuto com a maior assertividade
+                let bestMinuteEntry = { minute: null, assertiveness: -1 };
+                const validMinutes = [];
+ 
+                for (const minute in minuteStats) {
+                    const stats = minuteStats[minute];
+                    const assertiveness = (stats.wins / stats.total) * 100;
+                    if (stats.total > 0 && assertiveness >= threshold) {
+                        bestMinutes.push(parseInt(minute));
+                        validMinutes.push({ minute, stats, assertiveness });
+ 
+                        if (assertiveness > bestMinuteEntry.assertiveness) {
+                            bestMinuteEntry = { minute, assertiveness };
+                        }
+                    }
+                }
+ 
+                // Ordena os minutos encontrados numericamente
+                validMinutes.sort((a, b) => parseInt(a.minute) - parseInt(b.minute));
+ 
+                let logContent = '';
+                validMinutes.forEach(entry => {
+                    const { minute, stats, assertiveness } = entry;
+                    const isBest = minute === bestMinuteEntry.minute;
+                    const highlightStyle = isBest ? 'color: var(--accent-jonbet); font-weight: bold;' : '';
+                    const trophy = isBest ? ' 🏆' : '';
+ 
+                    logContent += `<span style="${highlightStyle}"><strong>Minuto ${minute}:</strong> ${assertiveness.toFixed(1)}%${trophy}</span> <span style="color: #aaa;">(${stats.wins}W / ${stats.total}T)</span><br>`;
+                });
+ 
+                logElement.innerHTML = logContent || '<span style="color: #aaa;">Nenhum minuto atingiu a assertividade mínima.</span>';
+                logContainer.style.display = 'block';
+            } else { // Fallback para quando não há log
+                for (const minute in minuteStats) {
+                    const stats = minuteStats[minute];
                     if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) {
-                        bestHours.push(parseInt(hour));
+                        bestMinutes.push(parseInt(minute));
                     }
                 }
             }
-            return bestHours;
+
+            console.log("Melhores minutos encontrados:", bestMinutes);
+            return bestMinutes;
         }
 
         function suite_corrigirSinaisBranco() {
             const signalsInput = document.getElementById('suite_correctorBrancoSignalsInput').value;
-            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;10
+            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;
             const numEntradas = parseInt(document.getElementById('suite_correctorBrancoEntradas').value) || 1;
             const resultsDiv = document.getElementById('suite_resCorrectorBranco');
 
@@ -3141,8 +3331,7 @@ function suite_formatarInputHistorico(textarea) {
                 out += uniqueSignals.join('\n');
             } else {
                 out += "Nenhum sinal foi gerado.";
-            }            
-            out += `\nAbra o 💬Comentario para ver o Flacar Final`;
+            }
             out += `\n--------------------------------\n`;
             out += `⚠️ Use como base para suas análises.`;
 
@@ -3348,48 +3537,6 @@ function suite_formatarInputHistorico(textarea) {
                     statusBtn.disabled = false;
                 }, 2000);
             }
-        }
-
-        // 4. FILTRA O CAMPO DE PREPARAÇÃO (Mantido igual)
-        function dash_filtrarAuto(modo) {
-            const autoTextarea = document.getElementById('dash_autoInput');
-            
-            let textoBase = sessionStorage.getItem('raw_blaze_data');
-            if (!textoBase) {
-                textoBase = autoTextarea.value;
-                if (!textoBase.trim()) { alert("Busque os dados primeiro."); return; }
-            }
-
-            const dataHoje = new Date();
-            const dataOntem = new Date();
-            dataOntem.setDate(dataOntem.getDate() - 1);
-
-            const strHoje = dataHoje.toLocaleDateString('pt-BR'); 
-            const strOntem = dataOntem.toLocaleDateString('pt-BR');
-
-            let blocos = textoBase.split('\n\n');
-            let blocosFiltrados = [];
-
-            blocos.forEach(bloco => {
-                const linhas = bloco.split('\n');
-                if (linhas.length >= 3) {
-                    const dataRegistro = linhas[0].trim();
-                    if (modo === 'todos') {
-                        blocosFiltrados.push(bloco);
-                    } else if (modo === 'hoje' && dataRegistro === strHoje) {
-                        blocosFiltrados.push(bloco);
-                    } else if (modo === 'ontem' && dataRegistro === strOntem) {
-                        blocosFiltrados.push(bloco);
-                    }
-                }
-            });
-
-            if (blocosFiltrados.length === 0) {
-                alert(`Nada encontrado para "${modo}".`);
-                return;
-            }
-
-            autoTextarea.value = blocosFiltrados.join('\n\n') + '\n\n';
         }
 
         // 5. TRANSFERE DO CAMPO DE PREPARAÇÃO PARA O ANALISADOR (Mantido igual)
@@ -3684,6 +3831,19 @@ function suite_formatarInputHistorico(textarea) {
         // ==========================================
         // INICIALIZAÇÃO DA PÁGINA
         // ==========================================
+        // SUGESTÃO: Função para atualizar o relógio digital
+        function updateClock() {
+            const clockElement = document.getElementById('digital-clock');
+            if (clockElement) {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+        }
+
+
         document.addEventListener('DOMContentLoaded', () => {
             // Verifica o modo de manutenção ao carregar a página
             const urlParams = new URLSearchParams(window.location.search);
@@ -3724,20 +3884,67 @@ function suite_formatarInputHistorico(textarea) {
             setupPermissionControls();
 
             // SUGESTÃO: Configura o link de suporte dinamicamente
+            // Adiciona o listener para o novo controle do input de quantidade de sinais
+            document.getElementById('suite_intervaloMinimoBranco').addEventListener('input', suite_toggleQtdSinaisBranco);
+            suite_toggleQtdSinaisBranco(); // Chama uma vez para definir o estado inicial
             const supportLink = document.getElementById('support-link');
             if (supportLink) {
-                // Adiciona o listener para o novo controle do input de quantidade de sinais
-                document.getElementById('suite_intervaloMinimoBranco').addEventListener('input', suite_toggleQtdSinaisBranco);
-                suite_toggleQtdSinaisBranco(); // Chama uma vez para definir o estado inicial
                 supportLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
             }
             // Inicializa o app principal
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
+            
+            // SUGESTÃO: Inicializa e atualiza o relógio
+            updateClock(); // Chama uma vez para exibir imediatamente
+            setInterval(updateClock, 1000); // Atualiza a cada segundo
             initializeApp();
 
             // Listener para o input de importação de arquivo
             document.getElementById('import-users-input').addEventListener('change', handleUserImport);
+
+            // Lógica para fazer o anúncio de atualização desaparecer
+            const announcement = document.getElementById('update-announcement');
+            if (announcement) {
+                // SUGESTÃO: Adiciona estilo para o slider do novo toggle
+                const autoAnalyzeToggle = document.getElementById('dash_autoAnalyzeToggle');
+                if (autoAnalyzeToggle) { autoAnalyzeToggle.addEventListener('change', (e) => { e.target.nextElementSibling.style.backgroundColor = e.target.checked ? 'var(--accent-jonbet)' : '#555'; }); }
+
+                // SUGESTÃO: Lógica para o toggle de busca automática
+                let autoFetchIntervalId = null;
+                const autoFetchToggle = document.getElementById('dash_autoFetchToggle');
+                if (autoFetchToggle) {
+                    autoFetchToggle.addEventListener('change', (event) => {
+                        if (event.target.checked) {
+                            // Se o toggle for ativado, busca imediatamente e depois a cada minuto
+                            dash_autoFetchBlaze().then(() => {
+                                if (document.getElementById('dash_autoAnalyzeToggle').checked) {
+                                    dash_enviarParaAnalise();
+                                }
+                            });
+                            autoFetchIntervalId = setInterval(() => {
+                                dash_autoFetchBlaze().then(() => {
+                                    if (document.getElementById('dash_autoAnalyzeToggle').checked) { dash_enviarParaAnalise(); }
+                                });
+                            }, 60000); // 60000 ms = 1 minuto
+                            console.log("Busca automática ativada.");
+                        } else {
+                            // Se desativado, limpa o intervalo
+                            clearInterval(autoFetchIntervalId);
+                            autoFetchIntervalId = null;
+                            console.log("Busca automática desativada.");
+                        }
+                    });
+                }
+                setTimeout(() => {
+                    announcement.style.opacity = '0';
+                    announcement.style.marginBottom = '0'; // Remove a margem para um colapso suave
+                    // Após a transição, oculta completamente para não interferir no layout
+                    setTimeout(() => {
+                        announcement.style.display = 'none';
+                    }, 500); // Deve corresponder à duração da transição do CSS
+                }, 10000); // 10000 ms = 10 segundos
+            }
         });
 
         // Configura o link do botão de suporte do Telegram
@@ -4794,7 +5001,7 @@ function suite_formatarInputHistorico(textarea) {
              // }, 3000);
 
              // Atualiza o título principal com o nome do operador
-             document.getElementById('main-title').textContent = `PAINEL DE ANÁLISE - ${operatorName.toUpperCase()}`;
+             // document.getElementById('main-title').textContent = `CORTEX VIRTUAL - ${operatorName.toUpperCase()}`;
         }
 
         function applyAccessControl() {
