@@ -1470,6 +1470,7 @@ function suite_formatarInputHistorico(textarea) {
                                 <input type="file" id="import-users-input" accept=".json" style="display: none;">
                                 <button onclick="triggerUserImport()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #28a745;">IMPORTAR</button>
                                 <button onclick="exportUserData()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0;">EXPORTAR</button>
+                                <button onclick="clearDeletedUsers()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #dc3545;">LIMPAR EXCLUÍDOS</button>
                                 <button onclick="copyUserIds(this)" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #17a2b8;">COPIAR IDs</button>
                             </div>
                         </div>
@@ -3486,10 +3487,10 @@ function suite_formatarInputHistorico(textarea) {
                 const timeStamp = new Date().getTime();
                 const targetUrl = `${baseUrl}${params}&t=${timeStamp}`;
                 
-                // 3. Proxy (CorsProxy)
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                // 3. Proxy (CorsProxy) - CORRIGIDO
+                const proxyUrl = `https://corsproxy.io/?${targetUrl}`;
         
-                console.log("Testando URL:", targetUrl);
+                console.log("Testando URL via Proxy:", proxyUrl);
         
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error(`Erro Proxy: ${response.status}`);
@@ -3746,11 +3747,21 @@ function suite_formatarInputHistorico(textarea) {
             dash_executarEstrategia(numerosPuros);
         }
 
-        function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
+function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
+            // Tenta localizar os elementos. Se não existirem, a variável será null.
             const grid = document.getElementById('dash_grid-resultados');
             const gridHora = document.getElementById('dash_grid-resultados-hora');
-            if (target === 'ambos' || target === 'visual') grid.innerHTML = '';
-            if (target === 'ambos' || target === 'hora') gridHora.innerHTML = '';
+
+            // Proteção: Só tenta limpar o grid se ele realmente existir
+            if ((target === 'ambos' || target === 'visual') && grid) {
+                grid.innerHTML = '';
+            }
+            
+            // Proteção: Só tenta limpar o gridHora se ele realmente existir (Aqui estava o erro)
+            if ((target === 'ambos' || target === 'hora') && gridHora) {
+                gridHora.innerHTML = '';
+            }
+
             let r = 0, b = 0, w = 0, hourlyResults = {};
 
             resultados.forEach((item, index) => {
@@ -3770,36 +3781,42 @@ function suite_formatarInputHistorico(textarea) {
                     div.appendChild(timeDiv);
                 }
 
-                if (target === 'ambos' || target === 'hora') {
-                    // Agrupa resultados por hora
+                // Lógica para agrupar por hora (só executa se o gridHora existir)
+                if ((target === 'ambos' || target === 'hora') && gridHora) {
                     const hour = item.horario.split(':')[0];
                     if (!hourlyResults[hour]) {
                         hourlyResults[hour] = [];
                     }
-                    const badgeForHour = div.cloneNode(true); // Clona para a lista por hora
+                    const badgeForHour = div.cloneNode(true);
                     badgeForHour.addEventListener('click', () => dash_toggleDeleteOption(badgeForHour));
                     hourlyResults[hour].push(badgeForHour);
                 }
 
-                // Adiciona o item original (com listener) à grid visual principal
-                if (target === 'ambos' || target === 'visual') {
+                // Adiciona na grid principal (só se existir)
+                if ((target === 'ambos' || target === 'visual') && grid) {
                     div.addEventListener('click', () => dash_toggleDeleteOption(div));
                     grid.prepend(div);
                 }
             });
 
-            if (target === 'ambos' || target === 'hora') {
-                // Popula a grid por hora
+            // Preenche a grid de hora (só se existir)
+            if ((target === 'ambos' || target === 'hora') && gridHora) {
                 Object.keys(hourlyResults).sort().reverse().forEach(hour => {
                     hourlyResults[hour].forEach(badge => gridHora.prepend(badge));
                 });
             }
 
+            // Atualiza os contadores com segurança (verifica se os elementos existem antes de alterar)
             const totalCoresPrincipais = r + b;
-            document.getElementById('dash_count-red').innerText = r + ` (${totalCoresPrincipais > 0 ? ((r/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
-            document.getElementById('dash_count-black').innerText = b + ` (${totalCoresPrincipais > 0 ? ((b/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
-            document.getElementById('dash_count-white').innerText = w;
-            document.getElementById('dash_count-total').innerText = totalNumeros;
+            const elRed = document.getElementById('dash_count-red');
+            const elBlack = document.getElementById('dash_count-black');
+            const elWhite = document.getElementById('dash_count-white');
+            const elTotal = document.getElementById('dash_count-total');
+
+            if (elRed) elRed.innerText = r + ` (${totalCoresPrincipais > 0 ? ((r/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
+            if (elBlack) elBlack.innerText = b + ` (${totalCoresPrincipais > 0 ? ((b/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
+            if (elWhite) elWhite.innerText = w;
+            if (elTotal) elTotal.innerText = totalNumeros;
         }
 
         function dash_toggleDeleteOption(badgeElement) {
@@ -4522,6 +4539,47 @@ function suite_formatarInputHistorico(textarea) {
             } catch (error) {
                 console.error("Erro ao excluir usuário:", error);
                 alert("Falha ao processar a exclusão do usuário.");
+            }
+        }
+
+        async function clearDeletedUsers() {
+            if (!confirm('Tem certeza que deseja remover permanentemente todos os usuários marcados como "excluído"? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            const outputArea = document.getElementById('suite_resCadastro');
+            outputArea.style.display = 'block';
+            outputArea.innerText = '⏳ Procurando e removendo usuários excluídos...';
+            outputArea.style.color = '#fff';
+
+            try {
+                // O Firestore não suporta consultas 'contains' ou 'endsWith' de forma nativa.
+                // A abordagem é buscar todos os usuários e filtrar no lado do cliente.
+                // Para bases de dados muito grandes, uma Cloud Function seria mais eficiente.
+                const querySnapshot = await db.collection("users").get();
+                const batch = db.batch();
+                let deletedCount = 0;
+
+                querySnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    if (userData.username && userData.username.includes('_excluido_')) {
+                        batch.delete(doc.ref);
+                        deletedCount++;
+                    }
+                });
+
+                if (deletedCount > 0) {
+                    await batch.commit();
+                    outputArea.innerText = `✅ SUCESSO: ${deletedCount} usuário(s) excluído(s) foram removidos permanentemente.`;
+                    outputArea.style.color = 'var(--accent-jonbet)';
+                    populateUserList(1); // Atualiza a lista
+                } else {
+                    outputArea.innerText = 'ℹ️ Nenhum usuário marcado como "excluído" foi encontrado.';
+                }
+            } catch (error) {
+                console.error("Erro ao limpar usuários excluídos:", error);
+                outputArea.innerText = '❌ Falha ao remover usuários excluídos.';
+                outputArea.style.color = 'var(--accent-blaze)';
             }
         }
 
