@@ -911,7 +911,8 @@
                         </div>
                         <div class="control-group">
                             <label>Intervalo (Minutos):</label>
-                            <input type="number" id="suite_intervalo" value="2" min="1">
+                            <input type="text" id="suite_intervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
+                            <div class="hint">Use múltiplos valores separados por vírgula para um ciclo.</div>
                         </div>
                     </div>
                     <div class="control-group">
@@ -933,16 +934,16 @@
                     </div>
                     <!-- SUGESTÃO: Agrupa os controles de filtro -->
                     <div class="toggle-switch-container" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
+                            <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
+                        </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <label for="suite_filterByBestMinute" style="margin-bottom:0;">Filtrar por Melhor Minuto:</label>
+                            <label for="suite_filterByBestMinute" style="margin-bottom:0;">ATIVAR FILTRO:</label>
                             <label class="switch">
                                 <input type="checkbox" id="suite_filterByBestMinute">
                                 <span class="slider"></span>
                             </label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
-                            <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
                         </div>
                         <div class="hint" style="width: 100%; margin-top: 5px; font-size: 0.7em;">(Usa dados do painel direito)</div>
                     </div>
@@ -2116,7 +2117,11 @@ function suite_formatarInputHistorico(textarea) {
 
         function suite_gerarSinaisSimples() {
             const qtd = parseInt(document.getElementById('suite_qtdSinais').value);
-            let intervalo = parseInt(document.getElementById('suite_intervalo').value);
+            const intervaloInput = document.getElementById('suite_intervalo').value;
+            const intervalos = intervaloInput.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+            if (intervalos.length === 0) {
+                alert("Por favor, insira um valor de intervalo válido."); return;
+            }
             const est = document.getElementById('suite_estrategia').value;
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -2143,10 +2148,6 @@ function suite_formatarInputHistorico(textarea) {
                 out += `♻️ ATÉ *G1*\n`;
             }
             out += `--------------------------------\n`;
-            let db = new Date();
-            db.setMinutes(db.getMinutes() + 1);
-            db.setSeconds(0);
-            let corAtual = "VERMELHO";
             let signalsGenerated = 0;
             let attempts = 0; // Para evitar loop infinito
 
@@ -2172,14 +2173,20 @@ function suite_formatarInputHistorico(textarea) {
                 }
             }
 
+            let db = new Date();
+            db.setMinutes(db.getMinutes() + 1);
+            db.setSeconds(0);
+
             // Aumenta o limite de tentativas para acomodar a busca por minutos ideais
             while (signalsGenerated < qtd && attempts < (qtd * 500)) { // Aumentado de 100 para 500
                 attempts++;
-                let minutosParaAdicionar = intervalo;
+                // Pega o próximo intervalo do ciclo
+                let minutosParaAdicionar = intervalos[signalsGenerated % intervalos.length];
+
                 if (est === 'jikanSazonal') {
                     const currentHour = db.getHours();
                     const intervalModifier = (currentHour >= 6 && currentHour < 18) ? 0.8 : 1.2;
-                    minutosParaAdicionar = intervalo * intervalModifier;
+                    minutosParaAdicionar = Math.round(minutosParaAdicionar * intervalModifier);
                 }
 
                 // Se o filtro estiver ativo, verifica se o minuto do sinal é um dos melhores
