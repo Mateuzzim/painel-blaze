@@ -151,13 +151,16 @@
             text-shadow: 0 0 8px color-mix(in srgb, var(--accent-jonbet) 40%, transparent), 0 0 12px color-mix(in srgb, var(--accent-blaze) 25%, transparent);
         }
         #theme-switcher {
-            position: absolute; /* Alterado */
-            right: 0;
+            /* Removido position: absolute para alinhamento flexbox */
+            /* Removido right: 0 para alinhamento flexbox */
             background: none;
             border: 1px solid #444;
             color: var(--text-color);
             padding: 8px 12px;
             border-radius: 8px;
+            height: 36px; /* Altura padronizada */
+            display: flex;
+            align-items: center;
             cursor: pointer;
             font-size: 1rem;
             transition: background-color 0.3s, color 0.3s;
@@ -167,13 +170,16 @@
         
         /* Logout Button */
         #logout-button {
-            position: absolute;
-            left: 0;
+            /* Removido position: absolute para alinhamento flexbox */
+            /* Removido left: 0 para alinhamento flexbox */
             background: #f0f2f5; /* Fundo branco/cinza claro */
             border: 1px solid #ddd;
             color: #121212; /* Texto escuro para contraste */
             padding: 8px 12px;
             border-radius: 8px;
+            height: 36px; /* Altura padronizada */
+            display: flex;
+            align-items: center;
             cursor: pointer;
             font-size: 1rem;
             transition: background-color 0.3s, color 0.3s;
@@ -194,11 +200,23 @@
             font-weight: bold;
             color: var(--text-color);
             background-color: rgba(0,0,0,0.25);
-            padding: 4px 12px; /* SUGESTÃO: Padding diminuído */
+            padding: 8px 12px; /* Padding ajustado para padronizar com os botões */
             border-radius: 8px;
             border: 1px solid #444;
-            margin-top: 5px; /* SUGESTÃO: Espaço entre o título e o relógio */
+            margin-top: 0; /* Removido o margin-top para alinhamento flexbox */
+            height: 36px; /* Altura padronizada */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: 'Courier New', monospace; /* Fonte monoespaçada para o relógio */
+        }
+        /* Novo container para alinhar os botões e o relógio */
+        .header-controls-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px; /* Espaço entre o título e esta linha */
         }
 
         /* ================================== */
@@ -858,15 +876,17 @@
 
     <div id="app-container" style="display: none;">
         <div class="top-header-container">
-            <h1 id="main-title">CORTEX VIRTUAL</h1>
-            <!-- SUGESTÃO: Elemento para o Relógio Digital -->
-            <div id="digital-clock">00:00:00</div>
-            <button id="theme-switcher" title="Mudar Tema">☀️</button>
-            <button id="logout-button" title="Sair">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg> Sair
-            </button>
+            <h1 id="main-title">CORTEX VIRTUAL</h1>            
+            <div class="header-controls-row">
+                <button id="logout-button" title="Sair">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg> Sair
+                </button>
+                <!-- SUGESTÃO: Elemento para o Relógio Digital -->
+                <div id="digital-clock">00:00:00</div>
+                <button id="theme-switcher" title="Mudar Tema">☀️</button>
+            </div>
         </div>
         <!-- SUGESTÃO: Notificação de Expiração de Acesso -->
         <div id="expiration-notification" style="display: none; background-color: #ffc107; color: #333; padding: 10px 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold;">
@@ -888,11 +908,11 @@
 
                 <div class="tabs">
                     <button class="tab-btn active" onclick="suite_openTab('gerador')">I.A Cores</button>
-                    <button class="tab-btn" onclick="suite_openTab('analisador')">Analisar Histórico</button>
+                    <button class="tab-btn" onclick="suite_openTab('analisador')">ANÁLISE CORES</button>
                     <button class="tab-btn" onclick="suite_openTab('corretor')">Corretor Cores</button>
                     <button class="tab-btn" onclick="suite_openTab('corretor_branco')">Corretor Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
-                    <button class="tab-btn" onclick="suite_openTab('branco')">Analisador Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('branco')">Análise Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('config')" title="Configurações">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
@@ -962,7 +982,7 @@
                 </div>
 
                 <div id="suite_analisador" class="tab-content">
-                    <h2>📊 Analisador de Padrões</h2>
+                    <h2>📊 Análise Cores</h2>
                     <div class="control-group" style="display: block !important;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <label style="margin-bottom: 0;">Cole o Histórico Copiado:</label>
@@ -1160,8 +1180,16 @@ function suite_formatarInputHistorico(textarea) {
                     <div class="output-area" id="suite_resManual">Aguardando sequência...</div>
                 </div>
 
-                <div id="suite_branco" class="tab-content">
-                    <h2>⚪ Analisador de Branco (24h)</h2>
+                <div id="suite_branco" class="tab-content"> 
+                    <h2>⚪ Analise branco</h2>
+                    <!-- NOVO: Toggle para usar histórico automático do painel direito -->
+                    <div class="toggle-switch-container" style="margin-bottom: 15px;">
+                        <label for="suite_autoImportBrancoHistory">Usar Histórico Automático (Painel Direito):</label>
+                        <label class="switch">
+                            <input type="checkbox" id="suite_autoImportBrancoHistory">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                     <div class="control-group">
                         <label>Estratégia de Análise para Branco:</label>
                         <select id="suite_estrategiaBranco" onchange="suite_toggleStrategyInputs()">
@@ -1222,7 +1250,7 @@ function suite_formatarInputHistorico(textarea) {
                 </div>
 
                 <div id="suite_ia_branco" class="tab-content">
-                    <h2>🤖 I.A Gerador de Branco</h2>
+                    <h2>🤖 I.A Branco</h2>
                     <div class="toggle-switch-container" style="margin-bottom: 20px;">
                         <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
                         <label class="switch">
@@ -1462,9 +1490,7 @@ function suite_formatarInputHistorico(textarea) {
                 </div>
 
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="dash_openTab('analise')">Análise</button>
-                    <button class="tab-btn" onclick="dash_openTab('historico')">Histórico</button>
-                    <button class="tab-btn" onclick="dash_openTab('historico_hora')">Histórico por Hora</button>
+                    <button class="tab-btn active" onclick="dash_openTab('analise')" style="flex-grow: 2;">Análise</button>
                 </div>
 
                 <div id="dash_analise" class="tab-content active">
@@ -1472,93 +1498,62 @@ function suite_formatarInputHistorico(textarea) {
     <div id="auto-import-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
-            <button onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
+            <button id="dash_fetchDataBtn" onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
                 🔄 BUSCAR DADOS
             </button>
         </div>
 
-        <!-- SUGESTÃO: Toggle para busca automática -->
-        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start;">
-            <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800;">Auto-Busca (1 min):</label>
+        <!-- SUGESTÃO: Toggles de automação em linha -->
+        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start; align-items: center; gap: 15px;">
+            <!-- Análise Automática -->
+            <label for="dash_autoAnalyzeToggle" style="font-weight: bold; color: #28a745;">Análise Automática:</label>
+            <label class="switch">
+                <input type="checkbox" id="dash_autoAnalyzeToggle">
+                <span class="slider"></span>
+            </label>
+            <div class="hint" style="margin: 0; font-size: 0.7em;">(Requer Auto-Busca)</div>
+            <!-- Auto-Busca -->
+            <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800; margin-left: auto;">Auto-Busca (20 seg):</label>
             <label class="switch">
                 <input type="checkbox" id="dash_autoFetchToggle">
                 <span class="slider"></span>
             </label>
         </div>
 
-        <!-- SUGESTÃO: Toggle para análise automática -->
-        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start;">
-            <label for="dash_autoAnalyzeToggle" style="font-weight: bold; color: #28a745;">Análise Automática:</label>
-            <label class="switch">
-                <input type="checkbox" id="dash_autoAnalyzeToggle">
-                <span class="slider" style="background-color: #555;"></span>
-            </label>
-            <div class="hint" style="margin: 0; font-size: 0.7em;">(Requer Auto-Busca)</div>
-        </div>
-
-        <p style="font-size: 10px; color: #aaa; margin-bottom: 5px;">1. Busque os dados. 2. Filtre. 3. Envie para análise.</p>
+        <p style="font-size: 10px; color: #aaa; margin-bottom: 5px; display: none;">1. Busque os dados. 2. Filtre. 3. Envie para análise.</p>
         
-        <textarea id="dash_autoInput" readonly style="height: 80px; background-color: #111; border: 1px solid #444; color: #aaa; font-size: 0.8rem;" placeholder="Clique em 'Buscar Dados' para preencher aqui..."></textarea>
+        <textarea id="dash_autoInput" readonly style="height: 80px; background-color: #111; border: 1px solid #444; color: #aaa; font-size: 0.8rem; display: none;" placeholder="Clique em 'Buscar Dados' para preencher aqui..."></textarea>
 
-        <button onclick="dash_enviarParaAnalise()" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+        <button onclick="dash_enviarParaAnalise()" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; display: none;">
             ⬇️ ENVIAR PARA O ANALISADOR ⬇️
         </button>
+
+        <!-- SUGESTÃO: Painel de Histórico em Tempo Real -->
+        <div id="real-time-history-container" class="history-container" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+            <div class="history-header" style="padding-bottom: 10px; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-size: 0.9rem; color: #ff9800;">Últimos Resultados Coletados</h4>
+                <span id="real-time-history-count" style="font-size: 0.8rem; color: #aaa;">(0)</span>
+            </div>
+            <div class="history-grid" id="dash_grid-real-time">
+            </div>
+        </div>
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-
-    <h3>Entrada Manual / Análise Final</h3>
-    <p style="font-size: 11px; color: #aaa; margin-top: 5px;">Os dados para análise aparecerão aqui.</p>
-    <textarea id="dash_inputData" placeholder="Cole o histórico manual ou receba do automático..." oninput="dash_limparInput(this)"></textarea>
-    
-    <div class="control-group" style="margin-top: 15px; margin-bottom: 0;">
-        <label for="dash_targetHistory" style="font-size: 11px; display: block; margin-bottom: 5px;">Enviar Análise Para:</label>
-        <select id="dash_targetHistory">
-            <option value="ambos">Ambos (Visual e Por Hora)</option>
-            <option value="visual">Apenas Histórico Visual</option>
-            <option value="hora">Apenas Histórico por Hora</option>
-        </select>
-    </div>
-    <div class="action-buttons" style="margin-top: 15px;">
-        <button onclick="dash_processarDados()">ANALISAR HISTÓRICO</button>
-        <button onclick="dash_limparTudo()" style="background-color: #555;">LIMPAR TUDO</button>
-    </div>
+    <!-- A seção de análise manual foi removida visualmente, mas os elementos essenciais foram mantidos ocultos para preservar a funcionalidade -->
+    <textarea id="dash_inputData" style="display: none;"></textarea>
+    <select id="dash_targetHistory" style="display: none;">
+        <option value="ambos" selected></option>
+    </select>
 </div>
                     <div class="stats-box">
                         <div class="stat-item stat-dynamic-color"><span id="dash_platform-emoji">🔴</span> <span id="dash_count-red">0 (0%)</span></div>
                         <div class="stat-item">⚫ <span id="dash_count-black">0 (0%)</span></div>
                         <div class="stat-item">⚪ <span id="dash_count-white">0</span></div>
                         <div class="stat-item" style="font-weight:bold;">Quantidade de Sinais: <span id="dash_count-total">0</span></div>
-                    </div>
-                    <div class="log-container">
+                    </div> 
+                    <div class="log-container" style="display: none;">
                         <h3>Log de Estratégia</h3>
                         <div id="dash_log-estrategia">Aguardando dados...</div>
-                    </div>
-                </div>
-
-                <div id="dash_historico" class="tab-content">
-                    <div class="history-container" style="margin-bottom: 0;">
-                        <div class="history-header">
-                            <h3>Histórico Visual</h3>
-                            <div class="header-buttons">
-                                <button onclick="dash_limparHistorico('dash_grid-resultados')" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #dc3545;">LIMPAR</button>
-                                <button onclick="dash_copiarHistorico('dash_grid-resultados', this)" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #28a745;">COPIAR</button>
-                            </div>
-                        </div>
-                        <div class="history-grid" id="dash_grid-resultados"></div>
-                    </div>
-                </div>
-
-                <div id="dash_historico_hora" class="tab-content">
-                    <div class="history-container" style="margin-bottom: 0;">
-                        <div class="history-header">
-                            <h3>Histórico Visual por Hora</h3>
-                            <div class="header-buttons">
-                                <button onclick="dash_limparHistorico('dash_grid-resultados-hora')" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #dc3545;">LIMPAR</button>
-                                <button onclick="dash_copiarHistorico('dash_grid-resultados-hora', this)" style="width: auto; padding: 6px 10px; font-size: 10px; background-color: #28a745;">COPIAR</button>
-                            </div>
-                        </div>
-                        <div class="history-grid" id="dash_grid-resultados-hora"></div>
                     </div>
                 </div>
             </div>
@@ -1965,6 +1960,7 @@ function suite_formatarInputHistorico(textarea) {
                 }, 3000);
             }
         }
+        let autoFetchIntervalId = null; // Declaração explícita para melhor gerenciamento do intervalo
 
         // ==========================================
         // INÍCIO: SCRIPTS DE gerador_de_lista2.html
@@ -2741,12 +2737,14 @@ function suite_formatarInputHistorico(textarea) {
             for(let i=0; i < qtd; i++) {
                 ultimaHora.setMinutes(ultimaHora.getMinutes() + 2);
                 const h1 = ultimaHora.getHours().toString().padStart(2,'0') + ':' + ultimaHora.getMinutes().toString().padStart(2,'0');
-                let corSinal, emoji;
+                let corSinal = corTendencia; // SUGESTÃO: Define a cor do sinal diretamente pela tendência calculada.
+                let emoji;
+                
                 if (estrategiaAnalise === 'alternado') {
+                    // Apenas a estratégia de alternância precisa de uma lógica diferente por iteração.
                     corSinal = (i % 2 === 0) ? "VERMELHO" : "PRETO";
-                } else {
-                    if (Math.random() > 0.4) { corSinal = corTendencia; } else { corSinal = (corTendencia === "VERMELHO") ? "PRETO" : "VERMELHO"; }
                 }
+
                 if (corSinal === "VERMELHO") { emoji = (platform === 'jonbet') ? '🟢' : '🔴'; } else { emoji = '⚫'; }
                 out += `🕒 ${h1} ➔ ${emoji}\n`;
             }
@@ -3173,7 +3171,29 @@ function suite_formatarInputHistorico(textarea) {
 
         function suite_analisarParaBranco() {
             const estrategia = document.getElementById('suite_estrategiaBranco').value;
-            const input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
+            const useAutoHistory = document.getElementById('suite_autoImportBrancoHistory').checked;
+            let input = '';
+            let sourceOfHistory = '';
+
+            if (useAutoHistory) {
+                // Pega os dados processados do painel direito (dash_inputData)
+                const processedDashInput = document.getElementById('dash_inputData').value.trim();
+                const lines = processedDashInput.split('\n').map(l => l.trim()).filter(l => l);
+                const whiteTimes = [];
+                for (let i = 0; i < lines.length; i += 2) { // Assume o formato roll\ntime\nroll\ntime
+                    const rollStr = lines[i];
+                    const timeStr = lines[i + 1];
+                    const roll = parseInt(rollStr);
+                    if (!isNaN(roll) && roll === 0) { // Se for um resultado de branco (número 0)
+                        whiteTimes.push(timeStr);
+                    }
+                }
+                input = whiteTimes.join('\n');
+                sourceOfHistory = 'Histórico Automático (Painel Direito)';
+            } else {
+                input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
+                sourceOfHistory = 'Histórico Manual';
+            }
             const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
             // O intervalo mínimo agora também define a quantidade de sinais.
             const qtdSinais = intervaloMinimo > 0 
@@ -3181,8 +3201,8 @@ function suite_formatarInputHistorico(textarea) {
                 : parseInt(document.getElementById('suite_qtdSinaisBranco').value);
             const resultsDiv = document.getElementById('suite_resBranco');
 
-            if (!input && !useCurrentTime) {
-                alert("Por favor, cole a lista de horários dos brancos ou marque a opção para usar o horário atual.");
+            if (!input) {
+                alert("Por favor, cole a lista de horários dos brancos ou ative a opção de usar o histórico automático.");
                 return;
             }
 
@@ -3257,6 +3277,7 @@ function suite_formatarInputHistorico(textarea) {
             out += `🚦 Plataforma: *${platformName}*\n`;
             out += `👤 Operador: *${userName}*\n`;
             out += `📅 Data: *${dataLista}*\n`;
+            out += `📚 Fonte do Histórico: *${sourceOfHistory}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
             if (intervaloMinimo > 0) {
                 out += `🔢 Entradas: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
@@ -3478,6 +3499,30 @@ function suite_formatarInputHistorico(textarea) {
                 autoTextarea.value = formattedText;
                 statusBtn.innerText = `✅ ${gamesArray.length} Jogos!`;
                 sessionStorage.setItem('raw_blaze_data', formattedText);
+
+                // SUGESTÃO: Atualiza o painel de histórico em tempo real
+                const realTimeGrid = document.getElementById('dash_grid-real-time');
+                const realTimeCount = document.getElementById('real-time-history-count');
+                if (realTimeGrid && realTimeCount) {
+                    realTimeGrid.innerHTML = ''; // Limpa o painel
+                    let count = 0;
+                    gamesArray.slice(0, 100).forEach((game, index) => { // Mostra os últimos 100
+                        const cor = dash_identificarCor(game.roll);
+                        const div = document.createElement('div');
+                        div.className = `badge ${cor}`;
+                        div.innerText = game.roll;
+                        div.title = `Número: ${game.roll}`;
+                        
+                        const timeDiv = document.createElement('div');
+                        timeDiv.className = 'time-overlay';
+                        const dateObj = new Date(game.created_at);
+                        timeDiv.innerText = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                        div.appendChild(timeDiv);
+                        realTimeGrid.append(div);
+                        count++;
+                    });
+                    realTimeCount.textContent = `(${count})`;
+                }
         
             } catch (error) {
                 console.error("Erro V16:", error);
@@ -3552,27 +3597,6 @@ function suite_formatarInputHistorico(textarea) {
             }
         }
 
-        // 5. TRANSFERE DO CAMPO DE PREPARAÇÃO PARA O ANALISADOR (Mantido igual)
-        function dash_enviarParaAnalise() {
-            const autoTextarea = document.getElementById('dash_autoInput');
-            const mainTextarea = document.getElementById('dash_inputData');
-            
-            const dadosParaEnviar = autoTextarea.value.trim();
-
-            if (!dadosParaEnviar) {
-                alert("O campo automático está vazio. Busque dados primeiro.");
-                return;
-            }
-
-            mainTextarea.value = dadosParaEnviar;
-            dash_limparInput(mainTextarea);
-            
-            setTimeout(() => {
-                dash_processarDados();
-                document.querySelector('.stats-box').scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        }
-
         function dash_openTab(tabName) {
             let i, content, btns;
             content = document.querySelectorAll(".dashboard .tab-content");
@@ -3643,7 +3667,10 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         function dash_processarDados(carregandoPagina = false) {
-            const textarea = document.getElementById('dash_inputData');
+            // SUGESTÃO: Simplifica a lógica para ler diretamente do campo de coleta automática.
+            // O campo #dash_inputData torna-se um fallback ou pode ser removido.
+            const autoTextarea = document.getElementById('dash_autoInput');
+            const textarea = (autoTextarea && autoTextarea.value.trim() !== '') ? autoTextarea : document.getElementById('dash_inputData');
             let rawData = textarea.value;
 
             // if (!carregandoPagina) {
@@ -3734,8 +3761,9 @@ function suite_formatarInputHistorico(textarea) {
                 });
             }
 
-            document.getElementById('dash_count-red').innerText = r + ` (${totalNumeros > 0 ? ((r/totalNumeros)*100).toFixed(1) : 0}%)`;
-            document.getElementById('dash_count-black').innerText = b + ` (${totalNumeros > 0 ? ((b/totalNumeros)*100).toFixed(1) : 0}%)`;
+            const totalCoresPrincipais = r + b;
+            document.getElementById('dash_count-red').innerText = r + ` (${totalCoresPrincipais > 0 ? ((r/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
+            document.getElementById('dash_count-black').innerText = b + ` (${totalCoresPrincipais > 0 ? ((b/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
             document.getElementById('dash_count-white').innerText = w;
             document.getElementById('dash_count-total').innerText = totalNumeros;
         }
@@ -3896,6 +3924,17 @@ function suite_formatarInputHistorico(textarea) {
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
 
+            // NOVO: Listener para o toggle de histórico automático do Analisador Branco
+            const autoImportBrancoHistoryToggle = document.getElementById('suite_autoImportBrancoHistory');
+            const manualBrancoHistoryTextarea = document.getElementById('suite_inputHistoricoBranco');
+
+            if (autoImportBrancoHistoryToggle && manualBrancoHistoryTextarea) {
+                autoImportBrancoHistoryToggle.addEventListener('change', () => {
+                    manualBrancoHistoryTextarea.disabled = autoImportBrancoHistoryToggle.checked;
+                    manualBrancoHistoryTextarea.style.backgroundColor = autoImportBrancoHistoryToggle.checked ? '#333' : ''; // Escurece quando desabilitado
+                    manualBrancoHistoryTextarea.value = ''; // Limpa o input manual quando o automático é ativado
+                });
+            }
             // SUGESTÃO: Configura o link de suporte dinamicamente
             // Adiciona o listener para o novo controle do input de quantidade de sinais
             document.getElementById('suite_intervaloMinimoBranco').addEventListener('input', suite_toggleQtdSinaisBranco);
@@ -3920,35 +3959,8 @@ function suite_formatarInputHistorico(textarea) {
             const announcement = document.getElementById('update-announcement');
             if (announcement) {
                 // SUGESTÃO: Adiciona estilo para o slider do novo toggle
-                const autoAnalyzeToggle = document.getElementById('dash_autoAnalyzeToggle');
-                if (autoAnalyzeToggle) { autoAnalyzeToggle.addEventListener('change', (e) => { e.target.nextElementSibling.style.backgroundColor = e.target.checked ? 'var(--accent-jonbet)' : '#555'; }); }
-
-                // SUGESTÃO: Lógica para o toggle de busca automática
-                let autoFetchIntervalId = null;
+                // REMOVIDO: A lógica de cor do slider será tratada via CSS para seguir o tema da plataforma.
                 const autoFetchToggle = document.getElementById('dash_autoFetchToggle');
-                if (autoFetchToggle) {
-                    autoFetchToggle.addEventListener('change', (event) => {
-                        if (event.target.checked) {
-                            // Se o toggle for ativado, busca imediatamente e depois a cada minuto
-                            dash_autoFetchBlaze().then(() => {
-                                if (document.getElementById('dash_autoAnalyzeToggle').checked) {
-                                    dash_enviarParaAnalise();
-                                }
-                            });
-                            autoFetchIntervalId = setInterval(() => {
-                                dash_autoFetchBlaze().then(() => {
-                                    if (document.getElementById('dash_autoAnalyzeToggle').checked) { dash_enviarParaAnalise(); }
-                                });
-                            }, 60000); // 60000 ms = 1 minuto
-                            console.log("Busca automática ativada.");
-                        } else {
-                            // Se desativado, limpa o intervalo
-                            clearInterval(autoFetchIntervalId);
-                            autoFetchIntervalId = null;
-                            console.log("Busca automática desativada.");
-                        }
-                    });
-                }
                 setTimeout(() => {
                     announcement.style.opacity = '0';
                     announcement.style.marginBottom = '0'; // Remove a margem para um colapso suave
@@ -4936,6 +4948,18 @@ function suite_formatarInputHistorico(textarea) {
                 errorDiv.style.color = 'var(--accent-blaze)';
                 return;
             }
+            if (/[A-Z]/.test(username)) {
+                errorDiv.textContent = '❌ O nome de usuário não pode conter letras maiúsculas.';
+                errorDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+            if (/\s/.test(username)) {
+                errorDiv.textContent = '❌ O nome de usuário não pode conter espaços (não é permitido nome completo).';
+                errorDiv.style.color = 'var(--accent-blaze)';
+                return;
+            }
+
+
 
             // --- Prepara dados do novo usuário ---
             const expDate = new Date();
@@ -4994,6 +5018,7 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         function showApp() {
+            console.log("showApp() called. Displaying main application."); // New log
             // Esconde o login e mostra o container principal do app
             document.getElementById('login-container').style.display = 'none';
             document.getElementById('app-container').style.display = 'block';
@@ -5035,6 +5060,7 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         function setupOperatorInfo(operatorName) {
+            console.log("setupOperatorInfo called for:", operatorName); // Log para depuração
              if (!operatorName) return;
 
              // // Mostra a mensagem de boas-vindas (OCULTADO A PEDIDO)
@@ -5046,6 +5072,26 @@ function suite_formatarInputHistorico(textarea) {
              // }, 3000);
 
              // Atualiza o título principal com o nome do operador
+            // SUGESTÃO: Ativa a busca automática por padrão ao carregar a página
+            const autoFetchToggleDefault = document.getElementById('dash_autoFetchToggle');
+            if (autoFetchToggleDefault && !autoFetchToggleDefault.checked) {
+                console.log("Auto-Busca toggle not checked, attempting to activate."); // Log para depuração
+                // Marca o checkbox como ativado
+                autoFetchToggleDefault.checked = true;
+                // Dispara o evento 'change' para iniciar a lógica de busca automática
+                autoFetchToggleDefault.dispatchEvent(new Event('change'));
+                console.log("Auto-Busca iniciada automaticamente por padrão após o login.");
+            }
+            console.log("Current state of autoFetchToggleDefault.checked:", autoFetchToggleDefault ? autoFetchToggleDefault.checked : 'N/A'); // Log para depuração
+
+            // Ativa a Análise Automática por padrão ao carregar a página
+            const autoAnalyzeToggleDefault = document.getElementById('dash_autoAnalyzeToggle');
+            if (autoAnalyzeToggleDefault && !autoAnalyzeToggleDefault.checked) {
+                autoAnalyzeToggleDefault.checked = true;
+                // Não é necessário disparar o evento 'change' aqui, pois a lógica de análise é acionada pela Auto-Busca.
+                console.log("Análise Automática ativada automaticamente por padrão após o login.");
+            }
+
              // document.getElementById('main-title').textContent = `CORTEX VIRTUAL - ${operatorName.toUpperCase()}`;
         }
 
@@ -5122,6 +5168,41 @@ function suite_formatarInputHistorico(textarea) {
                 loginForm.classList.remove('form-inactive');
                 loginForm.classList.add('form-active');
             });
+
+            // SUGESTÃO: Centraliza a configuração do listener do Auto-Busca aqui para garantir que ele exista antes de ser ativado.
+            const autoFetchToggle = document.getElementById('dash_autoFetchToggle');
+            const fetchDataBtn = document.getElementById('dash_fetchDataBtn');
+            if (autoFetchToggle && fetchDataBtn) {
+                autoFetchToggle.addEventListener('change', (event) => {
+                    fetchDataBtn.disabled = event.target.checked;
+                    if (event.target.checked) {
+                        fetchDataBtn.style.cursor = 'not-allowed';
+                        console.log("Auto-Busca ativada. Iniciando busca...");
+                        dash_autoFetchBlaze().then(() => {
+                            if (document.getElementById('dash_autoAnalyzeToggle').checked) {
+                                dash_processarDados();
+                            }
+                        });
+                        // Limpa qualquer intervalo anterior para evitar duplicatas
+                        if (autoFetchIntervalId) clearInterval(autoFetchIntervalId);
+                        
+                        autoFetchIntervalId = setInterval(() => {
+                            console.log("Executando busca automática periódica...");
+                            dash_autoFetchBlaze().then(() => {
+                                if (document.getElementById('dash_autoAnalyzeToggle').checked) {
+                                    dash_processarDados();
+                                }
+                            });
+                        }, 20000); // 20 segundos
+                    } else {
+                        clearInterval(autoFetchIntervalId);
+                        autoFetchIntervalId = null;
+                        fetchDataBtn.style.cursor = 'pointer';
+                        console.log("Auto-Busca desativada.");
+                    }
+                });
+            }
+
             // Restaura abas e plataformas
             const suiteActiveTab = 'gerador'; // Padrão, já que não há mais localStorage
             suite_openTab(suiteActiveTab);
