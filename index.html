@@ -936,7 +936,12 @@
                         <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
                         <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
                     </div>
-                    <div class="header-controls"></div>
+                    <div class="header-controls">
+                        <!-- BOTÃO DE CONFIGURAÇÕES MOVIDO PARA CÁ -->
+                        <button class="header-config-btn" onclick="suite_openTab('config')" title="Configurações">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="tabs">
@@ -947,9 +952,7 @@
                     <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
                     <button class="tab-btn" onclick="suite_openTab('branco')">Análise Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('config')" title="Configurações">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                    </button>
+                    <button class="tab-btn" onclick="suite_openTab('auto_bot')">Robô Auto</button>
                     <button class="tab-btn" id="suite_tab_usuarios" onclick="suite_openTab('usuarios')" title="Gerenciar Usuários" style="display: none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </button>
@@ -1046,11 +1049,18 @@
                             <option value="einstein">Relatividade de Einstein (V-P-P-P)</option>
                         </select>
                     </div>
-                    <div class="control-group">
-                        <label>Quantidade de Sinais:</label>
-                        <input type="number" id="suite_qtdProjecoes" value="5">
+                    <div class="inline-controls" style="margin-bottom: 15px;">
+                        <div class="control-group">
+                            <label>Quantidade de Sinais:</label>
+                            <input type="number" id="suite_qtdProjecoes" value="5">
+                        </div>
+                        <div class="control-group">
+                            <label>Intervalo (Minutos):</label>
+                            <input type="text" id="suite_analiseIntervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
+                            <div class="hint">Use múltiplos valores separados por vírgula para um ciclo.</div>
+                        </div>
                     </div>
-                    <div class="inline-controls">
+                    <div class="inline-controls" style="margin-top: 0;">
                         <button class="btn-action" onclick="suite_analisarEGerar()">🔍 ANALISAR E GERAR</button>
                     </div>
                     <div class="output-area" id="suite_resAnalise">Aguardando dados...</div>
@@ -1349,6 +1359,66 @@ function suite_formatarInputHistorico(textarea) {
                     <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
                 </div>
 
+                <!-- NOVO: PAINEL DO ROBÔ AUTOMÁTICO -->
+                <div id="suite_auto_bot" class="tab-content">
+                    <h2>🤖 Robô Automático</h2>
+                    <div class="toggle-switch-container" style="flex-direction: column; justify-content: center; margin-bottom: 20px;">
+                        <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold;">ATIVAR ROBÔ AUTOMÁTICO</label>
+                        <label class="switch" style="width: 60px; height: 34px;">
+                            <input type="checkbox" id="autoBotToggle">
+                            <span class="slider" style="border-radius: 34px;"></span>
+                        </label>
+                    </div>
+
+                    <!-- NOVO: SELETOR DE ESTRATÉGIA -->
+                    <div class="control-group" style="margin-bottom: 20px;">
+                        <label for="autoBotStrategy">Estratégia de Análise:</label>
+                        <select id="autoBotStrategy">
+                            <option value="alternating_break" selected>1. Quebra de Alternância</option>
+                            <option value="follow_trend">2. Seguir Tendência</option>
+                            <option value="counter_trend">3. Contra Tendência</option>
+                            <option value="reversal_protection">4. Reversão com Proteção</option>
+                            <option value="surf_flow">5. Surf no Fluxo</option>
+                            <option value="king_of_table">6. Rei da Mesa</option>
+                            <option value="chess_break">7. Quebra de Xadrez</option>
+                        </select>
+                    </div>
+
+                    <!-- NOVO: TEMPO DE ENTRADA -->
+                    <div class="control-group" style="margin-bottom: 20px;">
+                        <label for="autoBotEntryTime">Tempo de Entrada (minutos):</label>
+                        <input type="number" id="autoBotEntryTime" value="3" min="2">
+                        <div class="hint">Tempo a adicionar após a análise (Mínimo: 2).</div>
+                    </div>
+
+                    <div id="autoBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">
+                        Robô Desativado.
+                    </div>
+
+                    <!-- Painel para o Sinal Gerado -->
+                    <div id="autoBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                        <div id="autoBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;">
+                            <!-- O sinal será inserido aqui pelo JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Painel para o Placar/Resultado -->
+                    <div id="autoBotResultPanel" style="margin-top: 20px;">
+                        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar Recente</h3>
+                        <!-- NOVO: Placar de Win/Loss -->
+                        <div id="autoBotScoreboard" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; font-size: 1.2rem; font-weight: bold;">
+                            <span style="color: var(--accent-jonbet);">WIN: <span id="autoBotWinCount">0</span></span>
+                            <span style="color: #fff;">WIN BRANCO: <span id="autoBotWhiteWinCount">0</span></span>
+                            <span style="color: var(--accent-blaze);">LOSS: <span id="autoBotLossCount">0</span></span>
+                        </div>
+
+                        <div id="autoBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">
+                            Aguardando o primeiro resultado...
+                        </div>
+                    </div>
+                </div>
+                <!-- FIM DO PAINEL DO ROBÔ AUTOMÁTICO -->
+
                 <div id="suite_config" class="tab-content">
                     <h2>⚙️ Configurações Gerais</h2>
 
@@ -1359,6 +1429,15 @@ function suite_formatarInputHistorico(textarea) {
                         <p><strong>Nível de Acesso:</strong> <span id="config_accessLevel">--</span></p>
                         <p><strong>Acesso Válido até:</strong> <span id="config_expiresAt">--</span></p>
                         <p><strong>ID do Usuário:</strong> <span id="config_telegramId">--</span></p>
+                    </div>
+
+                    <div id="admin-api-config" style="display: none;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Configuração de API</h3>
+                        <div class="control-group">
+                            <label for="config_blaze_token">Token de Acesso Blaze (JWT):</label>
+                            <input type="text" id="config_blaze_token" placeholder="Cole seu token aqui (começa com eyJ...)">
+                            <div class="hint">Este token é usado para a coleta automática de dados. Atualize-o se a busca falhar (Erro 401).</div>
+                        </div>
                     </div>
 
                     <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Personalização</h3>
@@ -1533,7 +1612,7 @@ function suite_formatarInputHistorico(textarea) {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
             <button id="dash_fetchDataBtn" onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
-                🔄 BUSCAR DADOS
+                ⏳ Buscando...
             </button>
         </div>
 
@@ -1547,7 +1626,7 @@ function suite_formatarInputHistorico(textarea) {
             </label>
             <div class="hint" style="margin: 0; font-size: 0.7em;">(Requer Auto-Busca)</div>
             <!-- Auto-Busca -->
-            <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800; margin-left: auto;">Auto-Busca (20 seg):</label>
+            <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800; margin-left: auto;">Auto-Busca:</label>
             <label class="switch">
                 <input type="checkbox" id="dash_autoFetchToggle">
                 <span class="slider"></span>
@@ -1764,19 +1843,26 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         function loadFromStorage() {
-            // try {
-            //     // Carrega dados para a SUITE
-            //     // document.getElementById('suite_inputHistoricoBranco').value = localStorage.getItem('suite_inputHistoricoBranco') || ''; // Removido para não carregar histórico
-            //     document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
-
-            //     // Carrega dados para o DASHBOARD
-            //     // O histórico do dashboard ('historicoInput') não será mais carregado automaticamente.
-            // } catch (e) {
-            //     console.error("Não foi possível carregar do localStorage:", e);
-            // }
+            try {
+                // Carrega o Token da Blaze
+                const savedToken = localStorage.getItem('blaze_token');
+                if (savedToken) {
+                    document.getElementById('config_blaze_token').value = savedToken;
+                }
+                // Carrega o nome do operador (se houver lógica para isso)
+                // document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
+            } catch (e) {
+                console.error("Não foi possível carregar do localStorage:", e);
+            }
         }
 
         function suite_saveSettings(btn) {
+            // Salva o Token da Blaze
+            const token = document.getElementById('config_blaze_token').value.trim();
+            if (token) {
+                localStorage.setItem('blaze_token', token);
+            }
+            
             // const userName = document.getElementById('suite_userName').value;
             // localStorage.setItem('suite_userName', userName);
 
@@ -2038,8 +2124,12 @@ function suite_formatarInputHistorico(textarea) {
             }
 
             document.getElementById('suite_' + tabName).classList.add("active");
-            document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`).classList.add("active");
-            // localStorage.setItem('suite_activeTab', tabName);
+            // CORREÇÃO: Verifica se o botão da aba existe antes de tentar adicionar a classe 'active'.
+            // Isso evita o erro quando clicamos em um botão que não está na lista de abas (como o de Configurações).
+            const tabButton = document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`);
+            if (tabButton) {
+                tabButton.classList.add("active");
+            }
         }
 
         function populateUserSettings() {
@@ -2698,6 +2788,9 @@ function suite_formatarInputHistorico(textarea) {
         function suite_analisarEGerar() {
             const input = document.getElementById('suite_inputHistorico').value.trim();
             const qtd = parseInt(document.getElementById('suite_qtdProjecoes').value);
+            const intervaloInput = document.getElementById('suite_analiseIntervalo').value;
+            const intervalos = intervaloInput.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+            if (intervalos.length === 0) { alert("Por favor, insira um valor de intervalo válido."); return; }
             const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const userName = sessionStorage.getItem('operatorName') || 'Operador';
@@ -2757,7 +2850,8 @@ function suite_formatarInputHistorico(textarea) {
             ultimaHora.setMinutes(ultimaHora.getMinutes() + 1); // Inicia a partir do próximo minuto
 
             for(let i=0; i < qtd; i++) {
-                ultimaHora.setMinutes(ultimaHora.getMinutes() + 2);
+                const minutosParaAdicionar = intervalos[i % intervalos.length];
+                ultimaHora.setMinutes(ultimaHora.getMinutes() + minutosParaAdicionar);
                 const h1 = ultimaHora.getHours().toString().padStart(2,'0') + ':' + ultimaHora.getMinutes().toString().padStart(2,'0');
                 let corSinal;
                 let emoji;
@@ -2765,18 +2859,53 @@ function suite_formatarInputHistorico(textarea) {
                 const histSemBranco = historicoSimulado.filter(c => c !== 'BRANCO');
                 const contV = histSemBranco.filter(c => c === 'VERMELHO').length;
                 const contP = histSemBranco.filter(c => c === 'PRETO').length;
-                const ultimaCor = histSemBranco[0];
+                const ultimaCor = histSemBranco.length > 0 ? histSemBranco[0] : (Math.random() > 0.5 ? "VERMELHO" : "PRETO");
 
                 switch (estrategiaAnalise) {
                     case 'maioria': corSinal = (contV >= contP) ? "VERMELHO" : "PRETO"; break;
                     case 'minoria': corSinal = (contV < contP) ? "VERMELHO" : "PRETO"; break;
                     case 'contra': corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; break;
                     case 'alternado': corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; break;
-                    case 'euler': const ultimas3Euler = histSemBranco.slice(0, 3); if (ultimas3Euler.length === 3 && ultimas3Euler[0] === ultimas3Euler[1] && ultimas3Euler[1] === ultimas3Euler[2]) { corSinal = (ultimas3Euler[0] === "VERMELHO") ? "PRETO" : "VERMELHO"; } else { corSinal = ultimaCor; } break;
-                    case 'gauss': const ultimas7Gauss = histSemBranco.slice(0, 7); const contV7 = ultimas7Gauss.filter(c => c === 'VERMELHO').length; const contP7 = ultimas7Gauss.filter(c => c === 'PRETO').length; corSinal = (contV7 >= contP7) ? "VERMELHO" : "PRETO"; break;
-                    case 'galois': const ultimas3Galois = histSemBranco.slice(0, 3); if (ultimas3Galois.length === 3 && ultimas3Galois[0] !== ultimas3Galois[1] && ultimas3Galois[0] === ultimas3Galois[2]) { corSinal = ultimas3Galois[1]; } else { corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; } break;
-                    case 'einstein': const ultimas4Einstein = histSemBranco.slice(0, 4); const vCount = ultimas4Einstein.filter(c => c === 'VERMELHO').length; const pCount = ultimas4Einstein.filter(c => c === 'PRETO').length; if (vCount === 1 && pCount === 3) corSinal = "VERMELHO"; else if (pCount === 1 && vCount === 3) corSinal = "PRETO"; else corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; break;
-                    case 'auto': default: const ultimas4Auto = histSemBranco.slice(0, 4); if (ultimas4Auto.length >= 3 && ultimas4Auto[0] === ultimas4Auto[1] && ultimas4Auto[1] === ultimas4Auto[2]) { corSinal = ultimas4Auto[0]; } else if (ultimas4Auto.length >= 4 && ultimas4Auto[0] !== ultimas4Auto[1] && ultimas4Auto[1] !== ultimas4Auto[2] && ultimas4Auto[2] !== ultimas4Auto[3]) { corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; } else { corSinal = (contV > contP) ? "PRETO" : "VERMELHO"; } break;
+                    case 'euler': // Se as 3 últimas forem iguais, quebra. Senão, segue a última.
+                        const ultimas3Euler = histSemBranco.slice(0, 3);
+                        if (ultimas3Euler.length === 3 && ultimas3Euler[0] === ultimas3Euler[1] && ultimas3Euler[1] === ultimas3Euler[2]) {
+                            corSinal = (ultimas3Euler[0] === "VERMELHO") ? "PRETO" : "VERMELHO";
+                        } else {
+                            corSinal = (ultimaCor === "VERMELHO") ? "VERMELHO" : "PRETO"; // Segue a tendência
+                        }
+                        break;
+                    case 'gauss': // Segue a maioria das últimas 7.
+                        const ultimas7Gauss = histSemBranco.slice(0, 7);
+                        const contV7 = ultimas7Gauss.filter(c => c === 'VERMELHO').length;
+                        const contP7 = ultimas7Gauss.filter(c => c === 'PRETO').length;
+                        corSinal = (contV7 > contP7) ? "VERMELHO" : "PRETO";
+                        break;
+                    case 'galois': // Padrão V-P-V -> entra em P. Senão, alterna.
+                        const ultimas3Galois = histSemBranco.slice(0, 3);
+                        if (ultimas3Galois.length === 3 && ultimas3Galois[0] === 'VERMELHO' && ultimas3Galois[1] === 'PRETO' && ultimas3Galois[2] === 'VERMELHO') {
+                            corSinal = 'PRETO';
+                        } else {
+                            corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; // Alterna
+                        }
+                        break;
+                    case 'einstein': // Padrão V-P-P-P -> entra em V. Senão, alterna.
+                        const ultimas4Einstein = histSemBranco.slice(0, 4);
+                        if (ultimas4Einstein.length === 4 && ultimas4Einstein[0] === 'VERMELHO' && ultimas4Einstein[1] === 'PRETO' && ultimas4Einstein[2] === 'PRETO' && ultimas4Einstein[3] === 'PRETO') {
+                            corSinal = 'VERMELHO';
+                        } else {
+                            corSinal = (ultimaCor === "VERMELHO") ? "PRETO" : "VERMELHO"; // Alterna
+                        }
+                        break;
+                    case 'auto': 
+                    default: 
+                        // Pega a última cor gerada na simulação para garantir que não se repita.
+                        const ultimaCorGerada = historicoSimulado[0]; 
+                        if (i === 0) { // Se for o primeiro sinal da lista, gera aleatoriamente.
+                            corSinal = (Math.random() > 0.5) ? "VERMELHO" : "PRETO";
+                        } else { // Para os sinais seguintes, alterna a cor.
+                            corSinal = (ultimaCorGerada === "VERMELHO") ? "PRETO" : "VERMELHO";
+                        }
+                        break;
                 }
 
                 if (corSinal === "VERMELHO") { emoji = (platform === 'jonbet') ? '🟢' : '🔴'; } else { emoji = '⚫'; }
@@ -3456,68 +3585,77 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         // 2. IMPLEMENTAÇÃO BLAZE (V9 - FAILOVER INTELIGENTE + VALIDAÇÃO DE DATA)
-        // 2. IMPLEMENTAÇÃO BLAZE (V13 - LINK ESPECÍFICO SALA 1)
-        // 2. IMPLEMENTAÇÃO BLAZE (V16 - TESTE DO LINK DE HISTÓRICO)
+        // 2. IMPLEMENTAÇÃO BLAZE (COM SEU TOKEN INSERIDO)
         async function dash_impl_Blaze() {
-            const statusBtn = document.querySelector('button[onclick="dash_autoFetchBlaze()"]');
+            const statusBtn = document.getElementById('dash_fetchDataBtn');
             const originalText = statusBtn.innerText;
             const autoTextarea = document.getElementById('dash_autoInput');
             
+            // ======================================================
+            // 🚨 SEU TOKEN JÁ ESTÁ AQUI 🚨
+            // Tenta pegar do localStorage primeiro, senão usa o hardcoded
+            let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
+            if (!SEU_TOKEN_BLAZE) {
+                SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjU0MDM3MzF9.FodxcWCvsl6vn3Zfyo8097ldjvO4VABtPftJYHzD1z8"; 
+            }
+            // ======================================================
+
             try {
-                statusBtn.innerText = "⏳ Buscando...";
+                statusBtn.innerText = "⏳ Buscando com Token...";
                 statusBtn.disabled = true;
         
-                // 1. Configura as datas dinamicamente (Agora e 24h atrás)
-                // SUGESTÃO: Mover a lógica de teste de link para uma etapa inicial para melhor feedback.
-                statusBtn.innerText = "⏳ Testando Histórico...";
+                // Configura datas para pegar as últimas 24 horas
                 const agora = new Date();
                 const ontem = new Date();
-                ontem.setHours(ontem.getHours() - 24); // Pega as últimas 24h
+                ontem.setHours(ontem.getHours() - 24);
         
-                // A Blaze usa formato ISO (ex: 2025-12-07T...)
                 const endDate = agora.toISOString();
                 const startDate = ontem.toISOString();
         
-                // 2. SEU LINK NOVO (Montado dinamicamente)
-                // Endpoint: /recent/history/1
-                const baseUrl = 'https://blaze.com/api/singleplayer-originals/originals/roulette_games/recent/history/1';
+                // Link Oficial do Histórico
+                const baseUrl = 'https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1';
                 const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1`;
+                const targetUrl = `${baseUrl}${params}`;
                 
-                // Adicionamos um número aleatório para evitar o cache do Proxy
-                const timeStamp = new Date().getTime();
-                const targetUrl = `${baseUrl}${params}&t=${timeStamp}`;
-                
-                // 3. Proxy (CorsProxy) - CORRIGIDO
-                const proxyUrl = `https://corsproxy.io/?${targetUrl}`;
+                // Usando o Proxy
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
         
-                console.log("Testando URL via Proxy:", proxyUrl);
+                console.log("Enviando requisição autenticada...");
         
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`Erro Proxy: ${response.status}`);
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        // Enviando o seu Token no cabeçalho
+                        'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`,
+                        'x-access-token': SEU_TOKEN_BLAZE
+                    }
+                });
+        
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error("Token Expirado (401). Esse token parou de funcionar, pegue um novo no F12.");
+                    if (response.status === 403) throw new Error("Bloqueio de Segurança (403).");
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
         
                 const blazeData = await response.json();
-                console.log("Resposta:", blazeData);
         
-                // 4. Validação
-                // Esse endpoint costuma retornar { records: [...] } ou direto [...]
+                // Processamento dos dados
                 let gamesArray = [];
                 if (Array.isArray(blazeData)) {
                     gamesArray = blazeData;
-                } else if (blazeData.records && Array.isArray(blazeData.records)) {
+                } else if (blazeData.records) {
                     gamesArray = blazeData.records;
                 }
         
-                // SE VIER VAZIO, É PORQUE PRECISA DE LOGIN
                 if (gamesArray.length === 0) {
-                    throw new Error("A lista veio vazia. Esse link exige login e não funciona via Proxy.");
+                    throw new Error("A lista veio vazia. Verifique se a conta tem histórico recente.");
                 }
         
-                // 5. Formatação
+                // Formatação para o painel
                 let formattedText = "";
                 gamesArray.forEach(game => {
                     if (game.created_at && game.roll !== undefined) {
                         const dateObj = new Date(game.created_at);
-                        
                         const hours = dateObj.getHours().toString().padStart(2, '0');
                         const minutes = dateObj.getMinutes().toString().padStart(2, '0');
                         const timeStr = `${hours}:${minutes}`;
@@ -3531,44 +3669,50 @@ function suite_formatarInputHistorico(textarea) {
                     }
                 });
 
+                // Preenche a caixa oculta e salva
                 autoTextarea.value = formattedText;
-                statusBtn.innerText = `✅ ${gamesArray.length} Jogos!`;
+                statusBtn.innerText = `✅ Sucesso: ${gamesArray.length} Jogos!`;
                 sessionStorage.setItem('raw_blaze_data', formattedText);
 
-                // SUGESTÃO: Atualiza o painel de histórico em tempo real
+                // Atualiza o painel de histórico em tempo real (Últimos Resultados Coletados)
                 const realTimeGrid = document.getElementById('dash_grid-real-time');
                 const realTimeCount = document.getElementById('real-time-history-count');
-                if (realTimeGrid && realTimeCount) {
-                    realTimeGrid.innerHTML = ''; // Limpa o painel
-                    let count = 0;
-                    gamesArray.slice(0, 100).forEach((game, index) => { // Mostra os últimos 100
-                        const cor = dash_identificarCor(game.roll);
-                        const div = document.createElement('div');
-                        div.className = `badge ${cor}`;
-                        div.innerText = game.roll;
-                        div.title = `Número: ${game.roll}`;
-                        
-                        const timeDiv = document.createElement('div');
-                        timeDiv.className = 'time-overlay';
-                        const dateObj = new Date(game.created_at);
-                        timeDiv.innerText = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
-                        div.appendChild(timeDiv);
-                        realTimeGrid.append(div);
-                        count++;
+                
+                if (realTimeGrid) {
+                    realTimeGrid.innerHTML = ''; // Limpa o grid
+                    gamesArray.forEach(game => {
+                        if (game.roll !== undefined) {
+                            const cor = dash_identificarCor(game.roll);
+                            const div = document.createElement('div');
+                            div.className = `badge ${cor}`;
+                            div.innerText = game.roll;
+                            div.title = `Número: ${game.roll}`;
+                            
+                            if (game.created_at) {
+                                const timeDiv = document.createElement('div');
+                                timeDiv.className = 'time-overlay';
+                                const d = new Date(game.created_at);
+                                timeDiv.innerText = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                                div.appendChild(timeDiv);
+                            }
+                            realTimeGrid.appendChild(div);
+                        }
                     });
-                    realTimeCount.textContent = `(${count})`;
+                    if (realTimeCount) realTimeCount.innerText = `(${gamesArray.length})`;
+                }
+
+                // Dispara a análise automática
+                if (document.getElementById('dash_autoAnalyzeToggle')) {
+                    document.getElementById('dash_autoAnalyzeToggle').checked = true;
+                    dash_processarDados();
+                } else {
+                    dash_processarDados(); 
                 }
         
             } catch (error) {
-                console.error("Erro V16:", error);
-                
-                if (error.message.includes("vazia")) {
-                    statusBtn.innerText = "🔒 Bloqueado";
-                    alert("TESTE FALHOU: Esse link exige autenticação (login).\n\nVolte para a versão de Loop (Página por Página) ou use o Google Script.");
-                } else {
-                    statusBtn.innerText = "❌ Erro";
-                    alert(`Falha: ${error.message}`);
-                }
+                console.error("Erro no Auto-Fetch:", error);
+                statusBtn.innerText = "❌ Falha";
+                alert(`Erro: ${error.message}`);
             } finally {
                 setTimeout(() => {
                     statusBtn.innerText = originalText;
@@ -3581,7 +3725,7 @@ function suite_formatarInputHistorico(textarea) {
 
         // 3. IMPLEMENTAÇÃO JONBET
         async function dash_impl_Jonbet() {
-            const statusBtn = document.querySelector('button[onclick="dash_autoFetchBlaze()"]');
+            const statusBtn = document.getElementById('dash_fetchDataBtn');
             const originalText = statusBtn.innerText;
             const autoTextarea = document.getElementById('dash_autoInput'); 
             
@@ -3743,6 +3887,9 @@ function suite_formatarInputHistorico(textarea) {
             const numerosPuros = resultados.map(r => r.numero);
 
             const target = document.getElementById('dash_targetHistory').value;
+            // SUGESTÃO: Chama a lógica do robô automático sempre que os dados são processados.
+            runAutoBotLogic();
+
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
         }
@@ -3762,6 +3909,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 gridHora.innerHTML = '';
             }
 
+            // Otimização: Usar DocumentFragment para evitar reflows excessivos
+            const fragmentGrid = document.createDocumentFragment();
+            const fragmentHourly = document.createDocumentFragment();
             let r = 0, b = 0, w = 0, hourlyResults = {};
 
             resultados.forEach((item, index) => {
@@ -3795,14 +3945,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 // Adiciona na grid principal (só se existir)
                 if ((target === 'ambos' || target === 'visual') && grid) {
                     div.addEventListener('click', () => dash_toggleDeleteOption(div));
-                    grid.prepend(div);
+                    fragmentGrid.prepend(div);
                 }
             });
 
             // Preenche a grid de hora (só se existir)
             if ((target === 'ambos' || target === 'hora') && gridHora) {
                 Object.keys(hourlyResults).sort().reverse().forEach(hour => {
-                    hourlyResults[hour].forEach(badge => gridHora.prepend(badge));
+                    hourlyResults[hour].forEach(badge => fragmentHourly.prepend(badge));
                 });
             }
 
@@ -3817,6 +3967,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (elBlack) elBlack.innerText = b + ` (${totalCoresPrincipais > 0 ? ((b/totalCoresPrincipais)*100).toFixed(1) : 0}%)`;
             if (elWhite) elWhite.innerText = w;
             if (elTotal) elTotal.innerText = totalNumeros;
+
+            // Atualização única do DOM
+            if ((target === 'ambos' || target === 'visual') && grid) {
+                grid.appendChild(fragmentGrid);
+            }
+            if ((target === 'ambos' || target === 'hora') && gridHora) {
+                gridHora.appendChild(fragmentHourly);
+            }
         }
 
         function dash_toggleDeleteOption(badgeElement) {
@@ -3956,12 +4114,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             try {
                 const tg = window.Telegram.WebApp;
                 tg.ready();
-                console.log("App pronto no Telegram, aguardando login manual.");
-                checkManualLogin(); // Força a verificação de login manual sempre
+                console.log("App pronto no Telegram.");
             } catch (e) {
                 // Se o objeto do Telegram não existir, cai aqui e usa o login manual
-                console.log("App não está no Telegram ou objeto não encontrado, usando login manual.");
-                checkManualLogin();
+                console.log("App não está no Telegram ou objeto não encontrado.");
             }
 
             loadFromStorage();
@@ -3997,6 +4153,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // Inicializa o app principal
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
+
+            // NOVO: Inicializa a lógica do Robô Automático
+            const autoBotToggle = document.getElementById('autoBotToggle');
+            if (autoBotToggle) autoBotToggle.addEventListener('change', handleAutoBotToggle);
+
             
             // SUGESTÃO: Inicializa e atualiza o relógio
             updateClock(); // Chama uma vez para exibir imediatamente
@@ -5173,6 +5334,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // SUGESTÃO: Ativa a busca automática por padrão ao carregar a página
             const autoFetchToggleDefault = document.getElementById('dash_autoFetchToggle');
             if (autoFetchToggleDefault && !autoFetchToggleDefault.checked) {
+                // GARANTIA: Certifique-se de que a análise automática também esteja ativada
+                const autoAnalyzeToggle = document.getElementById('dash_autoAnalyzeToggle');
+                if (autoAnalyzeToggle) autoAnalyzeToggle.checked = true;
+
                 console.log("Auto-Busca toggle not checked, attempting to activate."); // Log para depuração
                 // Marca o checkbox como ativado
                 autoFetchToggleDefault.checked = true;
@@ -5234,6 +5399,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (sendListBtn) sendListBtn.style.display = 'block';
                 const sendAnalysisBtn = document.getElementById('send-analysis-to-telegram-btn');
                 if (sendAnalysisBtn) sendAnalysisBtn.style.display = 'block';
+                const apiConfig = document.getElementById('admin-api-config');
+                if (apiConfig) apiConfig.style.display = 'block';
                 // Popula as listas que o admin precisa ver
                 populateUserList();
                 populateActivityLog();
@@ -5273,6 +5440,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (autoFetchToggle && fetchDataBtn) {
                 autoFetchToggle.addEventListener('change', (event) => {
                     fetchDataBtn.disabled = event.target.checked;
+                    // NOVO: Atualiza o status do robô quando a auto-busca é alterada
+                    const botStatusDiv = document.getElementById('autoBotStatus');
+                    if (botStatusDiv && document.getElementById('autoBotToggle').checked) {
+                        botStatusDiv.textContent = event.target.checked ? 'Monitorando novos resultados...' : 'Aguardando ativação da "Auto-Busca" no painel direito.';
+                    }
+
                     if (event.target.checked) {
                         fetchDataBtn.style.cursor = 'not-allowed';
                         console.log("Auto-Busca ativada. Iniciando busca...");
@@ -5291,7 +5464,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                                     dash_processarDados();
                                 }
                             });
-                        }, 20000); // 20 segundos
+                        }, 5000); // Verifica a cada 5 segundos para atualização rápida
                     } else {
                         clearInterval(autoFetchIntervalId);
                         autoFetchIntervalId = null;
@@ -5308,6 +5481,380 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             dash_openTab('analise');
             dash_selectPlatform('blaze');
             dash_processarDados(true);
+        }
+
+        // ==========================================
+        // INÍCIO: LÓGICA DO ROBÔ AUTOMÁTICO
+        // ==========================================
+
+        let activeSignal = null; // Armazena o sinal que está sendo monitorado
+        let lastGeneratedSignalTime = null; // Evita repetição de sinais para o mesmo horário
+        let autoBotWins = 0;
+        let autoBotWhiteWins = 0;
+        let autoBotLosses = 0;
+        let lastAutoBotResult = null; // NOVO: Rastreia o último resultado (win/loss)
+
+        function handleAutoBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('autoBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+
+            if (isBotActive) {
+                if (isAutoFetchActive) {
+                    statusDiv.textContent = '✅ Robô Ativado. Monitorando novos resultados...';
+                    statusDiv.style.color = 'var(--accent-jonbet)';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" no painel direito para o robô funcionar.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                // Exibe o painel com mensagem de aguardando
+                const signalPanel = document.getElementById('autoBotSignalPanel');
+                const signalContent = document.getElementById('autoBotSignalContent');
+                signalPanel.style.display = 'block';
+                signalContent.innerHTML = '<span style="color: #aaa; font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                // Limpa qualquer sinal ativo se o robô for desligado
+                activeSignal = null;
+                lastGeneratedSignalTime = null;
+                document.getElementById('autoBotSignalPanel').style.display = 'none';
+                // Reseta o placar
+                autoBotWins = 0;
+                autoBotWhiteWins = 0;
+                autoBotLosses = 0;
+                document.getElementById('autoBotWinCount').textContent = '0';
+                document.getElementById('autoBotWhiteWinCount').textContent = '0';
+                document.getElementById('autoBotLossCount').textContent = '0';
+                lastAutoBotResult = null; // Reseta o rastreador de resultado
+            }
+        }
+
+        // Esta função será chamada de dentro de `dash_processarDados`
+        function runAutoBotLogic() {
+            const isBotActive = document.getElementById('autoBotToggle').checked;
+            if (!isBotActive) return; // Se o robô não estiver ativo, não faz nada
+
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return; // Precisa de dados para trabalhar
+
+            // 1. Processar os dados para obter uma lista de resultados
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                // A estrutura é DATA, NÚMERO, HORA
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({
+                        date: tokens[i],
+                        roll: parseInt(tokens[i + 1]),
+                        time: tokens[i + 2]
+                    });
+                    i += 2;
+                }
+            }
+
+            if (results.length === 0) return;
+
+            const lastResult = results[0]; // O primeiro da lista é o mais recente
+
+            // 2. Verificar se já existe um sinal ativo
+            if (activeSignal) {
+                // Se temos um sinal ativo, vamos verificar o resultado dele
+                // CORREÇÃO: Passa a lista completa de resultados para ter mais contexto se necessário
+                checkSignalResult(results);
+            } else {
+                // Se não há sinal ativo, analisa o histórico para decidir se cria um
+                analyzeAndCreateSignal(results);
+            }
+        }
+
+        // NOVA LÓGICA DE ANÁLISE
+        function analyzeAndCreateSignal(results) {
+            // NOVO: Verifica se o último resultado foi um LOSS. Se sim, pausa por uma rodada.
+            if (lastAutoBotResult === 'loss') {
+                console.log("Robô Auto: Pausado após um LOSS. Aguardando próximo resultado para reavaliar.");
+                // Reseta o estado para permitir que o robô analise novamente na próxima rodada.
+                lastAutoBotResult = null; 
+                return; // Ignora a criação de um novo sinal nesta rodada.
+            }
+
+            const strategy = document.getElementById('autoBotStrategy').value;
+
+            // 1. Pega os últimos resultados (ignorando brancos) para análise
+            const recentColors = results
+                .map(r => ({...r, color: dash_identificarCor(r.roll)}))
+                .filter(r => r.color !== 'branco')
+                .slice(0, 3);
+
+            // A maioria das estratégias precisa de pelo menos 2 ou 3 resultados
+            if (recentColors.length < 3) { 
+                console.log(`Robô Auto: Aguardando mais resultados para análise (necessário 3, atual ${recentColors.length}).`);
+                return; // Não há dados suficientes para a estratégia
+            }
+
+            const [last, secondLast, thirdLast] = recentColors;
+
+            // 2. Executa a lógica da estratégia selecionada
+            switch (strategy) {
+                case 'alternating_break':
+                    // ESTRATÉGIA 1: Procurar por um padrão de 3 cores alternadas (ex: V, P, V)
+                    const isAlternatingPattern = last.color !== secondLast.color && secondLast.color !== thirdLast.color;
+                    if (isAlternatingPattern) {
+                        console.log(`Robô Auto (Alternância): Padrão detectado (${thirdLast.color}, ${secondLast.color}, ${last.color}). Gerando sinal.`);
+                        // Cria um sinal para quebrar a alternância (entrar na mesma cor do último)
+                        createAutoSignal(last, last.color);
+                    }
+                    break;
+
+                case 'follow_trend':
+                    // ESTRATÉGIA 2: Procurar por 2 cores iguais e seguir a tendência
+                    const isDoublePatternFollow = last.color === secondLast.color;
+                    if (isDoublePatternFollow) {
+                        console.log(`Robô Auto (Seguir Tendência): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal.`);
+                        createAutoSignal(last, last.color);
+                    }
+                    break;
+
+                case 'counter_trend':
+                    // ESTRATÉGIA 3: Procurar por 2 cores iguais e quebrar a tendência
+                    const isDoublePatternCounter = last.color === secondLast.color;
+                    if (isDoublePatternCounter) {
+                        console.log(`Robô Auto (Contra Tendência): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal.`);
+                        const targetColor = last.color === 'vermelho' ? 'preto' : 'vermelho';
+                        createAutoSignal(last, targetColor);
+                    }
+                    break;
+
+                case 'reversal_protection':
+                    // ESTRATÉGIA 4: Reversão com Proteção (P-P -> V)
+                    // Procura por dois pretos consecutivos e entra no vermelho
+                    if (last.color === 'preto' && secondLast.color === 'preto') {
+                        console.log(`Robô Auto (Reversão com Proteção): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal para VERMELHO.`);
+                        createAutoSignal(last, 'vermelho'); // Aposta principal no VERMELHO
+                    }
+                    // A proteção no branco já é adicionada automaticamente na função createAutoSignal
+                    break;
+
+                case 'surf_flow':
+                    // ESTRATÉGIA 5: Surf no Fluxo (Seguir a Tendência)
+                    // Lógica: Se uma cor domina os últimos 10 resultados (>=60%) e ela acabou de sair, aposte nela.
+                    const validLast10 = results
+                        .map(r => ({...r, color: dash_identificarCor(r.roll)}))
+                        .filter(r => r.color !== 'branco')
+                        .slice(0, 10);
+                    
+                    if (validLast10.length >= 10) {
+                        const blackCount = validLast10.filter(r => r.color === 'preto').length;
+                        const redCount = validLast10.filter(r => r.color === 'vermelho').length;
+
+                        if (blackCount >= 6 && last.color === 'preto') {
+                            console.log(`Robô Auto (Surf): Fluxo Preto detectado (${blackCount}/10). Entrando Preto.`);
+                            createAutoSignal(last, 'preto');
+                        } else if (redCount >= 6 && last.color === 'vermelho') {
+                            console.log(`Robô Auto (Surf): Fluxo Vermelho detectado (${redCount}/10). Entrando Vermelho.`);
+                            createAutoSignal(last, 'vermelho');
+                        }
+                    }
+                    break;
+
+                case 'king_of_table':
+                    // ESTRATÉGIA 6: Rei da Mesa (Foco no 5 e vizinhos 4, 6)
+                    if ([4, 5, 6].includes(last.roll)) {
+                        console.log(`Robô Auto (Rei da Mesa): Gatilho ${last.roll} detectado. Entrando VERMELHO.`);
+                        createAutoSignal(last, 'vermelho');
+                    }
+                    break;
+
+                case 'chess_break':
+                    // ESTRATÉGIA 7: Quebra de Xadrez (Apostar na repetição após uma alternância)
+                    if (last.color !== secondLast.color) {
+                        console.log(`Robô Auto (Quebra Xadrez): Alternância ${secondLast.color}->${last.color}. Apostando na repetição de ${last.color}.`);
+                        createAutoSignal(last, last.color);
+                    }
+                    break;
+            }
+        }
+
+        function createAutoSignal(triggerResult, targetColor) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            
+            // Pega o tempo configurado pelo usuário
+            let entryTime = parseInt(document.getElementById('autoBotEntryTime').value);
+            if (isNaN(entryTime) || entryTime < 2) entryTime = 2; // Garante o mínimo de 2 minutos
+            signalTime.setMinutes(signalTime.getMinutes() + entryTime); 
+
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Evita gerar o mesmo sinal repetidamente se os dados não atualizaram
+            if (lastGeneratedSignalTime === signalTimeString) return;
+            lastGeneratedSignalTime = signalTimeString;
+
+            const day = signalTime.getDate().toString().padStart(2, '0');
+            const month = (signalTime.getMonth() + 1).toString().padStart(2, '0');
+            const year = signalTime.getFullYear();
+            const signalDateString = `${day}/${month}/${year}`;
+
+            const upperTargetColor = targetColor.toUpperCase();
+            const targetColorEmoji = upperTargetColor === 'VERMELHO' ? '🔴' : '⚫';
+
+            // Armazena os detalhes do sinal que será monitorado
+            activeSignal = {
+                time: signalTimeString, // Horário do sinal
+                date: signalDateString, // Data do sinal para evitar conflito com dias anteriores
+                targetColor: upperTargetColor, // Cor alvo (VERMELHO ou PRETO)
+                gale: 0 // 0 para a primeira entrada, 1 para o G1
+            };
+
+            // Exibe o sinal na tela
+            const signalPanel = document.getElementById('autoBotSignalPanel');
+            const signalContent = document.getElementById('autoBotSignalContent');
+
+            signalContent.innerHTML = `
+                🕒 ${activeSignal.time} ENTRAR<br>
+                <span style="color: ${upperTargetColor === 'VERMELHO' ? 'var(--accent-blaze)' : '#333'};">${targetColorEmoji}</span>+<span style="color: #fff;">⚪️</span><br>
+                <span style="font-size: 1rem;">♻️ ATÉ G1</span>
+            `;
+            signalPanel.style.display = 'block';
+
+            console.log(`Sinal gerado para ${activeSignal.time}`);
+        }
+
+        function checkSignalResult(results) {
+            if (!activeSignal) return;
+
+            // Encontra TODOS os resultados correspondentes ao horário do sinal
+            // Assumindo que 'results' está ordenado do Mais Recente para o Mais Antigo
+            const minuteResults = results.filter(r => r.time === activeSignal.time && r.date === activeSignal.date);
+
+            if (minuteResults.length === 0) {
+                // VERIFICAÇÃO DE SEGURANÇA: Se o horário do sinal já passou e não está na lista, aborta.
+                const newestResult = results[0];
+                if (newestResult) {
+                    const [nH, nM] = newestResult.time.split(':').map(Number);
+                    const [sH, sM] = activeSignal.time.split(':').map(Number);
+                    
+                    const now = new Date();
+                    const newestDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), nH, nM);
+                    const signalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM);
+                    
+                    if (nH < sH && (sH - nH) > 12) newestDate.setDate(newestDate.getDate() + 1);
+                    if (sH < nH && (nH - sH) > 12) signalDate.setDate(signalDate.getDate() + 1);
+
+                    if (newestDate > signalDate && (newestDate - signalDate) > 5 * 60000) {
+                        console.log(`Robô Auto: Sinal (${activeSignal.time}) expirou/não encontrado.`);
+                        activeSignal = null; 
+                        return;
+                    }
+                }
+                return;
+            }
+
+            // Identifica a 1ª e a 2ª entrada (pedra) do minuto
+            // Como a lista é Newest->Oldest:
+            // A última posição do array filtrado é a 1ª pedra (mais antiga do minuto)
+            // A penúltima posição é a 2ª pedra (mais recente do minuto)
+            const entry1 = minuteResults[minuteResults.length - 1];
+            const entry1Color = dash_identificarCor(entry1.roll);
+            let resultMessage = '';
+
+            // 1. Verifica a 1ª Entrada
+            if (entry1Color.toUpperCase() === activeSignal.targetColor || entry1Color === 'branco') {
+                resultMessage = `✅ WIN! (${activeSignal.time} - 1ª Pedra: ${entry1Color.toUpperCase()})`;
+                addResultToHistory(resultMessage, true);
+                activeSignal = null; // Limpa o sinal, pois já foi resolvido
+                return;
+            }
+
+            // 2. Se a 1ª foi Loss, verifica a 2ª Entrada (G1)
+            if (minuteResults.length >= 2) {
+                const entry2 = minuteResults[minuteResults.length - 2];
+                const entry2Color = dash_identificarCor(entry2.roll);
+
+                if (entry2Color.toUpperCase() === activeSignal.targetColor || entry2Color === 'branco') {
+                    resultMessage = `❇️ WIN G1! (${activeSignal.time} - 2ª Pedra: ${entry2Color.toUpperCase()})`;
+                    addResultToHistory(resultMessage, true);
+                } else {
+                    resultMessage = `❌ LOSS! (${activeSignal.time})`;
+                    addResultToHistory(resultMessage, false);
+                }
+                activeSignal = null;
+                return;
+            }
+
+            // 3. Se temos a 1ª pedra (Loss) mas a 2ª ainda não chegou
+            const newestResult = results[0];
+            if (newestResult) {
+                // Se o resultado mais recente da lista geral já é de um horário diferente (futuro),
+                // significa que o minuto do sinal já acabou e não veio a 2ª pedra.
+                if (newestResult.time !== activeSignal.time) {
+                    // Confirmação extra de segurança para G1
+                    const newestResult = results[0];
+                    if (newestResult) {
+                         const [nH, nM] = newestResult.time.split(':').map(Number);
+                         const [sH, sM] = activeSignal.time.split(':').map(Number);
+                         
+                         const now = new Date();
+                         const newestDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), nH, nM);
+                         const signalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM);
+                         
+                         if (nH < sH && (sH - nH) > 12) newestDate.setDate(newestDate.getDate() + 1);
+                         if (sH < nH && (nH - sH) > 12) signalDate.setDate(signalDate.getDate() + 1);
+
+                         if (newestDate > signalDate) {
+                             console.log(`Robô Auto: Minuto (${activeSignal.time}) encerrou sem 2ª pedra. Considerando LOSS.`);
+                             resultMessage = `❌ LOSS (Sem G1)! (${activeSignal.time})`;
+                             addResultToHistory(resultMessage, false);
+                             activeSignal = null;
+                             return;
+                         }
+                    }
+                }
+            }
+
+            // Se ainda estamos no mesmo minuto e só temos 1 pedra, aguardamos.
+            const signalContent = document.getElementById('autoBotSignalContent');
+            if (signalContent && activeSignal) {
+                const targetColorEmoji = activeSignal.targetColor === 'VERMELHO' ? '🔴' : '⚫';
+                signalContent.innerHTML = `
+                    🕒 ${activeSignal.time} ENTRAR<br>
+                    <span style="color: ${activeSignal.targetColor === 'VERMELHO' ? 'var(--accent-blaze)' : '#333'};">${targetColorEmoji}</span>+<span style="color: #fff;">⚪️</span><br>
+                    <span style="font-size: 1rem;">♻️ ATÉ G1</span><br>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;">
+                        <span style="color: #aaa; font-size: 1.1rem; font-weight: normal;">⏳ Aguardando 2ª pedra...</span>
+                    </div>
+                `;
+            }
+        }
+
+        function addResultToHistory(message, isWin) {
+            const historyDiv = document.getElementById('autoBotResultHistory');
+            const newEntry = document.createElement('div');
+            newEntry.textContent = message;
+            newEntry.style.color = isWin ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+
+            if (historyDiv.innerHTML.includes('Aguardando')) {
+                historyDiv.innerHTML = '';
+            }
+            // Atualiza o placar
+            if (isWin) {
+                autoBotWins++;
+                if (message.includes('BRANCO')) {
+                    autoBotWhiteWins++;
+                }
+                lastAutoBotResult = 'win'; // Define o estado como 'win'
+            } else {
+                autoBotLosses++;
+                lastAutoBotResult = 'loss'; // Define o estado como 'loss'
+            }
+            document.getElementById('autoBotWinCount').textContent = autoBotWins;
+            document.getElementById('autoBotWhiteWinCount').textContent = autoBotWhiteWins;
+            document.getElementById('autoBotLossCount').textContent = autoBotLosses;
+            historyDiv.prepend(newEntry);
         }
     </script>
 </body>
