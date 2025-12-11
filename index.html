@@ -321,7 +321,13 @@ function suite_formatarInputHistorico(textarea) {
              } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
                  resultadosFinais.push(linhaAtual.toUpperCase());
              } else if (timeRegex.test(linhaAtual)) {
-                 resultadosFinais.push(`${linhaAtual} BRANCO`);
+                 const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                 if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(proximaLinha)) {
+                     resultadosFinais.push(`${linhaAtual} ${proximaLinha.toUpperCase()}`);
+                     i++;
+                 } else {
+                     resultadosFinais.push(`${linhaAtual} BRANCO`);
+                 }
              }
          }
         textarea.value = resultadosFinais.join('\n');
@@ -1224,64 +1230,119 @@ function suite_formatarInputHistorico(textarea) {
             let wins = 0;
             let losses = 0;
             let whiteWins = 0;
+            let winsFirst = 0;
+            let winsG1 = 0;
+            let currentWinStreak = 0;
+            let maxWinStreak = 0;
+            let currentLossStreak = 0;
+            let maxLossStreak = 0;
+
             const detailedResults = [];
             const hourlyStats = {};
 
             parsedSignals.forEach(signal => {
-                const [h, m] = signal.time.split(':').map(Number);
-                const signalTime = new Date(0, 0, 0, h, m);
                 const hour = signal.time.split(':')[0];
 
                 if (!hourlyStats[hour]) hourlyStats[hour] = { wins: 0, losses: 0, total: 0 };
                 hourlyStats[hour].total++;
 
-                let winFound = false;
-                let isWhite = false;
-                let winGale = -1;
+                // Filtra os resultados do minuto exato e ordena cronologicamente (Antigo -> Novo)
+                // Assumindo que allResults está do mais recente para o mais antigo
+                const resultsForMinute = allResults.filter(r => r.time === signal.time).reverse();
 
-                for (let i = 0; i <= 1; i++) {
-                    const checkTime = new Date(signalTime.getTime() + i * 60000);
-                    const checkTimeStr = `${String(checkTime.getHours()).padStart(2, '0')}:${String(checkTime.getMinutes()).padStart(2, '0')}`;
-                    
-                    const result = allResults.find(r => r.time === checkTimeStr);
-                    if (result) {
-                        if (result.color === signal.color) {
-                            winFound = true;
-                            winGale = i;
-                            break;
-                        } else if (result.color === 'BRANCO') {
-                            winFound = true;
-                            isWhite = true;
-                            winGale = i;
-                            break;
+                let status = 'LOSS';
+                let suffix = '❌';
+                let isWhite = false;
+                let winType = null;
+
+                if (resultsForMinute.length > 0) {
+                    // 1. Verifica a Primeira Pedra (Entrada Principal)
+                    const r1 = resultsForMinute[0];
+                    if (r1.color === signal.color) {
+                        status = 'WIN';
+                        suffix = '✅';
+                        winType = 'G0';
+                    } else if (r1.color === 'BRANCO') {
+                        status = 'WIN';
+                        suffix = '✅⚪️';
+                        isWhite = true;
+                        winType = 'G0';
+                    } else {
+                        // 2. Se perdeu na primeira, verifica a Segunda Pedra (Gale 1)
+                        if (resultsForMinute.length > 1) {
+                            const r2 = resultsForMinute[1];
+                            if (r2.color === signal.color) {
+                                status = 'WIN';
+                                suffix = '❇️';
+                                winType = 'G1';
+                            } else if (r2.color === 'BRANCO') {
+                                status = 'WIN';
+                                suffix = '❇️⚪️';
+                                isWhite = true;
+                                winType = 'G1';
+                            } else {
+                                status = 'LOSS';
+                                suffix = '❌';
+                            }
+                        } else {
+                            status = 'LOSS';
+                            suffix = '❌';
                         }
                     }
                 }
 
-                if (winFound) {
+                if (status === 'WIN') {
                     wins++;
                     hourlyStats[hour].wins++;
                     if (isWhite) whiteWins++;
-                    const suffix = isWhite ? '⚪' : '✅';
-                    const galeInfo = winGale > 0 ? ` G${winGale}` : '';
-                    detailedResults.push(`${signal.original} ${suffix}${galeInfo}`);
+                    if (winType === 'G0') winsFirst++;
+                    if (winType === 'G1') winsG1++;
+                    
+                    currentWinStreak++;
+                    currentLossStreak = 0;
+                    if (currentWinStreak > maxWinStreak) maxWinStreak = currentWinStreak;
+
+                    detailedResults.push(`${signal.original} ${suffix}`);
                 } else {
                     losses++;
                     hourlyStats[hour].losses++;
-                    detailedResults.push(`${signal.original} ❌`);
+                    
+                    currentLossStreak++;
+                    currentWinStreak = 0;
+                    if (currentLossStreak > maxLossStreak) maxLossStreak = currentLossStreak;
+
+                    detailedResults.push(`${signal.original} ${suffix}`);
                 }
             });
 
             const total = parsedSignals.length;
             const assertividade = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
 
+            let hourlyOutput = "";
+            Object.keys(hourlyStats).sort().forEach(h => {
+                const stats = hourlyStats[h];
+                const pct = stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(1) : 0;
+                hourlyOutput += `• ${h}h: ${pct}% (${stats.wins}/${stats.total})\n`;
+            });
+
             let out = `📊 **RESULTADO DA CORREÇÃO**\n`;
-            out += `-----------------------------\n`;
-            out += `Total: ${total}\n`;
-            out += `✅ Wins: ${wins} (⚪ ${whiteWins})\n`;
+            out += `(Baseado em ${total} sinais analisados)\n`;
+            out += `--------------------------------\n`;
+            out += `📈 Assertividade: ${assertividade}% (${wins}W / ${losses}L)\n`;
+            out += `--------------------------------\n`;
+            out += `Total de Sinais: ${total}\n`;
+            out += `Assertividade: ${assertividade}%\n\n`;
+            out += `✅ Wins: ${wins}\n`;
             out += `❌ Losses: ${losses}\n`;
-            out += `📈 Assertividade: ${assertividade}%\n`;
-            out += `-----------------------------\n`;
+            out += `--------------------------------\n`;
+            out += `Wins de Primeira: ${winsFirst}\n`;
+            out += `Wins no G1: ${winsG1}\n`;
+            out += `Brancos Pagos: ${whiteWins} ⚪️\n`;
+            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
+            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n\n`;
+            out += `📈 ASSERTIVIDADE POR HORA ---\n`;
+            out += hourlyOutput;
+            out += `\n`;
             out += detailedResults.join('\n');
 
             window.hourlyStatsFromCorrector = hourlyStats;
