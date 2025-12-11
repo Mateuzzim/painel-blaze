@@ -307,20 +307,9 @@ function suite_formatarInputHistorico(textarea) {
                      horario = linha2;
                      i += 2; // Pula as próximas duas linhas
                  } else if (timeRegex.test(linha1)) {
+                     numero = 0; // O número está oculto, então é BRANCO
                      horario = linha1;
-                     if (numberRegex.test(linha2)) {
-                         numero = parseInt(linha2);
-                         i += 2;
-                     } else if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(linha2)) {
-                         const c = linha2.toUpperCase();
-                         if (c === 'VERMELHO') numero = 1;
-                         else if (c === 'PRETO') numero = 8;
-                         else numero = 0;
-                         i += 2;
-                     } else {
-                         numero = 0; // O número está oculto, então é BRANCO
-                         i += 1; // Pula apenas a próxima linha
-                     }
+                     i += 1; // Pula apenas a próxima linha
                  }
  
                  if (horario) {
@@ -331,6 +320,8 @@ function suite_formatarInputHistorico(textarea) {
                  }
              } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
                  resultadosFinais.push(linhaAtual.toUpperCase());
+             } else if (timeRegex.test(linhaAtual)) {
+                 resultadosFinais.push(`${linhaAtual} BRANCO`);
              }
          }
         textarea.value = resultadosFinais.join('\n');
@@ -1225,7 +1216,7 @@ function suite_formatarInputHistorico(textarea) {
                 const m = resultRegex.exec(line);
                 if (m) {
                     let color = m[2].toUpperCase();
-                    if (color === 'VERDE') color = 'BRANCO';
+                    if (color === 'VERDE') color = 'VERMELHO';
                     allResults.push({ time: m[1], color: color });
                 }
             });
@@ -1233,12 +1224,6 @@ function suite_formatarInputHistorico(textarea) {
             let wins = 0;
             let losses = 0;
             let whiteWins = 0;
-            let winsDePrimeira = 0;
-            let winsNoG1 = 0;
-            let currentWinStreak = 0;
-            let maxWinStreak = 0;
-            let currentLossStreak = 0;
-            let maxLossStreak = 0;
             const detailedResults = [];
             const hourlyStats = {};
 
@@ -1277,28 +1262,12 @@ function suite_formatarInputHistorico(textarea) {
                     wins++;
                     hourlyStats[hour].wins++;
                     if (isWhite) whiteWins++;
-                    
-                    if (winGale === 0) winsDePrimeira++;
-                    if (winGale === 1) winsNoG1++;
-
-                    currentWinStreak++;
-                    currentLossStreak = 0;
-                    if (currentWinStreak > maxWinStreak) maxWinStreak = currentWinStreak;
-
-                    let suffix = '✅';
-                    if (isWhite) {
-                        suffix = winGale > 0 ? '❇️⚪️' : '✅⚪️';
-                    } else if (winGale > 0) {
-                        suffix = '❇️';
-                    }
-
-                    detailedResults.push(`${signal.original} ${suffix}`);
+                    const suffix = isWhite ? '⚪' : '✅';
+                    const galeInfo = winGale > 0 ? ` G${winGale}` : '';
+                    detailedResults.push(`${signal.original} ${suffix}${galeInfo}`);
                 } else {
                     losses++;
                     hourlyStats[hour].losses++;
-                    currentLossStreak++;
-                    currentWinStreak = 0;
-                    if (currentLossStreak > maxLossStreak) maxLossStreak = currentLossStreak;
                     detailedResults.push(`${signal.original} ❌`);
                 }
             });
@@ -1306,27 +1275,13 @@ function suite_formatarInputHistorico(textarea) {
             const total = parsedSignals.length;
             const assertividade = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
 
-            let out = `(Baseado em ${total} sinais analisados)\n`;
-            out += `--------------------------------\n`;
-            out += `Assertividade: ${assertividade}% (${wins}W / ${losses}L)\n`;
-            out += `--------------------------------\n`;
-            out += `Total de Sinais: ${total}\n`;
-            out += `Assertividade: ${assertividade}%\n\n`;
-            out += `Wins: ${wins}\n`;
-            out += `Losses: ${losses}\n`;
-            out += `--------------------------------\n`;
-            out += `Wins de Primeira: ${winsDePrimeira}\n`;
-            out += `Wins no G1: ${winsNoG1}\n`;
-            out += `Brancos Pagos: ${whiteWins} ⚪️\n`;
-            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
-            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n\n`;
-            out += `--- ASSERTIVIDADE POR HORA ---\n`;
-            Object.keys(hourlyStats).sort().forEach(h => {
-                const stats = hourlyStats[h];
-                const hourAssertiveness = stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(1) : 0;
-                out += `• ${h}h: ${hourAssertiveness}% (${stats.wins}/${stats.total})\n`;
-            });
-            out += `\n`;
+            let out = `📊 **RESULTADO DA CORREÇÃO**\n`;
+            out += `-----------------------------\n`;
+            out += `Total: ${total}\n`;
+            out += `✅ Wins: ${wins} (⚪ ${whiteWins})\n`;
+            out += `❌ Losses: ${losses}\n`;
+            out += `📈 Assertividade: ${assertividade}%\n`;
+            out += `-----------------------------\n`;
             out += detailedResults.join('\n');
 
             window.hourlyStatsFromCorrector = hourlyStats;
@@ -1577,7 +1532,8 @@ function suite_formatarInputHistorico(textarea) {
                 
                 const formattedLines = lines
                     .map(line => line.trim()) // Remove espaços em branco
-                    .filter(line => timeRegex.test(line)); // Mantém apenas as linhas que são horários válidos (HH:MM)
+                    .filter(line => timeRegex.test(line) || /^\d{2}:\d{2} BRANCO$/.test(line)) // Mantém horários ou horários já formatados
+                    .map(line => timeRegex.test(line) ? `${line} BRANCO` : line); // Adiciona BRANCO se for apenas horário
 
                 // Atualiza o valor do textarea com as linhas formatadas e limpas
                 textarea.value = formattedLines.join('\n');
@@ -1622,8 +1578,11 @@ function suite_formatarInputHistorico(textarea) {
                 return;
             }
 
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
-            const horarios = input.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])/;
+            const horarios = input.split('\n')
+                .map(l => l.trim())
+                .map(l => { const m = l.match(timeRegex); return m ? m[0] : null; })
+                .filter(l => l !== null);
 
             if (horarios.length === 0) {
                 alert("Nenhum horário válido encontrado no histórico. É necessário um histórico para a análise."); return;
@@ -2140,7 +2099,7 @@ function suite_formatarInputHistorico(textarea) {
 
             const target = document.getElementById('dash_targetHistory').value;
             // SUGESTÃO: Chama a lógica do robô automático sempre que os dados são processados.
-            runAutoBotLogic(rawData);
+            runAutoBotLogic();
 
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
@@ -2799,20 +2758,15 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             tbody.innerHTML = ''; // Limpa a lista
         
             paginatedUsers.forEach(user => {
+                const expirationText = user.expiresAt 
+                    ? new Date(user.expiresAt).toLocaleString('pt-BR') 
+                    : 'Permanente';
+
                 const isBlocked = user.isBlocked === true;
-                const now = new Date();
-                const isExpired = !isBlocked && user.expiresAt && new Date(user.expiresAt) < now;
-
-                let expirationDisplay;
-                if (isBlocked) {
-                    expirationDisplay = 'BLOQUEADO';
-                } else if (isExpired) {
-                    expirationDisplay = 'EXPIRADO';
-                } else {
-                    expirationDisplay = user.expiresAt ? new Date(user.expiresAt).toLocaleString('pt-BR') : 'Permanente';
-                }
-
                 const blockButtonText = isBlocked ? 'Desbloquear' : 'Bloquear';
+                const blockButtonStyle = isBlocked ? 'background: #28a745;' : 'background: #ffc107; color: #111;';
+                const expirationDisplay = isBlocked ? 'BLOQUEADO' : (user.expiresAt ? new Date(user.expiresAt).toLocaleString('pt-BR')
+                    : 'Permanente');
 
                 const row = tbody.insertRow();
                 const actionsCell = row.insertCell();
@@ -2829,10 +2783,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (isBlocked) {
                     row.classList.add('blocked-user');
                     row.title = 'Este usuário está bloqueado manualmente.';
-                } else if (isExpired) {
-                    row.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
-                    row.style.color = '#ffc107';
-                    row.title = 'O acesso deste usuário expirou.';
                 }
 
                 actionsCell.innerHTML = `
@@ -3846,27 +3796,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         // Esta função será chamada de dentro de `dash_processarDados`
-        function runAutoBotLogic(overrideData = null) {
+        function runAutoBotLogic() {
             const isBotActive = document.getElementById('autoBotToggle').checked;
             if (!isBotActive) return; // Se o robô não estiver ativo, não faz nada
 
-            const rawData = overrideData || sessionStorage.getItem('raw_blaze_data');
-            
-            if (!rawData || rawData.trim() === '') {
-                const statusDiv = document.getElementById('autoBotStatus');
-                if (statusDiv) {
-                    statusDiv.textContent = '⚠️ Aguardando dados...';
-                    statusDiv.style.color = '#ffc107';
-                }
-                return; // Precisa de dados para trabalhar
-            } else {
-                // Restaura status se tiver dados
-                const statusDiv = document.getElementById('autoBotStatus');
-                if (statusDiv && statusDiv.textContent.includes('Aguardando dados')) {
-                    statusDiv.textContent = '✅ Robô Ativado. Monitorando novos resultados...';
-                    statusDiv.style.color = 'var(--accent-jonbet)';
-                }
-            }
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return; // Precisa de dados para trabalhar
 
             // 1. Processar os dados para obter uma lista de resultados
             const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
@@ -4100,19 +4035,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     if (nH < sH && (sH - nH) > 12) newestDate.setDate(newestDate.getDate() + 1);
                     if (sH < nH && (nH - sH) > 12) signalDate.setDate(signalDate.getDate() + 1);
 
-                    // CORREÇÃO: Se temos um resultado MAIS NOVO que o sinal, e minuteResults está vazio,
-                    // significa que o minuto do sinal passou sem dados (ou foi pulado). Cancela imediatamente.
-                    if (newestDate > signalDate && (newestDate - signalDate) >= 60000) {
-                        console.log(`Robô Auto: Sinal (${activeSignal.time}) expirou/não encontrado. Último: ${newestResult.time}`);
-                        
-                        // Adiciona log visual de cancelamento
-                        const historyDiv = document.getElementById('autoBotResultHistory');
-                        const newEntry = document.createElement('div');
-                        newEntry.innerHTML = `<span style="color:#aaa">⚠️ Sinal ${activeSignal.time} Cancelado (Sem dados)</span>`;
-                        newEntry.style.borderBottom = '1px solid #333';
-                        if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
-                        historyDiv.prepend(newEntry);
-
+                    if (newestDate > signalDate && (newestDate - signalDate) > 5 * 60000) {
+                        console.log(`Robô Auto: Sinal (${activeSignal.time}) expirou/não encontrado.`);
                         activeSignal = null; 
                         document.getElementById('autoBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
                         return;
