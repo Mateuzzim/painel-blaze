@@ -2140,7 +2140,7 @@ function suite_formatarInputHistorico(textarea) {
 
             const target = document.getElementById('dash_targetHistory').value;
             // SUGESTÃO: Chama a lógica do robô automático sempre que os dados são processados.
-            runAutoBotLogic();
+            runAutoBotLogic(rawData);
 
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
@@ -3846,12 +3846,27 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         // Esta função será chamada de dentro de `dash_processarDados`
-        function runAutoBotLogic() {
+        function runAutoBotLogic(overrideData = null) {
             const isBotActive = document.getElementById('autoBotToggle').checked;
             if (!isBotActive) return; // Se o robô não estiver ativo, não faz nada
 
-            const rawData = sessionStorage.getItem('raw_blaze_data');
-            if (!rawData) return; // Precisa de dados para trabalhar
+            const rawData = overrideData || sessionStorage.getItem('raw_blaze_data');
+            
+            if (!rawData || rawData.trim() === '') {
+                const statusDiv = document.getElementById('autoBotStatus');
+                if (statusDiv) {
+                    statusDiv.textContent = '⚠️ Aguardando dados...';
+                    statusDiv.style.color = '#ffc107';
+                }
+                return; // Precisa de dados para trabalhar
+            } else {
+                // Restaura status se tiver dados
+                const statusDiv = document.getElementById('autoBotStatus');
+                if (statusDiv && statusDiv.textContent.includes('Aguardando dados')) {
+                    statusDiv.textContent = '✅ Robô Ativado. Monitorando novos resultados...';
+                    statusDiv.style.color = 'var(--accent-jonbet)';
+                }
+            }
 
             // 1. Processar os dados para obter uma lista de resultados
             const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
@@ -4085,8 +4100,19 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     if (nH < sH && (sH - nH) > 12) newestDate.setDate(newestDate.getDate() + 1);
                     if (sH < nH && (nH - sH) > 12) signalDate.setDate(signalDate.getDate() + 1);
 
-                    if (newestDate > signalDate && (newestDate - signalDate) > 5 * 60000) {
-                        console.log(`Robô Auto: Sinal (${activeSignal.time}) expirou/não encontrado.`);
+                    // CORREÇÃO: Se temos um resultado MAIS NOVO que o sinal, e minuteResults está vazio,
+                    // significa que o minuto do sinal passou sem dados (ou foi pulado). Cancela imediatamente.
+                    if (newestDate > signalDate && (newestDate - signalDate) >= 60000) {
+                        console.log(`Robô Auto: Sinal (${activeSignal.time}) expirou/não encontrado. Último: ${newestResult.time}`);
+                        
+                        // Adiciona log visual de cancelamento
+                        const historyDiv = document.getElementById('autoBotResultHistory');
+                        const newEntry = document.createElement('div');
+                        newEntry.innerHTML = `<span style="color:#aaa">⚠️ Sinal ${activeSignal.time} Cancelado (Sem dados)</span>`;
+                        newEntry.style.borderBottom = '1px solid #333';
+                        if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
+                        historyDiv.prepend(newEntry);
+
                         activeSignal = null; 
                         document.getElementById('autoBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
                         return;
