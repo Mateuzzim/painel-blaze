@@ -44,6 +44,21 @@
             background-color: rgba(255, 193, 7, 0.15) !important;
             color: #ffc107 !important;
         }
+        /* Estilo para inverter direção do histórico em tempo real */
+        #dash_grid-real-time {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Espaçamento horizontal */
+            row-gap: 35px; /* Espaçamento vertical aumentado para caber o horário */
+            padding: 10px 5px 25px 5px; /* Padding interno */
+            max-height: 750px; /* Altura máxima da caixa */
+            overflow-y: auto; /* Barra de rolagem se passar da altura */
+            align-content: flex-start;
+        }
+        #dash_grid-real-time.reverse-direction {
+            flex-direction: row-reverse !important;
+            justify-content: flex-end !important;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +318,8 @@ function suite_formatarInputHistorico(textarea) {
         const timeRegex = /^\d{2}:\d{2}$/;
         const numberRegex = /^\d{1,2}$/;
         const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
+        const platformSelector = document.getElementById('suite_platformSelector');
+        const isJonbet = platformSelector && platformSelector.value === 'jonbet';
 
          for (let i = 0; i < linhas.length; i++) {
              const linhaAtual = linhas[i].trim();
@@ -325,14 +342,21 @@ function suite_formatarInputHistorico(textarea) {
                      if (numero === 0) cor = 'BRANCO';
                      else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
                      else if (numero >= 8 && numero <= 14) cor = 'PRETO';
+                     
+                     if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
+                     
                      resultadosFinais.push(`${horario} ${cor}`);
                  }
              } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
-                 resultadosFinais.push(linhaAtual.toUpperCase());
+                 let linha = linhaAtual.toUpperCase();
+                 if (isJonbet) linha = linha.replace('VERMELHO', 'VERDE');
+                 resultadosFinais.push(linha);
              } else if (timeRegex.test(linhaAtual)) {
                  const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
                  if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(proximaLinha)) {
-                     resultadosFinais.push(`${linhaAtual} ${proximaLinha.toUpperCase()}`);
+                     let cor = proximaLinha.toUpperCase();
+                     if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
+                     resultadosFinais.push(`${linhaAtual} ${cor}`);
                      i++;
                  } else {
                      resultadosFinais.push(`${linhaAtual} BRANCO`);
@@ -859,9 +883,18 @@ function suite_formatarInputHistorico(textarea) {
     <div id="auto-import-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <label for="toggleReverseDirection" style="font-size: 0.8rem; color: #aaa; margin: 0; cursor: pointer;">Inverter:</label>
+                    <label class="switch" style="transform: scale(0.8); margin: 0;">
+                        <input type="checkbox" id="toggleReverseDirection" onchange="toggleRealTimeDirection()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             <button id="dash_fetchDataBtn" onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: none;">
                 ⏳ Buscando...
             </button>
+            </div>
         </div>
 
         <!-- SUGESTÃO: Toggles de automação em linha -->
@@ -891,7 +924,7 @@ function suite_formatarInputHistorico(textarea) {
 
         <!-- SUGESTÃO: Painel de Histórico em Tempo Real -->
         <div id="real-time-history-container" class="history-container" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
-            <div class="history-header" style="padding-bottom: 10px; margin-bottom: 15px;">
+            <div class="history-header" style="padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                 <h4 style="margin: 0; font-size: 0.9rem; color: #ff9800;">Últimos Resultados Coletados</h4>
                 <span id="real-time-history-count" style="font-size: 0.8rem; color: #aaa;">(0)</span>
             </div>
@@ -923,31 +956,6 @@ function suite_formatarInputHistorico(textarea) {
             <div id="telegram-panel" class="layout-panel" style="display: none;">
                 <h1><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 8px;"><path d="M21.19,2.81,2.81,11.39,9.38,14.61l8.23-7.82L10.93,16l3.68,6.13Z"/></svg>Conexão com Telegram</h1>
                 <div class="suite" style="padding: 0;"> <!-- Reutiliza estilos da suite -->
-                    <div class="control-group">
-                        <label for="telegram_bot_token">Token do Bot do Telegram:</label>
-                        <input type="password" id="telegram_bot_token" placeholder="Cole seu token do bot aqui">
-                        <div class="hint">O token fornecido pelo BotFather.</div>
-                    </div>
-                    <div class="control-group">
-                        <label for="telegram_chat_id">ID do Chat/Canal de Notificações:</label>
-                        <input type="text" id="telegram_chat_id" placeholder="ID do seu chat ou canal">
-                        <div class="hint">O bot enviará as notificações para este ID.</div>
-                    </div>
-                    <div class="inline-controls">
-                        <button class="btn-action" style="background-color: #0088cc;" onclick="saveTelegramSettings(this)">💾 SALVAR</button>
-                        <button class="btn-action" style="background-color: #555;" onclick="testTelegramConnection(this)">📡 TESTAR CONEXÃO</button>
-                    </div>
-                    <div class="output-area" id="resTelegramConfig" style="margin-top: 20px; text-align: center; display: none;"></div>
-
-                    <hr style="border: 0; border-top: 1px solid #444; margin: 30px 0;">
-
-                    <h3 style="color: #00aaff; text-transform: uppercase; font-size: 1rem; margin-bottom: 15px;">🚀 Enviar Lista para o Grupo</h3>
-                    <div class="control-group">
-                        <label for="telegram_list_message">Cole a lista para enviar:</label>
-                        <textarea id="telegram_list_message" class="suite" style="height: 150px;" placeholder="Cole aqui a lista de sinais gerada em qualquer uma das abas..."></textarea>
-                    </div>
-                    <button class="btn-action" style="background-color: #28a745;" onclick="sendTelegramList(this)">ENVIAR LISTA</button>
-
                 </div>
             </div>
         </div>
@@ -1038,6 +1046,15 @@ function suite_formatarInputHistorico(textarea) {
             const activeBtn = document.getElementById(`suite_btn-${platform}`);
             if(activeBtn) activeBtn.classList.add('active');
             
+            const suitePanel = document.querySelector('.layout-panel.suite');
+            if (suitePanel) {
+                if (platform === 'jonbet') {
+                    suitePanel.classList.add('platform-jonbet');
+                } else {
+                    suitePanel.classList.remove('platform-jonbet');
+                }
+            }
+            
             if (!isSync && typeof dash_selectPlatform === 'function') {
                 dash_selectPlatform(platform, true);
             }
@@ -1100,6 +1117,8 @@ function suite_formatarInputHistorico(textarea) {
             let signals = [];
             let intervalIndex = 0;
 
+            const platform = document.getElementById('suite_platformSelector').value;
+
             for (let i = 0; i < qtdSinais; i++) {
                 const minutesToAdd = intervalos[intervalIndex % intervalos.length];
                 intervalIndex++;
@@ -1109,7 +1128,7 @@ function suite_formatarInputHistorico(textarea) {
                 const hh = currentTime.getHours().toString().padStart(2, '0');
                 const mm = currentTime.getMinutes().toString().padStart(2, '0');
                 
-                let colorEmoji = '🔴';
+                let colorEmoji = (platform === 'jonbet') ? '🟢' : '🔴';
                 
                 if (estrategia === 'padrao' && i % 2 !== 0) colorEmoji = '⚫';
                 else if (estrategia === 'sequenciaInversa' && i % 2 === 0) colorEmoji = '⚫';
@@ -1123,7 +1142,6 @@ function suite_formatarInputHistorico(textarea) {
                 signals.push(`🕒 ${hh}:${mm} ➔ ${colorEmoji}`);
             }
 
-            const platform = document.getElementById('suite_platformSelector').value;
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
             const userName = sessionStorage.getItem('operatorName') || 'Operador';
             const dateStr = new Date().toLocaleDateString('pt-BR');
@@ -1203,14 +1221,14 @@ function suite_formatarInputHistorico(textarea) {
                 return;
             }
 
-            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (🔴|⚫|⚪)/g;
+            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (🔴|🟢|⚫|⚪)/g;
             const parsedSignals = [];
             let match;
             
             while ((match = signalRegex.exec(signalsInput)) !== null) {
                 parsedSignals.push({
                     time: match[1],
-                    color: match[2] === '🔴' ? 'VERMELHO' : (match[2] === '⚫' ? 'PRETO' : 'BRANCO'),
+                    color: (match[2] === '🔴' || match[2] === '🟢') ? 'VERMELHO' : (match[2] === '⚫' ? 'PRETO' : 'BRANCO'),
                     original: match[0]
                 });
             }
@@ -1966,12 +1984,13 @@ function suite_formatarInputHistorico(textarea) {
                             div.innerText = game.roll;
                             div.title = `Número: ${game.roll}`;
                             
-                            if (game.created_at) {
+                            if (game.created_at !== undefined && game.created_at !== null) {
                                 const timeDiv = document.createElement('div');
                                 timeDiv.className = 'time-overlay';
                                 const d = new Date(game.created_at);
                                 timeDiv.innerText = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
                                 div.appendChild(timeDiv);
+
                             }
                             realTimeGrid.appendChild(div);
                         }
@@ -2361,6 +2380,19 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }).catch(err => console.error("Erro ao copiar histórico: ", err));
         }
 
+        function toggleRealTimeDirection() {
+            const grid = document.getElementById('dash_grid-real-time');
+            const checkbox = document.getElementById('toggleReverseDirection');
+            if (grid) {
+                if (checkbox) {
+                    if (checkbox.checked) grid.classList.add('reverse-direction');
+                    else grid.classList.remove('reverse-direction');
+                } else {
+                    grid.classList.toggle('reverse-direction');
+                }
+            }
+        }
+
         // ==========================================
         // FIM: SCRIPTS DE coressao_de_sinais.html
         // ==========================================
@@ -2738,6 +2770,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         let currentUserListPage = 1;
+        let totalUserPages = 1;
         const usersPerPage = 10; // Alterado para 10 usuários por página
         let userListSort = {
             column: 'username', // Coluna de ordenação padrão
@@ -2805,6 +2838,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             currentUserListPage = page;
 
             const totalPages = Math.ceil(users.length / usersPerPage);
+            totalUserPages = totalPages;
             if (totalPages <= 1) {
                 paginationControls.style.display = 'none';
             } else {
@@ -2884,9 +2918,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         function nextUserPage() {
-            const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-            const totalPages = Math.ceil(users.length / usersPerPage);
-            if (currentUserListPage < totalPages) {
+            if (currentUserListPage < totalUserPages) {
                 populateUserList(currentUserListPage + 1);
             }
         }
@@ -3728,7 +3760,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                                     dash_processarDados();
                                 }
                             });
-                        }, 5000); // Verifica a cada 5 segundos para atualização rápida
+                        }, 15000); // Verifica a cada 15 segundos para atualização rápida
                     } else {
                         clearInterval(autoFetchIntervalId);
                         autoFetchIntervalId = null;

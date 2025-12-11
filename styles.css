@@ -234,6 +234,7 @@ body.light-theme #logout-button:hover { background-color: #dcdcdc; }
 .suite .platform-switcher { display: flex; background-color: #000; border-radius: 8px; padding: 4px; margin: 0 auto; }
 .suite .platform-btn { padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase; }
 .suite .platform-btn.active { background-color: var(--accent); color: #fff; }
+.suite.platform-jonbet .platform-btn.active { background-color: var(--accent-jonbet); }
 .suite .tabs { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 5px; margin-bottom: 25px; background-color: #000; border-radius: 10px; padding: 5px; }
 .suite .tab-btn { flex: 1; padding: 12px 5px; border: none; background-color: transparent; color: #aaa; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; font-size: 0.65rem; text-align: center; }
 body.light-theme .suite .tab-btn { color: #4b4f56; }
@@ -266,6 +267,7 @@ body.light-theme .suite .tab-btn.active { color: #fff; }
     justify-content: center;
     align-items: center;
 }
+.suite.platform-jonbet .notification-badge { background-color: var(--accent-jonbet); }
 /* Estilos para o Toggle Switch */
 .suite .toggle-switch-container {
     display: flex;
@@ -308,6 +310,7 @@ body.light-theme .suite .toggle-switch-container { border-color: var(--border-co
 .suite .color-btn.vermelho { background-color: #f12c4c; color: white; }
 .suite .color-btn.preto { background-color: #333; color: white; }
 .suite .color-btn.selected { border-color: var(--accent); }
+.suite.platform-jonbet .color-btn.vermelho { background-color: var(--accent-jonbet); }
 .suite .btn-clear-all { background: #424242; color: white; margin-top: 20px; width: 100%; padding: 10px; border: 1px solid #7a5a5a; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; }
 .suite .btn-clear-all:hover { background: #5a3a3a; }
 .suite .main-color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
