@@ -1,46 +1,3 @@
-// SUGESTÃO: Função para formatar o histórico do analisador automaticamente
-let suite_formatarTimeout;
-function suite_formatarInputHistorico(textarea) {
-    clearTimeout(suite_formatarTimeout);
-    suite_formatarTimeout = setTimeout(() => {
-        const valorOriginal = textarea.value.trim();
-        const linhas = valorOriginal.split('\n');
-        const resultadosFinais = [];
-        const timeRegex = /^\d{2}:\d{2}$/;
-        const numberRegex = /^\d{1,2}$/;
-        const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
-
-         for (let i = 0; i < linhas.length; i++) {
-             const linhaAtual = linhas[i].trim();
-             if (fullDateRegex.test(linhaAtual)) {
-                 const linha1 = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                 const linha2 = linhas[i + 2] ? linhas[i + 2].trim() : '';
- 
-                 let numero, horario, cor;
-                 if (numberRegex.test(linha1) && timeRegex.test(linha2)) {
-                     numero = parseInt(linha1);
-                     horario = linha2;
-                     i += 2; // Pula as próximas duas linhas
-                 } else if (timeRegex.test(linha1)) {
-                     numero = 0; // O número está oculto, então é BRANCO
-                     horario = linha1;
-                     i += 1; // Pula apenas a próxima linha
-                 }
- 
-                 if (horario) {
-                     if (numero === 0) cor = 'BRANCO';
-                     else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
-                     else if (numero >= 8 && numero <= 14) cor = 'PRETO';
-                     resultadosFinais.push(`${horario} ${cor}`);
-                 }
-             } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
-                 resultadosFinais.push(linhaAtual.toUpperCase());
-             }
-         }
-        textarea.value = resultadosFinais.join('\n');
-    }, 500); // Aguarda 500ms após o usuário parar de digitar
-}
-
 // ==========================================
 // LÓGICA GERAL E DE COMUNICAÇÃO
 // ==========================================
@@ -103,14 +60,13 @@ window.hourlyStatsFromAnalyzer = {}; // Do Analisador de Sinais
 function toggleTheme() {
     document.body.classList.toggle('light-theme');
     const isLight = document.body.classList.contains('light-theme');
-    // localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
     document.getElementById('theme-switcher').innerText = isLight ? '🌙' : '☀️';
 }
 
 function applySavedTheme() {
-    // const savedTheme = localStorage.getItem('theme');
-    // if (savedTheme === 'light') {
-    if (false) { // Desativado
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
         document.getElementById('theme-switcher').innerText = '🌙';
     } else {
@@ -131,29 +87,6 @@ function enviarListaParaCorretor(listaGerada) {
     }
 }
 
-/**
- * Função auxiliar para processar o histórico de resultados.
- * @param {string} resultsInput - O texto do histórico.
- * @param {boolean} multiplePerMinute - Se deve armazenar múltiplos resultados por minuto (para G1).
- * @returns {Object} - Um objeto onde as chaves são os horários (HH:MM) e os valores são os resultados.
- */
-function parseResultsHistory(resultsInput, multiplePerMinute = false) {
-    const parsedResults = {};
-    const resultRegex = /(\d{2}:\d{2})\s+(VERMELHO|PRETO|BRANCO)/gi;
-    let resultMatch;
-    while ((resultMatch = resultRegex.exec(resultsInput)) !== null) {
-        const time = resultMatch[1];
-        const color = resultMatch[2].toUpperCase();
-        if (multiplePerMinute) {
-            if (!parsedResults[time]) { parsedResults[time] = []; }
-            parsedResults[time].push(color);
-        } else {
-            if (!parsedResults[time]) { parsedResults[time] = color; }
-        }
-    }
-    return parsedResults;
-}
-
 // Função de COPIAR genérica
 function copiar(idElemento, btnElement) {
     const texto = document.getElementById(idElemento).innerText;
@@ -168,21 +101,21 @@ function copiar(idElemento, btnElement) {
 }
 
 // Funções de persistência
-function saveToStorage(elementId) {
-    try {
-        const content = document.getElementById(elementId).value;
-        // localStorage.setItem(elementId, content);
-    } catch (e) {
-        console.error("Não foi possível salvar no localStorage:", e);
-    }
-}
-
 function loadFromStorage() {
     try {
         // Carrega o Token da Blaze
         const savedToken = localStorage.getItem('blaze_token');
         if (savedToken) {
             document.getElementById('config_blaze_token').value = savedToken;
+        }
+        // Carrega configurações do Telegram salvas localmente
+        const savedTelToken = localStorage.getItem('telegram_bot_token');
+        const savedTelChatId = localStorage.getItem('telegram_chat_id');
+        if (savedTelToken && document.getElementById('telegram_bot_token')) {
+            document.getElementById('telegram_bot_token').value = savedTelToken;
+        }
+        if (savedTelChatId && document.getElementById('telegram_chat_id')) {
+            document.getElementById('telegram_chat_id').value = savedTelChatId;
         }
         // Carrega o nome do operador (se houver lógica para isso)
         // document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
@@ -214,10 +147,11 @@ function suite_saveSettings(btn) {
 }
 
 function saveTelegramSettings(btn) {
-    // Aqui você adicionaria a lógica para salvar o token e o ID do chat.
-    // Por enquanto, apenas simularemos o salvamento.
     const token = document.getElementById('telegram_bot_token').value;
     const chatId = document.getElementById('telegram_chat_id').value;
+    
+    localStorage.setItem('telegram_bot_token', token);
+    localStorage.setItem('telegram_chat_id', chatId);
     console.log("Salvando Configs do Telegram:", { token, chatId });
 
     const resArea = document.getElementById('resTelegramConfig');
@@ -323,6 +257,12 @@ async function sendTelegramList(btn) {
     }
 }
 async function getTelegramSettings() {
+    // 1. Prioriza as configurações locais do usuário (da aba Conexão)
+    const localToken = localStorage.getItem('telegram_bot_token');
+    const localChatId = localStorage.getItem('telegram_chat_id');
+    if (localToken && localChatId) {
+        return { bot_token: localToken, chat_id: localChatId };
+    }
     try {
         const doc = await db.collection("settings").doc("telegram").get();
         if (doc.exists) {
@@ -338,24 +278,21 @@ async function getTelegramSettings() {
 async function sendTelegramNotification(message, targetChatId = null) {
     const settings = await getTelegramSettings();
     if (!settings || !settings.bot_token || !settings.chat_id) {
-        console.log("Notificação do Telegram não enviada: configurações ausentes.");
-        return;
+        throw new Error("Configurações do Telegram ausentes. Verifique a aba 'Conexão'.");
     }
 
     const { bot_token: token, chat_id: adminChatId } = settings;
     const finalChatId = targetChatId || adminChatId; // Usa o alvo específico ou o do admin
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: finalChatId, text: message, parse_mode: 'Markdown', disable_web_page_preview: true })
-        });
-        const data = await response.json();
-        if (data.ok) console.log("Notificação enviada para o admin via Telegram.");
-        else throw new Error(data.description);
-    } catch (error) { console.error("Falha ao enviar notificação do Telegram:", error.message); }
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: finalChatId, text: message, parse_mode: 'Markdown', disable_web_page_preview: true })
+    });
+    const data = await response.json();
+    if (data.ok) console.log("Notificação enviada para o admin via Telegram.");
+    else throw new Error(data.description);
 }
 
 async function sendGeneratedListToTelegram(btn) {
@@ -415,6 +352,33 @@ async function sendAnalysisToTelegram(btn) {
         }, 3000);
     }
 }
+
+async function sendIABrancoToTelegram(btn) {
+    const listContent = document.getElementById('suite_resIABranco').innerText;
+
+    if (!listContent || listContent.trim() === "") {
+        alert("Gere uma lista da I.A. primeiro antes de enviar para o Telegram.");
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Enviando...';
+    btn.disabled = true;
+
+    try {
+        await sendTelegramNotification(listContent);
+        btn.innerHTML = '✅ Enviado!';
+    } catch (error) {
+        alert(`Falha ao enviar para o Telegram: ${error.message}`);
+        btn.innerHTML = originalText;
+    } finally {
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }, 3000);
+    }
+}
+
 let autoFetchIntervalId = null; // Declaração explícita para melhor gerenciamento do intervalo
 
 // ==========================================
@@ -458,7 +422,11 @@ function suite_openTab(tabName) {
         populateUserSettings();
     }
 
-    document.getElementById('suite_' + tabName).classList.add("active");
+    // Verifica se a aba existe antes de tentar ativá-la
+    const targetTab = document.getElementById('suite_' + tabName);
+    if (targetTab) {
+        targetTab.classList.add("active");
+    }
     // CORREÇÃO: Verifica se o botão da aba existe antes de tentar adicionar a classe 'active'.
     // Isso evita o erro quando clicamos em um botão que não está na lista de abas (como o de Configurações).
     const tabButton = document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`);
@@ -534,24 +502,6 @@ function suite_clearTextarea(elementId) {
     if (textarea) {
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-}
-
-function suite_updateAnalyzerStats(counts) {
-    const statsBox = document.getElementById('suite_analisador_stats');
-    const platform = document.getElementById('suite_platformSelector').value;
-
-    if (counts.total > 0) {
-        const totalWithoutWhite = counts.total - counts.white;
-        document.getElementById('suite_analisador_count-red').innerText = `${counts.red} (${totalWithoutWhite > 0 ? ((counts.red / totalWithoutWhite) * 100).toFixed(1) : 0}%)`;
-        document.getElementById('suite_analisador_count-black').innerText = `${counts.black} (${totalWithoutWhite > 0 ? ((counts.black / totalWithoutWhite) * 100).toFixed(1) : 0}%)`;
-        document.getElementById('suite_analisador_count-white').innerText = counts.white;
-        document.getElementById('suite_analisador_count-total').innerText = counts.total;
-        
-        document.querySelector('.suite_analisador_platform-emoji').innerText = platform === 'jonbet' ? '🟢' : '🔴';
-        statsBox.style.display = 'flex';
-    } else {
-        statsBox.style.display = 'none';
     }
 }
 
@@ -1099,3 +1049,59 @@ function suite_gerarSinaisBrancoIA() {
     document.getElementById('suite_resIABranco').innerText = out;
 
 }
+
+// ==========================================
+// INÍCIO: SCRIPTS DE coressao_de_sinais.html (DASHBOARD)
+// ==========================================
+
+// --- LÓGICA DE PLATAFORMA (DASHBOARD) ---
+function dash_selectPlatform(platform, isSync = false) {
+    const dashSelector = document.getElementById('dash_platformSelector');
+    if (dashSelector) dashSelector.value = platform;
+    
+    const btnBlaze = document.getElementById('dash_btn-blaze');
+    const btnJonbet = document.getElementById('dash_btn-jonbet');
+    
+    if (btnBlaze) btnBlaze.classList.remove('active');
+    if (btnJonbet) btnJonbet.classList.remove('active');
+    
+    const targetBtn = document.getElementById(`dash_btn-${platform}`);
+    if (targetBtn) targetBtn.classList.add('active');
+
+    const dashPanel = document.querySelector('.layout-panel.dashboard');
+    if (dashPanel) {
+        if (platform === 'blaze') {
+            dashPanel.classList.remove('platform-jonbet');
+        } else { // jonbet
+            dashPanel.classList.add('platform-jonbet');
+        }
+    }
+    
+    // Sincroniza com o painel SUITE para manter consistência
+    if (!isSync && typeof suite_selectPlatform === 'function') {
+        suite_selectPlatform(platform, true);
+    }
+}
+
+// --- LÓGICA DE ABAS (DASHBOARD) ---
+function dash_openTab(tabName) {
+    const content = document.querySelectorAll(".dashboard .tab-content");
+    const btns = document.querySelectorAll(".dashboard .tab-btn");
+
+    content.forEach(c => c.classList.remove("active"));
+    btns.forEach(b => b.classList.remove("active"));
+
+    const targetContent = document.getElementById('dash_' + tabName);
+    if (targetContent) targetContent.classList.add("active");
+    
+    const tabButton = document.querySelector(`.dashboard .tab-btn[onclick="dash_openTab('${tabName}')"]`);
+    if (tabButton) tabButton.classList.add("active");
+}
+
+// ==========================================
+// INICIALIZAÇÃO AUTOMÁTICA
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage(); // Carrega Token e ID salvos
+    applySavedTheme(); // Aplica o tema (claro/escuro) salvo
+});

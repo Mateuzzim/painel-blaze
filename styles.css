@@ -75,6 +75,9 @@ body::before {
 body.light-theme::before {
     opacity: 1; /* Fica visível no tema claro */
 }
+body.light-theme::after {
+    opacity: 0; /* Oculta o fundo escuro quando o tema claro está ativo */
+}
 
 .main-container {
     flex-grow: 1;
@@ -304,6 +307,8 @@ body.light-theme .suite .toggle-switch-container { border-color: var(--border-co
 .suite .btn-action:hover { opacity: 0.9; transform: scale(1.01); }
 .suite .output-area { margin-top: 20px; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #333; min-height: 150px; white-space: pre-line; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #fff; line-height: 1.5; }
 .suite .btn-copy { background: #2979ff; color: white; margin-top: 10px; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.suite .btn-telegram { background: #0088cc; color: white; margin-top: 10px; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; }
+.suite .btn-telegram:hover { background: #0077b5; }
 .suite .hint { font-size: 0.75em; color: #888; margin-top: 3px; }
 .suite .color-selector { display: flex; gap: 10px; margin-top: 5px; }
 .suite .color-btn { flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 5px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.3s; }
@@ -571,6 +576,94 @@ body.light-theme .dashboard .toggle-switch-container { border-color: var(--borde
 .dashboard .badge.branco { background-color: #fff; color: #333; }
 
 /* ================================== */
+/* ESTILOS DO ROBO BRANCO (Coleta de Dados) */
+/* ================================== */
+#data-collection-container {
+    background-color: var(--card-bg);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+#data-collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#data-collection-header h3 {
+    margin: 0;
+    color: #fff;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Indicador de status pulsante para o Robô Branco */
+.white-robot-status {
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    animation: pulse-white-robot 2s infinite;
+}
+
+@keyframes pulse-white-robot {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+#white-robot-log-area {
+    background-color: #000;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.log-line.white-hit {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+    border-left: 3px solid #fff;
+    padding-left: 5px;
+}
+
+/* Botão de Reset do Contador */
+.reset-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 8px;
+    margin-left: 10px;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    color: #fff;
+    border-color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ================================== */
 /* ESTILOS DO LOGIN                   */
 /* ================================== */
 #login-container {
@@ -765,6 +858,23 @@ body.light-theme #login-form { border-color: var(--border-color); }
 @keyframes shake-periodic {
     0%, 90%, 100% { transform: rotate(0deg); } /* Estado de repouso */
     92%, 96% { animation-name: shake; animation-duration: 0.4s; } /* Aplica o shake */
+}
+
+/* SUGESTÃO: Animação de pulso para texto de status */
+@keyframes pulse-text {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.03);
+    }
+}
+
+.text-pulse {
+    display: inline-block; /* Necessário para o transform scale funcionar corretamente */
+    animation: pulse-text 2.5s infinite ease-in-out;
 }
 
 /* Botão de Suporte Instagram (similar ao do Telegram) */

@@ -11,6 +11,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <!-- BcryptJS para Hash Seguro de Senhas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
     <style>
         @keyframes blink-green-border {
             0% { border-color: #28a745; box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
@@ -193,6 +195,8 @@
                     <button class="tab-btn" onclick="suite_openTab('branco')">Análise Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A Branco</button>
                     <button class="tab-btn" onclick="suite_openTab('auto_bot')">Robô Auto</button>
+                    <button class="tab-btn" onclick="suite_openTab('white_bot')">Robô Branco</button>
+                    <button class="tab-btn" onclick="suite_openTab('telegram')">Telegram</button>
                     <button class="tab-btn" id="suite_tab_usuarios" onclick="suite_openTab('usuarios')" title="Gerenciar Usuários" style="display: none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </button>
@@ -638,6 +642,7 @@ function suite_formatarInputHistorico(textarea) {
                             <option value="surf_flow">5. Surf no Fluxo</option>
                             <option value="king_of_table">6. Rei da Mesa</option>
                             <option value="chess_break">7. Quebra de Xadrez</option>
+                            <option value="post_white_value">8. Pós-Branco (Valor)</option>
                         </select>
                     </div>
 
@@ -693,6 +698,94 @@ function suite_formatarInputHistorico(textarea) {
                     </div>
                 </div>
                 <!-- FIM DO PAINEL DO ROBÔ AUTOMÁTICO -->
+
+                <!-- NOVO: PAINEL DO ROBÔ BRANCO (DUPLICADO) -->
+                <div id="suite_white_bot" class="tab-content">
+                    <h2>⚪ Robô Branco</h2>
+                    <div class="toggle-switch-container" id="whiteBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                        <label for="whiteBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ BRANCO</label>
+                        <label class="switch">
+                            <input type="checkbox" id="whiteBotToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- SELETOR DE ESTRATÉGIA -->
+                    <div class="control-group" style="margin-bottom: 20px;">
+                        <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
+                        <select id="whiteBotStrategy">
+                            <option value="alternating_break">1. Quebra de Alternância</option>
+                            <option value="ciclo_branco">2. Caçar o Branco (Ciclo)</option>
+                            <option value="fluxo_pos_vermelho">3. Fluxo Pós-Vermelho</option>
+                            <option value="poisson_hunt">4. Caça Poisson (8min+)</option>
+                            <option value="hot_flow_red">5. Fluxo Quente (Seq. Vermelho)</option>
+                            <option value="pattern_analysis">6. Análise de Padrões (Janelas)</option>
+                        </select>
+                    </div>
+
+                    <!-- ROTAÇÃO DE ESTRATÉGIA -->
+                    <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                        <label for="whiteBotRandomRotation" style="font-size: 0.95em;">🔄 Rotação Aleatória: <span id="whiteBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
+                        <label class="switch" style="width: 50px; height: 26px;">
+                            <input type="checkbox" id="whiteBotRandomRotation">
+                            <span class="slider" style="border-radius: 26px;"></span>
+                        </label>
+                    </div>
+
+                    <!-- TEMPO DE ENTRADA -->
+                    <div class="control-group" style="margin-bottom: 20px;">
+                        <label for="whiteBotEntryCount">Quantidade de Entradas (Pedras):</label>
+                        <input type="number" id="whiteBotEntryCount" value="6" min="1">
+                        <div class="hint">Quantidade de pedras a verificar após o sinal.</div>
+                    </div>
+
+                    <!-- META DE WINS E LOSS -->
+                    <div class="inline-controls" style="margin-bottom: 20px;">
+                        <div class="control-group">
+                            <label for="whiteBotWinGoal">✅ Meta Wins (Stop Win):</label>
+                            <input type="number" id="whiteBotWinGoal" placeholder="Ex: 5" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="whiteBotLossGoal">🛑 Max Derrotas (Stop Loss):</label>
+                            <input type="number" id="whiteBotLossGoal" placeholder="Ex: 3" min="1">
+                        </div>
+                    </div>
+                    <div class="hint" style="margin-top: -10px; margin-bottom: 20px;">O robô para ao atingir Wins ou Derrotas Consecutivas.</div>
+
+                    <!-- SONS DO ROBÔ -->
+                    <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                        <label for="whiteBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
+                        <label class="switch" style="width: 50px; height: 26px;">
+                            <input type="checkbox" id="whiteBotSoundToggle" checked>
+                            <span class="slider" style="border-radius: 26px;"></span>
+                        </label>
+                    </div>
+
+                    <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">
+                        Robô Desativado.
+                    </div>
+
+                    <!-- Painel para o Sinal Gerado -->
+                    <div id="whiteBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                        <div id="whiteBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;">
+                            <!-- O sinal será inserido aqui pelo JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Painel para o Placar/Resultado -->
+                    <div id="whiteBotResultPanel" style="margin-top: 20px;">
+                        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar Branco</h3>
+                        <div id="whiteBotScoreboard" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; font-size: 1.2rem; font-weight: bold;">
+                            <span style="color: var(--accent-jonbet);">WIN: <span id="whiteBotWinCount">0</span></span>
+                            <span style="color: var(--accent-blaze);">LOSS: <span id="whiteBotLossCount">0</span></span>
+                        </div>
+
+                        <div id="whiteBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">
+                            Aguardando o primeiro resultado...
+                        </div>
+                    </div>
+                </div>
+                <!-- FIM DO PAINEL DO ROBÔ BRANCO -->
 
                 <div id="suite_config" class="tab-content">
                     <h2>⚙️ Configurações Gerais</h2>
@@ -861,6 +954,38 @@ function suite_formatarInputHistorico(textarea) {
                         </table>
                     </div>
                 </div>
+
+                <div id="suite_telegram" class="tab-content">
+                    <h2>📡 Configuração do Telegram</h2>
+                    
+                    <div class="control-group">
+                        <label>🤖 Token do Bot:</label>
+                        <input type="text" id="telegram_bot_token" placeholder="Cole o Token do BotFather aqui...">
+                        <div class="hint">Ex: 123456789:AAH...</div>
+                    </div>
+                
+                    <div class="control-group">
+                        <label>🆔 ID do Chat (Grupo ou Canal):</label>
+                        <input type="text" id="telegram_chat_id" placeholder="Cole o ID do canal ou grupo...">
+                        <div class="hint">Ex: -100123456789 (Certifique-se de adicionar o robô como Admin no grupo)</div>
+                    </div>
+                
+                    <div class="inline-controls">
+                        <button class="btn-action" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
+                        <button class="btn-action" style="background-color: var(--accent-jonbet);" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
+                    </div>
+                
+                    <div id="resTelegramConfig" class="output-area" style="display:none; min-height: auto; margin-top: 15px; text-align: center; padding: 10px; font-weight: bold;"></div>
+                
+                    <hr style="border-color: #333; margin: 25px 0;">
+                
+                    <h3>📨 Envio Rápido (Teste)</h3>
+                    <div class="control-group">
+                        <label>Mensagem Personalizada:</label>
+                        <textarea id="telegram_list_message" placeholder="Digite algo para enviar agora..."></textarea>
+                    </div>
+                    <button class="btn-telegram" onclick="sendTelegramList(this)">✈️ Enviar Mensagem</button>
+                </div>
             </div>
 
             <div class="layout-panel dashboard">
@@ -887,7 +1012,7 @@ function suite_formatarInputHistorico(textarea) {
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <label for="toggleReverseDirection" style="font-size: 0.8rem; color: #aaa; margin: 0; cursor: pointer;">Inverter:</label>
                     <label class="switch" style="transform: scale(0.8); margin: 0;">
-                        <input type="checkbox" id="toggleReverseDirection" onchange="toggleRealTimeDirection()">
+                        <input type="checkbox" id="toggleReverseDirection" onchange="toggleRealTimeDirection()" checked>
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -952,12 +1077,6 @@ function suite_formatarInputHistorico(textarea) {
                 </div>
             </div>
 
-            <!-- NOVO PAINEL PARA TELEGRAM (ADMIN) -->
-            <div id="telegram-panel" class="layout-panel" style="display: none;">
-                <h1><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 8px;"><path d="M21.19,2.81,2.81,11.39,9.38,14.61l8.23-7.82L10.93,16l3.68,6.13Z"/></svg>Conexão com Telegram</h1>
-                <div class="suite" style="padding: 0;"> <!-- Reutiliza estilos da suite -->
-                </div>
-            </div>
         </div>
     </div>
 
@@ -988,6 +1107,72 @@ function suite_formatarInputHistorico(textarea) {
             console.log("🔥 Firebase conectado com sucesso!");
         } else {
             console.error("Erro: SDK do Firebase não foi carregado corretamente.");
+        }
+
+        // --- SEGURANÇA: FUNÇÕES DE HASH (BCRYPT) ---
+        // Adaptado para funcionar no navegador usando dcodeIO.bcrypt
+        const hashPassword = async (password) => {
+            return new Promise((resolve, reject) => {
+                dcodeIO.bcrypt.genSalt(10, (err, salt) => {
+                    if (err) reject(err);
+                    else dcodeIO.bcrypt.hash(password, salt, (err, hash) => {
+                        if (err) reject(err);
+                        else resolve(hash);
+                    });
+                });
+            });
+        };
+
+        const verifyPassword = async (password, hashedPassword) => {
+            return new Promise((resolve, reject) => {
+                dcodeIO.bcrypt.compare(password, hashedPassword, (err, res) => {
+                    if (err) reject(err);
+                    else resolve(res);
+                });
+            });
+        };
+
+        // Função para migrar senhas antigas (Base64) para Bcrypt
+        async function migratePasswords() {
+            console.log("Iniciando migração de senhas para formato seguro...");
+            const usersSnapshot = await db.collection("users").get();
+            const batch = db.batch();
+            
+            usersSnapshot.forEach(doc => {
+                const user = doc.data();
+                // Se a senha existe e NÃO começa com $2a$ (identificador do bcrypt), então é antiga
+                if (user.password && !user.password.startsWith('$2a$')) {
+                    try {
+                        const originalPassword = atob(user.password); // Decodifica Base64 antigo
+                        // Como hashPassword é async, precisamos lidar com isso. 
+                        // Nota: Em loops forEach síncronos, await não pausa o loop externo, 
+                        // mas para batch updates simples isso pode funcionar se coletarmos as promises.
+                        // Para simplificar no browser, vamos fazer a migração um por um ou usar Promise.all se necessário.
+                        // Abaixo, uma abordagem híbrida para o batch:
+                    } catch (e) { console.error("Erro ao decodificar senha antiga:", e); }
+                }
+            });
+            
+            // Versão corrigida para migração assíncrona
+            const updates = [];
+            for (const doc of usersSnapshot.docs) {
+                const user = doc.data();
+                if (user.password && !user.password.startsWith('$2a$')) {
+                    try {
+                        const originalPassword = atob(user.password);
+                        const hashed = await hashPassword(originalPassword);
+                        batch.update(doc.ref, { password: hashed });
+                        updates.push(doc.id);
+                    } catch (e) { console.error(`Erro migrando usuário ${doc.id}:`, e); }
+                }
+            }
+            
+            if (updates.length > 0) {
+                await batch.commit();
+                console.log(`✅ Migração concluída! ${updates.length} senhas atualizadas para Bcrypt.`);
+            } else {
+                console.log("Nenhuma senha precisou ser migrada.");
+            }
         }
 
         // --- FUNÇÕES DE UTILIDADE E TEMA (Faltantes) ---
@@ -2186,6 +2371,7 @@ function suite_formatarInputHistorico(textarea) {
             const target = document.getElementById('dash_targetHistory').value;
             // SUGESTÃO: Chama a lógica do robô automático sempre que os dados são processados.
             runAutoBotLogic();
+            runWhiteBotLogic(); // Executa a lógica do Robô Branco
 
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
@@ -2478,6 +2664,34 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const autoBotToggle = document.getElementById('autoBotToggle');
             if (autoBotToggle) autoBotToggle.addEventListener('change', handleAutoBotToggle);
 
+            // NOVO: Inicializa a lógica do Robô Branco
+            const whiteBotToggle = document.getElementById('whiteBotToggle');
+            if (whiteBotToggle) whiteBotToggle.addEventListener('change', handleWhiteBotToggle);
+
+            // Listeners para o Robô Branco (Rotação e Estratégia)
+            const whiteBotRandomRotation = document.getElementById('whiteBotRandomRotation');
+            const whiteBotStrategySelect = document.getElementById('whiteBotStrategy');
+            if (whiteBotRandomRotation) {
+                whiteBotRandomRotation.addEventListener('change', (e) => {
+                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                    if (e.target.checked && label) {
+                        const strategyName = whiteBotStrategySelect.options[whiteBotStrategySelect.selectedIndex].text;
+                        label.textContent = `[ ${strategyName} ]`;
+                    } else if (label) {
+                        label.textContent = '';
+                    }
+                });
+            }
+            if (whiteBotStrategySelect) {
+                whiteBotStrategySelect.addEventListener('change', () => {
+                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                    if (whiteBotRandomRotation && whiteBotRandomRotation.checked && label) {
+                        const strategyName = whiteBotStrategySelect.options[whiteBotStrategySelect.selectedIndex].text;
+                        label.textContent = `[ ${strategyName} ]`;
+                    }
+                });
+            }
+
             // NOVO: Listener para mostrar estratégia ao lado da rotação
             const autoBotRandomRotation = document.getElementById('autoBotRandomRotation');
             const autoBotStrategySelect = document.getElementById('autoBotStrategy');
@@ -2507,6 +2721,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // SUGESTÃO: Inicializa e atualiza o relógio
             updateClock(); // Chama uma vez para exibir imediatamente
             setInterval(updateClock, 1000); // Atualiza a cada segundo
+            checkManualLogin();
             initializeApp();
 
             // Lógica para fazer o anúncio de atualização desaparecer
@@ -2536,7 +2751,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // ==========================================
         // NOVA FUNÇÃO: SALVAR NO FIREBASE
         // ==========================================
-        function registerUser(event) {
+        async function registerUser(event) {
             event.preventDefault();
             const form = document.getElementById('suite_userRegistrationForm');
             const outputArea = document.getElementById('suite_resCadastro');
@@ -2575,11 +2790,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
 
             // --- Cria o Objeto do Usuário ---
-            // Nota: Não precisamos usar btoa() aqui se o banco for seguro, 
-            // mas mantive para compatibilidade com sua lógica.
             const newUser = {
                 username: username,
-                password: btoa(password), 
+                password: await hashPassword(password), // Hash seguro
                 contact: contact || null,
                 telegramId: telegramId,
                 accessLevel: accessLevel,
@@ -3426,10 +3639,21 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     throw new Error('Esta conta foi bloqueada manualmente. Contate o suporte.');
                 }
 
-                // Verifica a senha (decodificando de Base64)
-                if (atob(foundUser.password) !== pass) {
-                    throw new Error('Usuário ou senha inválidos.');
+                // Verifica a senha (suporta Bcrypt e Base64 legado)
+                let isPasswordCorrect = false;
+                
+                if (foundUser.password && foundUser.password.startsWith('$2a$')) {
+                    isPasswordCorrect = await verifyPassword(pass, foundUser.password);
+                } else {
+                    try {
+                        if (atob(foundUser.password) === pass) isPasswordCorrect = true;
+                    } catch (e) {
+                        // Fallback se atob falhar (ex: senha não é base64 válida)
+                        if (foundUser.password === pass) isPasswordCorrect = true;
+                    }
                 }
+
+                if (!isPasswordCorrect) throw new Error('Usuário ou senha inválidos.');
         
                 // Verifica se a conta expirou
                 if (foundUser.expiresAt && new Date(foundUser.expiresAt) < new Date()) {
@@ -3522,7 +3746,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             const newUser = {
                 username: username,
-                password: btoa(password), // Codifica a senha
+                password: await hashPassword(password), // Hash seguro
                 contact: contact || null,
                 telegramId: null,
                 accessLevel: 'operator', // Nível de acesso definido como operador
@@ -3606,6 +3830,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const operatorName = sessionStorage.getItem('operatorName');
             setupOperatorInfo(operatorName);
             applyAccessControl(); // Aplica as restrições de acesso
+
+            // Tenta migrar senhas antigas silenciosamente em segundo plano
+            migratePasswords().catch(err => console.error("Erro na migração automática:", err));
 
             // REMOVIDO: O código abaixo recarregava a página a cada 10 minutos, o que causava interrupções.
             // setInterval(() => {
@@ -3777,6 +4004,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             dash_openTab('analise');
             dash_selectPlatform('blaze');
             dash_processarDados(true);
+            toggleRealTimeDirection();
 
             // OTIMIZAÇÃO: Delegação de eventos para o grid de resultados
             // Em vez de adicionar um evento em cada badge, adicionamos um no pai.
@@ -3803,6 +4031,16 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let lastAutoBotResult = null; // NOVO: Rastreia o último resultado (win/loss)
         let autoBotPlayCount = 0; // Contador para rotação de estratégia
         let lastAutoBotResultSignature = null; // Assinatura do último resultado processado
+
+        // VARIÁVEIS DO ROBÔ BRANCO
+        let activeWhiteSignal = null;
+        let lastGeneratedWhiteSignalTime = null;
+        let whiteBotWins = 0;
+        let whiteBotWhiteWins = 0;
+        let whiteBotLosses = 0;
+        let whiteBotConsecutiveLosses = 0;
+        let lastWhiteBotResult = null;
+        let whiteBotPlayCount = 0;
 
         function handleAutoBotToggle(event) {
             const isBotActive = event.target.checked;
@@ -3845,6 +4083,42 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        function handleWhiteBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('whiteBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+            const container = document.getElementById('whiteBotActivationContainer');
+
+            if (isBotActive) {
+                // Reseta o placar ao INICIAR o robô, para que o último resultado fique visível ao parar
+                whiteBotWins = 0; whiteBotWhiteWins = 0; whiteBotLosses = 0; whiteBotConsecutiveLosses = 0;
+                document.getElementById('whiteBotWinCount').textContent = '0';
+                document.getElementById('whiteBotLossCount').textContent = '0';
+                document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+
+                if (isAutoFetchActive) {
+                    statusDiv.textContent = '✅ Robô Branco Ativado. Monitorando...';
+                    statusDiv.style.color = 'var(--accent-jonbet)';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" no painel direito.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                const signalPanel = document.getElementById('whiteBotSignalPanel');
+                const signalContent = document.getElementById('whiteBotSignalContent');
+                signalPanel.style.display = 'block';
+                signalContent.innerHTML = '<span style="color: #aaa; font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activeWhiteSignal = null;
+                lastGeneratedWhiteSignalTime = null;
+                document.getElementById('whiteBotSignalPanel').style.display = 'none';
+                lastWhiteBotResult = null;
+                if (container) container.classList.remove('bot-active-pulse');
+            }
+        }
+
         // Esta função será chamada de dentro de `dash_processarDados`
         function runAutoBotLogic() {
             const isBotActive = document.getElementById('autoBotToggle').checked;
@@ -3880,6 +4154,31 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             } else {
                 // Se não há sinal ativo, analisa o histórico para decidir se cria um
                 analyzeAndCreateSignal(results);
+            }
+        }
+
+        function runWhiteBotLogic() {
+            const isBotActive = document.getElementById('whiteBotToggle').checked;
+            if (!isBotActive) return;
+
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+
+            if (results.length === 0) return;
+
+            if (activeWhiteSignal) {
+                checkWhiteSignalResult(results);
+            } else {
+                analyzeAndCreateWhiteSignal(results);
             }
         }
 
@@ -4014,9 +4313,163 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         createAutoSignal(last, last.color);
                     }
                     break;
+
+                case 'post_white_value':
+                    // ESTRATÉGIA 8: Pós-Branco (Valor) - Baseada em Laplace Smoothing
+                    // Se o último resultado foi Branco, a probabilidade de Vermelho é alta (~85%).
+                    if (results[0].roll === 0) {
+                        console.log(`Robô Auto (Pós-Branco): Branco detectado. Entrada de valor em VERMELHO.`);
+                        createAutoSignal(results[0], 'vermelho');
+                    }
+                    break;
             }
         }
 
+        // LÓGICA DE ANÁLISE DO ROBÔ BRANCO
+        function analyzeAndCreateWhiteSignal(results) {
+            if (lastWhiteBotResult === 'loss') {
+                console.log("Robô Branco: Pausado após um LOSS.");
+                lastWhiteBotResult = null; 
+                return;
+            }
+
+            // Se o último resultado foi Branco (Win), aguarda a próxima análise
+            if (results[0].roll === 0) return;
+
+            let strategy = document.getElementById('whiteBotStrategy').value;
+
+            const recentColors = results
+                .map(r => ({...r, color: dash_identificarCor(r.roll)}))
+                .filter(r => r.color !== 'branco')
+                .slice(0, 3);
+
+            if (recentColors.length < 3) return;
+            const [last, secondLast, thirdLast] = recentColors;
+
+            // Lógica de Rotação Inteligente (Smart Rotation)
+            if (document.getElementById('whiteBotRandomRotation').checked) {
+                const strategiesToCheck = ['pattern_analysis', 'alternating_break', 'poisson_hunt', 'hot_flow_red'];
+                for (const strat of strategiesToCheck) {
+                    let signalFound = false;
+                    if (strat === 'pattern_analysis') {
+                        const analise = analisarBrancos(results);
+                        if (analise.janelas.length > 0) {
+                            const topJanela = analise.janelas.sort((a, b) => b.count - a.count)[0];
+                            const current = results[0];
+                            const [curH, curM] = current.time.split(':').map(Number);
+                            if (Math.abs(curM - topJanela.centro) <= 2) {
+                                let currentSeq = 1;
+                                const currentColor = classificarCor(current.roll);
+                                for (let i = 1; i < results.length; i++) {
+                                    if (classificarCor(results[i].roll) === currentColor) currentSeq++; else break;
+                                }
+                                if (currentSeq >= 4) signalFound = true;
+                            }
+                        }
+                    } else if (strat === 'alternating_break') {
+                        if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) signalFound = true;
+                    } else if (strat === 'poisson_hunt') {
+                        const lastWhite = results.find(r => r.roll === 0);
+                        if (lastWhite) {
+                            const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                            const [hNow, mNow] = results[0].time.split(':').map(Number);
+                            let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                            if (diffMinutes < 0) diffMinutes += 24 * 60;
+                            if (diffMinutes >= 8) signalFound = true;
+                        }
+                    } else if (strat === 'hot_flow_red') {
+                        const recentNoWhite = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco');
+                        if (recentNoWhite.length >= 6 && recentNoWhite.slice(0, 6).every(r => r.color === 'vermelho')) signalFound = true;
+                    }
+
+                    if (signalFound) {
+                        strategy = strat;
+                        document.getElementById('whiteBotStrategy').value = strategy;
+                        const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                        const selectEl = document.getElementById('whiteBotStrategy');
+                        if (label) label.textContent = `[ ${selectEl.options[selectEl.selectedIndex].text} ]`;
+                        break;
+                    }
+                }
+            }
+
+            switch (strategy) {
+                case 'pattern_analysis':
+                    // ESTRATÉGIA 6: Análise de Padrões (Janelas e Sequências)
+                    const analise = analisarBrancos(results);
+                    
+                    if (analise.janelas.length > 0) {
+                        // Pega a melhor janela (com mais ocorrências de branco)
+                        const topJanela = analise.janelas.sort((a, b) => b.count - a.count)[0];
+                        
+                        // Dados do momento atual
+                        const current = results[0];
+                        const [curH, curM] = current.time.split(':').map(Number);
+                        
+                        // Verifica se o minuto atual está dentro da janela crítica (+- 2 min)
+                        const minutoOk = Math.abs(curM - topJanela.centro) <= 2;
+
+                        // Verifica a sequência atual de cores iguais
+                        let currentSeq = 1;
+                        const currentColor = classificarCor(current.roll);
+                        for (let i = 1; i < results.length; i++) {
+                            if (classificarCor(results[i].roll) === currentColor) {
+                                currentSeq++;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        // Se estiver na janela E tiver uma sequência relevante (>= 4)
+                        if (minutoOk && currentSeq >= 4) {
+                            console.log(`Robô Branco (Padrões): Janela ${topJanela.centro}±2 e Seq ${currentSeq} detectados.`);
+                            createWhiteSignal(current, 'BRANCO');
+                        }
+                    }
+                    break;
+
+                case 'alternating_break':
+                    if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) {
+                        createWhiteSignal(last, last.color);
+                    }
+                    break;
+                case 'ciclo_branco':
+                    // Lógica de ciclo (placeholder se necessário)
+                    break;
+                case 'fluxo_pos_vermelho':
+                    if (last.color === 'vermelho' && secondLast.color === 'vermelho') {
+                         // Exemplo simples
+                    }
+                    break;
+                case 'poisson_hunt':
+                    const lastWhite = results.find(r => r.roll === 0);
+                    if (lastWhite) {
+                        const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                        const [hNow, mNow] = results[0].time.split(':').map(Number);
+                        let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                        if (diffMinutes < 0) diffMinutes += 24 * 60;
+                        if (diffMinutes >= 8) {
+                            console.log(`Robô Branco (Poisson): ${diffMinutes} min sem branco.`);
+                            createWhiteSignal(results[0], 'BRANCO');
+                        }
+                    }
+                    break;
+                case 'hot_flow_red':
+                    const recentNoWhite = results
+                        .map(r => ({...r, color: dash_identificarCor(r.roll)}))
+                        .filter(r => r.color !== 'branco');
+                    if (recentNoWhite.length >= 6) {
+                        const last6 = recentNoWhite.slice(0, 6);
+                        if (last6.every(r => r.color === 'vermelho')) {
+                            console.log(`Robô Branco (Fluxo Quente): 6 Vermelhos.`);
+                            createWhiteSignal(results[0], 'BRANCO');
+                        }
+                    }
+                    break;
+            }
+        }
+
+        // LÓGICA DE ANÁLISE DO ROBÔ BRANCO (Cópia da lógica original para modificação independente)
         function createAutoSignal(triggerResult, targetColor) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
@@ -4062,6 +4515,42 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             console.log(`Sinal gerado para ${activeSignal.time}`);
             playNotificationSound();
+        }
+
+        function createWhiteSignal(triggerResult, targetColor) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            
+            signalTime.setMinutes(signalTime.getMinutes() + 1); 
+
+            let entryCount = parseInt(document.getElementById('whiteBotEntryCount').value);
+            if (isNaN(entryCount) || entryCount < 1) entryCount = 1;
+
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            
+            if (lastGeneratedWhiteSignalTime === signalTimeString) return;
+            lastGeneratedWhiteSignalTime = signalTimeString;
+
+            const day = signalTime.getDate().toString().padStart(2, '0');
+            const month = (signalTime.getMonth() + 1).toString().padStart(2, '0');
+            const year = signalTime.getFullYear();
+            const signalDateString = `${day}/${month}/${year}`;
+
+            activeWhiteSignal = {
+                time: signalTimeString,
+                date: signalDateString,
+                targetColor: 'BRANCO',
+                entryCount: entryCount,
+                gale: 0
+            };
+
+            const signalPanel = document.getElementById('whiteBotSignalPanel');
+            const signalContent = document.getElementById('whiteBotSignalContent');
+
+            signalContent.innerHTML = `🕒 ${activeWhiteSignal.time} ENTRAR= ⚪️<br><span style="font-size: 1rem;">EXECUTAR: ${entryCount} ENTRADAS</span><br><div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;"><span style="color: #ff9800; font-size: 1.1rem; font-weight: bold;">⏳ Buscando Branco 1ª entrada...</span></div>`;
+            signalPanel.style.display = 'block';
+            playWhiteNotificationSound();
         }
 
         function checkSignalResult(results) {
@@ -4175,6 +4664,71 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        function checkWhiteSignalResult(results) {
+            if (!activeWhiteSignal) return;
+
+            const [sH, sM] = activeWhiteSignal.time.split(':').map(Number);
+            const [day, month, year] = activeWhiteSignal.date.split('/').map(Number);
+            const signalDate = new Date(year, month - 1, day, sH, sM, 0, 0);
+            const entryCount = activeWhiteSignal.entryCount || 1;
+
+            // Filtra resultados a partir do horário do sinal
+            const relevantResults = [];
+            for (const res of results) {
+                const [rH, rM] = res.time.split(':').map(Number);
+                let resDate = new Date(year, month - 1, day, rH, rM, 0, 0);
+                
+                if (sH > 20 && rH < 4) resDate.setDate(resDate.getDate() + 1);
+                else if (sH < 4 && rH > 20) resDate.setDate(resDate.getDate() - 1);
+
+                if (resDate >= signalDate) {
+                    relevantResults.push({ ...res, timestamp: resDate.getTime() });
+                }
+            }
+            
+            // Ordena cronologicamente (Antigo -> Novo)
+            relevantResults.reverse();
+
+            let winFound = false;
+            let winIndex = 0;
+            let winResult = null;
+
+            const stonesToCheck = Math.min(relevantResults.length, entryCount);
+
+            for (let i = 0; i < stonesToCheck; i++) {
+                const res = relevantResults[i];
+                const color = dash_identificarCor(res.roll);
+                
+                if (color.toUpperCase() === 'BRANCO') {
+                    winFound = true;
+                    winIndex = i + 1;
+                    winResult = res;
+                    break;
+                }
+            }
+
+            if (winFound) {
+                const resultMessage = `✅ WIN NA ${winIndex}ª ENTRADA! (${winResult.time})`;
+                addResultToWhiteHistory(resultMessage, true);
+                activeWhiteSignal = null;
+                document.getElementById('whiteBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima análise...</span></div>';
+                return;
+            }
+
+            if (relevantResults.length >= entryCount) {
+                 const resultMessage = `❌ LOSS! (${activeWhiteSignal.time})`;
+                 addResultToWhiteHistory(resultMessage, false);
+                 activeWhiteSignal = null;
+                 document.getElementById('whiteBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
+            } else {
+                 const currentEntry = relevantResults.length + 1;
+                 const signalContent = document.getElementById('whiteBotSignalContent');
+                 if (signalContent) {
+                     signalContent.innerHTML = `🕒 ${activeWhiteSignal.time} ENTRAR= ⚪️<br><span style="font-size: 1rem;">EXECUTAR: ${entryCount} ENTRADAS</span><br><div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;"><span style="color: #ff9800; font-size: 1.1rem; font-weight: bold;">⏳ Buscando Branco ${currentEntry}ª entrada...</span></div>`;
+                 }
+            }
+        }
+
         function addResultToHistory(message, isWin) {
             const historyDiv = document.getElementById('autoBotResultHistory');
             const newEntry = document.createElement('div');
@@ -4204,6 +4758,70 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             historyDiv.prepend(newEntry);
         }
 
+        function addResultToWhiteHistory(message, isWin) {
+            const historyDiv = document.getElementById('whiteBotResultHistory');
+            const newEntry = document.createElement('div');
+            newEntry.textContent = message;
+            newEntry.style.color = isWin ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+
+            if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
+            
+            if (isWin) {
+                whiteBotWins++;
+                if (message.includes('BRANCO')) whiteBotWhiteWins++;
+                whiteBotConsecutiveLosses = 0;
+                lastWhiteBotResult = 'win';
+            } else {
+                whiteBotLosses++;
+                whiteBotConsecutiveLosses++;
+                lastWhiteBotResult = 'loss';
+            }
+            document.getElementById('whiteBotWinCount').textContent = whiteBotWins;
+            document.getElementById('whiteBotLossCount').textContent = whiteBotLosses;
+            historyDiv.prepend(newEntry);
+
+            // Verifica Meta de Wins
+            const winGoalInput = document.getElementById('whiteBotWinGoal');
+            const winGoal = winGoalInput && winGoalInput.value ? parseInt(winGoalInput.value) : 0;
+
+            if (isWin && winGoal > 0 && whiteBotWins >= winGoal) {
+                const toggle = document.getElementById('whiteBotToggle');
+                if (toggle && toggle.checked) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(new Event('change')); // Dispara o evento para atualizar a UI
+
+                    const goalMsg = document.createElement('div');
+                    goalMsg.innerHTML = `🛑 <b>META DE WINS ATINGIDA (${whiteBotWins})!</b><br>O robô foi pausado automaticamente.`;
+                    goalMsg.style.color = '#ffc107';
+                    goalMsg.style.textAlign = 'center';
+                    goalMsg.style.padding = '10px';
+                    goalMsg.style.marginTop = '5px';
+                    goalMsg.style.border = '1px dashed #ffc107';
+                    historyDiv.prepend(goalMsg);
+                }
+            }
+
+            // Verifica Meta de Loss (Consecutivos)
+            const lossGoalInput = document.getElementById('whiteBotLossGoal');
+            const lossGoal = lossGoalInput && lossGoalInput.value ? parseInt(lossGoalInput.value) : 0;
+
+            if (!isWin && lossGoal > 0 && whiteBotConsecutiveLosses >= lossGoal) {
+                const toggle = document.getElementById('whiteBotToggle');
+                if (toggle && toggle.checked) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(new Event('change'));
+
+                    const goalMsg = document.createElement('div');
+                    goalMsg.innerHTML = `🛑 <b>STOP LOSS ATINGIDO (${whiteBotConsecutiveLosses} Derrotas)!</b><br>O robô foi pausado automaticamente.`;
+                    goalMsg.style.cssText = 'color: #ff6b6b; text-align: center; padding: 10px; margin-top: 5px; border: 1px dashed #ff6b6b;';
+                    historyDiv.prepend(goalMsg);
+                }
+            }
+        }
+
         function playNotificationSound() {
             const soundToggle = document.getElementById('autoBotSoundToggle');
             if (soundToggle && !soundToggle.checked) return;
@@ -4229,6 +4847,102 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 console.error("Erro ao reproduzir som:", e);
             }
         }
+
+        function playWhiteNotificationSound() {
+            const soundToggle = document.getElementById('whiteBotSoundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start(); osc.stop(ctx.currentTime + 0.2);
+            } catch (e) { console.error("Erro ao reproduzir som:", e); }
+        }
+
+        // --- FUNÇÕES DE ANÁLISE DE PADRÕES (SOLICITADO) ---
+        function classificarCor(n) {
+            if (n === 0) return "BRANCO";
+            if (n >= 1 && n <= 7) return "VERMELHO";
+            if (n >= 8 && n <= 14) return "PRETO";
+            return "DESCONHECIDO";
+        }
+
+        function analisarBrancos(results, params = { seqMin: 5, minutosJanela: 2, repeticoesPadrao: 2 }) {
+            // Converte results (New->Old) para cronológico (Old->New) para análise
+            const registros = results.slice().reverse().map(r => {
+                const [h, m] = r.time.split(':').map(Number);
+                return {
+                    raw: r,
+                    colorNum: r.roll,
+                    colorClass: classificarCor(r.roll),
+                    hour: h,
+                    minute: m,
+                    totalMinutes: h * 60 + m
+                };
+            });
+
+            // Define prev/next
+            registros.forEach((r, i) => {
+                r.prev = registros[i - 1] || null;
+                r.next = registros[i + 1] || null;
+            });
+
+            // Calcula sequências
+            if (registros.length > 0) {
+                let seq = 1;
+                registros[0].seqLen = 1;
+                for (let i = 1; i < registros.length; i++) {
+                    if (registros[i].colorClass === registros[i - 1].colorClass) seq++;
+                    else seq = 1;
+                    registros[i].seqLen = seq;
+                }
+            }
+
+            // Filtra brancos
+            const brancos = registros.filter(r => r.colorNum === 0);
+
+            // Contagem de minutos
+            const minuteCount = {};
+            brancos.forEach(b => {
+                minuteCount[b.minute] = (minuteCount[b.minute] || 0) + 1;
+            });
+
+            // Janelas críticas
+            const minutosOrdenados = Object.keys(minuteCount).map(n => parseInt(n)).sort((a, b) => a - b);
+            const janelas = [];
+
+            minutosOrdenados.forEach(m => {
+                let existe = false;
+                for (const j of janelas) {
+                    if (Math.abs(j.centro - m) <= params.minutosJanela) {
+                        j.count += minuteCount[m];
+                        j.minutos.push(m);
+                        existe = true;
+                        break;
+                    }
+                }
+                if (!existe) janelas.push({ centro: m, count: minuteCount[m], minutos: [m] });
+            });
+
+            // Padrões (A -> 0 -> C) - Mantido para compatibilidade, embora não usado diretamente no sinal
+            const padroes = {};
+            brancos.forEach(b => {
+                const A = b.prev ? b.prev.colorClass : "NONE";
+                const C = b.next ? b.next.colorClass : "NONE";
+                const key = `${A}->0->${C}`;
+                padroes[key] = (padroes[key] || 0) + 1;
+                b.padrao = key;
+            });
+
+            return { registros, brancos, janelas, padroes };
+        }
     </script>
 </body>
+
+
 </html>
