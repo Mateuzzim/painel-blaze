@@ -240,6 +240,28 @@
             20% { left: 200%; }
             100% { left: 200%; }
         }
+        /* Animação Futurista Coletor de Dados */
+        .futuristic-data-box {
+            position: relative;
+            overflow: hidden;
+        }
+        .futuristic-data-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 152, 0, 0.1), transparent);
+            transform: skewX(-25deg);
+            animation: futuristic-shine 6s infinite;
+            pointer-events: none;
+        }
+        .futuristic-data-box::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, #ff9800, transparent);
+            animation: scan-line 3s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -408,7 +430,6 @@
                             <option value="focoVermelho">Foco no Vermelho</option>
                             <option value="focoPreto">Foco no Preto</option>
                             <option value="jikanSazonal">Ritmo Sazonal (Jikan)</option>
-                            <option value="cacadorBranco">Caçador de Branco</option>
                         </select>
                     </div>
                     <!-- SUGESTÃO: Agrupa os controles de filtro -->
@@ -896,9 +917,9 @@ function suite_formatarInputHistorico(textarea) {
                     <h2>⚪ Robô Branco</h2>
                     <div class="toggle-switch-container" id="whiteBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
                         <label for="whiteBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ BRANCO</label>
-                        <label class="switch">
+                        <label class="switch" style="width: 50px; height: 26px;">
                             <input type="checkbox" id="whiteBotToggle">
-                            <span class="slider"></span>
+                            <span class="slider" style="border-radius: 26px;"></span>
                         </label>
                     </div>
 
@@ -911,11 +932,11 @@ function suite_formatarInputHistorico(textarea) {
                                 <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
                                 <select id="whiteBotStrategy">
                                     <option value="alternating_break">1. Quebra de Alternância</option>
-                                    <option value="ciclo_branco">2. Caçar o Branco (Ciclo)</option>
-                                    <option value="fluxo_pos_vermelho">3. Fluxo Pós-Vermelho</option>
-                                    <option value="poisson_hunt">4. Caça Poisson (8min+)</option>
-                                    <option value="hot_flow_red">5. Fluxo Quente (Seq. Vermelho)</option>
-                                    <option value="pattern_analysis">6. Análise de Padrões (Janelas)</option>
+                                    <option value="poisson_hunt">2. Caça Poisson (8min+)</option>
+                                    <option value="cacador_branco">3. Caçador de Branco (Média)</option>
+                                    <option value="exponential_renewal">4. Modelo Exponencial (Renewal)</option>
+                                    <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
+                                    <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
                                 </select>
                             </div>
                             <div class="control-group" style="flex: 1;">
@@ -948,18 +969,18 @@ function suite_formatarInputHistorico(textarea) {
 
                         <!-- TOGGLES: STOP LOSS E SONS -->
                         <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
-                            <div class="toggle-switch-container" style="margin-bottom: 0; justify-content: flex-start; gap: 10px; flex: 1;">
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: flex-start; gap: 10px; flex: 1;">
                                 <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
-                                <label class="switch" style="width: 40px; height: 20px;">
+                            <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotStrategyStopLoss">
-                                    <span class="slider" style="border-radius: 20px;"></span>
+                                <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="margin-bottom: 0; justify-content: flex-end; gap: 10px; flex: 1;">
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: flex-end; gap: 10px; flex: 1;">
                                 <label for="whiteBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
-                                <label class="switch" style="width: 40px; height: 20px;">
+                            <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotSoundToggle" checked>
-                                    <span class="slider" style="border-radius: 20px;"></span>
+                                <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
                         </div>
@@ -1218,7 +1239,7 @@ function suite_formatarInputHistorico(textarea) {
 
                 <div id="dash_analise" class="tab-content active">
 <div class="control-panel">
-    <div id="auto-import-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
+    <div id="auto-import-box" class="futuristic-data-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1997,11 +2018,12 @@ function suite_formatarInputHistorico(textarea) {
         }
 
         function suite_toggleQtdSinaisBranco() {
-            const intervaloMinimo = document.getElementById('suite_intervaloMinimoBranco').value;
+            // Função ajustada: Não desabilita mais o campo de quantidade para permitir controle total
             const qtdSinaisInput = document.getElementById('suite_qtdSinaisBranco');
-            const hasInterval = intervaloMinimo && parseInt(intervaloMinimo) > 0;
-            qtdSinaisInput.disabled = hasInterval;
-            qtdSinaisInput.style.backgroundColor = hasInterval ? '#555' : '';
+            if(qtdSinaisInput) {
+                qtdSinaisInput.disabled = false;
+                qtdSinaisInput.style.backgroundColor = '';
+            }
         }
 
         let suite_formatTimeout;
@@ -2031,29 +2053,48 @@ function suite_formatarInputHistorico(textarea) {
             let sourceOfHistory = '';
 
             if (useAutoHistory) {
-                // Pega os dados processados do painel direito (dash_inputData)
-                const processedDashInput = document.getElementById('dash_inputData').value.trim();
-                const lines = processedDashInput.split('\n').map(l => l.trim()).filter(l => l);
+                // Tenta pegar do dash_autoInput (Coletor Automático) primeiro, fallback para dash_inputData
+                const autoInput = document.getElementById('dash_autoInput');
+                const manualInput = document.getElementById('dash_inputData');
+                let rawData = '';
+                let isFromAutoCollector = false;
+
+                if (autoInput && autoInput.value.trim() !== '') {
+                    rawData = autoInput.value.trim();
+                    sourceOfHistory = 'Histórico Automático (Coletor)';
+                    isFromAutoCollector = true;
+                } else if (manualInput) {
+                    rawData = manualInput.value.trim();
+                    sourceOfHistory = 'Histórico Automático (Manual)';
+                }
+
+                // Parser robusto de tokens (extrai horários onde o roll é 0)
+                const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
                 const whiteTimes = [];
-                for (let i = 0; i < lines.length; i += 2) { // Assume o formato roll\ntime\nroll\ntime
-                    const rollStr = lines[i];
-                    const timeStr = lines[i + 1];
-                    const roll = parseInt(rollStr);
-                    if (!isNaN(roll) && roll === 0) { // Se for um resultado de branco (número 0)
-                        whiteTimes.push(timeStr);
+                
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    if (!isNaN(parseInt(token))) {
+                        const roll = parseInt(token);
+                        const nextToken = tokens[i+1];
+                        if (nextToken && nextToken.includes(':')) {
+                            if (roll === 0) whiteTimes.push(nextToken);
+                            i++; 
+                        }
                     }
                 }
+                
+                // Se vier do coletor (Recente -> Antigo), inverte para Cronológico (Antigo -> Novo)
+                if (isFromAutoCollector) whiteTimes.reverse();
+
                 input = whiteTimes.join('\n');
-                sourceOfHistory = 'Histórico Automático (Painel Direito)';
             } else {
                 input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
                 sourceOfHistory = 'Histórico Manual';
             }
             const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
-            // O intervalo mínimo agora também define a quantidade de sinais.
-            const qtdSinais = intervaloMinimo > 0 
-                ? intervaloMinimo 
-                : parseInt(document.getElementById('suite_qtdSinaisBranco').value);
+            // Correção: A quantidade de sinais deve respeitar o input do usuário
+            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value) || 15;
             const resultsDiv = document.getElementById('suite_resBranco');
 
             if (!input) {
@@ -2218,6 +2259,35 @@ function suite_formatarInputHistorico(textarea) {
             out += `--------------------------------\n`;
             if (projectedSignals && projectedSignals.length > 0) {
                 let signalArray = Array.isArray(projectedSignals) ? projectedSignals : [projectedSignals];
+                
+                // Filtro de Intervalo Mínimo (Pós-processamento para garantir respeito ao intervalo)
+                if (intervaloMinimo > 0) {
+                    let parsedSignals = [];
+                    const timeRegex = /(\d{2}):(\d{2})/;
+                    
+                    signalArray.forEach(sig => {
+                        const match = sig.match(timeRegex);
+                        if (match) {
+                            const minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
+                            parsedSignals.push({ original: sig, minutes: minutes });
+                        } else {
+                            parsedSignals.push({ original: sig, minutes: -1 });
+                        }
+                    });
+
+                    parsedSignals.sort((a, b) => a.minutes - b.minutes);
+
+                    let filtered = [];
+                    let lastMinutes = -9999;
+                    parsedSignals.forEach(item => {
+                        if (item.minutes === -1 || (item.minutes - lastMinutes >= intervaloMinimo)) {
+                            filtered.push(item.original);
+                            if (item.minutes !== -1) lastMinutes = item.minutes;
+                        }
+                    });
+                    signalArray = filtered;
+                }
+
                 let uniqueSignals = [...new Set(signalArray)];
                 uniqueSignals.sort((a, b) => a.localeCompare(b)); // Ordena
                 out += uniqueSignals.join('\n');
@@ -4582,25 +4652,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             // Lógica de Rotação Inteligente (Smart Rotation)
             if (document.getElementById('whiteBotRandomRotation').checked) {
-                const strategiesToCheck = ['pattern_analysis', 'alternating_break', 'poisson_hunt', 'hot_flow_red'];
+                const strategiesToCheck = ['alternating_break', 'poisson_hunt', 'cacador_branco', 'exponential_renewal', 'low_entropy', 'fractal_break'];
                 for (const strat of strategiesToCheck) {
                     let signalFound = false;
-                    if (strat === 'pattern_analysis') {
-                        const analise = analisarBrancos(results);
-                        if (analise.janelas.length > 0) {
-                            const topJanela = analise.janelas.sort((a, b) => b.count - a.count)[0];
-                            const current = results[0];
-                            const [curH, curM] = current.time.split(':').map(Number);
-                            if (Math.abs(curM - topJanela.centro) <= 2) {
-                                let currentSeq = 1;
-                                const currentColor = classificarCor(current.roll);
-                                for (let i = 1; i < results.length; i++) {
-                                    if (classificarCor(results[i].roll) === currentColor) currentSeq++; else break;
-                                }
-                                if (currentSeq >= 4) signalFound = true;
-                            }
-                        }
-                    } else if (strat === 'alternating_break') {
+                    if (strat === 'alternating_break') {
                         if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) signalFound = true;
                     } else if (strat === 'poisson_hunt') {
                         const lastWhite = results.find(r => r.roll === 0);
@@ -4611,9 +4666,49 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                             if (diffMinutes < 0) diffMinutes += 24 * 60;
                             if (diffMinutes >= 8) signalFound = true;
                         }
-                    } else if (strat === 'hot_flow_red') {
-                        const recentNoWhite = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco');
-                        if (recentNoWhite.length >= 6 && recentNoWhite.slice(0, 6).every(r => r.color === 'vermelho')) signalFound = true;
+                    } else if (strat === 'cacador_branco') {
+                        const whites = results.filter(r => r.roll === 0);
+                        if (whites.length >= 2) {
+                            const intervals = [];
+                            for (let i = 0; i < Math.min(whites.length - 1, 5); i++) {
+                                const [h1, m1] = whites[i].time.split(':').map(Number);
+                                const [h2, m2] = whites[i+1].time.split(':').map(Number);
+                                let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                                if (diff < 0) diff += 24 * 60;
+                                intervals.push(diff);
+                            }
+                            const avg = intervals.reduce((a,b) => a+b, 0) / intervals.length;
+                            const [hNow, mNow] = results[0].time.split(':').map(Number);
+                            const [hLast, mLast] = whites[0].time.split(':').map(Number);
+                            let currentGap = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                            if (currentGap < 0) currentGap += 24 * 60;
+                            if (currentGap >= avg) signalFound = true;
+                        }
+                    } else if (strat === 'exponential_renewal') {
+                        const lastWhite = results.find(r => r.roll === 0);
+                        if (lastWhite) {
+                            const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                            const [hNow, mNow] = results[0].time.split(':').map(Number);
+                            let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                            if (diffMinutes < 0) diffMinutes += 24 * 60;
+                            if (diffMinutes >= 8) signalFound = true;
+                        }
+                    } else if (strat === 'low_entropy') {
+                        const recentForEntropy = results.filter(r => r.roll !== 0).slice(0, 10);
+                        if (recentForEntropy.length >= 10) {
+                            let score = 0;
+                            for (let i = 0; i < recentForEntropy.length - 1; i++) {
+                                const curr = dash_identificarCor(recentForEntropy[i].roll);
+                                const prev = dash_identificarCor(recentForEntropy[i+1].roll);
+                                if (curr === prev) score += 1; else score -= 1;
+                            }
+                            if (score <= -4) signalFound = true;
+                        }
+                    } else if (strat === 'fractal_break') {
+                        const lastWhiteIndex = results.findIndex(r => r.roll === 0);
+                        if (lastWhiteIndex !== -1 && lastWhiteIndex >= 18 && lastWhiteIndex <= 35) {
+                            signalFound = true;
+                        }
                     }
 
                     if (signalFound) {
@@ -4629,51 +4724,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
 
             switch (strategy) {
-                case 'pattern_analysis':
-                    // ESTRATÉGIA 6: Análise de Padrões (Janelas e Sequências)
-                    const analise = analisarBrancos(results);
-                    
-                    if (analise.janelas.length > 0) {
-                        // Pega a melhor janela (com mais ocorrências de branco)
-                        const topJanela = analise.janelas.sort((a, b) => b.count - a.count)[0];
-                        
-                        // Dados do momento atual
-                        const current = results[0];
-                        const [curH, curM] = current.time.split(':').map(Number);
-                        
-                        // Verifica se o minuto atual está dentro da janela crítica (+- 2 min)
-                        const minutoOk = Math.abs(curM - topJanela.centro) <= 2;
-
-                        // Verifica a sequência atual de cores iguais
-                        let currentSeq = 1;
-                        const currentColor = classificarCor(current.roll);
-                        for (let i = 1; i < results.length; i++) {
-                            if (classificarCor(results[i].roll) === currentColor) {
-                                currentSeq++;
-                            } else {
-                                break;
-                            }
-                        }
-
-                        // Se estiver na janela E tiver uma sequência relevante (>= 4)
-                        if (minutoOk && currentSeq >= 4) {
-                            console.log(`Robô Branco (Padrões): Janela ${topJanela.centro}±2 e Seq ${currentSeq} detectados.`);
-                            createWhiteSignal(current, 'BRANCO', strategy);
-                        }
-                    }
-                    break;
-
                 case 'alternating_break':
                     if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) {
                         createWhiteSignal(last, last.color, strategy);
-                    }
-                    break;
-                case 'ciclo_branco':
-                    // Lógica de ciclo (placeholder se necessário)
-                    break;
-                case 'fluxo_pos_vermelho':
-                    if (last.color === 'vermelho' && secondLast.color === 'vermelho') {
-                         // Exemplo simples
                     }
                     break;
                 case 'poisson_hunt':
@@ -4689,16 +4742,73 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         }
                     }
                     break;
-                case 'hot_flow_red':
-                    const recentNoWhite = results
-                        .map(r => ({...r, color: dash_identificarCor(r.roll)}))
-                        .filter(r => r.color !== 'branco');
-                    if (recentNoWhite.length >= 6) {
-                        const last6 = recentNoWhite.slice(0, 6);
-                        if (last6.every(r => r.color === 'vermelho')) {
-                            console.log(`Robô Branco (Fluxo Quente): 6 Vermelhos.`);
+                case 'cacador_branco':
+                    // ESTRATÉGIA 7: Caçador de Branco (Baseado na Média de Intervalos)
+                    const whites = results.filter(r => r.roll === 0);
+                    if (whites.length >= 2) {
+                        const intervals = [];
+                        // Pega os últimos 5 intervalos de branco para calcular a média
+                        for (let i = 0; i < Math.min(whites.length - 1, 5); i++) {
+                            const [h1, m1] = whites[i].time.split(':').map(Number);
+                            const [h2, m2] = whites[i+1].time.split(':').map(Number);
+                            let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                            if (diff < 0) diff += 24 * 60;
+                            intervals.push(diff);
+                        }
+                        const avg = intervals.reduce((a,b) => a+b, 0) / intervals.length;
+                        const [hNow, mNow] = results[0].time.split(':').map(Number);
+                        const [hLast, mLast] = whites[0].time.split(':').map(Number);
+                        let currentGap = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                        if (currentGap < 0) currentGap += 24 * 60;
+
+                        // Se o tempo sem branco (gap) for maior ou igual à média, é hora de caçar
+                        if (currentGap >= avg) {
+                            console.log(`Robô Branco (Caçador): Média ${avg.toFixed(1)}m, Gap Atual ${currentGap}m.`);
                             createWhiteSignal(results[0], 'BRANCO', strategy);
                         }
+                    }
+                    break;
+                case 'exponential_renewal':
+                    // ESTRATÉGIA 8: Modelo Exponencial (Renewal)
+                    const lastWhiteExp = results.find(r => r.roll === 0);
+                    if (lastWhiteExp) {
+                        const [hLast, mLast] = lastWhiteExp.time.split(':').map(Number);
+                        const [hNow, mNow] = results[0].time.split(':').map(Number);
+                        let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                        if (diffMinutes < 0) diffMinutes += 24 * 60;
+
+                        // Cálculo da Probabilidade: P = 1 - e^(-t / 7.5)
+                        const lambda = 1 / 7.5;
+                        const probability = 1 - Math.exp(-lambda * diffMinutes);
+
+                        if (diffMinutes >= 8) {
+                            console.log(`Robô Branco (Renewal): ${diffMinutes} min sem branco. Probabilidade acumulada: ${(probability * 100).toFixed(1)}%`);
+                            createWhiteSignal(results[0], 'BRANCO', strategy);
+                        }
+                    }
+                    break;
+                case 'low_entropy':
+                    // ESTRATÉGIA 9: Entropia Baixa (Física Estatística)
+                    const recentForEntropy = results.filter(r => r.roll !== 0).slice(0, 10);
+                    if (recentForEntropy.length >= 10) {
+                        let score = 0;
+                        for (let i = 0; i < recentForEntropy.length - 1; i++) {
+                            const curr = dash_identificarCor(recentForEntropy[i].roll);
+                            const prev = dash_identificarCor(recentForEntropy[i+1].roll);
+                            if (curr === prev) score += 1; else score -= 1;
+                        }
+                        if (score <= -4) {
+                            console.log(`Robô Branco (Entropia): Score ${score} (<= -4). Padrão de ordem detectado.`);
+                            createWhiteSignal(results[0], 'BRANCO', strategy);
+                        }
+                    }
+                    break;
+                case 'fractal_break':
+                    // ESTRATÉGIA 10: Fractais de Quebra (Geometria Fractal)
+                    const lastWhiteIndexFractal = results.findIndex(r => r.roll === 0);
+                    if (lastWhiteIndexFractal !== -1 && lastWhiteIndexFractal >= 18 && lastWhiteIndexFractal <= 35) {
+                        console.log(`Robô Branco (Fractal): Distância ${lastWhiteIndexFractal} giros (Ideal 18-35).`);
+                        createWhiteSignal(results[0], 'BRANCO', strategy);
                     }
                     break;
             }
@@ -5078,11 +5188,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (strategyName) {
                 const strategyMap = {
                     'alternating_break': 'Quebra',
-                    'ciclo_branco': 'Ciclo',
-                    'fluxo_pos_vermelho': 'Fluxo Pós-V',
                     'poisson_hunt': 'Poisson',
-                    'hot_flow_red': 'Fluxo Quente',
-                    'pattern_analysis': 'Padrões'
+                    'cacador_branco': 'Caçador',
+                    'exponential_renewal': 'Renewal',
+                    'low_entropy': 'Entropia',
+                    'fractal_break': 'Fractal'
                 };
                 const label = strategyMap[strategyName] || strategyName;
                 displayMessage += ` <span style="font-size: 0.85em; color: #aaa; font-weight: normal;">[${label}]</span>`;
@@ -5204,7 +5314,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 'fluxo_pos_vermelho': 'Fluxo Pós-V',
                 'poisson_hunt': 'Poisson',
                 'hot_flow_red': 'Fluxo Quente',
-                'pattern_analysis': 'Padrões'
+                'pattern_analysis': 'Padrões',
+                'cacador_branco': 'Caçador'
             };
 
             // Usa todas as estratégias definidas no mapa para garantir que a tabela apareça

@@ -644,6 +644,10 @@ body.light-theme .dashboard .toggle-switch-container { border-color: var(--borde
     padding-left: 5px;
 }
 
+.log-line.chaos-theory {
+    color: #ff9800; /* Cor de destaque para a estratégia */
+}
+
 /* Botão de Reset do Contador */
 .reset-btn {
     background: transparent;
