@@ -355,6 +355,141 @@
             opacity: 0.3;
         }
 
+        /* --- DESIGN RECUPERAÇÃO PÓS-BRANCO (FUTURISTA) --- */
+        .protection-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 1px solid #00d2ff;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.15), inset 0 0 20px rgba(0, 210, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            
+            /* Fundo Tecnológico (Grid) */
+            background-image: 
+                linear-gradient(rgba(0, 210, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Efeito de Escaneamento Holográfico (Sempre presente quando não disabled) */
+        .protection-panel:not(.disabled)::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(transparent, rgba(0, 210, 255, 0.05), transparent);
+            transform: rotate(45deg);
+            animation: holo-scan 6s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes holo-scan {
+            0% { transform: translateY(-50%) rotate(45deg); }
+            100% { transform: translateY(50%) rotate(45deg); }
+        }
+
+        .protection-panel.active {
+            border: 2px solid #00d2ff;
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.4), inset 0 0 30px rgba(0, 210, 255, 0.2);
+            animation: pulse-recovery-border 1.5s infinite alternate;
+        }
+
+        .protection-panel.standby {
+            background: rgba(0, 15, 30, 0.8);
+            border: 1px solid rgba(0, 210, 255, 0.5);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+            animation: standby-breathing 3s infinite ease-in-out;
+        }
+
+        @keyframes standby-breathing {
+            0% { border-color: rgba(0, 210, 255, 0.3); box-shadow: 0 0 5px rgba(0, 210, 255, 0.05); }
+            50% { border-color: rgba(0, 210, 255, 0.8); box-shadow: 0 0 15px rgba(0, 210, 255, 0.25); }
+            100% { border-color: rgba(0, 210, 255, 0.3); box-shadow: 0 0 5px rgba(0, 210, 255, 0.05); }
+        }
+
+        .protection-panel.disabled {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid #333;
+            box-shadow: none;
+            opacity: 0.6;
+            background-image: none; /* Remove grid quando desativado */
+            animation: none;
+        }
+        
+        @keyframes pulse-recovery-border {
+            0% { border-color: #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+            100% { border-color: #fff; box-shadow: 0 0 30px rgba(0, 210, 255, 0.6); }
+        }
+
+        @keyframes pulse-red-text {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); text-shadow: 0 0 8px #ff4444; }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .text-pulse-red {
+            animation: pulse-red-text 0.8s infinite;
+        }
+
+        .recovery-scan-line {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: #00d2ff;
+            box-shadow: 0 0 10px #00d2ff;
+            animation: scan-vertical 2s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes scan-vertical {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .shield-icon-anim {
+            font-size: 3rem;
+            display: inline-block;
+            animation: shield-pulse 1.5s infinite;
+            text-shadow: 0 0 15px #00d2ff;
+        }
+        @keyframes shield-pulse {
+            0% { transform: scale(1); text-shadow: 0 0 10px #00d2ff; }
+            50% { transform: scale(1.1); text-shadow: 0 0 25px #00d2ff, 0 0 10px #fff; }
+            100% { transform: scale(1); text-shadow: 0 0 10px #00d2ff; }
+        }
+
+        .shield-standby-anim {
+            font-size: 1.8rem;
+            display: inline-block;
+            animation: shield-float 3s ease-in-out infinite;
+        }
+        @keyframes shield-float {
+            0% { transform: translateY(0); text-shadow: 0 0 5px rgba(0, 210, 255, 0.3); opacity: 0.7; }
+            50% { transform: translateY(-5px); text-shadow: 0 0 15px rgba(0, 210, 255, 0.8); opacity: 1; }
+            100% { transform: translateY(0); text-shadow: 0 0 5px rgba(0, 210, 255, 0.3); opacity: 0.7; }
+        }
+
+        /* Tooltip do Gráfico */
+        .chart-tooltip {
+            position: fixed;
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            line-height: 1.4;
+        }
+
         /* Ajuste do horário */
         #dash_grid-real-time .badge .time-overlay {
             position: absolute;
@@ -823,6 +958,11 @@ function suite_formatarInputHistorico(textarea) {
                         <input type="number" id="suite_intervaloMinimoBranco" value="0" min="0">
                         <div class="hint">Não gerará sinais dentro deste intervalo de tempo após o sinal anterior. 0 para desativar.</div>
                     </div>
+                    <div class="control-group">
+                        <label>Nº de Entradas (Tentativas/Gale):</label>
+                        <input type="number" id="suite_entradasBranco" value="3" min="1">
+                        <div class="hint">Quantos minutos cobrir após o sinal (Ex: 3).</div>
+                    </div>
                     <div class="control-group" id="suite_customStrategyContainer" style="display:none;">
                         <label>Padrão Personalizado (minutos, separados por vírgula):</label>
                         <input type="text" id="suite_customPattern" placeholder="Ex: 10, 25, 12, 40">
@@ -967,6 +1107,21 @@ function suite_formatarInputHistorico(textarea) {
                             <div class="hint">Tempo a adicionar após a análise (Mínimo: 2).</div>
                         </div>
 
+                        <!-- NOVO: FILTRO MELHORES MINUTOS -->
+                        <div class="control-group" style="margin-bottom: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 10px;">
+                                <label for="autoBotBestMinuteFilter" style="font-size: 0.95em;">⭐ Filtrar Melhores Minutos:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="autoBotBestMinuteFilter">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="control-group">
+                                <label for="autoBotMinAssertiveness" style="font-size: 0.9em;">Assertividade Mínima (%):</label>
+                                <input type="number" id="autoBotMinAssertiveness" value="80" min="1" max="100">
+                            </div>
+                        </div>
+
                         <!-- NOVO: SONS DO ROBÔ -->
                         <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
                             <label for="autoBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
@@ -1028,8 +1183,22 @@ function suite_formatarInputHistorico(textarea) {
                     <button id="whiteBotCollapseBtn" onclick="toggleWhiteBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
 
                     <div id="whiteBotConfigContainer">
+                        <!-- PRESETS DE CONFIGURAÇÃO -->
+                        <div class="control-group" style="margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 6px; border: 1px dashed #444;">
+                            <label style="margin-bottom: 8px; display: block; color: #ff9800;">📁 Presets Rápidos:</label>
+                            <div style="display: flex; gap: 5px;">
+                                <select id="whiteBotPresetSelector" style="flex: 1; margin-bottom: 0;">
+                                    <option value="conservative">🛡️ Conservador (Seguro)</option>
+                                    <option value="aggressive">⚔️ Agressivo (Risco)</option>
+                                    <option value="custom">💾 Personalizado</option>
+                                </select>
+                                <button onclick="applyWhiteBotPreset(this)" class="manual-btn util-btn" style="padding: 0 10px; background-color: #00d2ff; color: #000; font-weight: bold; margin: 0; border: none;">CARREGAR</button>
+                                <button onclick="saveWhiteBotPreset(this)" class="manual-btn util-btn" style="padding: 0 10px; background-color: #28a745; color: #fff; margin: 0; border: none;" title="Salvar configuração atual em Personalizado">💾</button>
+                            </div>
+                        </div>
+
                         <!-- SELETOR DE ESTRATÉGIA E ENTRADAS -->
-                        <div class="inline-controls" style="margin-bottom: 15px;">
+                        <div class="inline-controls" style="margin-bottom: 10px;">
                             <div class="control-group" style="flex: 2;">
                                 <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
                                 <select id="whiteBotStrategy">
@@ -1039,6 +1208,7 @@ function suite_formatarInputHistorico(textarea) {
                                     <option value="exponential_renewal">4. Modelo Exponencial (Renewal)</option>
                                     <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
                                     <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
+                                    <option value="sum_minutes_3">7. Soma Minutos (Últimos 3)</option>
                                 </select>
                             </div>
                             <div class="control-group" style="flex: 1;">
@@ -1047,17 +1217,57 @@ function suite_formatarInputHistorico(textarea) {
                             </div>
                         </div>
 
-                        <!-- ROTAÇÃO DE ESTRATÉGIA -->
-                        <div class="toggle-switch-container" style="margin-bottom: 15px; justify-content: flex-start; gap: 15px;">
-                            <label for="whiteBotRandomRotation" style="font-size: 0.95em;">🔄 Rotação Aleatória: <span id="whiteBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="whiteBotRandomRotation">
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
+                        <!-- OFFSET E ROTAÇÃO (COMBINADOS) -->
+                        <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end;">
+                            <div class="control-group" style="flex: 1;">
+                                <label for="whiteBotEntryOffset">Offset (Minutos):</label>
+                                <input type="number" id="whiteBotEntryOffset" value="5" min="1" onchange="if(this.value < 1) this.value = 1;">
+                            </div>
+                            <div class="toggle-switch-container" style="flex: 1; margin-bottom: 0; height: 42px; justify-content: flex-start; align-items: center; gap: 10px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
+                                <label for="whiteBotRandomRotation" style="font-size: 0.85em; margin-bottom: 0;">🔄 Rotação: <span id="whiteBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
+                                <label class="switch" style="width: 40px; height: 20px;">
+                                    <input type="checkbox" id="whiteBotRandomRotation">
+                                    <span class="slider" style="border-radius: 20px;"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- PROTEÇÃO (COMBINADOS) -->
+                        <div class="inline-controls" style="margin-bottom: 10px;">
+                            <div class="control-group" style="flex: 1;">
+                                <label for="whiteBotProtectionTriggerCount">Ativar Proteção (Brancos):</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="number" id="whiteBotProtectionTriggerCount" value="10" min="1" style="flex: 1;">
+                                    <button onclick="resetWhiteBotProtectionCount(this)" class="manual-btn util-btn" style="padding: 0 10px; font-size: 0.8rem; background-color: #555; margin: 0; border: 1px solid #444;" title="Zerar">ZERAR</button>
+                                </div>
+                            </div>
+                            <div class="control-group" style="flex: 1;">
+                                <label for="whiteBotProtectionPauseCount">Pausa (Pedras):</label>
+                                <input type="number" id="whiteBotProtectionPauseCount" value="32" min="1">
+                            </div>
+                        </div>
+
+                        <!-- NOVO: FILTRO MELHORES MINUTOS (WHITE) -->
+                        <div class="control-group" style="margin-bottom: 10px; border-top: 1px solid #333; padding-top: 10px;">
+                            <div class="inline-controls" style="align-items: center;">
+                                <div class="toggle-switch-container" style="justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 0; flex: 1; height: 42px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
+                                    <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em; margin-bottom: 0;">⭐ Filtrar Melhores Minutos:</label>
+                                    <label class="switch" style="width: 40px; height: 20px;">
+                                        <input type="checkbox" id="whiteBotBestMinuteFilter">
+                                        <span class="slider" style="border-radius: 20px;"></span>
+                                    </label>
+                                </div>
+                                <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <label for="whiteBotMinAssertiveness" style="font-size: 0.85em; margin-bottom: 0; white-space: nowrap;">Assert. Mín (%):</label>
+                                        <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px;">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- META DE WINS E LOSS -->
-                        <div class="inline-controls" style="margin-bottom: 15px;">
+                        <div class="inline-controls" style="margin-bottom: 10px;">
                             <div class="control-group">
                                 <label for="whiteBotWinGoal">✅ Meta Wins:</label>
                                 <input type="number" id="whiteBotWinGoal" placeholder="Ex: 5" min="1">
@@ -1091,6 +1301,9 @@ function suite_formatarInputHistorico(textarea) {
                     <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">
                         Robô Desativado.
                     </div>
+
+                    <!-- Painel de Proteção (Sempre Visível quando ativo) -->
+                    <div id="whiteBotProtectionPanel" class="protection-panel disabled"></div>
 
                     <!-- Painel para o Sinal Gerado -->
                     <div id="whiteBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
@@ -1420,57 +1633,9 @@ function suite_formatarInputHistorico(textarea) {
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script>
-        // --- VARIÁVEIS GLOBAIS DE CONFIGURAÇÃO ---
-        const MAINTENANCE_MODE = false; // Defina como true para ativar o modo de manutenção
-        const TELEGRAM_SUPPORT_USERNAME = 'SuporteCortex'; // Substitua pelo username do suporte no Telegram (sem @)
         let autoFetchIntervalId = null;
-
-        // --- CONFIGURAÇÃO DO FIREBASE ---
-        // ⚠️ SUBSTITUA COM SUAS CREDENCIAIS DO FIREBASE CONSOLE ⚠️
-        const firebaseConfig = {
-            apiKey: "AIzaSyAoRK_QV01Dvfr0HVwFH5UsKE1SY1uB5Ho",
-            authDomain: "meu-painel-app-9f7ab.firebaseapp.com",
-            projectId: "meu-painel-app-9f7ab",
-            storageBucket: "meu-painel-app-9f7ab.firebasestorage.app",
-            messagingSenderId: "972379366884",
-            appId: "1:972379366884:web:1f657522d8cdb8699d93f1"
-        };
-
-        // Inicializa o Firebase e o Firestore (db)
-        let db;
-        if (typeof firebase !== 'undefined') {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            db = firebase.firestore();
-            console.log("🔥 Firebase conectado com sucesso!");
-        } else {
-            console.error("Erro: SDK do Firebase não foi carregado corretamente.");
-        }
-
-        // --- SEGURANÇA: FUNÇÕES DE HASH (BCRYPT) ---
-        // Adaptado para funcionar no navegador usando dcodeIO.bcrypt
-        const hashPassword = async (password) => {
-            return new Promise((resolve, reject) => {
-                dcodeIO.bcrypt.genSalt(10, (err, salt) => {
-                    if (err) reject(err);
-                    else dcodeIO.bcrypt.hash(password, salt, (err, hash) => {
-                        if (err) reject(err);
-                        else resolve(hash);
-                    });
-                });
-            });
-        };
-
-        const verifyPassword = async (password, hashedPassword) => {
-            return new Promise((resolve, reject) => {
-                dcodeIO.bcrypt.compare(password, hashedPassword, (err, res) => {
-                    if (err) reject(err);
-                    else resolve(res);
-                });
-            });
-        };
 
         // Função para migrar senhas antigas (Base64) para Bcrypt
         async function migratePasswords() {
@@ -1635,26 +1800,59 @@ function suite_formatarInputHistorico(textarea) {
                 return;
             }
 
+            // Lógica do Filtro de Assertividade (Últimas 100 pedras)
+            const filterActive = document.getElementById('suite_filterByBestMinute').checked;
+            let bestMinutes = [];
+
+            if (filterActive) {
+                const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
+                bestMinutes = getBestPerformingMinutes(minAssertiveness, 'suite_bestMinutesLog', estrategia);
+                
+                const logContainer = document.getElementById('suite_bestMinutesLogContainer');
+                if (logContainer) logContainer.style.display = 'block';
+
+                if (bestMinutes.length === 0) {
+                    outputDiv.innerText = `⚠️ Filtro Ativo: Nenhum minuto atingiu ${minAssertiveness}% de assertividade com a estratégia '${estrategiaTexto}' nas últimas 100 pedras.`;
+                    return;
+                }
+            } else {
+                const logContainer = document.getElementById('suite_bestMinutesLogContainer');
+                if (logContainer) logContainer.style.display = 'none';
+            }
+
             let currentTime = new Date();
             currentTime.setSeconds(0, 0);
             currentTime.setMinutes(currentTime.getMinutes() + 1);
 
             let signals = [];
             let intervalIndex = 0;
+            let attempts = 0;
+            const maxAttempts = qtdSinais * 100; // Limite de segurança para o loop
 
             const platform = document.getElementById('suite_platformSelector').value;
 
-            for (let i = 0; i < qtdSinais; i++) {
+            while (signals.length < qtdSinais && attempts < maxAttempts) {
+                attempts++;
                 const minutesToAdd = intervalos[intervalIndex % intervalos.length];
                 intervalIndex++;
                 
                 currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
                 
+                // Se o filtro estiver ativo, verifica se o minuto atual é um dos "melhores minutos"
+                if (filterActive) {
+                    if (!bestMinutes.includes(currentTime.getMinutes())) {
+                        continue; // Pula este horário se não estiver na lista de melhores minutos
+                    }
+                }
+
                 const hh = currentTime.getHours().toString().padStart(2, '0');
                 const mm = currentTime.getMinutes().toString().padStart(2, '0');
                 
                 let colorEmoji = (platform === 'jonbet') ? '🟢' : '🔴';
                 
+                // FIX: Define 'i' com base na quantidade de sinais já gerados para manter o padrão de cores
+                const i = signals.length;
+
                 if (estrategia === 'padrao' && i % 2 !== 0) colorEmoji = '⚫';
                 else if (estrategia === 'sequenciaInversa' && i % 2 === 0) colorEmoji = '⚫';
                 else if (estrategia === 'focoPreto') colorEmoji = '⚫';
@@ -1665,6 +1863,11 @@ function suite_formatarInputHistorico(textarea) {
 
                 // ADIÇÃO: Intervalo no output
                 signals.push(`🕒 ${hh}:${mm} ➔ ${colorEmoji}`);
+            }
+
+            if (signals.length === 0) {
+                outputDiv.innerText = "⚠️ Não foi possível gerar sinais com os filtros atuais. Tente diminuir a assertividade ou mudar a estratégia.";
+                return;
             }
 
             const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -1696,44 +1899,6 @@ function suite_formatarInputHistorico(textarea) {
             const mean = array.reduce((a, b) => a + b) / n;
             const variance = array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
             return Math.sqrt(variance);
-        }
-
-        async function getTelegramSettings() {
-            console.warn("getTelegramSettings: Função de placeholder. Implementação real necessária para buscar configs do DB.");
-            try {
-                // Tenta buscar do Firebase
-                const doc = await db.collection('settings').doc('telegram').get();
-                if (doc.exists) {
-                    return doc.data();
-                }
-            } catch (e) {
-                console.error("Erro ao buscar configurações do Telegram:", e);
-            }
-            // Retorna um objeto de fallback se a busca falhar ou não houver nada no DB
-            return {
-                bot_token: null,
-                chat_id: null,
-                welcome_message: "Bem-vindo, {username}! Sua senha é {password}. Seu acesso expira em {expiration_date}."
-            };
-        }
-
-        async function sendTelegramNotification(message, targetChatId = null) {
-            console.log(`Tentando enviar notificação para o Telegram: "${message}"`);
-            try {
-                const settings = await getTelegramSettings();
-                const botToken = settings.bot_token;
-                // Se um targetChatId for passado (ex: para um usuário específico), use-o. Senão, use o chat_id padrão (admin).
-                const chatId = targetChatId || settings.chat_id;
-
-                if (!botToken || !chatId) {
-                    console.warn("Token do Bot ou ID do Chat não configurados. Notificação não enviada.");
-                    return;
-                }
-                // A implementação real do fetch para a API do Telegram iria aqui.
-                console.log(`Placeholder: Mensagem para o bot do Telegram seria enviada para o chat ${chatId}.`);
-            } catch (e) {
-                console.error("Falha ao enviar notificação do Telegram:", e);
-            }
         }
 
         function suite_corrigirSinais() {
@@ -1898,11 +2063,18 @@ function suite_formatarInputHistorico(textarea) {
             resultsDiv.innerText = out;
         }
 
-        function getBestPerformingMinutes(threshold = 75, logElementId = null) {
+        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
             const bestMinutes = [];
-            const rawData = document.getElementById('dash_inputData').value;
+            // Prioriza o Coletor Automático (dash_autoInput), fallback para manual
+            const autoInput = document.getElementById('dash_autoInput');
+            const manualInput = document.getElementById('dash_inputData');
+            let rawData = '';
+            
+            if (autoInput && autoInput.value.trim() !== '') rawData = autoInput.value.trim();
+            else if (manualInput) rawData = manualInput.value.trim();
+
             if (!rawData || rawData.trim() === '') {
-                console.log("getBestPerformingMinutes: O campo de análise manual está vazio.");
+                if (logElementId) document.getElementById(logElementId).innerHTML = 'Sem dados para análise (Coletor Vazio).';
                 return [];
             }
 
@@ -1917,8 +2089,15 @@ function suite_formatarInputHistorico(textarea) {
                 }
             }
 
+            // Limita às últimas 100 pedras (assumindo que a lista vem do mais recente para o mais antigo)
+            if (results.length > 100) {
+                results = results.slice(0, 100);
+            }
+            // Inverte para ordem cronológica (Antigo -> Novo) para análise de padrão
+            results.reverse();
+
             if (results.length < 2) {
-                console.log("getBestPerformingMinutes: Histórico insuficiente para análise de minutos.");
+                if (logElementId) document.getElementById(logElementId).innerHTML = 'Histórico insuficiente (< 2).';
                 return [];
             }
 
@@ -1926,14 +2105,34 @@ function suite_formatarInputHistorico(textarea) {
             for (let i = 1; i < results.length; i++) {
                 const previousResult = results[i - 1];
                 const currentResult = results[i];
-                const minute = currentResult.horario.split(':')[1];
+                const minute = parseInt(currentResult.horario.split(':')[1]); // Usa inteiro para chave
 
                 if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
 
                 const previousColor = dash_identificarCor(previousResult.numero);
                 const currentColor = dash_identificarCor(currentResult.numero);
 
-                if (previousColor !== 'branco' && currentColor !== 'branco' && previousColor !== currentColor) {
+                let isWin = false;
+
+                // Lógica de Win baseada na Estratégia Selecionada
+                if (strategy === 'branco') {
+                    // Para estratégia de branco, conta apenas se saiu branco
+                    if (currentColor === 'branco') isWin = true;
+                } else if (currentColor !== 'branco') {
+                    if (strategy === 'focoVermelho') {
+                        if (currentColor === 'vermelho') isWin = true;
+                    } else if (strategy === 'focoPreto') {
+                        if (currentColor === 'preto') isWin = true;
+                    } else if (strategy === 'surf' || strategy === 'duplos') {
+                        // Surf/Duplos = Repetição da cor anterior
+                        if (previousColor !== 'branco' && previousColor === currentColor) isWin = true;
+                    } else {
+                        // Padrão/Xadrez/Alternado/Quebra = Alternância da cor anterior
+                        if (previousColor !== 'branco' && previousColor !== currentColor) isWin = true;
+                    }
+                }
+
+                if (isWin) {
                     minuteStats[minute].wins++;
                 }
                 minuteStats[minute].total++;
@@ -2201,6 +2400,7 @@ function suite_formatarInputHistorico(textarea) {
             const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
             // Correção: A quantidade de sinais deve respeitar o input do usuário
             const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value) || 15;
+            const numEntradas = document.getElementById('suite_entradasBranco') ? (parseInt(document.getElementById('suite_entradasBranco').value) || 3) : 3;
             const resultsDiv = document.getElementById('suite_resBranco');
 
             if (!input) {
@@ -2284,8 +2484,9 @@ function suite_formatarInputHistorico(textarea) {
             out += `📅 Data: *${dataLista}*\n`;
             out += `📚 Fonte do Histórico: *${sourceOfHistory}*\n`;
             out += `🎯 Estratégia: *${strategyName}*\n`;
+            out += `🔄 Entradas: *${numEntradas}* (Cobrir até ${numEntradas} min)\n`;
             if (intervaloMinimo > 0) {
-                out += `🔢 Entradas: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
+                out += `🔢 Sinais: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
             }
 
             let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
@@ -3058,6 +3259,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (whiteBotToggle) whiteBotToggle.addEventListener('change', handleWhiteBotToggle);
 
             // Listeners para o Robô Branco (Rotação e Estratégia)
+            // Inicializa o painel de proteção como desativado visualmente
+            updateWhiteBotProtectionDisplay('disabled');
+
             const whiteBotRandomRotation = document.getElementById('whiteBotRandomRotation');
             const whiteBotStrategySelect = document.getElementById('whiteBotStrategy');
             if (whiteBotRandomRotation) {
@@ -3697,34 +3901,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
-        /**
-         * Envia uma notificação no navegador para o administrador.
-         * @param {string} title - O título da notificação.
-         * @param {string} body - O corpo (mensagem) da notificação.
-         */
-        function sendAdminNotification(title, body) {
-            // Verifica se o usuário logado é o administrador
-            const accessLevel = sessionStorage.getItem('accessLevel');
-            if (accessLevel !== 'admin') {
-                return; // Só envia notificação se for o admin
-            }
-
-            // Verifica se o navegador suporta notificações
-            if (!("Notification" in window)) {
-                console.log("Este navegador não suporta notificações de desktop.");
-            } else if (Notification.permission === "granted") {
-                // Se a permissão já foi concedida, cria a notificação
-                new Notification(title, { body: body, icon: 'https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg' });
-            } else if (Notification.permission !== "denied") {
-                // Pede permissão ao usuário
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification(title, { body: body, icon: 'https://i.pinimg.com/736x/45/1d/10/451d101835c08388c04db1e588801a2f.jpg' });
-                    }
-                });
-            }
-        }
-
         function toggleTrialDurationField() {
             const accessLevel = document.getElementById('reg_accessLevel').value;
             document.getElementById('trial-duration-group').style.display = (accessLevel === 'guest' || accessLevel === 'operator') ? 'block' : 'none';
@@ -3893,6 +4069,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         function handleLogout() {
             // Limpa toda a sessão para garantir um logout completo
             sessionStorage.clear();
+            localStorage.removeItem('isLoggedIn'); // Garante limpeza de persistência antiga se houver
+            
+            // Opcional: Recarregar a página sem parâmetros de query para limpar estado da memória JS
+            if (window.location.search.includes('logout')) {
+                 // Já estamos na tela de logout
+            }
             // Redireciona para a página com um parâmetro de logout para forçar a tela de login,
             // mesmo em ambiente Telegram.
             window.location.href = window.location.pathname + '?logout=true';
@@ -3991,6 +4173,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const buttonText = loginButton.querySelector('.login-button-text');
             const spinner = loginButton.querySelector('.login-spinner');
         
+            // Validação básica de entrada
+            if (!username || !pass) {
+                errorDiv.textContent = 'Preencha usuário e senha.';
+                return;
+            }
+
             if (MAINTENANCE_MODE) {
                 errorDiv.textContent = 'Sistema em manutenção. Tente novamente mais tarde.';
                 return;
@@ -4160,6 +4348,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         // Se encontrar, bloqueia o cadastro
                         throw new Error("Você já possui uma conta cadastrada com este usuário do Telegram.");
                     }
+
+                    // VERIFICAÇÃO DE HISTÓRICO DE TESTE (Evita criar múltiplas contas após exclusão)
+                    const trialHistoryDoc = await db.collection("trial_history").doc(String(capturedTelegramId)).get();
+                    if (trialHistoryDoc.exists) {
+                        throw new Error("Você já utilizou seu período de teste gratuito de 3 dias.");
+                    }
                 }
 
                 const querySnapshot = await db.collection("users").where("username", "==", username).get();
@@ -4171,6 +4365,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 newUser.telegramId = capturedTelegramId;
 
                 await db.collection("users").add(newUser);
+
+                // Registra o uso do teste gratuito no histórico permanente
+                if (capturedTelegramId) {
+                    await db.collection("trial_history").doc(String(capturedTelegramId)).set({
+                        username: username,
+                        usedAt: new Date().toISOString()
+                    });
+                }
 
                 // Notifica o administrador sobre o novo cadastro
                 const adminMessage = `🎉 *Novo Cadastro Realizado*\n\n*Usuário:* \`${username}\`\n*Contato:* ${contact || 'Não informado'}\n*Acesso até:* ${expDate.toLocaleDateString('pt-BR')}`;
@@ -4437,6 +4639,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let lastAutoBotResultSignature = null; // Assinatura do último resultado processado
 
         // VARIÁVEIS DO ROBÔ BRANCO
+        let whiteBotProtectionUserEnabled = true; // Preferência do usuário para o sistema de proteção
         let activeWhiteSignal = null;
         let lastGeneratedWhiteSignalTime = null;
         let whiteBotWins = 0;
@@ -4446,6 +4649,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let lastWhiteBotResult = null;
         let whiteBotPlayCount = 0;
         let whiteBotStrategyStats = {};
+        let whiteBotProtectionWhiteCount = 0; // Contador para proteção de 10 em 10
+
+        // Variáveis para Recuperação Pós-Branco
+        let whiteBotRecoveryEndTime = 0;
+        let whiteBotProtectionPauseRemaining = 0; // Contagem regressiva de pedras para a pausa
+        let lastProcessedGeneralTime = null; // Rastreia a última pedra geral para contar a pausa
+        let lastProcessedWhiteTime = null;
 
         function handleAutoBotToggle(event) {
             const isBotActive = event.target.checked;
@@ -4501,6 +4711,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('whiteBotLossCount').textContent = '0';
                 document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
                 whiteBotStrategyStats = {};
+                whiteBotRecoveryEndTime = 0; // Reseta timer de recuperação
+                whiteBotProtectionPauseRemaining = 0; // Reseta contador de pausa
+                lastProcessedGeneralTime = null;
+                lastProcessedWhiteTime = null;
+                whiteBotProtectionWhiteCount = 0; // Reseta contagem de brancos
+                updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled'); // Inicia visual conforme preferência
                 updateWhiteBotStrategyStatsDisplay();
 
                 if (isAutoFetchActive) {
@@ -4521,6 +4737,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
                 lastGeneratedWhiteSignalTime = null;
                 document.getElementById('whiteBotSignalPanel').style.display = 'none';
+                updateWhiteBotProtectionDisplay('disabled'); // Define visual como Desativado
                 lastWhiteBotResult = null;
                 if (container) container.classList.remove('bot-active-pulse');
             }
@@ -4743,18 +4960,80 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 return;
             }
 
-            // Se o último resultado foi Branco (Win), aguarda a próxima análise
-            if (results[0].roll === 0) return;
+            // --- LÓGICA DE PROTEÇÃO (10 BRANCOS -> 32 PEDRAS DE PAUSA) ---
+            if (whiteBotProtectionUserEnabled) {
+                const latestTime = results[0].time;
+
+                // 1. SE ESTIVER EM PAUSA (Contagem Regressiva de Pedras)
+                if (whiteBotProtectionPauseRemaining > 0) {
+                    // Verifica se entrou uma nova pedra (horário diferente) para decrementar
+                    if (lastProcessedGeneralTime !== latestTime) {
+                        whiteBotProtectionPauseRemaining--;
+                        lastProcessedGeneralTime = latestTime;
+                        
+                        if (whiteBotProtectionPauseRemaining > 0) {
+                            updateWhiteBotProtectionDisplay('active', whiteBotProtectionPauseRemaining);
+                            // Atualiza o painel de sinal para mostrar o status
+                            const signalContent = document.getElementById('whiteBotSignalContent');
+                            if (signalContent) signalContent.innerHTML = `<span style="color: #ffc107; font-size: 1rem;">⏸️ PAUSA DE PROTEÇÃO: RESTAM ${whiteBotProtectionPauseRemaining} PEDRAS</span>`;
+                            return; // Interrompe a análise enquanto estiver pausado
+                        } else {
+                            // Pausa finalizada
+                            updateWhiteBotProtectionDisplay('standby');
+                            const signalContent = document.getElementById('whiteBotSignalContent');
+                            if (signalContent) signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                        }
+                    } else {
+                        return; // Ainda na mesma pedra, mantém a pausa e não analisa
+                    }
+                }
+
+                // 2. MONITORAMENTO DE BRANCOS (Se não estiver pausado)
+                if (results[0].roll === 0) {
+                    if (lastProcessedWhiteTime !== results[0].time) {
+                        lastProcessedWhiteTime = results[0].time;
+                        
+                        const triggerCount = parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10;
+                        whiteBotProtectionWhiteCount++; // Incrementa contador
+                        console.log(`Robô Branco: Branco detectado. Contagem atual: ${whiteBotProtectionWhiteCount}/${triggerCount}`);
+
+                        // Atualiza o display visual com a nova contagem
+                        if (whiteBotProtectionWhiteCount < triggerCount) {
+                            updateWhiteBotProtectionDisplay('standby');
+                        }
+
+                        // Lógica: Ativa a cada 10 brancos -> Pausa de 32 pedras
+                        if (whiteBotProtectionWhiteCount >= triggerCount) {
+                            const pauseCount = parseInt(document.getElementById('whiteBotProtectionPauseCount').value) || 32;
+                            whiteBotProtectionPauseRemaining = pauseCount;
+                            whiteBotProtectionWhiteCount = 0; // Reseta a contagem para o próximo ciclo
+                            console.log(`Robô Branco: PROTEÇÃO ATIVA! ${triggerCount}º Branco detectado. Pausa de ${pauseCount} pedras iniciada.`);
+                            updateWhiteBotProtectionDisplay('active', pauseCount);
+                            return; // Interrompe análise imediata
+                        }
+                    }
+                }
+                
+                // Atualiza o rastreador geral de tempo
+                if (lastProcessedGeneralTime !== latestTime) {
+                    lastProcessedGeneralTime = latestTime;
+                }
+            } else {
+                // Se a proteção estiver desativada pelo usuário, garante que o timer seja zerado
+                whiteBotRecoveryEndTime = 0;
+                whiteBotProtectionPauseRemaining = 0;
+            }
+            // -----------------------------------------------------
 
             let strategy = document.getElementById('whiteBotStrategy').value;
 
             const recentColors = results
                 .map(r => ({...r, color: dash_identificarCor(r.roll)}))
                 .filter(r => r.color !== 'branco')
-                .slice(0, 3);
+                .slice(0, 7);
 
             if (recentColors.length < 3) return;
-            const [last, secondLast, thirdLast] = recentColors;
+            const [last, secondLast, thirdLast, fourthLast, fifthLast] = recentColors;
 
             // Lógica de Rotação Inteligente (Smart Rotation)
             if (document.getElementById('whiteBotRandomRotation').checked) {
@@ -4762,14 +5041,17 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 for (const strat of strategiesToCheck) {
                     let signalFound = false;
                     if (strat === 'alternating_break') {
-                        if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) signalFound = true;
+                        if (recentColors.length >= 4 && last.color !== secondLast.color && secondLast.color !== thirdLast.color && thirdLast.color !== fourthLast.color) signalFound = true;
                     } else if (strat === 'poisson_hunt') {
                         const lastWhite = results.find(r => r.roll === 0);
                         if (lastWhite) {
                             const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                            const [dLast, moLast, yLast] = lastWhite.date.split('/').map(Number);
+                            const dateLast = new Date(yLast, moLast - 1, dLast, hLast, mLast);
                             const [hNow, mNow] = results[0].time.split(':').map(Number);
-                            let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
-                            if (diffMinutes < 0) diffMinutes += 24 * 60;
+                            const [dNow, moNow, yNow] = results[0].date.split('/').map(Number);
+                            const dateNow = new Date(yNow, moNow - 1, dNow, hNow, mNow);
+                            let diffMinutes = (dateNow - dateLast) / (1000 * 60);
                             if (diffMinutes >= 8) signalFound = true;
                         }
                     } else if (strat === 'cacador_branco') {
@@ -4794,9 +5076,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         const lastWhite = results.find(r => r.roll === 0);
                         if (lastWhite) {
                             const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                            const [dLast, moLast, yLast] = lastWhite.date.split('/').map(Number);
+                            const dateLast = new Date(yLast, moLast - 1, dLast, hLast, mLast);
                             const [hNow, mNow] = results[0].time.split(':').map(Number);
-                            let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
-                            if (diffMinutes < 0) diffMinutes += 24 * 60;
+                            const [dNow, moNow, yNow] = results[0].date.split('/').map(Number);
+                            const dateNow = new Date(yNow, moNow - 1, dNow, hNow, mNow);
+                            let diffMinutes = (dateNow - dateLast) / (1000 * 60);
                             if (diffMinutes >= 8) signalFound = true;
                         }
                     } else if (strat === 'low_entropy') {
@@ -4831,7 +5116,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             switch (strategy) {
                 case 'alternating_break':
-                    if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) {
+                    if (recentColors.length >= 4 && last.color !== secondLast.color && secondLast.color !== thirdLast.color && thirdLast.color !== fourthLast.color) {
                         createWhiteSignal(last, last.color, strategy);
                     }
                     break;
@@ -4839,9 +5124,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     const lastWhite = results.find(r => r.roll === 0);
                     if (lastWhite) {
                         const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                        const [dLast, moLast, yLast] = lastWhite.date.split('/').map(Number);
+                        const dateLast = new Date(yLast, moLast - 1, dLast, hLast, mLast);
                         const [hNow, mNow] = results[0].time.split(':').map(Number);
-                        let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
-                        if (diffMinutes < 0) diffMinutes += 24 * 60;
+                        const [dNow, moNow, yNow] = results[0].date.split('/').map(Number);
+                        const dateNow = new Date(yNow, moNow - 1, dNow, hNow, mNow);
+                        let diffMinutes = (dateNow - dateLast) / (1000 * 60);
                         if (diffMinutes >= 8) {
                             console.log(`Robô Branco (Poisson): ${diffMinutes} min sem branco.`);
                             createWhiteSignal(results[0], 'BRANCO', strategy);
@@ -4879,9 +5167,12 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     const lastWhiteExp = results.find(r => r.roll === 0);
                     if (lastWhiteExp) {
                         const [hLast, mLast] = lastWhiteExp.time.split(':').map(Number);
+                        const [dLast, moLast, yLast] = lastWhiteExp.date.split('/').map(Number);
+                        const dateLast = new Date(yLast, moLast - 1, dLast, hLast, mLast);
                         const [hNow, mNow] = results[0].time.split(':').map(Number);
-                        let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
-                        if (diffMinutes < 0) diffMinutes += 24 * 60;
+                        const [dNow, moNow, yNow] = results[0].date.split('/').map(Number);
+                        const dateNow = new Date(yNow, moNow - 1, dNow, hNow, mNow);
+                        let diffMinutes = (dateNow - dateLast) / (1000 * 60);
 
                         // Cálculo da Probabilidade: P = 1 - e^(-t / 7.5)
                         const lambda = 1 / 7.5;
@@ -4917,7 +5208,139 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         createWhiteSignal(results[0], 'BRANCO', strategy);
                     }
                     break;
+                case 'sum_minutes_3':
+                    // ESTRATÉGIA 7: Soma dos Minutos dos Últimos 3 Brancos
+                    const whitesSum = results.filter(r => r.roll === 0);
+                    if (whitesSum.length >= 3) {
+                        const m1 = parseInt(whitesSum[0].time.split(':')[1]);
+                        const m2 = parseInt(whitesSum[1].time.split(':')[1]);
+                        const m3 = parseInt(whitesSum[2].time.split(':')[1]);
+                        const sum = m1 + m2 + m3;
+                        const targetMin = sum % 60;
+                        const currentMin = parseInt(results[0].time.split(':')[1]);
+                        let offset = targetMin - currentMin;
+                        if (offset <= 0) offset += 60;
+                        console.log(`Robô Branco (Soma 3): Soma ${sum}, Alvo :${targetMin}, Offset ${offset}m`);
+                        createWhiteSignal(results[0], 'BRANCO', strategy, offset);
+                    }
+                    break;
             }
+        }
+
+        // FUNÇÃO PARA RESETAR CONTAGEM DE PROTEÇÃO MANUALMENTE
+        function resetWhiteBotProtectionCount(btn) {
+            whiteBotProtectionWhiteCount = 0;
+            console.log("Robô Branco: Contagem de proteção resetada manualmente.");
+            
+            const isBotActive = document.getElementById('whiteBotToggle').checked;
+            if (isBotActive && whiteBotProtectionPauseRemaining <= 0) {
+                 updateWhiteBotProtectionDisplay('standby');
+            }
+
+            if(btn) {
+                 const originalText = btn.innerText;
+                 btn.innerText = '✅';
+                 setTimeout(() => btn.innerText = originalText, 1000);
+            }
+        }
+
+        // FUNÇÃO PARA ALTERNAR PREFERÊNCIA DO USUÁRIO (PROTEÇÃO)
+        function toggleWhiteBotProtectionUserPreference(checkbox) {
+            whiteBotProtectionUserEnabled = checkbox.checked;
+            const isBotActive = document.getElementById('whiteBotToggle').checked;
+
+            if (!isBotActive) {
+                updateWhiteBotProtectionDisplay('disabled');
+                return;
+            }
+
+            if (!whiteBotProtectionUserEnabled) {
+                whiteBotRecoveryEndTime = 0;
+                whiteBotProtectionPauseRemaining = 0;
+                updateWhiteBotProtectionDisplay('user_disabled');
+                // Remove aviso de pausa se houver
+                const signalContent = document.getElementById('whiteBotSignalContent');
+                if (signalContent && signalContent.innerHTML.includes('Pausado')) {
+                     signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                }
+            } else {
+                updateWhiteBotProtectionDisplay('standby');
+            }
+        }
+
+        // FUNÇÃO VISUAL: ATUALIZA PAINEL DE PROTEÇÃO (STANDBY / ATIVO)
+        function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
+            const panel = document.getElementById('whiteBotProtectionPanel');
+            if (!panel) return;
+
+            const triggerCount = document.getElementById('whiteBotProtectionTriggerCount') ? parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10 : 10;
+            // Botão Toggle Futurista
+            const toggleHTML = `
+                <div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);">
+                    <span style="font-size: 0.65rem; color: ${whiteBotProtectionUserEnabled ? '#00d2ff' : '#555'}; font-weight: bold; letter-spacing: 1px;">PROT.</span>
+                    <label class="switch" style="transform: scale(0.6); margin: 0;">
+                        <input type="checkbox" ${whiteBotProtectionUserEnabled ? 'checked' : ''} onchange="toggleWhiteBotProtectionUserPreference(this)">
+                        <span class="slider" style="background-color: #222;"></span>
+                    </label>
+                </div>
+            `;
+
+            if (mode === 'active') {
+                panel.className = 'protection-panel active';
+                panel.innerHTML = `
+                    ${toggleHTML}
+                    <div class="recovery-scan-line"></div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                        <div class="shield-icon-anim">🛡️</div>
+                        <div style="text-align: left;">
+                            <h3 class="cortex-text-anim" style="margin: 0; font-size: 1.2rem; letter-spacing: 1px;">PROTEÇÃO ATIVA</h3>
+                            <div style="color: #00d2ff; font-size: 0.8rem; font-weight: bold;">RECUPERAÇÃO PÓS-BRANCO</div>
+                            <div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">PAUSA: ${remainingStones} PEDRAS RESTANTES</div>
+                        </div>
+                    </div>
+                `;
+                // Atualiza o painel de sinal para indicar pausa
+                const signalContent = document.getElementById('whiteBotSignalContent');
+                if (signalContent) signalContent.innerHTML = '<span style="color: #aaa; font-size: 1rem;">⏸️ Pausado pelo Sistema de Proteção</span>';
+            } else if (mode === 'standby') {
+                panel.className = 'protection-panel standby';
+                panel.innerHTML = `
+                    ${toggleHTML}
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <div class="shield-standby-anim">🛡️</div>
+                        <div style="text-align: left;">
+                            <div style="color: #fff; font-weight: bold; font-size: 0.9rem; opacity: 0.8;">SISTEMA DE PROTEÇÃO</div>
+                            <div style="color: #00ff88; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">● MONITORANDO (${whiteBotProtectionWhiteCount}/${triggerCount})</div>
+                        </div>
+                    </div>
+                `;
+            } else if (mode === 'user_disabled') {
+                panel.className = 'protection-panel standby'; // Usa estilo standby mas com texto diferente
+                panel.style.borderColor = '#444';
+                panel.innerHTML = `
+                    ${toggleHTML}
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.6;">
+                        <span style="font-size: 1.5rem; color: #aaa;">🛡️</span>
+                        <div style="text-align: left;">
+                            <div style="color: #aaa; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div>
+                            <div style="color: #ffc107; font-size: 0.7rem; font-weight: bold;">DESATIVADO PELO USUÁRIO</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                panel.className = 'protection-panel disabled';
+                panel.innerHTML = `
+                    ${toggleHTML}
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <span style="font-size: 1.5rem; color: #555;">🛡️</span>
+                        <div style="text-align: left;">
+                            <div style="color: #888; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div>
+                            <div style="color: #555; font-size: 0.7rem; font-weight: bold;">DESATIVADO</div>
+                        </div>
+                    </div>
+                `;
+            }
+            panel.style.display = 'block';
         }
 
         // LÓGICA DE ANÁLISE DO ROBÔ BRANCO (Cópia da lógica original para modificação independente)
@@ -4930,6 +5353,40 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             let entryTime = parseInt(document.getElementById('autoBotEntryTime').value);
             if (isNaN(entryTime) || entryTime < 2) entryTime = 2; // Garante o mínimo de 2 minutos
             signalTime.setMinutes(signalTime.getMinutes() + entryTime); 
+
+            // --- LÓGICA DE FILTRO DE MELHORES MINUTOS ---
+            const useBestMinuteFilter = document.getElementById('autoBotBestMinuteFilter');
+            if (useBestMinuteFilter && useBestMinuteFilter.checked) {
+                const currentAutoStrategy = document.getElementById('autoBotStrategy').value;
+                let analysisStrategy = 'padrao';
+                
+                // Mapeamento de estratégias do Robô para estratégias de Análise
+                if (['alternating_break', 'follow_trend', 'surf_flow', 'chess_break'].includes(currentAutoStrategy)) {
+                    analysisStrategy = 'surf'; // Busca repetição
+                } else if (['counter_trend'].includes(currentAutoStrategy)) {
+                    analysisStrategy = 'padrao'; // Busca alternância
+                } else if (['reversal_protection', 'king_of_table', 'post_white_value'].includes(currentAutoStrategy)) {
+                    analysisStrategy = 'focoVermelho'; // Foco em cor específica (Vermelho como proxy)
+                }
+
+                const minAssertiveness = parseInt(document.getElementById('autoBotMinAssertiveness').value) || 80;
+                const bestMinutes = getBestPerformingMinutes(minAssertiveness, null, analysisStrategy);
+                const targetMinute = signalTime.getMinutes();
+
+                if (!bestMinutes.includes(targetMinute)) {
+                    console.log(`Robô Auto: Sinal ignorado. Minuto ${targetMinute} não está entre os melhores (${minAssertiveness}%+) para ${analysisStrategy}.`);
+                    const statusDiv = document.getElementById('autoBotStatus');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `<span style="color: #ffc107">⚠️ Sinal ignorado (Filtro Minuto ${targetMinute}).</span>`;
+                        setTimeout(() => { 
+                            if(document.getElementById('autoBotToggle').checked) 
+                                statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Ativado. Monitorando novos resultados...</span>';
+                        }, 3000);
+                    }
+                    return; // Aborta a criação do sinal
+                }
+            }
+            // ---------------------------------------------
 
             const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
             
@@ -4986,12 +5443,42 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             playNotificationSound();
         }
 
-        function createWhiteSignal(triggerResult, targetColor, strategyName) {
+        function createWhiteSignal(triggerResult, targetColor, strategyName, customOffset = null) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
             signalTime.setHours(h, m, 0, 0);
             
-            signalTime.setMinutes(signalTime.getMinutes() + 1); 
+            // Lê o offset configurado pelo usuário (padrão: 5 minutos)
+            let offset = customOffset !== null ? customOffset : parseInt(document.getElementById('whiteBotEntryOffset').value);
+            if (isNaN(offset) || offset <= 0) {
+                offset = 5;
+                document.getElementById('whiteBotEntryOffset').value = 5; // Corrige visualmente para o padrão
+                console.warn("Robô Branco: Offset inválido detectado. Ajustado para 5 minutos.");
+            }
+            signalTime.setMinutes(signalTime.getMinutes() + offset); 
+
+            // --- LÓGICA DE FILTRO DE MELHORES MINUTOS (BRANCO) ---
+            const useBestMinuteFilter = document.getElementById('whiteBotBestMinuteFilter');
+            if (useBestMinuteFilter && useBestMinuteFilter.checked) {
+                const minAssertiveness = parseInt(document.getElementById('whiteBotMinAssertiveness').value) || 20;
+                // Usa estratégia 'branco' para filtrar minutos onde o branco costuma sair
+                const bestMinutes = getBestPerformingMinutes(minAssertiveness, null, 'branco');
+                const targetMinute = signalTime.getMinutes();
+
+                if (!bestMinutes.includes(targetMinute)) {
+                    console.log(`Robô Branco: Sinal ignorado. Minuto ${targetMinute} não está entre os melhores para Branco (${minAssertiveness}%+).`);
+                    const statusDiv = document.getElementById('whiteBotStatus');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `<span style="color: #ffc107">⚠️ Sinal ignorado (Filtro Minuto ${targetMinute}).</span>`;
+                        setTimeout(() => { 
+                            if(document.getElementById('whiteBotToggle').checked) 
+                                statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
+                        }, 3000);
+                    }
+                    return; // Aborta a criação do sinal
+                }
+            }
+            // -----------------------------------------------------
 
             let entryCount = parseInt(document.getElementById('whiteBotEntryCount').value);
             if (isNaN(entryCount) || entryCount < 1) entryCount = 1;
@@ -5018,6 +5505,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const signalPanel = document.getElementById('whiteBotSignalPanel');
             const signalContent = document.getElementById('whiteBotSignalContent');
 
+            signalPanel.style.border = '2px solid var(--accent)'; // Restaura a borda padrão caso venha da recuperação
             signalContent.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div style="text-align: left; flex: 1;">
@@ -5292,15 +5780,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             let displayMessage = message;
             if (strategyName) {
-                const strategyMap = {
-                    'alternating_break': 'Quebra',
-                    'poisson_hunt': 'Poisson',
-                    'cacador_branco': 'Caçador',
-                    'exponential_renewal': 'Renewal',
-                    'low_entropy': 'Entropia',
-                    'fractal_break': 'Fractal'
-                };
-                const label = strategyMap[strategyName] || strategyName;
+                // Tenta pegar o nome amigável direto do seletor HTML
+                let label = strategyName;
+                const select = document.getElementById('whiteBotStrategy');
+                if (select) {
+                    const option = Array.from(select.options).find(opt => opt.value === strategyName);
+                    if (option) label = option.text.replace(/^\d+\.\s*/, ''); // Remove numeração (ex: "1. ")
+                }
                 displayMessage += ` <span style="font-size: 0.85em; color: #aaa; font-weight: normal;">[${label}]</span>`;
             }
             
@@ -5410,21 +5896,62 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        // Variável global para segmentos do gráfico
+        let whiteBotChartSegments = [];
+
+        function whiteBotChartHover(event) {
+            const rect = event.target.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            
+            // Calcula o ângulo em graus (0 a 360, 0 no topo, sentido horário)
+            // Math.atan2 retorna ângulo em radianos a partir do eixo X positivo (3 horas)
+            let degrees = (Math.atan2(y - cy, x - cx) * 180 / Math.PI) + 90;
+            if (degrees < 0) degrees += 360;
+            
+            const segment = whiteBotChartSegments.find(s => degrees >= s.startAngle && degrees < s.endAngle);
+            const tooltip = document.getElementById('whiteBotChartTooltip');
+            
+            if (segment && tooltip) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = (event.clientX + 15) + 'px';
+                tooltip.style.top = (event.clientY + 15) + 'px';
+                tooltip.innerHTML = `<div style="font-weight:bold; color:${segment.color}; margin-bottom:2px;">${segment.label}</div>
+                                     <div>Assertividade: <span style="color:#fff; font-weight:bold;">${segment.rate}%</span></div>
+                                     <div style="font-size:0.75rem; color:#aaa;">Wins: ${segment.wins}</div>`;
+                tooltip.style.borderColor = segment.color;
+                tooltip.style.boxShadow = `0 0 10px ${segment.color}40`;
+            } else if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        function whiteBotChartLeave() {
+            const tooltip = document.getElementById('whiteBotChartTooltip');
+            if (tooltip) tooltip.style.display = 'none';
+        }
+
         function updateWhiteBotStrategyStatsDisplay() {
             const container = document.getElementById('whiteBotStrategyStatsDisplay');
             if (!container) return;
 
-            const strategyMap = {
-                'alternating_break': 'Quebra',
-                'ciclo_branco': 'Ciclo',
-                'fluxo_pos_vermelho': 'Fluxo Pós-V',
-                'poisson_hunt': 'Poisson',
-                'hot_flow_red': 'Fluxo Quente',
-                'pattern_analysis': 'Padrões',
-                'cacador_branco': 'Caçador'
-            };
+            const strategyMap = {};
+            const select = document.getElementById('whiteBotStrategy');
+            
+            // 1. Adiciona automaticamente todas as estratégias que estão no menu HTML
+            if (select) {
+                Array.from(select.options).forEach(opt => {
+                    strategyMap[opt.value] = opt.text.replace(/^\d+\.\s*/, '');
+                });
+            }
 
-            // Usa todas as estratégias definidas no mapa para garantir que a tabela apareça
+            // 2. Adiciona estratégias antigas (que podem ter sido removidas do menu mas têm histórico)
+            Object.keys(whiteBotStrategyStats).forEach(key => {
+                if (!strategyMap[key]) strategyMap[key] = key;
+            });
+
             const keys = Object.keys(strategyMap);
 
             // Obtém a estratégia atualmente selecionada no dropdown
@@ -5442,6 +5969,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             let gradientSegments = [];
             let currentAngle = 0;
             let tableRows = '';
+            
+            // Reseta os segmentos para o tooltip
+            whiteBotChartSegments = [];
 
             keys.forEach((key, index) => {
                 const stats = whiteBotStrategyStats[key] || { wins: 0, losses: 0 };
@@ -5458,6 +5988,17 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (totalWins > 0 && stats.wins > 0) {
                     const angle = (stats.wins / totalWins) * 360;
                     gradientSegments.push(`${segmentColor} ${currentAngle}deg ${currentAngle + angle}deg`);
+                    
+                    // Armazena dados do segmento para o tooltip
+                    whiteBotChartSegments.push({
+                        label: label,
+                        startAngle: currentAngle,
+                        endAngle: currentAngle + angle,
+                        rate: rate,
+                        wins: stats.wins,
+                        color: segmentColor
+                    });
+                    
                     currentAngle += angle;
                 }
 
@@ -5478,7 +6019,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             // Coluna do Gráfico
             html += `<div style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 5px;">
-                        <div style="width: 60px; height: 60px; border-radius: 50%; background: ${gradientStyle}; border: 2px solid #444; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: ${gradientStyle}; border: 2px solid #444; box-shadow: 0 0 10px rgba(0,0,0,0.3); cursor: help;" onmousemove="whiteBotChartHover(event)" onmouseleave="whiteBotChartLeave()"></div>
                         <div style="font-size: 0.7rem; color: #aaa; margin-top: 5px; font-weight: bold;">Wins: ${totalWins}</div>
                      </div>`;
 
@@ -5492,6 +6033,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             html += `</div>`;
             container.innerHTML = html;
+            
+            // Garante que o elemento tooltip exista no corpo da página
+            if (!document.getElementById('whiteBotChartTooltip')) {
+                const tooltip = document.createElement('div');
+                tooltip.id = 'whiteBotChartTooltip';
+                tooltip.className = 'chart-tooltip';
+                document.body.appendChild(tooltip);
+            }
         }
 
         function playNotificationSound() {
@@ -5671,6 +6220,70 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 container.style.display = 'none';
                 btn.innerHTML = '▶️ EXPANDIR PAINEL';
             }
+        }
+
+        function applyWhiteBotPreset(btn) {
+            const selector = document.getElementById('whiteBotPresetSelector');
+            const preset = selector.value;
+            let config = {};
+
+            if (preset === 'conservative') {
+                config = {
+                    strategy: 'cacador_branco', entryCount: 3, offset: 5, rotation: false,
+                    protTrigger: 8, protPause: 40, filter: true, assertiveness: 30, stopLoss: true
+                };
+            } else if (preset === 'aggressive') {
+                config = {
+                    strategy: 'alternating_break', entryCount: 8, offset: 2, rotation: true,
+                    protTrigger: 12, protPause: 15, filter: false, assertiveness: 15, stopLoss: false
+                };
+            } else if (preset === 'custom') {
+                const saved = localStorage.getItem('whiteBotCustomPreset');
+                if (saved) config = JSON.parse(saved);
+                else { alert('Nenhum preset personalizado salvo ainda.'); return; }
+            }
+
+            if (config.strategy) document.getElementById('whiteBotStrategy').value = config.strategy;
+            if (config.entryCount) document.getElementById('whiteBotEntryCount').value = config.entryCount;
+            if (config.offset) document.getElementById('whiteBotEntryOffset').value = config.offset;
+            
+            const rotationCheck = document.getElementById('whiteBotRandomRotation');
+            if (rotationCheck) { rotationCheck.checked = !!config.rotation; rotationCheck.dispatchEvent(new Event('change')); }
+
+            if (config.protTrigger) document.getElementById('whiteBotProtectionTriggerCount').value = config.protTrigger;
+            if (config.protPause) document.getElementById('whiteBotProtectionPauseCount').value = config.protPause;
+            
+            const filterCheck = document.getElementById('whiteBotBestMinuteFilter');
+            if (filterCheck) filterCheck.checked = !!config.filter;
+            
+            if (config.assertiveness) document.getElementById('whiteBotMinAssertiveness').value = config.assertiveness;
+            
+            const stopLossCheck = document.getElementById('whiteBotStrategyStopLoss');
+            if (stopLossCheck) stopLossCheck.checked = !!config.stopLoss;
+
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function saveWhiteBotPreset(btn) {
+            const selector = document.getElementById('whiteBotPresetSelector');
+            if (selector.value !== 'custom') {
+                alert('Selecione "Personalizado" no menu para salvar suas configurações atuais.');
+                selector.value = 'custom';
+                return;
+            }
+            const config = {
+                strategy: document.getElementById('whiteBotStrategy').value,
+                entryCount: parseInt(document.getElementById('whiteBotEntryCount').value),
+                offset: parseInt(document.getElementById('whiteBotEntryOffset').value),
+                rotation: document.getElementById('whiteBotRandomRotation').checked,
+                protTrigger: parseInt(document.getElementById('whiteBotProtectionTriggerCount').value),
+                protPause: parseInt(document.getElementById('whiteBotProtectionPauseCount').value),
+                filter: document.getElementById('whiteBotBestMinuteFilter').checked,
+                assertiveness: parseInt(document.getElementById('whiteBotMinAssertiveness').value),
+                stopLoss: document.getElementById('whiteBotStrategyStopLoss').checked
+            };
+            localStorage.setItem('whiteBotCustomPreset', JSON.stringify(config));
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
         }
     </script>
 </body>
