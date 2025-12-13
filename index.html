@@ -262,6 +262,108 @@
             background: linear-gradient(90deg, transparent, #ff9800, transparent);
             animation: scan-line 3s linear infinite;
         }
+
+        /* --- Botões Futuristas Telegram --- */
+        .btn-cyber {
+            position: relative; padding: 12px 25px; font-family: 'Courier New', Courier, monospace; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 2px; color: #fff; background: rgba(0, 0, 0, 0.6);
+            border: 1px solid transparent; cursor: pointer; transition: all 0.3s ease; overflow: hidden; z-index: 1;
+            border-radius: 4px; outline: none; flex: 1;
+        }
+        .btn-cyber::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: 0.5s; z-index: -1;
+        }
+        .btn-cyber:hover::before { left: 100%; }
+        
+        .btn-save-neon { border-color: #03e9f4; box-shadow: 0 0 5px rgba(3, 233, 244, 0.2); color: #03e9f4; }
+        .btn-save-neon:hover { background: #03e9f4; color: #000; box-shadow: 0 0 10px #03e9f4, 0 0 20px #03e9f4, 0 0 40px #03e9f4; }
+        
+        .btn-test-neon { border-color: #d400d4; box-shadow: 0 0 5px rgba(212, 0, 212, 0.2); color: #d400d4; }
+        .btn-test-neon:hover { background: #d400d4; color: #fff; box-shadow: 0 0 10px #d400d4, 0 0 20px #d400d4, 0 0 40px #d400d4; }
+        
+        .btn-access-neon { border-color: #24A1DE; box-shadow: 0 0 5px rgba(36, 161, 222, 0.2); color: #24A1DE; }
+        .btn-access-neon:hover { background: #24A1DE; color: #fff; box-shadow: 0 0 10px #24A1DE, 0 0 20px #24A1DE, 0 0 40px #24A1DE; }
+
+        .btn-send-neon { border-color: #00ff88; box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); color: #00ff88; width: 100%; margin-top: 10px; }
+        .btn-send-neon:hover { background: #00ff88; color: #000; box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 40px #00ff88; }
+
+        /* --- DESIGN FUTURISTA PARA PEDRAS (REAL-TIME) --- */
+        #dash_grid-real-time .badge {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 3px;
+            border-radius: 8px; /* Canto levemente arredondado tech */
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            font-size: 1.1rem;
+            position: relative;
+            background: #0f0f13; /* Fundo escuro padrão */
+            border: 1px solid #333;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #dash_grid-real-time .badge:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* Vermelho Futurista */
+        #dash_grid-real-time .badge.vermelho {
+            border: 1px solid #ff0055;
+            box-shadow: 0 0 5px rgba(255, 0, 85, 0.4), inset 0 0 10px rgba(255, 0, 85, 0.2);
+            color: #ff0055;
+            text-shadow: 0 0 5px rgba(255, 0, 85, 0.8);
+        }
+        
+        /* Preto Futurista */
+        #dash_grid-real-time .badge.preto {
+            border: 1px solid #444;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(0, 0, 0, 0.8);
+            color: #888;
+        }
+
+        /* Branco Futurista */
+        #dash_grid-real-time .badge.branco {
+            border: 1px solid #fff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            color: #fff;
+            text-shadow: 0 0 10px #fff;
+            animation: pulse-white-neon 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-white-neon {
+            from { box-shadow: 0 0 5px #fff, inset 0 0 5px #fff; }
+            to { box-shadow: 0 0 15px #fff, inset 0 0 10px #fff; }
+        }
+
+        /* Efeito Scanline na pedra */
+        #dash_grid-real-time .badge::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Ajuste do horário */
+        #dash_grid-real-time .badge .time-overlay {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.5);
+            background: transparent;
+        }
     </style>
 </head>
 <body>
@@ -1205,12 +1307,12 @@ function suite_formatarInputHistorico(textarea) {
                     </div>
                 
                     <div class="inline-controls">
-                        <button class="btn-action" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
-                        <button class="btn-action" style="background-color: var(--accent-jonbet);" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
+                        <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
+                        <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
                     </div>
                     
                     <div class="inline-controls" style="margin-top: 10px;">
-                        <button class="btn-action" style="background-color: #24A1DE; width: 100%;" onclick="openTelegramAccess(this)">✈️ Acessar Telegram / Bot</button>
+                        <button class="btn-cyber btn-access-neon" onclick="openTelegramAccess(this)">✈️ Acessar Telegram / Bot</button>
                     </div>
                 
                     <div id="resTelegramConfig" class="output-area" style="display:none; min-height: auto; margin-top: 15px; text-align: center; padding: 10px; font-weight: bold;"></div>
@@ -1222,7 +1324,7 @@ function suite_formatarInputHistorico(textarea) {
                         <label>Mensagem Personalizada:</label>
                         <textarea id="telegram_list_message" placeholder="Digite algo para enviar agora..."></textarea>
                     </div>
-                    <button class="btn-telegram" onclick="sendTelegramList(this)">✈️ Enviar Mensagem</button>
+                    <button class="btn-cyber btn-send-neon" onclick="sendTelegramList(this)">✈️ Enviar Mensagem</button>
                 </div>
             </div>
 
