@@ -147,8 +147,18 @@ function suite_saveSettings(btn) {
 }
 
 function saveTelegramSettings(btn) {
-    const token = document.getElementById('telegram_bot_token').value;
-    const chatId = document.getElementById('telegram_chat_id').value;
+    const token = document.getElementById('telegram_bot_token').value.trim();
+    const chatId = document.getElementById('telegram_chat_id').value.trim();
+
+    if (!isValidTelegramToken(token)) {
+        alert("❌ O Token informado é inválido. Verifique o formato.");
+        return;
+    }
+
+    if (!isValidTelegramChatId(chatId)) {
+        alert("❌ O Chat ID informado é inválido. Deve conter apenas números.");
+        return;
+    }
     
     localStorage.setItem('telegram_bot_token', token);
     localStorage.setItem('telegram_chat_id', chatId);
@@ -161,6 +171,69 @@ function saveTelegramSettings(btn) {
     const originalText = btn.innerHTML;
     btn.innerHTML = '✅ SALVO!';
     setTimeout(() => { resArea.style.display = 'none'; btn.innerHTML = originalText; }, 2500);
+}
+
+function clearTelegramSettings(btn) {
+    if (!confirm("Tem certeza que deseja limpar as configurações locais do Telegram?")) {
+        return;
+    }
+
+    localStorage.removeItem('telegram_bot_token');
+    localStorage.removeItem('telegram_chat_id');
+
+    document.getElementById('telegram_bot_token').value = '';
+    document.getElementById('telegram_chat_id').value = '';
+
+    const resArea = document.getElementById('resTelegramConfig');
+    resArea.innerText = '🗑️ Configurações removidas com sucesso!';
+    resArea.style.color = 'var(--accent-blaze)';
+    resArea.style.display = 'block';
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Limpo!';
+    setTimeout(() => { resArea.style.display = 'none'; btn.innerHTML = originalText; }, 2500);
+}
+
+// Função para validar se o token do Telegram tem o formato correto
+function isValidTelegramToken(token) {
+    // Formato esperado: ID (números) : Token (alfanumérico e caracteres especiais)
+    return /^\d+:[A-Za-z0-9_-]+$/.test(token);
+}
+
+// Função para validar se o Chat ID do Telegram tem o formato correto
+function isValidTelegramChatId(chatId) {
+    // Chat ID deve ser numérico (pode ser negativo para grupos/canais)
+    return /^-?\d+$/.test(chatId);
+}
+
+// Função auxiliar para executar a requisição à API do Telegram
+async function executeTelegramRequest(token, chatId, message) {
+    const cleanToken = token ? token.trim() : '';
+    const cleanChatId = chatId ? chatId.toString().trim() : '';
+
+    if (!isValidTelegramToken(cleanToken)) {
+        throw new Error("O Token do Telegram informado tem um formato inválido.");
+    }
+    if (!isValidTelegramChatId(cleanChatId)) {
+        throw new Error("O ID do Chat do Telegram informado tem um formato inválido (deve ser numérico).");
+    }
+
+    const url = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: cleanChatId,
+            text: message,
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true
+        })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+        throw new Error(data.description || 'Erro desconhecido na API do Telegram.');
+    }
+    return data;
 }
 
 async function testTelegramConnection(btn) {
@@ -182,27 +255,11 @@ async function testTelegramConnection(btn) {
     resArea.style.display = 'none';
 
     const message = "✅ *Teste de Conexão*\n\nOlá! Se você recebeu esta mensagem, suas configurações do Telegram no painel estão funcionando corretamente.";
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.ok) {
-            resArea.innerText = '✅ Mensagem de teste enviada com sucesso!';
-            resArea.style.color = 'var(--accent-jonbet)';
-        } else {
-            throw new Error(data.description || 'Erro desconhecido.');
-        }
+        await executeTelegramRequest(token, chatId, message);
+        resArea.innerText = '✅ Mensagem de teste enviada com sucesso!';
+        resArea.style.color = 'var(--accent-jonbet)';
     } catch (error) {
         resArea.innerText = `❌ Falha ao enviar: ${error.message}`;
         resArea.style.color = 'var(--accent-blaze)';
@@ -241,8 +298,7 @@ async function sendTelegramList(btn) {
     resArea.style.display = 'none';
 
     try {
-        // Reutiliza a função de notificação, enviando a mensagem para o chat de admin
-        await sendTelegramNotification(message);
+        await executeTelegramRequest(token, chatId, message);
         resArea.innerText = '✅ Lista enviada com sucesso para o seu grupo/canal!';
         resArea.style.color = 'var(--accent-jonbet)';
         document.getElementById('telegram_list_message').value = ''; // Limpa o campo após o envio
@@ -256,14 +312,57 @@ async function sendTelegramList(btn) {
         setTimeout(() => { resArea.style.display = 'none'; }, 5000);
     }
 }
+
+async function openTelegramAccess(btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Abrindo...';
+    btn.disabled = true;
+
+    let url = 'https://web.telegram.org'; // URL Padrão (Fallback)
+
+    try {
+        const settings = await getTelegramSettings();
+        if (settings && settings.bot_token) {
+            // 1. Tenta obter o username do bot para abrir direto no chat dele
+            const response = await fetch(`https://api.telegram.org/bot${settings.bot_token}/getMe`);
+            const data = await response.json();
+            if (data.ok && data.result.username) {
+                url = `https://t.me/${data.result.username}`;
+            } else if (settings.chat_id && settings.chat_id.startsWith('@')) {
+                 // 2. Se falhar o bot, tenta o canal se for público (ex: @canal)
+                 url = `https://t.me/${settings.chat_id.substring(1)}`;
+            }
+        }
+    } catch (e) {
+        console.error("Erro ao resolver link do Telegram:", e);
+    }
+
+    window.open(url, '_blank');
+    
+    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1500);
+}
+
 async function getTelegramSettings() {
+    // 0. Tenta pegar dos inputs visíveis na tela primeiro (para garantir que o que o usuário vê é o que é usado)
+    const domToken = document.getElementById('telegram_bot_token') ? document.getElementById('telegram_bot_token').value.trim() : null;
+    const domChatId = document.getElementById('telegram_chat_id') ? document.getElementById('telegram_chat_id').value.trim() : null;
+
+    if (domToken && domChatId && isValidTelegramToken(domToken) && isValidTelegramChatId(domChatId)) {
+        return { bot_token: domToken, chat_id: domChatId };
+    }
+
     // 1. Prioriza as configurações locais do usuário (da aba Conexão)
     const localToken = localStorage.getItem('telegram_bot_token');
     const localChatId = localStorage.getItem('telegram_chat_id');
     if (localToken && localChatId) {
-        return { bot_token: localToken, chat_id: localChatId };
+        // Valida as configurações locais antes de usá-las para evitar erros no envio automático
+        if (isValidTelegramToken(localToken) && isValidTelegramChatId(localChatId)) {
+            return { bot_token: localToken, chat_id: localChatId };
+        }
+        console.warn("⚠️ Configurações locais do Telegram inválidas encontradas e ignoradas.");
     }
     try {
+        if (typeof db === 'undefined' || !db) return null;
         const doc = await db.collection("settings").doc("telegram").get();
         if (doc.exists) {
             return doc.data();
@@ -283,24 +382,19 @@ async function sendTelegramNotification(message, targetChatId = null) {
 
     const { bot_token: token, chat_id: adminChatId } = settings;
     const finalChatId = targetChatId || adminChatId; // Usa o alvo específico ou o do admin
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: finalChatId, text: message, parse_mode: 'Markdown', disable_web_page_preview: true })
-    });
-    const data = await response.json();
-    if (data.ok) console.log("Notificação enviada para o admin via Telegram.");
-    else throw new Error(data.description);
+    
+    // A função executeTelegramRequest já realiza as validações de Token e Chat ID
+    await executeTelegramRequest(token, finalChatId, message);
+    console.log("Notificação enviada para o admin via Telegram.");
 }
 
-async function sendGeneratedListToTelegram(btn) {
-    const listContent = document.getElementById('suite_resGerador').innerText;
-    const defaultText = "Resultado aqui...";
+// Função genérica para botões de envio
+async function handleTelegramSendButton(btn, elementId, defaultText = "") {
+    const contentElement = document.getElementById(elementId);
+    const content = contentElement ? contentElement.innerText : "";
 
-    if (!listContent || listContent.trim() === defaultText || listContent.trim() === "") {
-        alert("Gere uma lista primeiro antes de enviar para o Telegram.");
+    if (!content || (defaultText && content.trim() === defaultText) || content.trim() === "") {
+        alert("Gere o conteúdo primeiro antes de enviar para o Telegram.");
         return;
     }
 
@@ -309,73 +403,101 @@ async function sendGeneratedListToTelegram(btn) {
     btn.disabled = true;
 
     try {
-        // Reutiliza a função de notificação, que já busca as credenciais do Firebase
-        await sendTelegramNotification(listContent);
+        await sendTelegramNotification(content);
         btn.innerHTML = '✅ Enviado!';
     } catch (error) {
         alert(`Falha ao enviar para o Telegram: ${error.message}`);
-        btn.innerHTML = originalText;
+        btn.innerHTML = '❌ Erro';
     } finally {
-        // Habilita o botão novamente e restaura o texto original após um tempo
         setTimeout(() => {
             btn.disabled = false;
             btn.innerHTML = originalText;
         }, 3000);
     }
+}
+
+async function sendGeneratedListToTelegram(btn) {
+    await handleTelegramSendButton(btn, 'suite_resGerador', "Resultado aqui...");
 }
 
 async function sendAnalysisToTelegram(btn) {
-    const analysisContent = document.getElementById('suite_resAnalise').innerText;
-    const defaultText = "Aguardando dados...";
-
-    if (!analysisContent || analysisContent.trim() === defaultText || analysisContent.trim() === "") {
-        alert("Gere uma análise primeiro antes de enviar para o Telegram.");
-        return;
-    }
-
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Enviando...';
-    btn.disabled = true;
-
-    try {
-        // Reutiliza a função de notificação, que já busca as credenciais do Firebase
-        await sendTelegramNotification(analysisContent);
-        btn.innerHTML = '✅ Enviado!';
-    } catch (error) {
-        alert(`Falha ao enviar para o Telegram: ${error.message}`);
-        btn.innerHTML = originalText;
-    } finally {
-        // Habilita o botão novamente e restaura o texto original após um tempo
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }, 3000);
-    }
+    await handleTelegramSendButton(btn, 'suite_resAnalise', "Aguardando dados...");
 }
 
 async function sendIABrancoToTelegram(btn) {
-    const listContent = document.getElementById('suite_resIABranco').innerText;
+    await handleTelegramSendButton(btn, 'suite_resIABranco');
+}
 
-    if (!listContent || listContent.trim() === "") {
-        alert("Gere uma lista da I.A. primeiro antes de enviar para o Telegram.");
-        return;
-    }
+// --- VERIFICAÇÃO PERIÓDICA DE PERMISSÕES ---
 
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Enviando...';
-    btn.disabled = true;
+let permissionCheckInterval = null;
+
+async function verifyTelegramBotPermissions() {
+    const settings = await getTelegramSettings();
+    if (!settings) return; // Sem configurações, não há o que checar
+
+    const { bot_token: token, chat_id: chatId } = settings;
+    const resArea = document.getElementById('resTelegramConfig');
 
     try {
-        await sendTelegramNotification(listContent);
-        btn.innerHTML = '✅ Enviado!';
+        // 1. Obtém informações do próprio bot para saber seu ID
+        const meUrl = `https://api.telegram.org/bot${token}/getMe`;
+        const meRes = await fetch(meUrl);
+        const meData = await meRes.json();
+
+        if (!meData.ok) throw new Error("Token inválido ou falha na API.");
+        const botId = meData.result.id;
+
+        // 2. Verifica o status do bot no chat configurado
+        const memberUrl = `https://api.telegram.org/bot${token}/getChatMember?chat_id=${chatId}&user_id=${botId}`;
+        const memberRes = await fetch(memberUrl);
+        const memberData = await memberRes.json();
+
+        if (!memberData.ok) {
+            throw new Error(`Bot sem acesso ao chat: ${memberData.description}`);
+        }
+
+        const status = memberData.result.status;
+        const canSendMessages = memberData.result.can_send_messages !== false; 
+
+        // Status possíveis: creator, administrator, member, restricted, left, kicked
+        const isRestricted = status === 'restricted';
+
+        if (status === 'kicked' || status === 'left') {
+            console.warn(`⚠️ O Bot foi removido ou saiu do grupo. Status: ${status}`);
+            if (resArea) {
+                resArea.innerText = `⚠️ ALERTA: O Bot não está mais no grupo (Status: ${status}).`;
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+            }
+        } else if (isRestricted && !canSendMessages) {
+            console.warn(`⚠️ O Bot está restrito e não pode enviar mensagens.`);
+            if (resArea) {
+                resArea.innerText = `⚠️ ALERTA: O Bot está silenciado no grupo.`;
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+            }
+        } else {
+            console.log(`✅ Status do Bot no grupo: ${status} (Operacional)`);
+        }
+
     } catch (error) {
-        alert(`Falha ao enviar para o Telegram: ${error.message}`);
-        btn.innerHTML = originalText;
-    } finally {
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }, 3000);
+        console.error("Erro ao verificar permissões do Telegram:", error);
+    }
+}
+
+function startPeriodicPermissionCheck(intervalMinutes = 10) {
+    if (permissionCheckInterval) clearInterval(permissionCheckInterval);
+    verifyTelegramBotPermissions(); // Executa imediatamente
+    permissionCheckInterval = setInterval(verifyTelegramBotPermissions, intervalMinutes * 60 * 1000);
+    console.log(`🔄 Verificação periódica do Telegram iniciada (a cada ${intervalMinutes} min).`);
+}
+
+function stopPeriodicPermissionCheck() {
+    if (permissionCheckInterval) {
+        clearInterval(permissionCheckInterval);
+        permissionCheckInterval = null;
+        console.log("⏹️ Verificação periódica do Telegram parada.");
     }
 }
 
@@ -1104,4 +1226,5 @@ function dash_openTab(tabName) {
 document.addEventListener('DOMContentLoaded', () => {
     loadFromStorage(); // Carrega Token e ID salvos
     applySavedTheme(); // Aplica o tema (claro/escuro) salvo
+    startPeriodicPermissionCheck(); // Inicia monitoramento do bot
 });
