@@ -1004,7 +1004,7 @@
                 <!-- NOVO: PAINEL DO ROBÔ AUTOMÁTICO -->
                 <div id="suite_auto_bot" class="tab-content">
                     <h2>🤖 Robô Automático</h2>
-                    <div class="toggle-switch-container" id="autoBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                    <div class="toggle-switch-container" id="autoBotActivationContainer" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
                         <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ AUTOMÁTICO</label>
                         <label class="switch">
                             <input type="checkbox" id="autoBotToggle">
@@ -1032,7 +1032,7 @@
                         </div>
 
                         <!-- NOVO: ROTAÇÃO DE ESTRATÉGIA -->
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                             <label for="autoBotRandomRotation" style="font-size: 0.95em;">🔄 Rotação Aleatória: <span id="autoBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="autoBotRandomRotation">
@@ -1049,7 +1049,7 @@
 
                         <!-- NOVO: FILTRO MELHORES MINUTOS -->
                         <div class="control-group" style="margin-bottom: 20px; border-top: 1px solid #333; padding-top: 15px;">
-                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 10px;">
+                            <div class="toggle-switch-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <label for="autoBotBestMinuteFilter" style="font-size: 0.95em;">⭐ Filtrar Melhores Minutos:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="autoBotBestMinuteFilter">
@@ -1063,7 +1063,7 @@
                         </div>
 
                         <!-- NOVO: SONS DO ROBÔ -->
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                             <label for="autoBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="autoBotSoundToggle" checked>
@@ -1112,7 +1112,7 @@
                 <!-- NOVO: PAINEL DO ROBÔ BRANCO (DUPLICADO) -->
                 <div id="suite_white_bot" class="tab-content">
                     <h2>⚪ Robô Branco</h2>
-                    <div class="toggle-switch-container" id="whiteBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                    <div class="toggle-switch-container" id="whiteBotActivationContainer" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
                         <label for="whiteBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ BRANCO</label>
                         <label class="switch" style="width: 50px; height: 26px;">
                             <input type="checkbox" id="whiteBotToggle">
@@ -1138,7 +1138,7 @@
                         </div>
 
                         <!-- SELETOR DE ESTRATÉGIA E ENTRADAS -->
-                        <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
                             <div class="control-group" style="flex: 2;">
                                 <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
                                 <select id="whiteBotStrategy">
@@ -1158,7 +1158,7 @@
                         </div>
 
                         <!-- OFFSET E ROTAÇÃO (COMBINADOS) -->
-                        <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end;">
+                        <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end; display: flex; flex-wrap: wrap; gap: 10px;">
                             <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotEntryOffset">Offset (Minutos):</label>
                                 <input type="number" id="whiteBotEntryOffset" value="5" min="1" onchange="if(this.value < 1) this.value = 1;">
@@ -1173,7 +1173,7 @@
                         </div>
 
                         <!-- PROTEÇÃO (COMBINADOS) -->
-                        <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
                             <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotProtectionTriggerCount">Ativar Proteção (Brancos):</label>
                                 <div style="display: flex; gap: 5px;">
@@ -1193,7 +1193,7 @@
 
                         <!-- NOVO: FILTRO MELHORES MINUTOS (WHITE) -->
                         <div class="control-group" style="margin-bottom: 10px; border-top: 1px solid #333; padding-top: 10px;">
-                            <div class="inline-controls" style="align-items: center;">
+                            <div class="inline-controls" style="align-items: center; display: flex; flex-wrap: wrap; gap: 10px;">
                                 <div class="toggle-switch-container" style="justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 0; flex: 1; height: 42px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
                                     <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em; margin-bottom: 0;">⭐ Filtrar Melhores Minutos:</label>
                                     <label class="switch" style="width: 40px; height: 20px;">
@@ -1211,7 +1211,7 @@
                         </div>
 
                         <!-- META DE WINS E LOSS -->
-                        <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
                             <div class="control-group">
                                 <label for="whiteBotWinGoal">✅ Meta Wins:</label>
                                 <input type="number" id="whiteBotWinGoal" placeholder="Ex: 5" min="1">
@@ -1224,7 +1224,7 @@
                         <div class="hint" style="margin-top: -10px; margin-bottom: 15px;">O robô para ao atingir Wins ou Derrotas Consecutivas.</div>
 
                         <!-- TOGGLES: STOP LOSS E SONS -->
-                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
+                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center; display: flex; flex-wrap: wrap; gap: 10px;">
                             <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: flex-start; gap: 10px; flex: 1;">
                                 <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
                             <label class="switch" style="width: 50px; height: 26px;">
