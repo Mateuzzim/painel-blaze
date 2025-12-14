@@ -1,0 +1,919 @@
+/* ================================== */
+/* ESTILOS GLOBAIS (unidas.html)      */
+/* ================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --accent-blaze: #f12c4c;
+    --accent-jonbet: #00e676;
+}
+
+body.light-theme {
+    --bg-color: #f0f2f5;
+    --card-bg: #ffffff;
+    --text-color: #1c1e21;
+    --border-color: #ddd;
+}
+body.light-theme .suite .platform-switcher,
+body.light-theme .dashboard .platform-switcher,
+body.light-theme .suite .tabs,
+body.light-theme .dashboard .tabs { background-color: #e4e6eb; }
+body.light-theme .layout-panel { border-color: var(--border-color); }
+body.light-theme h1 { color: var(--text-color); }
+body.light-theme .suite .main-header, body.light-theme .dashboard .main-header { border-bottom-color: var(--border-color); }
+body.light-theme .suite input, body.light-theme .suite select, body.light-theme .suite textarea { border-color: var(--border-color); }
+body.light-theme .suite .output-area { color: var(--text-color); border-color: var(--border-color); }
+body.light-theme .suite .hint { color: #555; }
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color); /* Cor de fundo sólida como fallback */
+    position: relative;
+
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: color 0.5s ease-in-out; /* Transição da cor do texto */
+    padding: 30px;
+}
+
+/* Pseudo-elementos para as imagens de fundo com blur */
+body::before, body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Coloca atrás de todo o conteúdo */
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    filter: blur(5px); /* Efeito de desfoque */
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Imagem de fundo para o tema escuro */
+body::after {
+    background-image: linear-gradient(to bottom right, rgba(26, 26, 26, 0.9), rgba(44, 44, 44, 0.95)), url('https://i.pinimg.com/736x/a5/0f/70/a50f7069e0119bf73e070b6cf40aa056.jpg');
+    opacity: 1;
+}
+/* Imagem de fundo para o tema claro (inicialmente invisível) */
+body::before {
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.85), rgba(240, 242, 245, 0.9)), url('https://i.pinimg.com/736x/a5/0f/70/a50f7069e0119bf73e070b6cf40aa056.jpg');
+    opacity: 0; /* Começa invisível */
+}
+body.light-theme::before {
+    opacity: 1; /* Fica visível no tema claro */
+}
+body.light-theme::after {
+    opacity: 0; /* Oculta o fundo escuro quando o tema claro está ativo */
+}
+
+.main-container {
+    flex-grow: 1;
+    display: flex;
+    width: 100%;
+    gap: 15px;
+}
+
+.layout-panel {
+    flex: 1;
+    border-radius: 12px;
+    border: 1px solid #333;
+    overflow-y: auto; /* Permite rolagem interna */
+    overflow-x: hidden;
+    background-color: var(--card-bg);
+    padding: 20px;
+}
+
+h1 {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Scrollbar customizada */
+.layout-panel::-webkit-scrollbar { width: 8px; }
+.layout-panel::-webkit-scrollbar-track { background: #2c2c2c; }
+.layout-panel::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+.layout-panel::-webkit-scrollbar-thumb:hover { background: #777; }
+
+@media (max-width: 768px) {
+    body { padding: 20px; }
+    .main-container { flex-direction: column; }
+    h1 { font-size: 1.2rem; }
+}
+
+/* Theme Switcher */
+.top-header-container {
+    display: flex;
+    flex-direction: column; /* SUGESTÃO: Altera a direção para empilhar os itens */
+    justify-content: center; /* Mantém o alinhamento horizontal */
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+}
+/* SUGESTÃO: Animação de gradiente para o título */
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+#main-title {
+    margin: 0;
+    font-size: 1.8rem; /* Um pouco maior para destacar o efeito */
+    font-weight: 900;
+    /* Efeito de Gradiente Animado */
+    background: linear-gradient(90deg, var(--accent-jonbet), var(--accent-blaze), #00aaff, var(--accent-jonbet));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-animation 6s ease infinite;
+    /* SUGESTÃO: Adiciona um brilho sutil ao redor do texto */
+    text-shadow: 0 0 8px color-mix(in srgb, var(--accent-jonbet) 40%, transparent), 0 0 12px color-mix(in srgb, var(--accent-blaze) 25%, transparent);
+}
+#theme-switcher {
+    /* Removido position: absolute para alinhamento flexbox */
+    /* Removido right: 0 para alinhamento flexbox */
+    background: none;
+    border: 1px solid #444;
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    height: 36px; /* Altura padronizada */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+#theme-switcher:hover { background-color: #333; }
+body.light-theme #theme-switcher:hover { background-color: #ddd; }
+
+/* Logout Button */
+#logout-button {
+    /* Removido position: absolute para alinhamento flexbox */
+    /* Removido left: 0 para alinhamento flexbox */
+    background: #f0f2f5; /* Fundo branco/cinza claro */
+    border: 1px solid #ddd;
+    color: #121212; /* Texto escuro para contraste */
+    padding: 8px 12px;
+    border-radius: 8px;
+    height: 36px; /* Altura padronizada */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+    font-weight: 600; /* Deixa o texto um pouco mais forte */
+}
+#logout-button:hover { background-color: #e0e0e0; }
+body.light-theme #logout-button:hover { background-color: #dcdcdc; }
+#logout-button svg {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    stroke-width: 2.5;
+    margin-right: 5px; /* Espaço entre o ícone e o texto */
+}
+/* SUGESTÃO: Estilo para o Relógio Digital */
+#digital-clock {
+    font-size: 1.0rem; /* SUGESTÃO: Tamanho do relógio diminuído */
+    font-weight: bold;
+    color: var(--text-color);
+    background-color: rgba(0,0,0,0.25);
+    padding: 8px 12px; /* Padding ajustado para padronizar com os botões */
+    border-radius: 8px;
+    border: 1px solid #444;
+    margin-top: 0; /* Removido o margin-top para alinhamento flexbox */
+    height: 36px; /* Altura padronizada */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', monospace; /* Fonte monoespaçada para o relógio */
+}
+/* Novo container para alinhar os botões e o relógio */
+.header-controls-row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px; /* Espaço entre o título e esta linha */
+}
+
+/* ================================== */
+/* ESTILOS DO GERADOR (gerador_de_lista2.html) */
+/* ================================== */
+.suite { --accent: var(--accent-blaze); }
+.suite.platform-jonbet { --accent: var(--accent-jonbet); }
+
+.suite .main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+.suite .main-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+.suite .header-controls { display: flex; align-items: center; gap: 10px; } 
+.suite .platform-switcher { display: flex; background-color: #000; border-radius: 8px; padding: 4px; margin: 0 auto; }
+.suite .platform-btn { padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase; }
+.suite .platform-btn.active { background-color: var(--accent); color: #fff; }
+.suite.platform-jonbet .platform-btn.active { background-color: var(--accent-jonbet); }
+.suite .tabs { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 5px; margin-bottom: 25px; background-color: #000; border-radius: 10px; padding: 5px; }
+.suite .tab-btn { flex: 1; padding: 12px 5px; border: none; background-color: transparent; color: #aaa; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; font-size: 0.65rem; text-align: center; }
+body.light-theme .suite .tab-btn { color: #4b4f56; }
+.suite .tab-btn.active { background-color: var(--accent); color: #fff; box-shadow: 0 2px 10px rgba(241, 44, 76, 0.4); }
+body.light-theme .suite .tab-btn.active { color: #fff; }
+.suite .tab-btn:not(.active):hover { background-color: var(--accent); color: #000; transform: translateY(-2px); opacity: 0.7; }
+.suite.platform-jonbet .tab-btn.active { box-shadow: 0 2px 10px rgba(0, 230, 118, 0.4); }
+.suite .tab-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    vertical-align: middle;
+    margin-bottom: 2px;
+}
+.suite .tab-btn {
+    position: relative; /* Necessário para o posicionamento do badge */
+}
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: var(--accent-blaze);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.suite.platform-jonbet .notification-badge { background-color: var(--accent-jonbet); }
+/* Estilos para o Toggle Switch */
+.suite .toggle-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    background-color: var(--bg-color);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+.suite .toggle-switch-container label {
+    margin-bottom: 0;
+    font-size: 0.8em;
+}
+.suite .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.suite .switch input { opacity: 0; width: 0; height: 0; }
+.suite .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 26px; }
+.suite .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+.suite input:checked + .slider { background-color: var(--accent); }
+.suite input:checked + .slider:before { transform: translateX(24px); }
+body.light-theme .suite .toggle-switch-container { border-color: var(--border-color); }
+
+.suite .tab-content { display: none; animation: suite_fadeIn 0.5s; }
+.suite .tab-content.active { display: block; }
+@keyframes suite_fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.suite h2 { text-align: center; color: var(--accent); margin-bottom: 25px; font-size: 1.3rem; text-transform: uppercase; }
+.suite .control-group { margin-bottom: 15px; }
+.suite label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.85em; color: var(--text-color); opacity: 0.8; text-transform: uppercase; }
+.suite input, .suite select, .suite textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); box-sizing: border-box; font-size: 1rem; outline: none; }
+.suite textarea { resize: vertical; height: 100px; font-family: monospace; font-size: 0.8rem; }
+.suite input:focus, .suite select:focus, .suite textarea:focus { border-color: var(--accent); }
+.suite .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; background-color: var(--accent); color: #000; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
+.suite .btn-action:hover { opacity: 0.9; transform: scale(1.01); }
+.suite .output-area { margin-top: 20px; background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid #333; min-height: 150px; white-space: pre-line; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #fff; line-height: 1.5; }
+.suite .btn-copy { background: #2979ff; color: white; margin-top: 10px; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.suite .btn-telegram { background: #0088cc; color: white; margin-top: 10px; width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; }
+.suite .btn-telegram:hover { background: #0077b5; }
+.suite .hint { font-size: 0.75em; color: #888; margin-top: 3px; }
+.suite .color-selector { display: flex; gap: 10px; margin-top: 5px; }
+.suite .color-btn { flex: 1; padding: 10px; border: 2px solid transparent; border-radius: 5px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.3s; }
+.suite .color-btn.vermelho { background-color: #f12c4c; color: white; }
+.suite .color-btn.preto { background-color: #333; color: white; }
+.suite .color-btn.selected { border-color: var(--accent); }
+.suite.platform-jonbet .color-btn.vermelho { background-color: var(--accent-jonbet); }
+.suite .btn-clear-all { background: #424242; color: white; margin-top: 20px; width: 100%; padding: 10px; border: 1px solid #7a5a5a; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; }
+.suite .btn-clear-all:hover { background: #5a3a3a; }
+.suite .main-color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+.suite .main-color-grid .manual-btn { padding: 6px 5px; font-size: 1.1rem; }        
+.suite .util-button-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.suite .util-button-grid .manual-btn { padding: 4px 5px; font-size: 0.9rem; }
+.suite .inline-controls { display: flex; gap: 10px; align-items: flex-start; }
+.suite .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+.suite .inline-controls > .btn-action, .suite .inline-controls > .btn-copy { flex: 1; }
+.suite .manual-button-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 5px; margin-bottom: 15px; }
+.suite .manual-btn { padding: 8px 4px; font-size: 0.9rem; font-weight: bold; border-radius: 5px; border: 1px solid #555; background-color: #333; color: white; cursor: pointer; transition: 0.2s; text-align: center; }
+.suite .manual-btn:active { transform: scale(0.95); }        
+.suite .manual-btn.color-v { background-color: #f12c4c; }
+.suite .manual-btn.color-p { background-color: #262f3c; }
+.suite .manual-btn.color-b { background-color: #fff; color: #000; }
+.suite .manual-btn.color-x { background-color: #2979ff; }
+.suite .manual-btn.util-btn { background-color: #555; color: #fff; }
+body.light-theme .suite .manual-btn.util-btn { background-color: #ddd; color: #333; }        .suite.platform-jonbet .manual-btn.color-v { background-color: #00e676; }
+.suite .manual-button-grid { grid-template-columns: repeat(5, 1fr); }
+
+/* Quando o cadastro está na tela de login, ele se adapta */
+#self-register-form {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    width: 100%;
+    max-width: 400px; /* Mesmo tamanho do login */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+/* ================================== */
+/* ESTILOS DA ABA USUÁRIOS (NOVO)     */
+/* ================================== */
+.suite #suite_usuarios h2 {
+    text-shadow: 0 0 5px var(--accent);
+}
+.suite #suite_userRegistrationForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+    align-items: start;
+}
+.suite #suite_userRegistrationForm .control-group {
+    margin-bottom: 0;
+    position: relative;
+}
+.suite #suite_userRegistrationForm .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 40px;
+}
+.suite #suite_userRegistrationForm .full-width {
+    grid-column: 1 / -1;
+}
+.suite #suite_userRegistrationForm input:focus,
+.suite #suite_userRegistrationForm select:focus {
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.suite #suite_userRegistrationForm .btn-action {
+    grid-column: 1 / -1;
+    margin-top: 15px;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+.suite #suite_userRegistrationForm .btn-action:hover {
+    letter-spacing: 2px;
+    box-shadow: 0 0 15px var(--accent);
+}
+.suite #user-list-container {
+    margin-top: 30px;
+}
+.suite #user-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-top: 15px;
+    border-radius: 8px;
+    overflow: hidden; /* Garante que o border-radius seja aplicado nas bordas da tabela */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.suite #user-list-table th, .suite #user-list-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #3a3a3a;
+}
+.suite #user-list-table th {
+    background-color: color-mix(in srgb, var(--accent) 80%, #000);
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+}
+.suite #user-list-table tbody tr {
+    transition: background-color 0.2s ease-in-out;
+}
+.suite #user-list-table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+.suite #user-list-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.suite #user-list-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.suite #user-list-table td {
+    vertical-align: middle;
+}
+.suite .user-action-btn {
+    padding: 6px 10px; font-size: 0.8em; margin-right: 5px; border: none; color: white; border-radius: 5px; cursor: pointer; transition: opacity 0.2s;
+}
+.suite .user-action-btn:hover { opacity: 0.8; }
+.suite .user-action-btn.block { background: #ffc107; color: #111; }
+.suite .user-action-btn.unblock { background: #28a745; }
+.suite .user-action-btn.edit { background: #007bff; } /* SUGESTÃO: Estilo para o novo botão de editar */
+.suite .user-action-btn.renew { background: #17a2b8; }
+.suite .user-action-btn.delete { background: #dc3545; }
+.suite .user-action-btn svg {
+    width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;
+}
+.suite #user-list-table .sortable-header {
+    cursor: pointer;
+    position: relative;
+    user-select: none; /* Impede a seleção de texto ao clicar */
+}
+.suite #user-list-table .sortable-header::after {
+    content: ' ↕️';
+    font-size: 0.8em;
+    position: absolute;
+    right: 10px;
+    opacity: 0.5;
+}
+.suite #user-list-table .sortable-header.asc::after { content: ' 🔽'; opacity: 1; }
+.suite #user-list-table .sortable-header.desc::after { content: ' 🔼'; opacity: 1; }
+
+/* SUGESTÃO: Estilo para a linha de usuário bloqueado */
+.suite #user-list-table tr.blocked-user td {
+    background-color: rgba(220, 53, 69, 0.15);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.suite #guest-permissions-container {
+    margin-top: 40px;
+    border-top: 1px solid #444;
+    padding-top: 20px;
+}
+.suite #guest-permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+.suite .permission-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suite #activity-log-container {
+    margin-top: 40px;
+}
+.suite #activity-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.suite #activity-log-table th, .suite #activity-log-table td {
+    border: 1px solid #444;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.85em;
+}
+/* SUGESTÃO: Melhorar responsividade da tabela de usuários */
+.suite #user-list-container {
+    overflow-x: auto; /* Permite rolagem horizontal na tabela sempre que necessário */
+}
+@media (max-width: 768px) {
+    .suite #user-list-table {
+        min-width: 600px; /* Garante que a tabela tenha uma largura mínima */
+    }
+}
+
+@media (max-width: 600px) {
+    .suite .main-header { flex-direction: column; gap: 15px; }
+    .suite .tabs .tab-btn { width: 30%; font-size: 0.7rem; }
+    .suite .inline-controls { flex-direction: column; gap: 15px; }
+}
+/* SUGESTÃO: Melhorar responsividade do formulário de usuários */
+@media (max-width: 600px) {
+    .suite #suite_userRegistrationForm {
+        grid-template-columns: 1fr; /* Uma coluna em telas pequenas */
+    }
+}
+
+/* ================================== */
+/* ESTILOS DO CORRETOR (coressao_de_sinais.html) */
+/* ================================== */
+.dashboard { --accent: var(--accent-blaze); }
+.dashboard.platform-jonbet { --accent: var(--accent-jonbet); }
+
+.dashboard h1, .dashboard h3, .dashboard h4 { margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.dashboard .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+.dashboard .main-header h1 { margin: 0; font-size: 1.5rem; }
+.dashboard .platform-switcher { display: flex; background-color: #000; border-radius: 8px; padding: 4px; margin: 0 auto; }
+.dashboard .platform-btn { padding: 8px 15px; border: none; background-color: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; font-size: 0.8rem; text-transform: uppercase; }
+.dashboard .platform-btn.active { background-color: var(--accent); color: #fff; }
+.dashboard.platform-jonbet .badge.vermelho { background-color: var(--accent-jonbet); }
+.dashboard .tabs { display: flex; justify-content: space-around; margin-bottom: 25px; background-color: #000; border-radius: 10px; padding: 5px; }
+.dashboard .tab-btn { flex: 1; padding: 12px; border: none; background-color: transparent; color: #aaa; font-weight: 900; cursor: pointer; border-radius: 8px; transition: 0.3s; text-transform: uppercase; font-size: 0.9rem; }
+body.light-theme .dashboard .tab-btn { color: #4b4f56; }
+.dashboard .tab-btn.active { background-color: var(--accent); color: #fff; }
+body.light-theme .dashboard .tab-btn.active { color: #fff; }
+.dashboard .tab-content { display: none; }
+.dashboard .tab-content.active { display: block; animation: dash_fadeIn 0.5s; }
+@keyframes dash_fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.dashboard .control-panel { background-color: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid #333; }
+.dashboard textarea { width: 100%; flex-grow: 1; background-color: #0a0e13; color: #fff; border: 1px solid #333; border-radius: 5px; padding: 10px; margin: 5px 0 15px 0; resize: vertical; box-sizing: border-box; }
+.dashboard select { width: 100%; padding: 8px; font-size: 11px; background-color: #0a0e13; border: 1px solid #333; color: #fff; border-radius: 5px; }
+.dashboard button { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 11px; transition: 0.3s; }
+.dashboard button:hover { filter: brightness(1.1); }
+.dashboard .action-buttons { display: flex; gap: 10px; }
+.dashboard .stats-box { margin-top: 20px; padding: 15px; background-color: rgba(0, 0, 0, 0.2); border-radius: 5px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+.dashboard .stat-item { font-size: 11px; }
+.dashboard .stat-dynamic-color { color: var(--accent); font-weight: bold; }
+.dashboard .stat-dynamic-color span { font-weight: normal; }
+.dashboard .display-area { display: flex; flex-direction: column; }
+.dashboard #log-estrategia { overflow-y: auto; background-color: #000; color: #00e676; font-family: monospace; padding: 10px; border-radius: 5px; border: 1px solid #333; flex-grow: 1; }
+.dashboard .log-container, .dashboard .history-container { background-color: var(--card-bg); padding: 20px; border-radius: 10px; display: flex; flex-direction: column; border-bottom: 1px solid #333; flex-direction: column; border: 1px solid #333; }
+.dashboard .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+.dashboard .header-buttons { display: flex; gap: 10px; }
+.dashboard .history-grid { display: flex; flex-wrap: wrap; gap: 30px 8px; align-content: flex-start; padding-bottom: 20px; min-height: 180px; overflow-y: auto; }
+.dashboard .badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; font-size: 11px; color: white; position: relative; border: 1px solid #333; }
+.dashboard .badge .time-overlay { position: absolute; bottom: -20px; font-size: 9px; color: #fff; white-space: nowrap; left: 50%; transform: translateX(-50%); }
+.dashboard .delete-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: rgba(220, 53, 69, 0.9); display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-size: 11px; cursor: pointer; border: 1px solid white; transition: transform 0.2s ease; }
+.dashboard .delete-overlay:hover { transform: translate(-50%, -50%) scale(1.1); }
+body.light-theme .dashboard .badge .time-overlay {
+    color: var(--text-color);
+}
+/* SUGESTÃO: Estilos para o Toggle Switch no Dashboard (reutilizado da Suite) */
+.dashboard .toggle-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.dashboard .toggle-switch-container label { font-size: 0.8em; margin-bottom: 0; }
+.dashboard .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+.dashboard .switch input { opacity: 0; width: 0; height: 0; }
+.dashboard .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 22px; }
+.dashboard .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+.dashboard input:checked + .slider { background-color: var(--accent); }
+.dashboard input:checked + .slider:before { transform: translateX(22px); }
+body.light-theme .dashboard .toggle-switch-container { border-color: var(--border-color); }
+
+.dashboard .badge.vermelho { background-color: var(--accent); }
+.dashboard .badge.preto { background-color: #333; border: 1px solid #555; }
+.dashboard .badge.branco { background-color: #fff; color: #333; }
+
+/* ================================== */
+/* ESTILOS DO ROBO BRANCO (Coleta de Dados) */
+/* ================================== */
+#data-collection-container {
+    background-color: var(--card-bg);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+#data-collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#data-collection-header h3 {
+    margin: 0;
+    color: #fff;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Indicador de status pulsante para o Robô Branco */
+.white-robot-status {
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    animation: pulse-white-robot 2s infinite;
+}
+
+@keyframes pulse-white-robot {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+#white-robot-log-area {
+    background-color: #000;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.log-line.white-hit {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+    border-left: 3px solid #fff;
+    padding-left: 5px;
+}
+
+.log-line.chaos-theory {
+    color: #ff9800; /* Cor de destaque para a estratégia */
+}
+
+/* Botão de Reset do Contador */
+.reset-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 8px;
+    margin-left: 10px;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    color: #fff;
+    border-color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ================================== */
+/* ESTILOS DO LOGIN                   */
+/* ================================== */
+#login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* background: var(--bg-color); A cor de fundo foi removida para mostrar a imagem do body */
+    z-index: 1000;
+    transition: opacity 0.5s ease-out;
+}
+#login-form, #self-register-form {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column; /* Organiza os itens em coluna */
+    align-items: center; /* Centraliza o conteúdo interno */
+}
+body.light-theme #login-form { border-color: var(--border-color); }
+#login-form h2 {
+    margin-bottom: 25px;
+    color: var(--text-color);
+    text-transform: uppercase;
+}
+.login-input-group { margin-bottom: 15px; text-align: left; }
+.login-input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 0.85em;
+    color: var(--text-color);
+    opacity: 0.8;
+    text-transform: uppercase;
+}
+.login-input-group {
+    width: 100%; /* Garante que o grupo ocupe toda a largura */
+}
+
+#login-form input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background-color: var(--bg-color); color: var(--text-color); font-size: 1rem; }
+#login-form button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #333; color: #fff; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; }
+#login-form button:disabled { background-color: #8e1a2e; cursor: not-allowed; }
+#login-error { color: var(--accent-blaze); margin-top: 15px; font-weight: bold; min-height: 20px; }
+
+/* Spinner de Carregamento */
+.login-spinner {
+    display: none; /* Oculto por padrão */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Welcome Message */
+#welcome-message {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 25px 50px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    z-index: 2000;
+    border: 1px solid var(--accent-blaze);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    animation: fadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    15%, 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Estilo para o link "Esqueci minha senha" */
+.forgot-password-container {
+    text-align: center;
+    margin-top: 15px;
+}
+.forgot-password-container a {
+    color: var(--text-color);
+    opacity: 0.7;
+    text-decoration: none;
+    font-size: 0.85em;
+}
+/* Estilos para o botão de mostrar/ocultar senha */
+.password-input-container {
+    position: relative;
+}
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    bottom: 15px; /* Alinha a partir da base do input */
+    transform: translateY(0); /* Remove o transform vertical */
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    line-height: 0; /* Para alinhar o SVG perfeitamente */
+}
+#login-logo {
+    width: 120px; /* Aumentei a largura para dar mais destaque */
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 90px; /* Opcional: para bordas arredondadas */
+}
+.forgot-password-container a:hover { opacity: 1; text-decoration: underline; }
+
+/* Estilo para o link de alternância entre Login e Cadastro */
+.toggle-form-link {
+    color: var(--text-color);
+}
+.toggle-form-container { text-align: center; margin-top: 15px; }
+/* SUGESTÃO: Animação de transição para formulários de login/cadastro */
+#login-form, #self-register-form {
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+.form-inactive {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none; /* Impede interação com o formulário oculto */
+    position: absolute; /* Permite que os formulários se sobreponham durante a transição */
+    display: none !important; /* Garante que seja ocultado após a animação */
+}
+.form-active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    display: flex !important; /* Garante que seja exibido como flex */
+}
+#login-container {
+    /* Garante que o container se ajuste ao conteúdo, mas sem forçar uma altura mínima grande */
+    /* min-height: 650px; */ /* REMOVIDO: Esta linha causava o problema de layout em telas menores */
+    overflow-y: auto; /* Adicionado: Permite rolagem interna se o formulário for maior que a tela */
+}
+
+/* Botão de Suporte Telegram Animado */
+#telegram-support-button {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: #0088cc; /* Azul do Telegram */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 136, 204, 0.4);
+    z-index: 1001; /* Garante que fique acima de outros elementos do login */
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    /* A animação 'shake' é aplicada em intervalos para não ser constante */
+    animation: shake-periodic 5s ease-in-out infinite;
+}
+#telegram-support-button:hover {
+    transform: scale(1.1);
+    animation: none; /* Remove a animação durante o hover para uma interação mais suave */
+}
+/* Keyframes para a animação de 'shake' */
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-1deg); }
+    20%, 80% { transform: translate3d(2px, 0, 0) rotate(2deg); }
+    30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-3deg); }
+    40%, 60% { transform: translate3d(3px, 0, 0) rotate(3deg); }
+}
+/* Keyframes para controlar quando a animação 'shake' acontece */
+@keyframes shake-periodic {
+    0%, 90%, 100% { transform: rotate(0deg); } /* Estado de repouso */
+    92%, 96% { animation-name: shake; animation-duration: 0.4s; } /* Aplica o shake */
+}
+
+/* SUGESTÃO: Animação de pulso para texto de status */
+@keyframes pulse-text {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.03);
+    }
+}
+
+.text-pulse {
+    display: inline-block; /* Necessário para o transform scale funcionar corretamente */
+    animation: pulse-text 2.5s infinite ease-in-out;
+}
+
+/* Botão de Suporte Instagram (similar ao do Telegram) */
+#instagram-support-button {
+    position: fixed;
+    top: 95px; /* Posição abaixo do botão do Telegram (25px + 60px + 10px de espaço) */
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    /* Fundo branco e borda para destaque */
+    background: #ffffff;
+    border: 1px solid #dbdbdb;
+    border-radius: 50%; /* Adicionado para tornar o botão redondo */
+    animation: shake-periodic 5s ease-in-out infinite;
+    animation-delay: 0.5s; /* Atraso para não animar junto com o outro botão */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo para o Anúncio de Atualização */
+#update-announcement {
+    background-color: color-mix(in srgb, var(--accent-jonbet) 80%, #000 20%); /* Verde com fundo escuro */
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+    width: 100%;
+    max-width: 360px; /* Mesmo tamanho do login */
+    border: 1px solid var(--accent-jonbet);
+    box-shadow: 0 4px 15px rgba(0, 230, 118, 0.2);
+    transition: opacity 0.5s ease-out, margin 0.5s ease-out; /* Adiciona transição para o desaparecimento */
+}
+#update-announcement h3 { margin: 0 0 5px 0; text-transform: uppercase; font-size: 1.1rem; }
+#update-announcement p { font-size: 0.9rem; font-weight: normal; margin: 0; }
