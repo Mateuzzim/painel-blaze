@@ -1,2250 +1,1230 @@
-// DADOS DO REPERTÓRIO
-const STORAGE_KEY = 'repertorio_vaquejada_data';
-const THEME_KEY = 'repertorio_theme';
-const TIMER_STORAGE_KEY = 'repertorio_timer_data';
-const META_KEY = 'repertorio_meta';
-const CURRENT_ID_KEY = 'repertorio_current_id';
-const DATA_PREFIX = 'repertorio_data_';
-const CONFIG_KEY = 'repertorio_config';
-const SCROLL_SPEED_KEY = 'repertorio_scroll_speed';
-const CUSTOM_COLOR_KEY = 'repertorio_custom_color';
+// ==========================================
+// LÓGICA GERAL E DE COMUNICAÇÃO
+// ==========================================
 
-const defaultData = [
-    {
-        id: "B01",
-        rhythm: "FORRÓ VAQUEJADA – ARRASTA PÉ",
-        songs: [
-            { title: "MEU BEIJA FLOR", key: "SOL" },
-            { title: "EU LACEI O CORAÇÃOZINHO", key: "MIm" },
-            { title: "ZOM ZOOM ZOOM", key: "SIm" },
-            { title: "DEIXE PRA DE NOITE", key: "SOL" },
-            { title: "SE BULIRAM COM VOCÊ", key: "SOL" }
-        ]
-    },
-    {
-        id: "B02",
-        rhythm: "PISADINHA",
-        songs: [
-            { title: "PEGUEI MINHA SANFONA", key: "FAm" },
-            { title: "SENTA NO COLINHO", key: "DOm" },
-            { title: "NA PENEIRA", key: "SOL" },
-            { title: "NO TUTANO", key: "REm" }
-        ]
-    },
-    {
-        id: "B03",
-        rhythm: "VANERÃO",
-        songs: [
-            { title: "FILHO SEM SORTE", key: "DÓ" },
-            { title: "ALEGRIA DO VAQUEIRO", key: "SOL" },
-            { title: "FORROBODÓ", key: "SOLm" },
-            { title: "SEIS CORDAS", key: "SOL" },
-            { title: "BAIÃO DE DOIS", key: "SOLm" }
-        ]
+// CONTROLE DE MANUTENÇÃO: Defina como 'true' para bloquear o login e mostrar a mensagem.
+const MAINTENANCE_MODE = false;
+
+// CONTATO DE SUPORTE: Defina seu nome de usuário do Telegram aqui (sem o @).
+const TELEGRAM_SUPPORT_USERNAME = 'branco_futuro_oficial';
+
+// ==========================================
+// INICIALIZAÇÃO DO FIREBASE (COM ALERTA VISUAL)
+// ==========================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAoRK_QV01Dvfr0HVwFH5UsKE1SY1uB5Ho",
+  authDomain: "meu-painel-app-9f7ab.firebaseapp.com",
+  projectId: "meu-painel-app-9f7ab",
+  storageBucket: "meu-painel-app-9f7ab.firebasestorage.app",
+  messagingSenderId: "972379366884",
+  appId: "1:972379366884:web:1f657522d8cdb8699d93f1"
+};
+
+// Variáveis globais para o banco de dados
+let db, auth;
+
+try {
+    // 1. Inicializa o Firebase
+    if (typeof firebase === 'undefined') {
+        throw new Error("Erro de carregamento: O Firebase não foi encontrado.");
     }
-];
-
-let setlistData = [];
-let currentSetlistId = 'default';
-let isSelectionMode = false;
-let editingIndex = -1;
-let currentEditingSong = null;
-let isDraggingBlock = false;
-
-// UNDO/REDO LOGIC
-let historyStack = [];
-let redoStack = [];
-
-function pushHistory() {
-    historyStack.push(JSON.stringify(setlistData));
-    if (historyStack.length > 50) historyStack.shift();
-    redoStack = []; // Limpa redo ao fazer nova ação
-}
-
-function undo() {
-    if (historyStack.length === 0) return;
-    redoStack.push(JSON.stringify(setlistData));
-    setlistData = JSON.parse(historyStack.pop());
-    saveData();
-    renderSetlist();
-}
-
-function redo() {
-    if (redoStack.length === 0) return;
-    historyStack.push(JSON.stringify(setlistData));
-    setlistData = JSON.parse(redoStack.pop());
-    saveData();
-    renderSetlist();
-}
-
-const container = document.getElementById('repertoire-container');
-
-function renderSetlist() {
-    container.innerHTML = '';
-    let previousKey = null;
-    setlistData.forEach((block, index) => { // Criação do Bloco
-        const blockDiv = document.createElement('div');
-        blockDiv.className = 'block-container';
-        if (block.collapsed) blockDiv.classList.add('collapsed');
-        blockDiv.draggable = true;
-        blockDiv.dataset.originalIndex = index;
-
-        // Eventos de Drag and Drop do Bloco
-        blockDiv.addEventListener('dragstart', (e) => {
-            isDraggingBlock = true;
-            // Evita arrastar se clicar nos botões
-            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-                e.preventDefault();
-                return;
-            }
-            blockDiv.classList.add('dragging-block');
-        });
-
-        blockDiv.addEventListener('dragend', () => {
-            blockDiv.classList.remove('dragging-block');
-            setTimeout(() => { isDraggingBlock = false; }, 50);
-            reorderBlocks();
-        });
-
-        // Cabeçalho do Bloco
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'block-header';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'block-title';
-        titleDiv.innerHTML = `${block.id} <span style="font-size:0.8rem; opacity:0.7; margin-left:10px;">// ${block.rhythm}</span>`;
-
-        const controlsDiv = document.createElement('div');
-        
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'control-btn btn-toggle';
-        toggleBtn.textContent = block.collapsed ? '+' : '-';
-        toggleBtn.onclick = () => {
-            block.collapsed = !block.collapsed;
-            saveData();
-            blockDiv.classList.toggle('collapsed');
-            toggleBtn.textContent = blockDiv.classList.contains('collapsed') ? '+' : '-';
-        };
-
-        // Expande/Recolhe ao clicar no título
-        titleDiv.onclick = () => {
-            if (isDraggingBlock) return;
-            block.collapsed = !block.collapsed;
-            saveData();
-            blockDiv.classList.toggle('collapsed');
-            toggleBtn.textContent = blockDiv.classList.contains('collapsed') ? '+' : '-';
-        };
-
-        const editBtn = document.createElement('button');
-        editBtn.className = 'control-btn';
-        editBtn.textContent = 'EDITAR';
-        editBtn.onclick = () => editBlock(index);
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'control-btn btn-delete';
-        deleteBtn.textContent = 'EXCLUIR';
-        deleteBtn.onclick = () => deleteBlock(index);
-
-        controlsDiv.appendChild(toggleBtn);
-        controlsDiv.appendChild(editBtn);
-        controlsDiv.appendChild(deleteBtn);
-
-        headerDiv.appendChild(titleDiv);
-        headerDiv.appendChild(controlsDiv);
-
-        // Lista de Músicas
-        const listUl = document.createElement('ul');
-        listUl.className = 'song-list';
-
-        block.songs.forEach((song, index) => {
-            const listItem = document.createElement('li');
-            listItem.className = 'song-item';
-            if (song.played) listItem.classList.add('played');
-
-            // Container clicável (Cabeçalho)
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'song-header';
-            
-            // Lógica de expandir notas ao clicar
-            headerDiv.onclick = function() {
-                const notes = this.nextElementSibling;
-                if (notes) notes.style.display = notes.style.display === 'none' ? 'block' : 'none';
-            };
-
-            // Checkbox para modo de seleção
-            if (isSelectionMode) {
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'song-checkbox';
-                checkbox.dataset.songData = JSON.stringify(song); // Guarda dados da música
-                checkbox.onchange = updateSelectionCount;
-                checkbox.onclick = (e) => e.stopPropagation(); // Evita abrir as notas ao marcar
-                headerDiv.appendChild(checkbox);
-            }
-
-            const indexSpan = document.createElement('span');
-            indexSpan.className = 'song-index';
-            indexSpan.textContent = String(index + 1).padStart(2, '0');
-            indexSpan.title = "Marcar como tocada";
-            
-            indexSpan.onclick = (e) => {
-                e.stopPropagation();
-                pushHistory();
-                song.played = !song.played;
-                saveData();
-                listItem.classList.toggle('played');
-            };
-
-            const lyricsBtn = document.createElement('button');
-            lyricsBtn.className = 'btn-lyrics';
-            lyricsBtn.textContent = 'LETRA';
-            if (song.lyrics) lyricsBtn.classList.add('has-lyrics');
-            lyricsBtn.title = "Adicionar/Ver Letra";
-            lyricsBtn.onclick = (e) => {
-                e.stopPropagation();
-                openLyricsModal(song);
-            };
-
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'song-name';
-            nameSpan.textContent = song.title;
-
-            // RENDERIZAÇÃO DAS TAGS
-            if (song.tags && song.tags.length > 0) {
-                const tagsDiv = document.createElement('div');
-                tagsDiv.className = 'song-tags';
-                song.tags.forEach(tag => {
-                    const span = document.createElement('span');
-                    span.className = 'song-tag';
-                    span.textContent = tag;
-                    
-                    // Cores automáticas baseadas no texto
-                    const t = tag.toLowerCase();
-                    if(t.includes('nova')) span.classList.add('tag-nova');
-                    else if(t.includes('hit')) span.classList.add('tag-hit');
-                    else if(t.includes('ensaio')) span.classList.add('tag-ensaio');
-                    else if(t.includes('revisar')) span.classList.add('tag-revisar');
-                    else if(t.includes('pout')) span.classList.add('tag-pout-pourri');
-                    
-                    tagsDiv.appendChild(span);
-                });
-                nameSpan.appendChild(tagsDiv);
-            }
-
-            const keySpan = document.createElement('span');
-            keySpan.className = 'song-key';
-            keySpan.textContent = song.key;
-            
-            let tooltip = "Clique para alterar o tom";
-            if (previousKey && song.key !== '-' && previousKey.toUpperCase() === song.key.toUpperCase()) {
-                keySpan.classList.add('same-key-sequence');
-                tooltip = "🔗 Mesmo tom da anterior! " + tooltip;
-            }
-            previousKey = song.key;
-
-            keySpan.title = tooltip;
-            keySpan.onclick = (e) => {
-                e.stopPropagation(); // Impede que abra as notas
-                openKeyModal(song);
-            };
-
-            headerDiv.appendChild(indexSpan);
-            headerDiv.appendChild(lyricsBtn);
-            headerDiv.appendChild(nameSpan);
-            headerDiv.appendChild(keySpan);
-            listItem.appendChild(headerDiv);
-
-            // Área de Notas (se houver)
-            if (song.notes) {
-                const notesDiv = document.createElement('div');
-                notesDiv.className = 'song-notes-display';
-                notesDiv.textContent = `OBS: ${song.notes}`;
-                listItem.appendChild(notesDiv);
-            }
-
-            listUl.appendChild(listItem);
-        });
-
-        // Rodapé do Bloco
-        const footerDiv = document.createElement('div');
-        footerDiv.className = 'block-footer';
-        footerDiv.textContent = `TOTAL FAIXAS: ${block.songs.length} // END OF DATA`;
-
-        // Juntar tudo
-        // Wrapper para animação suave (Accordion)
-        const contentWrapper = document.createElement('div');
-        contentWrapper.className = 'block-content-wrapper';
-        const contentInner = document.createElement('div');
-        contentInner.className = 'block-content-inner';
-        
-        contentInner.appendChild(listUl);
-        contentInner.appendChild(footerDiv);
-        contentWrapper.appendChild(contentInner);
-
-        blockDiv.appendChild(headerDiv);
-        blockDiv.appendChild(contentWrapper);
-        container.appendChild(blockDiv);
-    });
-
-    // Resetar botão de alternar todos
-    const toggleAllBtn = document.getElementById('btn-toggle-all');
-    if(toggleAllBtn) toggleAllBtn.textContent = 'RECOLHER TODOS';
-
-    // Reaplicar filtro se houver texto na busca
-    filterRepertoire();
-    renderBlockJumper();
-}
-
-// FUNÇÕES DO EDITOR
-const modal = document.getElementById('edit-modal');
-const songsInputs = document.getElementById('songs-inputs');
-
-function toggleAllBlocks() {
-    const btn = document.getElementById('btn-toggle-all');
-    const isCollapsing = btn.textContent.includes('RECOLHER');
-
-    setlistData.forEach(block => {
-        block.collapsed = isCollapsing;
-    });
-    saveData();
-    renderSetlist();
-
-    btn.textContent = isCollapsing ? 'EXPANDIR TODOS' : 'RECOLHER TODOS';
-}
-
-function filterRepertoire() {
-    const input = document.getElementById('search-input');
-    const counter = document.getElementById('stats-counter');
-    if (!input) return;
-    const term = input.value.toLowerCase();
-    const blocks = document.querySelectorAll('.block-container');
     
-    let visibleBlocks = 0;
-    let visibleSongs = 0;
+    firebase.initializeApp(firebaseConfig);
 
-    blocks.forEach(block => {
-        const text = block.innerText.toLowerCase();
-        const isVisible = text.includes(term);
-        block.style.display = isVisible ? 'block' : 'none';
-        
-        if (isVisible) {
-            visibleBlocks++;
-            visibleSongs += block.querySelectorAll('.song-item').length;
-        }
-    });
+    // 2. Inicializa os serviços
+    db = firebase.firestore();
+    auth = firebase.auth();
 
-    counter.innerHTML = `EXIBINDO: <span>${visibleBlocks}</span> BLOCOS // <span>${visibleSongs}</span> MÚSICAS`;
+    // 3. MOSTRA O ALERTA DE SUCESSO NA TELA
+    // Isso vai fazer uma janela aparecer!
+    // alert("✅ SUCESSO!\n\nO Firebase foi conectado corretamente.\nAgora seu painel está pronto para salvar dados na nuvem.");
+    console.log("🔥 Firebase conectado com sucesso!");
+
+} catch (erro) {
+    // Se der erro, mostra um alerta vermelho
+    // alert("❌ ERRO AO CONECTAR:\n" + erro.message);
+    console.error(erro);
 }
 
-// DRAG AND DROP LOGIC
-songsInputs.addEventListener('dragover', e => {
-    e.preventDefault();
-    const afterElement = getDragAfterElement(songsInputs, e.clientY, '.song-row:not(.dragging)');
-    const draggable = document.querySelector('.dragging');
-    if (afterElement == null) {
-        songsInputs.appendChild(draggable);
+// ==========================================
+// FIM DA INICIALIZAÇÃO
+// ==========================================
+
+// Variáveis globais para armazenar as estatísticas por hora de diferentes fontes
+window.hourlyStats = {}; // Genérico, usado pelo seletor
+window.hourlyStatsFromCorrector = {}; // Do Corretor de Sinais
+window.hourlyStatsFromAnalyzer = {}; // Do Analisador de Sinais
+
+// --- LÓGICA DE TEMA ---
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    document.getElementById('theme-switcher').innerText = isLight ? '🌙' : '☀️';
+}
+
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-switcher').innerText = '🌙';
     } else {
-        songsInputs.insertBefore(draggable, afterElement);
+        document.body.classList.remove('light-theme');
+        document.getElementById('theme-switcher').innerText = '☀️';
     }
-});
+}
 
-// Lógica de Drag and Drop para os Blocos Principais
-container.addEventListener('dragover', e => {
-    e.preventDefault();
-    const afterElement = getDragAfterElement(container, e.clientY, '.block-container:not(.dragging-block)');
-    const draggable = document.querySelector('.dragging-block');
-    if (draggable) {
-        if (afterElement == null) {
-            container.appendChild(draggable);
-        } else {
-            container.insertBefore(draggable, afterElement);
+
+
+// Função que envia a lista gerada no painel SUITE para o painel CORRETOR
+function enviarListaParaCorretor(listaGerada) {
+    // Pega o textarea do corretor de sinais no painel SUITE
+    const corretorTextareaSuite = document.getElementById('suite_correctorSignalsInput');
+    if (corretorTextareaSuite) {
+        corretorTextareaSuite.value = listaGerada;
+        console.log("Lista enviada para o Corretor de Sinais em segundo plano.");
+    }
+}
+
+// Função de COPIAR genérica
+function copiar(idElemento, btnElement) {
+    const texto = document.getElementById(idElemento).innerText;
+    navigator.clipboard.writeText(texto).then(() => {
+        if (btnElement) {
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = '✅ Copiado!';
+            btnElement.disabled = true;
+            setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; }, 2000);
         }
-    }
-});
-
-function openModal() {
-    closeConfigModal(); // Fecha o menu de config se estiver aberto
-    editingIndex = -1;
-    modal.style.display = 'flex';
-    document.getElementById('new-id').value = '';
-    document.getElementById('new-rhythm').value = '';
-    songsInputs.innerHTML = '';
-    addSongInput(); // Adiciona um campo inicial
+    }).catch(err => console.error("Erro ao copiar: ", err));
 }
 
-function editBlock(index) {
-    editingIndex = index;
-    const block = setlistData[index];
-    document.getElementById('new-id').value = block.id;
-    document.getElementById('new-rhythm').value = block.rhythm;
-    
-    songsInputs.innerHTML = '';
-    block.songs.forEach(song => {
-        const tagsStr = song.tags ? song.tags.join(', ') : '';
-        addSongInput(song.title, song.key, song.notes, tagsStr);
-    });
-    
-    modal.style.display = 'flex';
-}
-
-function deleteBlock(index) {
-    if(confirm('Tem certeza que deseja excluir este bloco?')) {
-        pushHistory();
-        setlistData.splice(index, 1);
-        saveData();
-        renderSetlist();
-    }
-}
-
-function closeModal() {
-    modal.style.display = 'none';
-}
-
-// KEY TRANSPOSE LOGIC
-function openKeyModal(song) {
-    currentEditingSong = song;
-    const modal = document.getElementById('key-modal');
-    const input = document.getElementById('new-key-input');
-    const title = document.getElementById('key-song-title');
-    
-    input.value = song.key;
-    title.textContent = song.title;
-    modal.style.display = 'flex';
-    input.focus();
-}
-
-function closeKeyModal() {
-    document.getElementById('key-modal').style.display = 'none';
-    currentEditingSong = null;
-}
-
-let wasScrollingBeforeLyrics = false;
-
-function openLyricsModal(song) {
-    currentEditingSong = song;
-    const modal = document.getElementById('lyrics-modal');
-    const title = document.getElementById('lyrics-song-title');
-    const input = document.getElementById('lyrics-input');
-    const view = document.getElementById('lyrics-view');
-    
-    title.textContent = song.title;
-    input.value = song.lyrics || '';
-    view.textContent = song.lyrics || '(Sem letra cadastrada)';
-    
-    // Reseta para modo visualização ao abrir
-    resetLyricsModalState();
-    
-    // Parar scroll do palco se estiver ativo para não interferir na leitura
-    wasScrollingBeforeLyrics = isScrolling;
-    if (isScrolling) {
-        stopAutoScroll();
-        const btn = document.getElementById('btn-scroll-toggle');
-        if(btn) btn.textContent = '▶';
-    }
-    
-    modal.style.display = 'flex';
-
-    // ENVIAR LETRA PARA O CONTROLE REMOTO (SE CONECTADO)
-    if (conn && conn.open) {
-        conn.send({ 
-            action: 'sync_lyrics', 
-            payload: { 
-                title: song.title, 
-                lyrics: song.lyrics || '(Sem letra cadastrada)' 
-            } 
-        });
-    }
-}
-
-function closeLyricsModal() {
-    stopLyricsScroll(); // Para o scroll se estiver rodando
-    document.getElementById('lyrics-modal').style.display = 'none';
-    currentEditingSong = null;
-
-    // Retomar scroll do palco se estava ativo e a config permitir
-    const config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
-    if (config.resumeScroll && wasScrollingBeforeLyrics) {
-        startAutoScroll();
-        const btn = document.getElementById('btn-scroll-toggle');
-        if(btn) btn.textContent = '⏸';
-    }
-    wasScrollingBeforeLyrics = false;
-}
-
-function saveLyrics() {
-    if (currentEditingSong) {
-        pushHistory();
-        const input = document.getElementById('lyrics-input');
-        const view = document.getElementById('lyrics-view');
-        currentEditingSong.lyrics = input.value;
-        view.textContent = input.value; // Atualiza a view
-        saveData();
-        renderSetlist();
-        toggleLyricsEditMode(); // Volta para o modo visualização
-    }
-}
-
-function adjustLyricsFontSize(change) {
-    // Ajusta tanto a view quanto o input
-    const view = document.getElementById('lyrics-view');
-    const input = document.getElementById('lyrics-input');
-    
-    let currentSize = parseFloat(window.getComputedStyle(view).fontSize);
-    let newSize = currentSize + change;
-    if (newSize < 10) newSize = 10;
-    if (newSize > 60) newSize = 60;
-    
-    view.style.fontSize = `${newSize}px`;
-    input.style.fontSize = `${newSize}px`;
-}
-
-function syncLyricsSpeed() {
-    const speedInput = document.getElementById('lyrics-scroll-speed');
-    if (isLyricsScrolling && conn && conn.open) {
-        conn.send({ 
-            action: 'lyrics_scroll_sync', 
-            payload: { active: true, speed: parseFloat(speedInput.value) } 
-        });
-    }
-}
-
-let lyricsScrollInterval;
-let isLyricsScrolling = false;
-let lyricsScrollAccumulator = 0;
-
-function toggleLyricsScroll() {
-    const btn = document.getElementById('btn-lyrics-scroll');
-    const view = document.getElementById('lyrics-view');
-    const speedInput = document.getElementById('lyrics-scroll-speed');
-    
-    if (isLyricsScrolling) {
-        stopLyricsScroll();
-    } else {
-        isLyricsScrolling = true;
-        lyricsScrollAccumulator = 0;
-        btn.textContent = '⏸ PAUSAR';
-        btn.style.background = 'var(--primary)';
-        btn.style.color = '#000';
-
-        let speed = speedInput ? parseFloat(speedInput.value) : 3;
-        if (conn && conn.open) {
-            conn.send({ 
-                action: 'lyrics_scroll_sync', 
-                payload: { active: true, speed: speed } 
-            });
-        }
-        
-        function scroll() {
-            if (!isLyricsScrolling) return;
-            
-            let speed = speedInput ? parseFloat(speedInput.value) : 3;
-            lyricsScrollAccumulator += speed * 0.2; // Fator de ajuste para suavidade
-            
-            if (lyricsScrollAccumulator >= 1) {
-                const pixels = Math.floor(lyricsScrollAccumulator);
-                view.scrollTop += pixels;
-                lyricsScrollAccumulator -= pixels;
-            }
-            
-            lyricsScrollInterval = requestAnimationFrame(scroll);
-        }
-        lyricsScrollInterval = requestAnimationFrame(scroll);
-    }
-}
-
-function stopLyricsScroll() {
-    isLyricsScrolling = false;
-    cancelAnimationFrame(lyricsScrollInterval);
-    const btn = document.getElementById('btn-lyrics-scroll');
-    if(btn) {
-        btn.textContent = '▶ SCROLL';
-        btn.style.background = '';
-        btn.style.color = '';
-    }
-    if (conn && conn.open) {
-        conn.send({ 
-            action: 'lyrics_scroll_sync', 
-            payload: { active: false } 
-        });
-    }
-}
-
-function toggleLyricsEditMode() {
-    const view = document.getElementById('lyrics-view');
-    const input = document.getElementById('lyrics-input');
-    const btnEdit = document.getElementById('btn-lyrics-edit-toggle');
-    const btnSave = document.getElementById('btn-save-lyrics');
-    const btnScroll = document.getElementById('btn-lyrics-scroll');
-
-    if (input.style.display === 'none') {
-        // Entrar no modo edição
-        input.style.display = 'block';
-        view.style.display = 'none';
-        btnSave.style.display = 'inline-block';
-        btnScroll.style.display = 'none'; // Esconde scroll na edição
-        btnEdit.textContent = '👁 VISUALIZAR';
-        stopLyricsScroll();
-    } else {
-        // Voltar para modo visualização
-        input.style.display = 'none';
-        view.style.display = 'block';
-        btnSave.style.display = 'none';
-        btnScroll.style.display = 'inline-block';
-        btnEdit.textContent = '✏ EDITAR';
-        // Atualiza view com o que estava no input (caso tenha editado mas não salvo, visualiza preview)
-        view.textContent = input.value;
-    }
-}
-
-function resetLyricsModalState() {
-    const view = document.getElementById('lyrics-view');
-    const input = document.getElementById('lyrics-input');
-    const btnEdit = document.getElementById('btn-lyrics-edit-toggle');
-    const btnSave = document.getElementById('btn-save-lyrics');
-    const btnScroll = document.getElementById('btn-lyrics-scroll');
-
-    input.style.display = 'none';
-    view.style.display = 'block';
-    btnSave.style.display = 'none';
-    btnScroll.style.display = 'inline-block';
-    btnEdit.textContent = '✏ EDITAR';
-    stopLyricsScroll();
-}
-
-function saveKeyChange() {
-    if (currentEditingSong) {
-        pushHistory();
-        const input = document.getElementById('new-key-input');
-        currentEditingSong.key = input.value.toUpperCase() || '-';
-        saveData();
-        renderSetlist();
-        closeKeyModal();
-    }
-}
-
-function transposeKey(semitones) {
-    const input = document.getElementById('new-key-input');
-    let noteStr = input.value.trim();
-    if (!noteStr) return;
-
-    // Definição das escalas
-    const scales = {
-        'PT': ["DÓ", "DÓ#", "RÉ", "RÉ#", "MI", "FÁ", "FÁ#", "SOL", "SOL#", "LÁ", "LÁ#", "SI"],
-        'EN': ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-    };
-
-    // Normalização de Bemóis para Sustenidos para facilitar o cálculo
-    const flatMap = {
-        "DB": "C#", "EB": "D#", "GB": "F#", "AB": "G#", "BB": "A#",
-        "RÉB": "DÓ#", "MIB": "RÉ#", "SOLB": "FÁ#", "LÁB": "SOL#", "SIB": "LÁ#"
-    };
-
-    let upper = noteStr.toUpperCase();
-    
-    // Substitui bemóis se encontrar no início
-    for (let flat in flatMap) {
-        if (upper.startsWith(flat)) {
-            upper = upper.replace(flat, flatMap[flat]);
-            break;
-        }
-    }
-
-    // Identificar escala e nota raiz
-    // Ordenar por tamanho para pegar "SOL#" antes de "SOL"
-    const allRoots = [...scales.PT, ...scales.EN].sort((a, b) => b.length - a.length);
-    
-    let root = "";
-    let suffix = "";
-    let scaleUsed = null;
-
-    for (let r of allRoots) {
-        if (upper.startsWith(r)) {
-            root = r;
-            suffix = noteStr.slice(r.length); // Preserva o sufixo original (m, 7, etc)
-            scaleUsed = scales.PT.includes(r) ? 'PT' : 'EN';
-            break;
-        }
-    }
-
-    if (scaleUsed) {
-        const currentScale = scales[scaleUsed];
-        let idx = currentScale.indexOf(root);
-        let newIdx = (idx + semitones) % 12;
-        if (newIdx < 0) newIdx += 12;
-        input.value = currentScale[newIdx] + suffix;
-    }
-}
-
-function addSongInput(title = '', key = '', notes = '', tags = '') {
-    const div = document.createElement('div');
-    div.className = 'song-row';
-    div.draggable = true;
-    
-    div.addEventListener('dragstart', () => div.classList.add('dragging'));
-    div.addEventListener('dragend', () => div.classList.remove('dragging'));
-
-    div.innerHTML = `
-        <span class="drag-handle">☰</span>
-        <input type="text" class="input-field song-title" placeholder="Nome da Música" value="${title}">
-        <input type="text" class="input-field song-key" placeholder="Tom" value="${key}">
-        <input type="text" class="input-field song-notes" placeholder="Obs" value="${notes}">
-        <input type="text" class="input-field song-tags-input" placeholder="Tags (ex: Nova, Hit)" value="${tags}">
-        <button class="btn-remove-song" onclick="this.parentElement.remove()" title="Remover música">X</button>
-    `;
-    songsInputs.appendChild(div);
-}
-
-function getDragAfterElement(container, y, selector) {
-    const draggableElements = [...container.querySelectorAll(selector)];
-
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
-        } else {
-            return closest;
-        }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
-
-function reorderBlocks() {
-    pushHistory();
-    const newSetlistData = [];
-    const blocks = container.querySelectorAll('.block-container');
-    
-    blocks.forEach(blockDiv => {
-        const originalIndex = parseInt(blockDiv.dataset.originalIndex);
-        if (setlistData[originalIndex]) {
-            newSetlistData.push(setlistData[originalIndex]);
-        }
-    });
-
-    setlistData = newSetlistData;
-    saveData();
-    renderSetlist(); // Re-renderiza para atualizar os índices
-}
-
-function saveBlock() {
-    const id = document.getElementById('new-id').value;
-    const rhythm = document.getElementById('new-rhythm').value;
-    const songRows = document.querySelectorAll('.song-row');
-    const songs = [];
-
-    songRows.forEach(row => {
-        const title = row.querySelector('.song-title').value;
-        const key = row.querySelector('.song-key').value;
-        const notes = row.querySelector('.song-notes').value;
-        const tagsStr = row.querySelector('.song-tags-input').value;
-        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
-        if(title) songs.push({ title, key: key || '-', notes, tags });
-    });
-
-    if(id && songs.length > 0) {
-        pushHistory();
-        if(editingIndex > -1) {
-            setlistData[editingIndex] = { id, rhythm, songs };
-        } else {
-            setlistData.push({ id, rhythm, songs });
-        }
-        saveData();
-        renderSetlist();
-        closeModal();
-    } else {
-        alert('Preencha o ID e adicione pelo menos uma música.');
-    }
-}
-
-function exportRepertoire() {
-    let content = "MENDES & MATEUS - REPERTÓRIO\n";
-    content += "================================\n\n";
-
-    const blocks = document.querySelectorAll('.block-container');
-    let hasVisible = false;
-
-    blocks.forEach(block => {
-        // Verifica se o bloco está visível (respeitando o filtro de busca)
-        if (block.style.display !== 'none') {
-            hasVisible = true;
-            const title = block.querySelector('.block-title').innerText;
-            content += `[ ${title} ]\n`;
-            
-            const songs = block.querySelectorAll('.song-item');
-            songs.forEach(song => {
-                const index = song.querySelector('.song-index').innerText;
-                const name = song.querySelector('.song-name').innerText;
-                const key = song.querySelector('.song-key').innerText;
-                content += `${index} - ${name} (${key})\n`;
-            });
-            content += "\n--------------------------------\n\n";
-        }
-    });
-
-    if (!hasVisible) return alert("Nenhum repertório visível para exportar.");
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'repertorio_export.txt';
-    link.click();
-}
-
-function exportRepertoirePDF() {
-    if (typeof html2pdf === 'undefined') {
-        return alert("Biblioteca PDF não carregada. Verifique sua conexão com a internet.");
-    }
-
-    // Cria um elemento temporário para o PDF (visual limpo para impressão)
-    const element = document.createElement('div');
-    element.style.padding = '20px';
-    element.style.fontFamily = 'Helvetica, Arial, sans-serif';
-    element.style.color = '#000';
-    element.style.background = '#fff';
-    element.style.width = '100%';
-
-    // Cabeçalho do PDF
-    const title = document.createElement('h1');
-    title.textContent = document.getElementById('band-name-display').innerText || 'REPERTÓRIO';
-    title.style.textAlign = 'center';
-    title.style.fontSize = '24px';
-    title.style.marginBottom = '5px';
-    title.style.textTransform = 'uppercase';
-    element.appendChild(title);
-
-    const subtitle = document.createElement('div');
-    subtitle.textContent = document.getElementById('band-subtitle-display').innerText || '';
-    subtitle.style.textAlign = 'center';
-    subtitle.style.fontSize = '12px';
-    subtitle.style.marginBottom = '30px';
-    subtitle.style.color = '#666';
-    element.appendChild(subtitle);
-
-    const blocks = document.querySelectorAll('.block-container');
-    let hasVisible = false;
-
-    blocks.forEach(block => {
-        if (block.style.display !== 'none') {
-            hasVisible = true;
-            const blockTitle = block.querySelector('.block-title').innerText;
-            
-            const blockDiv = document.createElement('div');
-            blockDiv.style.marginBottom = '20px';
-            blockDiv.style.pageBreakInside = 'avoid'; // Evita quebra de bloco no meio
-
-            const h3 = document.createElement('h3');
-            h3.textContent = blockTitle;
-            h3.style.borderBottom = '2px solid #000';
-            h3.style.paddingBottom = '5px';
-            h3.style.marginBottom = '10px';
-            h3.style.fontSize = '16px';
-            h3.style.textTransform = 'uppercase';
-            blockDiv.appendChild(h3);
-
-            const ul = document.createElement('ul');
-            ul.style.listStyle = 'none';
-            ul.style.padding = '0';
-            ul.style.margin = '0';
-
-            const songs = block.querySelectorAll('.song-item');
-            songs.forEach(song => {
-                const index = song.querySelector('.song-index').innerText;
-                const name = song.querySelector('.song-name').innerText;
-                const key = song.querySelector('.song-key').innerText;
-
-                const li = document.createElement('li');
-                li.style.display = 'flex';
-                li.style.justifyContent = 'space-between';
-                li.style.padding = '4px 0';
-                li.style.borderBottom = '1px solid #eee';
-                li.style.fontSize = '12px';
-                
-                li.innerHTML = `<span style="flex:1">${index} - ${name}</span><span style="font-weight:bold; margin-left:10px;">${key}</span>`;
-                ul.appendChild(li);
-            });
-
-            blockDiv.appendChild(ul);
-            element.appendChild(blockDiv);
-        }
-    });
-
-    if (!hasVisible) return alert("Nenhum repertório visível para exportar.");
-
-    const opt = {
-        margin: 10,
-        filename: 'repertorio_export.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
-}
-
-function shareViaWhatsApp() {
-    let content = "*" + (document.getElementById('band-name-display').innerText || 'REPERTÓRIO') + "*\n";
-    content += "_" + (document.getElementById('band-subtitle-display').innerText || '') + "_\n\n";
-
-    const blocks = document.querySelectorAll('.block-container');
-    let hasVisible = false;
-
-    blocks.forEach(block => {
-        // Verifica se o bloco está visível
-        if (block.style.display !== 'none') {
-            hasVisible = true;
-            const title = block.querySelector('.block-title').innerText;
-            content += `*[ ${title} ]*\n`; // Negrito no título do bloco
-            
-            const songs = block.querySelectorAll('.song-item');
-            songs.forEach(song => {
-                const index = song.querySelector('.song-index').innerText;
-                const name = song.querySelector('.song-name').innerText;
-                const key = song.querySelector('.song-key').innerText;
-                // Formato: 01. Nome da Música (TOM)
-                content += `${index}. ${name} *(${key})*\n`;
-            });
-            content += "\n";
-        }
-    });
-
-    if (!hasVisible) return alert("Nenhum repertório visível para compartilhar.");
-
-    // Codifica o texto para URL e abre o WhatsApp
-    const url = `https://wa.me/?text=${encodeURIComponent(content)}`;
-    window.open(url, '_blank');
-}
-
-function copyRepertoireToClipboard() {
-    let content = (document.getElementById('band-name-display').innerText || 'REPERTÓRIO') + "\n";
-    content += (document.getElementById('band-subtitle-display').innerText || '') + "\n\n";
-
-    const blocks = document.querySelectorAll('.block-container');
-    let hasVisible = false;
-
-    blocks.forEach(block => {
-        if (block.style.display !== 'none') {
-            hasVisible = true;
-            const title = block.querySelector('.block-title').innerText;
-            content += `[ ${title} ]\n`;
-            
-            const songs = block.querySelectorAll('.song-item');
-            songs.forEach(song => {
-                const index = song.querySelector('.song-index').innerText;
-                const name = song.querySelector('.song-name').innerText;
-                const key = song.querySelector('.song-key').innerText;
-                content += `${index} - ${name} (${key})\n`;
-            });
-            content += "\n";
-        }
-    });
-
-    if (!hasVisible) return alert("Nenhum repertório visível para copiar.");
-
-    navigator.clipboard.writeText(content).then(() => {
-        alert("Repertório copiado para a área de transferência!");
-    }).catch(err => {
-        console.error('Erro ao copiar: ', err);
-        alert("Erro ao copiar para a área de transferência.");
-    });
-}
-
-function toggleStageMode() {
-    document.body.classList.toggle('presentation-mode');
-    const btn = document.getElementById('btn-stage-mode');
-    if (document.body.classList.contains('presentation-mode')) {
-        btn.textContent = 'SAIR DO PALCO';
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(err => console.log(err));
-        }
-    } else {
-        btn.textContent = 'MODO PALCO';
-        stopAutoScroll(); // Para o scroll ao sair do modo palco
-        document.getElementById('btn-scroll-toggle').textContent = '▶';
-        if (document.exitFullscreen && document.fullscreenElement) {
-            document.exitFullscreen().catch(err => console.log(err));
-        }
-    }
-}
-
-// AUTOSCROLL LOGIC
-let scrollInterval;
-let isScrolling = false;
-let scrollSpeed = 1.0;
-let scrollAccumulator = 0;
-
-function toggleAutoScroll() {
-    const btn = document.getElementById('btn-scroll-toggle');
-    if (isScrolling) {
-        stopAutoScroll();
-        btn.textContent = '▶';
-    } else {
-        startAutoScroll();
-        btn.textContent = '⏸';
-    }
-}
-
-function startAutoScroll() {
-    if (isScrolling) return;
-    isScrolling = true;
-    scrollAccumulator = 0;
-    
-    function scrollStep() {
-        if (!isScrolling) return;
-        
-        scrollAccumulator += scrollSpeed * 0.05; // Acumula o valor fracionado (Mais lento para ajuste fino)
-        if (Math.abs(scrollAccumulator) >= 1) {
-            const pixels = Math.trunc(scrollAccumulator);
-            window.scrollBy(0, pixels);
-            scrollAccumulator -= pixels;
-
-            // Verifica se chegou ao fim da página (descendo) ou topo (subindo)
-            if (scrollSpeed > 0 && (window.innerHeight + Math.ceil(window.scrollY)) >= document.documentElement.scrollHeight) {
-                stopAutoScroll();
-                const btn = document.getElementById('btn-scroll-toggle');
-                if(btn) btn.textContent = '▶';
-                return;
-            } else if (scrollSpeed < 0 && window.scrollY <= 0) {
-                stopAutoScroll();
-                const btn = document.getElementById('btn-scroll-toggle');
-                if(btn) btn.textContent = '▶';
-                return;
-            }
-        }
-        scrollInterval = requestAnimationFrame(scrollStep);
-    }
-    scrollInterval = requestAnimationFrame(scrollStep);
-}
-
-function stopAutoScroll() {
-    isScrolling = false;
-    cancelAnimationFrame(scrollInterval);
-}
-
-function updateScrollSpeed() {
-    const input = document.getElementById('scroll-speed');
-    const label = document.getElementById('speed-label');
-    scrollSpeed = parseFloat(input.value);
-    label.textContent = `VEL: ${scrollSpeed.toFixed(1)}`;
-    localStorage.setItem(SCROLL_SPEED_KEY, scrollSpeed);
-}
-
-function loadScrollSpeed() {
-    const saved = localStorage.getItem(SCROLL_SPEED_KEY);
-    if (saved !== null) {
-        scrollSpeed = parseFloat(saved);
-        const input = document.getElementById('scroll-speed');
-        const label = document.getElementById('speed-label');
-        if (input) input.value = scrollSpeed;
-        if (label) label.textContent = `VEL: ${scrollSpeed.toFixed(1)}`;
-    }
-}
-
-function adjustSpeed(amount) {
-    const input = document.getElementById('scroll-speed');
-    let newValue = parseFloat(input.value) + amount;
-    const min = parseFloat(input.min);
-    const max = parseFloat(input.max);
-    
-    if (newValue < min) newValue = min;
-    if (newValue > max) newValue = max;
-    
-    input.value = newValue;
-    updateScrollSpeed();
-    showSpeedToast(newValue);
-}
-
-let toastTimeout;
-function showSpeedToast(value) {
-    const toast = document.getElementById('speed-toast');
-    if (toast) {
-        toast.textContent = `VEL: ${value.toFixed(1)}`;
-        toast.classList.add('show');
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-            toast.classList.remove('show');
-        }, 800);
-    }
-}
-
-function togglePanic() {
-    const body = document.body;
-    if (body.classList.contains('panic-active')) {
-        body.classList.remove('panic-active');
-    } else {
-        stopAutoScroll();
-        const btn = document.getElementById('btn-scroll-toggle');
-        if(btn) btn.textContent = '▶';
-        body.classList.add('panic-active');
-    }
-}
-
-// THEME LOGIC
-function loadTheme() {
-    const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
-    const selector = document.getElementById('theme-selector');
-    if(selector) selector.value = savedTheme;
-    applyTheme(savedTheme);
-}
-
-function changeTheme(theme) {
-    applyTheme(theme);
-    localStorage.setItem(THEME_KEY, theme);
-}
-
-function applyTheme(theme) {
-    document.body.classList.remove('theme-blue', 'theme-light', 'theme-yellow', 'theme-white', 'theme-red', 'theme-black', 'theme-custom');
-    
-    // Limpa estilos inline de temas anteriores
-    document.body.style.removeProperty('--primary');
-    document.body.style.removeProperty('--secondary');
-    document.body.style.removeProperty('--grid-color');
-
-    const picker = document.getElementById('custom-color-picker');
-    if (picker) picker.style.display = (theme === 'custom') ? 'inline-block' : 'none';
-
-    if (theme === 'custom') {
-        document.body.classList.add('theme-custom');
-        const color = localStorage.getItem(CUSTOM_COLOR_KEY) || '#00ff00';
-        if (picker) picker.value = color;
-        
-        document.body.style.setProperty('--primary', color);
-        document.body.style.setProperty('--secondary', '#ffffff'); // Contraste padrão
-        
-        const rgb = hexToRgb(color);
-        if (rgb) {
-            document.body.style.setProperty('--grid-color', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)`);
-        }
-    } else if (theme !== 'default') {
-        document.body.classList.add(theme);
-    }
-}
-
-function updateCustomColor(color) {
-    localStorage.setItem(CUSTOM_COLOR_KEY, color);
-    applyTheme('custom');
-}
-
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-}
-
-// SETLIST MANAGEMENT LOGIC
-function initSystem() {
-    // Migração de dados antigos para o novo sistema
-    if (!localStorage.getItem(META_KEY)) {
-        const oldData = localStorage.getItem(STORAGE_KEY);
-        let initialData = defaultData;
-        try {
-            if (oldData) initialData = JSON.parse(oldData);
-        } catch (e) {
-            console.error("Erro na migração de dados:", e);
-        }
-        
-        const meta = [{ id: 'default', name: 'REPERTÓRIO PRINCIPAL' }];
-        localStorage.setItem(META_KEY, JSON.stringify(meta));
-        localStorage.setItem(CURRENT_ID_KEY, 'default');
-        localStorage.setItem(DATA_PREFIX + 'default', JSON.stringify(initialData));
-    }
-    
-    currentSetlistId = localStorage.getItem(CURRENT_ID_KEY) || 'default';
-    loadSetlistData();
-    renderSetlistSelector();
-}
-
-function loadSetlistData() {
-    const raw = localStorage.getItem(DATA_PREFIX + currentSetlistId);
+// Funções de persistência
+function loadFromStorage() {
     try {
-        setlistData = raw ? JSON.parse(raw) : [];
+        // Carrega o Token da Blaze
+        const savedToken = localStorage.getItem('blaze_token');
+        if (savedToken) {
+            document.getElementById('config_blaze_token').value = savedToken;
+        }
+        // Carrega configurações do Telegram salvas localmente
+        const savedTelToken = localStorage.getItem('telegram_bot_token');
+        const savedTelChatId = localStorage.getItem('telegram_chat_id');
+        if (savedTelToken && document.getElementById('telegram_bot_token')) {
+            document.getElementById('telegram_bot_token').value = savedTelToken;
+        }
+        if (savedTelChatId && document.getElementById('telegram_chat_id')) {
+            document.getElementById('telegram_chat_id').value = savedTelChatId;
+        }
+        // Carrega o nome do operador (se houver lógica para isso)
+        // document.getElementById('suite_userName').value = localStorage.getItem('suite_userName') || '';
     } catch (e) {
-        console.error("Erro ao carregar dados do setlist:", e);
-        setlistData = [];
-    }
-    renderSetlist();
-}
-
-function saveData() {
-    try {
-        localStorage.setItem(DATA_PREFIX + currentSetlistId, JSON.stringify(setlistData));
-    } catch (e) {
-        console.error("Erro ao salvar dados:", e);
-        alert("Erro ao salvar! Verifique se o armazenamento do navegador está cheio.");
+        console.error("Não foi possível carregar do localStorage:", e);
     }
 }
 
-function renderSetlistSelector() {
-    const meta = JSON.parse(localStorage.getItem(META_KEY) || '[]');
-    const selector = document.getElementById('setlist-selector');
-    selector.innerHTML = '';
-    
-    meta.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.textContent = item.name;
-        if (item.id === currentSetlistId) option.selected = true;
-        selector.appendChild(option);
-    });
-}
-
-function switchSetlist(id) {
-    currentSetlistId = id;
-    localStorage.setItem(CURRENT_ID_KEY, id);
-    loadSetlistData();
-    historyStack = [];
-    redoStack = [];
-}
-
-function createNewSetlist() {
-    const name = prompt("Nome do novo repertório:");
-    if (name) {
-        const id = 'setlist_' + Date.now();
-        const meta = JSON.parse(localStorage.getItem(META_KEY) || '[]');
-        meta.push({ id, name });
-        localStorage.setItem(META_KEY, JSON.stringify(meta));
-        localStorage.setItem(DATA_PREFIX + id, '[]'); // Inicia vazio
-        
-        renderSetlistSelector();
-        switchSetlist(id);
-    }
-}
-
-function deleteCurrentSetlist() {
-    const meta = JSON.parse(localStorage.getItem(META_KEY) || '[]');
-    if (meta.length <= 1) return alert("Você não pode excluir o único repertório existente.");
-    
-    if (confirm("Tem certeza que deseja excluir o repertório atual? Esta ação não pode ser desfeita.")) {
-        localStorage.removeItem(DATA_PREFIX + currentSetlistId);
-        
-        const newMeta = meta.filter(item => item.id !== currentSetlistId);
-        localStorage.setItem(META_KEY, JSON.stringify(newMeta));
-        
-        switchSetlist(newMeta[0].id);
-        renderSetlistSelector();
-    }
-}
-
-// CONFIGURATION LOGIC
-function loadConfig() {
-    const saved = localStorage.getItem(CONFIG_KEY);
-    const config = saved ? JSON.parse(saved) : { 
-        name: 'MENDES & MATEUS', 
-        subtitle: '>> MODO: PASSAGEM DE SOM // STATUS: ONLINE',
-        marquee: '',
-        panicMessage: 'PAUSA TÉCNICA',
-        footerText: '/// MENDES & MATEUS REPERTÓRIO ///',
-        marqueeSpeed: 20,
-        resumeScroll: false
-    };
-    
-    const nameDisplay = document.getElementById('band-name-display');
-    const subDisplay = document.getElementById('band-subtitle-display');
-    const marqueeDisplay = document.getElementById('marquee-text-display');
-    const panicDisplay = document.getElementById('panic-overlay');
-    const footerDisplay = document.getElementById('footer-text-display');
-    const marqueeContent = document.querySelector('.marquee-content');
-    
-    // Aplica estilo especial ao "&" se existir
-    if(nameDisplay) {
-        nameDisplay.innerHTML = config.name.replace(/&/g, '<span>&</span>');
-        nameDisplay.setAttribute('data-text', config.name);
-    }
-    if(subDisplay) subDisplay.textContent = config.subtitle;
-    if(marqueeDisplay) marqueeDisplay.textContent = config.marquee || '';
-    if(panicDisplay) panicDisplay.textContent = config.panicMessage || 'PAUSA TÉCNICA';
-    if(footerDisplay) footerDisplay.textContent = config.footerText || '/// MENDES & MATEUS REPERTÓRIO ///';
-    if(marqueeContent) {
-        marqueeContent.style.animationDuration = (config.marqueeSpeed || 20) + 's';
-    }
-}
-
-function openConfigModal() {
-    const modal = document.getElementById('config-modal');
-    const nameInput = document.getElementById('config-band-name');
-    const subInput = document.getElementById('config-band-subtitle');
-    const marqueeInput = document.getElementById('config-marquee-text');
-    const panicInput = document.getElementById('config-panic-message');
-    const footerInput = document.getElementById('config-footer-text');
-    const marqueeSpeedInput = document.getElementById('config-marquee-speed');
-    const resumeScrollInput = document.getElementById('config-resume-scroll');
-    
-    // Pega o texto atual (sem HTML) para preencher o input
-    const currentName = document.getElementById('band-name-display').innerText;
-    const currentSub = document.getElementById('band-subtitle-display').innerText;
-    // Usa textContent para garantir leitura mesmo se elemento estiver oculto
-    const currentMarquee = document.getElementById('marquee-text-display').textContent;
-    const currentPanic = document.getElementById('panic-overlay').textContent;
-    const currentFooter = document.getElementById('footer-text-display').textContent;
-    
-    const savedConfig = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
-    
-    nameInput.value = currentName;
-    subInput.value = currentSub;
-    marqueeInput.value = currentMarquee;
-    panicInput.value = currentPanic;
-    footerInput.value = currentFooter;
-    marqueeSpeedInput.value = savedConfig.marqueeSpeed || 20;
-    if(resumeScrollInput) resumeScrollInput.checked = savedConfig.resumeScroll || false;
-    
-    modal.style.display = 'flex';
-}
-
-function closeConfigModal() {
-    document.getElementById('config-modal').style.display = 'none';
-}
-
-function saveConfig() {
-    const name = document.getElementById('config-band-name').value;
-    const subtitle = document.getElementById('config-band-subtitle').value;
-    const marquee = document.getElementById('config-marquee-text').value;
-    const panicMessage = document.getElementById('config-panic-message').value;
-    const footerText = document.getElementById('config-footer-text').value;
-    const marqueeSpeed = document.getElementById('config-marquee-speed').value;
-    const resumeScroll = document.getElementById('config-resume-scroll').checked;
-    
-    const config = { name, subtitle, marquee, panicMessage, footerText, marqueeSpeed, resumeScroll };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-    
-    loadConfig();
-    closeConfigModal();
-}
-
-// Executar
-initSystem();
-loadTheme();
-loadConfig();
-loadScrollSpeed();
-
-// TIMER LOGIC
-let timerSeconds = 0;
-let timerInterval = null;
-
-function formatTime(totalSeconds) {
-    const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-    const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-    const s = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${h}:${m}:${s}`;
-}
-
-function updateTimerDisplay() {
-    const display = document.getElementById('timer-display');
-    if(display) display.textContent = formatTime(timerSeconds);
-}
-
-function saveTimerState() {
-    const state = {
-        seconds: timerSeconds,
-        isRunning: !!timerInterval,
-        timestamp: Date.now()
-    };
-    try {
-        localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-        // Falha silenciosa para o timer para não interromper o fluxo
-    }
-}
-
-function loadTimerState() {
-    const saved = localStorage.getItem(TIMER_STORAGE_KEY);
-    if (saved) {
-        try {
-            const state = JSON.parse(saved);
-            timerSeconds = state.seconds || 0;
-            
-            if (state.isRunning) {
-                const elapsed = Math.floor((Date.now() - state.timestamp) / 1000);
-                timerSeconds += elapsed > 0 ? elapsed : 0;
-                updateTimerDisplay();
-                toggleTimer(); // Retomar contagem
-            } else {
-                updateTimerDisplay();
-            }
-        } catch (e) {
-            console.error("Erro ao carregar timer:", e);
-        }
-    }
-}
-
-function toggleTimer() {
-    const btn = document.getElementById('btn-timer-toggle');
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        btn.textContent = '▶';
-        saveTimerState();
-    } else {
-        timerInterval = setInterval(() => {
-            timerSeconds++;
-            updateTimerDisplay();
-            saveTimerState();
-        }, 1000);
-        btn.textContent = '⏸';
-        saveTimerState();
-    }
-}
-
-function resetTimer() {
-    if(timerInterval) toggleTimer(); // Pausa se estiver rodando
-    timerSeconds = 0;
-    updateTimerDisplay();
-    localStorage.removeItem(TIMER_STORAGE_KEY);
-}
-
-// QUICK SETLIST LOGIC
-function toggleSelectionMode() {
-    isSelectionMode = !isSelectionMode;
-    const btn = document.getElementById('btn-quick-select');
-    const bar = document.getElementById('selection-bar');
-    
-    if (isSelectionMode) {
-        btn.textContent = 'CANCELAR SELEÇÃO';
-        btn.style.borderColor = 'red';
-        btn.style.color = 'red';
-        bar.style.display = 'flex';
-    } else {
-        btn.textContent = 'SETLIST RÁPIDO';
-        btn.style.borderColor = '';
-        btn.style.color = '';
-        bar.style.display = 'none';
-    }
-    renderSetlist();
-}
-
-function updateSelectionCount() {
-    const count = document.querySelectorAll('.song-checkbox:checked').length;
-    document.getElementById('selection-count').textContent = `${count} MÚSICAS SELECIONADAS`;
-}
-
-function finishSelection() {
-    const checkboxes = document.querySelectorAll('.song-checkbox:checked');
-    if (checkboxes.length === 0) return alert("Selecione pelo menos uma música.");
-
-    const selectedSongs = Array.from(checkboxes).map(cb => JSON.parse(cb.dataset.songData));
-    
-    const date = new Date();
-    const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
-    const name = prompt("Nome do Setlist Rápido:", `Show ${dateStr}`);
-    
-    if (name) {
-        const id = 'setlist_' + Date.now();
-        const meta = JSON.parse(localStorage.getItem(META_KEY) || '[]');
-        
-        // Cria novo setlist com um único bloco contendo as músicas selecionadas
-        const newSetlistData = [{
-            id: "SHOW",
-            rhythm: "SEQUÊNCIA",
-            songs: selectedSongs
-        }];
-
-        meta.push({ id, name });
-        localStorage.setItem(META_KEY, JSON.stringify(meta));
-        localStorage.setItem(DATA_PREFIX + id, JSON.stringify(newSetlistData));
-        
-        toggleSelectionMode(); // Sai do modo de seleção
-        renderSetlistSelector();
-        switchSetlist(id); // Vai para o novo setlist
-    }
-}
-
-// Carregar estado do timer
-loadTimerState();
-
-// KEYBOARD SHORTCUTS
-document.addEventListener('keydown', (e) => {
-    // 1. ESC para fechar qualquer modal aberto (Prioridade Máxima)
-    if (e.code === 'Escape') {
-        const openModal = [...document.querySelectorAll('.modal-overlay')].find(m => m.style.display === 'flex');
-        if (openModal) {
-            e.preventDefault();
-            if (openModal.id === 'lyrics-modal') closeLyricsModal();
-            else if (openModal.id === 'config-modal') closeConfigModal();
-            else if (openModal.id === 'edit-modal') closeModal();
-            else if (openModal.id === 'key-modal') closeKeyModal();
-            else if (openModal.id === 'import-modal') closeImportModal();
-            else openModal.style.display = 'none'; // remote-modal e outros genéricos
-            return;
-        }
-    }
-
-    // Ignora se estiver interagindo com inputs
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-
-    if (e.code === 'Space') {
-        e.preventDefault(); // Previne rolagem padrão
-        toggleVisibleBlock();
-    }
-
-    // Atalho para Modo Palco (F ou F11)
-    if (e.code === 'KeyF' || e.code === 'F11') {
-        e.preventDefault();
-        toggleStageMode();
+function suite_saveSettings(btn) {
+    // Salva o Token da Blaze
+    const token = document.getElementById('config_blaze_token').value.trim();
+    if (token) {
+        localStorage.setItem('blaze_token', token);
     }
     
-    // Undo/Redo Shortcuts
-    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-    }
-    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY') {
-        e.preventDefault();
-        redo();
-    }
+    // const userName = document.getElementById('suite_userName').value;
+    // localStorage.setItem('suite_userName', userName);
 
-    // Atalhos para Modo Palco (Velocidade)
-    if (document.body.classList.contains('presentation-mode')) {
-        if (e.code === 'Escape') {
-            e.preventDefault();
-            toggleStageMode();
-        } else if (e.code === 'ArrowUp') {
-            e.preventDefault();
-            adjustSpeed(0.1);
-        } else if (e.code === 'ArrowDown') {
-            e.preventDefault();
-            adjustSpeed(-0.1);
-        }
-    }
-});
+    const resArea = document.getElementById('suite_resConfig');
+    resArea.innerText = 'Configurações salvas com sucesso!';
+    resArea.style.display = 'block';
 
-function toggleVisibleBlock() {
-    const blocks = document.querySelectorAll('.block-container');
-    const header = document.querySelector('header');
-    const headerHeight = header ? header.getBoundingClientRect().height : 0;
-    
-    let activeBlock = null;
-    let minDistance = Infinity;
-
-    blocks.forEach(block => {
-        const rect = block.getBoundingClientRect();
-        // Encontra o bloco cujo topo está mais próximo da parte inferior do cabeçalho
-        const distance = Math.abs(rect.top - headerHeight);
-        
-        if (distance < minDistance) {
-            minDistance = distance;
-            activeBlock = block;
-        }
-    });
-
-    if (activeBlock) {
-        const btn = activeBlock.querySelector('.btn-toggle');
-        if (btn) {
-            const index = parseInt(activeBlock.dataset.originalIndex);
-            if (setlistData[index]) {
-                setlistData[index].collapsed = !setlistData[index].collapsed;
-                saveData();
-            }
-            
-            activeBlock.classList.toggle('collapsed');
-            btn.textContent = activeBlock.classList.contains('collapsed') ? '+' : '-';
-            
-            // Se expandir, ajusta o scroll para garantir visibilidade do título
-            if (!activeBlock.classList.contains('collapsed')) {
-                const y = activeBlock.getBoundingClientRect().top + window.scrollY - headerHeight - 10;
-                window.scrollTo({ top: y, behavior: 'smooth' });
-            }
-        }
-    }
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ SALVO!';
+    setTimeout(() => {
+        resArea.style.display = 'none';
+        btn.innerHTML = originalText;
+    }, 2500);
 }
 
-function logout() {
-    if (confirm("Deseja realmente sair do sistema?")) {
-        localStorage.removeItem('isAuthenticated');
-        window.location.href = 'login.html';
-    }
-}
+function saveTelegramSettings(btn) {
+    const token = document.getElementById('telegram_bot_token').value.trim();
+    const chatId = document.getElementById('telegram_chat_id').value.trim();
 
-function backupSystemData() {
-    const backup = {};
-    // Itera sobre todas as chaves do LocalStorage
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        // Filtra apenas as chaves do sistema (começam com 'repertorio_')
-        if (key.startsWith('repertorio_')) {
-            backup[key] = localStorage.getItem(key);
-        }
-    }
-
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    const date = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
-    link.download = `backup_system_vaquejada_${date}.json`;
-    link.click();
-}
-
-function triggerRestore() {
-    document.getElementById('restore-input').click();
-}
-
-function restoreBackup(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const backup = JSON.parse(e.target.result);
-            
-            if (confirm("ATENÇÃO: Isso substituirá TODOS os dados atuais pelo backup selecionado. Essa ação é irreversível. Deseja continuar?")) {
-                // 1. Limpa dados atuais do sistema (apenas chaves que começam com o prefixo do app)
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('repertorio_')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-
-                // 2. Restaura dados do backup
-                Object.keys(backup).forEach(key => {
-                    localStorage.setItem(key, backup[key]);
-                });
-
-                alert("Sistema restaurado com sucesso! A página será recarregada.");
-                window.location.reload();
-            }
-        } catch (err) {
-            alert("Erro ao ler arquivo de backup: O arquivo pode estar corrompido ou inválido.\nDetalhes: " + err.message);
-        }
-    };
-    reader.readAsText(file);
-    input.value = ''; // Reseta o input para permitir selecionar o mesmo arquivo novamente se necessário
-}
-
-function openImportModal() {
-    closeConfigModal(); // Fecha o menu de config se estiver aberto
-    document.getElementById('import-modal').style.display = 'flex';
-    document.getElementById('import-text-area').value = '';
-    document.getElementById('import-file-input').value = '';
-}
-
-function closeImportModal() {
-    document.getElementById('import-modal').style.display = 'none';
-}
-
-function handleFileImport(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('import-text-area').value = e.target.result;
-    };
-    reader.readAsText(file);
-}
-
-function processImport(replace = false) {
-    const text = document.getElementById('import-text-area').value;
-    if (!text.trim()) return alert("A área de texto está vazia.");
-
-    const newBlocks = parseImportedText(text);
-    
-    if (newBlocks.length === 0) return alert("Não foi possível identificar músicas no texto.");
-
-    const msg = replace 
-        ? `ATENÇÃO: Isso apagará todo o repertório atual e substituirá pelos ${newBlocks.length} novos blocos. Deseja continuar?`
-        : `Foram identificados ${newBlocks.length} blocos. Deseja adicionar ao repertório atual?`;
-
-    if (confirm(msg)) {
-        pushHistory();
-        if (replace) {
-            setlistData = newBlocks;
-        } else {
-            setlistData = setlistData.concat(newBlocks);
-        }
-        saveData();
-        renderSetlist();
-        closeImportModal();
-        alert("Importação concluída com sucesso!");
-    }
-}
-
-function parseImportedText(text) {
-    const lines = text.split(/\r?\n/);
-    const blocks = [];
-    let currentBlock = { id: `IMP-${Date.now().toString().slice(-4)}`, rhythm: "IMPORTADO", songs: [] };
-    
-    const finalizeBlock = (blk) => {
-        if (blk.songs.length > 0) {
-            if (blk.rhythm === "IMPORTADO") {
-                const guessed = guessRhythm(blk.songs);
-                if (guessed) blk.rhythm = guessed + " (AUTO)";
-            }
-            blocks.push(blk);
-        }
-    };
-
-    lines.forEach(line => {
-        line = line.trim();
-        if (!line) {
-            // Linha vazia pode indicar fim de bloco se o anterior tiver músicas
-            if (currentBlock.songs.length > 0) {
-                finalizeBlock(currentBlock);
-                currentBlock = { id: `IMP-${Date.now().toString().slice(-4)}`, rhythm: "IMPORTADO", songs: [] };
-            }
-            return;
-        }
-
-        // Tenta detectar se é um cabeçalho de bloco (ex: [FORRÓ] ou BLOCO X)
-        if (line.startsWith('[') || line.toUpperCase().startsWith('BLOCO') || (line === line.toUpperCase() && !line.includes('-') && line.length < 30)) {
-            if (currentBlock.songs.length > 0) {
-                finalizeBlock(currentBlock);
-            }
-            currentBlock = { id: "NOVO", rhythm: line.replace(/[\[\]]/g, ''), songs: [] };
-            return;
-        }
-
-        // Processa música e tom
-        // Padrões comuns: "Música - Tom", "Música (Tom)", "Música"
-        let title = line;
-        let key = "-";
-
-        // Tenta extrair tom no final (ex: Sol, G, Cm)
-        const keyRegex = /[\-\(]\s*([A-G][#b]?m?|[DdRmMfFsSlL][óéíá]?[#b]?m?)\s*[\)]?$/i;
-        const match = line.match(keyRegex);
-
-        if (match) {
-            key = match[1].toUpperCase();
-            title = line.replace(match[0], '').trim();
-        }
-
-        currentBlock.songs.push({ title: title, key: key });
-    });
-
-    // Adiciona o último bloco se tiver músicas
-    if (currentBlock.songs.length > 0) {
-        finalizeBlock(currentBlock);
-    }
-
-    return blocks;
-}
-
-function guessRhythm(songs) {
-    const keywords = {
-        "VAQUEJADA": ["VAQUEIRO", "GADO", "BOI", "CAVALO", "SELA", "PERNEIRA", "GIBÃO", "VAQUEJADA", "CORRIDA", "MANDACARU"],
-        "FORRÓ": ["FORRÓ", "SANFONA", "BAIÃO", "XOTE", "ARRASTA", "FOGUEIRA", "SÃO JOÃO", "NORDESTE"],
-        "PISEIRO": ["PISEIRO", "PAREDÃO", "TARCISIO", "BIU", "ZÉ VAQUEIRO", "VITOR FERNANDES", "JOÃO GOMES"],
-        "ROMÂNTICO": ["AMOR", "CORAÇÃO", "PAIXÃO", "SAUDADE", "TE AMO", "VIDA", "LOVE"],
-        "VANERÃO": ["VANERÃO", "VANERA", "RIO GRANDE", "GAÚCHO"]
-    };
-
-    const scores = {};
-
-    songs.forEach(song => {
-        const title = song.title.toUpperCase();
-        for (const [rhythm, words] of Object.entries(keywords)) {
-            words.forEach(word => {
-                if (title.includes(word)) {
-                    scores[rhythm] = (scores[rhythm] || 0) + 1;
-                }
-            });
-        }
-    });
-
-    let bestRhythm = null;
-    let maxScore = 0;
-
-    for (const [rhythm, score] of Object.entries(scores)) {
-        if (score > maxScore) {
-            maxScore = score;
-            bestRhythm = rhythm;
-        }
-    }
-
-    return bestRhythm;
-}
-
-function toggleMobileMenu() {
-    const controls = document.querySelector('.header-controls');
-    const btn = document.getElementById('btn-menu-toggle');
-    controls.classList.toggle('active');
-    btn.textContent = controls.classList.contains('active') ? '✕' : '☰';
-}
-
-function renderBlockJumper() {
-    const jumperContainer = document.getElementById('block-jumper');
-    const remoteJumperContainer = document.getElementById('remote-block-jumper');
-
-    if (jumperContainer) jumperContainer.innerHTML = '';
-    if (remoteJumperContainer) remoteJumperContainer.innerHTML = '';
-
-    setlistData.slice(0, 20).forEach((block, index) => {
-        const blockId = block.id || `B${index + 1}`;
-        // Botão para o Modo Palco (PC)
-        if (jumperContainer) {
-            const btn = document.createElement('button');
-            btn.className = 'block-jumper-btn';
-            btn.dataset.index = index;
-            btn.textContent = blockId;
-            btn.onclick = () => jumpToBlock(index);
-            jumperContainer.appendChild(btn);
-        }
-
-        // Botão para o Controle Remoto (Celular)
-        if (remoteJumperContainer) {
-            const remoteBtn = document.createElement('button');
-            remoteBtn.className = 'remote-btn'; // Reutiliza o estilo
-            remoteBtn.dataset.index = index;
-            remoteBtn.textContent = blockId;
-            remoteBtn.onclick = () => sendRemote('jump_to_block', { index });
-            remoteJumperContainer.appendChild(remoteBtn);
-        }
-    });
-}
-
-function jumpToBlock(index) {
-    const blockElements = document.querySelectorAll('.block-container');
-    if (blockElements[index]) {
-        const headerHeight = document.querySelector('header')?.getBoundingClientRect().height || 0;
-        const y = blockElements[index].getBoundingClientRect().top + window.scrollY - headerHeight - 10;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-}
-
-let lastActiveBlockIndex = -1;
-
-window.addEventListener('scroll', () => {
-    highlightActiveBlock();
-});
-
-function highlightActiveBlock() {
-    const blocks = document.querySelectorAll('.block-container');
-    const headerHeight = document.querySelector('header')?.getBoundingClientRect().height || 0;
-    let activeIndex = -1;
-    let minDistance = Infinity;
-
-    blocks.forEach((block, index) => {
-        const rect = block.getBoundingClientRect();
-        // Verifica a distância do topo do bloco em relação a um ponto de leitura (topo da tela + margem)
-        const distance = Math.abs(rect.top - headerHeight - 50);
-        
-        if (distance < minDistance) {
-            minDistance = distance;
-            activeIndex = index;
-        }
-    });
-
-    if (activeIndex !== -1 && activeIndex !== lastActiveBlockIndex) {
-        lastActiveBlockIndex = activeIndex;
-        
-        // Atualiza botões locais (Modo Palco)
-        document.querySelectorAll('.block-jumper-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.index) === activeIndex);
-        });
-
-        // Envia atualização para o controle remoto (se conectado como host)
-        if (conn && conn.open) {
-            conn.send({ action: 'highlight_block', payload: { index: activeIndex } });
-        }
-    }
-}
-
-// =========================================
-// LÓGICA DE CONTROLE REMOTO (PEERJS)
-// =========================================
-
-let peer = null;
-let conn = null;
-
-function initRemoteSystem() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const remoteId = urlParams.get('remote');
-
-    if (remoteId) {
-        if (!navigator.onLine) {
-            alert("SEM INTERNET: O controle remoto requer conexão para iniciar.");
-        }
-
-        // MODO CLIENTE (CELULAR)
-        document.getElementById('remote-interface').style.display = 'flex';
-        document.querySelector('header').style.display = 'none';
-        document.querySelector('.container').style.display = 'none';
-        document.querySelector('footer').style.display = 'none';
-        
-        peer = new Peer();
-        peer.on('open', (id) => {
-            conn = peer.connect(remoteId);
-            conn.on('open', () => {
-                document.getElementById('remote-feedback').textContent = "CONECTADO AO PALCO";
-                document.getElementById('remote-feedback').style.color = "#0f0";
-            });
-            conn.on('error', (err) => alert("Erro na conexão: " + err));
-            conn.on('data', (data) => {
-                if (data.action === 'highlight_block') {
-                    updateRemoteHighlight(data.payload.index);
-                }
-                if (data.action === 'sync_lyrics') {
-                    updateRemoteLyrics(data.payload);
-                }
-                if (data.action === 'lyrics_scroll_sync') {
-                    updateRemoteLyricsScroll(data.payload);
-                }
-            });
-        });
-        initRemoteBattery();
-        setInterval(updateRemoteClock, 1000);
-        updateRemoteClock();
-    }
-}
-
-function openRemoteConnectModal() {
-    closeConfigModal();
-    
-    if (!navigator.onLine) {
-        alert("ERRO: O controle remoto requer conexão com a internet para gerar o código.");
+    if (!isValidTelegramToken(token)) {
+        alert("❌ O Token informado é inválido. Verifique o formato.");
         return;
     }
 
-    const modal = document.getElementById('remote-modal');
-    const qrContainer = document.getElementById('qrcode');
-    const status = document.getElementById('remote-status');
-    const remoteLink = document.getElementById('remote-link');
+    if (!isValidTelegramChatId(chatId)) {
+        alert("❌ O Chat ID informado é inválido. Deve conter apenas números.");
+        return;
+    }
     
+    localStorage.setItem('telegram_bot_token', token);
+    localStorage.setItem('telegram_chat_id', chatId);
+    console.log("Salvando Configs do Telegram:", { token, chatId });
 
-    // Verifica se a biblioteca QR Code carregou
-    if (typeof QRCode === 'undefined') {
-        alert("ERRO: Biblioteca QR Code não encontrada. Verifique sua conexão com a internet.");
+    const resArea = document.getElementById('resTelegramConfig');
+    resArea.innerText = 'Configurações do Telegram salvas com sucesso!';
+    resArea.style.display = 'block';
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ SALVO!';
+    setTimeout(() => { resArea.style.display = 'none'; btn.innerHTML = originalText; }, 2500);
+}
+
+function clearTelegramSettings(btn) {
+    if (!confirm("Tem certeza que deseja limpar as configurações locais do Telegram?")) {
         return;
     }
 
-    const indicator = document.getElementById('remote-status-indicator');
-    if (indicator && (!conn || !conn.open)) {
-        indicator.classList.remove('connected');
-        indicator.classList.add('blinking');
-    }
+    localStorage.removeItem('telegram_bot_token');
+    localStorage.removeItem('telegram_chat_id');
 
-    modal.style.display = 'flex';
-    qrContainer.innerHTML = '';
-    remoteLink.textContent = '';
-    remoteLink.href = '#';
-    status.textContent = "GERANDO ID...";
-    status.style.color = 'var(--secondary)';
+    document.getElementById('telegram_bot_token').value = '';
+    document.getElementById('telegram_chat_id').value = '';
 
-    const setupElements = (id) => {
-        if (window.location.protocol === 'file:') {
-            alert("ATENÇÃO: O sistema está rodando como arquivo local. O QR Code pode não funcionar em outro dispositivo. Recomenda-se usar um servidor local (Live Server).");
-        }
-        let url = `${window.location.href.split('?')[0]}?remote=${id}`;
-        try {
-            new QRCode(qrContainer, {
-                text: url,
-                width: 200,
-                height: 200
-            });
-        } catch (e) {
-            console.error("Erro QR Code:", e);
-            status.textContent = "ERRO AO GERAR QR";
-            status.style.color = "red";
-            return;
-        }
+    const resArea = document.getElementById('resTelegramConfig');
+    resArea.innerText = '🗑️ Configurações removidas com sucesso!';
+    resArea.style.color = 'var(--accent-blaze)';
+    resArea.style.display = 'block';
 
-        // Encurtar o link usando a API do Bitly
-        const bitlyToken = 'YOUR_BITLY_ACCESS_TOKEN'; // Substitua pelo seu token
-        if (bitlyToken !== 'YOUR_BITLY_ACCESS_TOKEN') {
-            shortenLink(url, bitlyToken)
-                .then(shortenedLink => {
-                    remoteLink.href = shortenedLink;
-                    remoteLink.textContent = shortenedLink;
-                })
-                .catch(error => {
-                    console.error("Erro ao encurtar link:", error);
-                    remoteLink.href = url;
-                    remoteLink.textContent = "Abrir Controle Remoto em Nova Aba";
-                    status.textContent = "PRONTO PARA CONEXÃO (SEM LINK CURTO)";
-                });
-        } else {
-            console.warn("Token do Bitly não configurado. Usando link longo.");
-            remoteLink.href = url;
-            remoteLink.textContent = "Abrir Controle Remoto em Nova Aba";
-        }
-
-
-
-
-
-        remoteLink.textContent = "Abrir Controle Remoto em Nova Aba";
-        status.textContent = "PRONTO PARA CONEXÃO";
-    };
-
-    if (!peer || peer.destroyed) {
-        peer = new Peer();
-        peer.on('open', (id) => {
-            setupElements(id);
-        });
-        
-        peer.on('error', (err) => {
-            console.error("PeerJS Erro:", err);
-            if (err.type === 'network' || err.type === 'peer-unavailable' || err.type === 'server-error') {
-                status.textContent = "ERRO: SEM INTERNET / SERVIDOR";
-            } else {
-                status.textContent = "ERRO DE CONEXÃO (P2P)";
-            }
-            status.style.color = "red";
-        });
-
-        peer.on('connection', (c) => {
-            conn = c;
-            status.textContent = "CELULAR CONECTADO!";
-            status.style.color = "#0f0";
-            if (indicator) {
-                indicator.classList.remove('blinking');
-                indicator.classList.add('connected');
-            }
-            setupReceiver();
-        });
-    } else {
-        // Se já existe peer, apenas regenera o QR com o ID atual
-        setupElements(peer.id);
-    }
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Limpo!';
+    setTimeout(() => { resArea.style.display = 'none'; btn.innerHTML = originalText; }, 2500);
 }
 
-async function shortenLink(longUrl, accessToken) {
-    const apiUrl = 'https://api-ssl.bitly.com/v4/shorten';
+// Função para validar se o token do Telegram tem o formato correto
+function isValidTelegramToken(token) {
+    // Formato esperado: ID (números) : Token (alfanumérico e caracteres especiais)
+    return /^\d+:[A-Za-z0-9_-]+$/.test(token);
+}
 
-    const headers = {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-    };
+// Função para validar se o Chat ID do Telegram tem o formato correto
+function isValidTelegramChatId(chatId) {
+    // Chat ID deve ser numérico (pode ser negativo para grupos/canais)
+    return /^-?\d+$/.test(chatId);
+}
 
-    const data = {
-        long_url: longUrl,
-    };
+// Função auxiliar para executar a requisição à API do Telegram
+async function executeTelegramRequest(token, chatId, message) {
+    const cleanToken = token ? token.trim() : '';
+    const cleanChatId = chatId ? chatId.toString().trim() : '';
+
+    if (!isValidTelegramToken(cleanToken)) {
+        throw new Error("O Token do Telegram informado tem um formato inválido.");
+    }
+    if (!isValidTelegramChatId(cleanChatId)) {
+        throw new Error("O ID do Chat do Telegram informado tem um formato inválido (deve ser numérico).");
+    }
+
+    const url = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: cleanChatId,
+            text: message,
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true
+        })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+        throw new Error(data.description || 'Erro desconhecido na API do Telegram.');
+    }
+    return data;
+}
+
+async function testTelegramConnection(btn) {
+    const token = document.getElementById('telegram_bot_token').value;
+    const chatId = document.getElementById('telegram_chat_id').value;
+    const resArea = document.getElementById('resTelegramConfig');
+
+    if (!token || !chatId) {
+        resArea.innerText = '❌ Preencha o Token e o ID do Chat primeiro.';
+        resArea.style.color = 'var(--accent-blaze)';
+        resArea.style.display = 'block';
+        setTimeout(() => { resArea.style.display = 'none'; }, 3000);
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Enviando...';
+    btn.disabled = true;
+    resArea.style.display = 'none';
+
+    const message = "✅ *Teste de Conexão*\n\nOlá! Se você recebeu esta mensagem, suas configurações do Telegram no painel estão funcionando corretamente.";
 
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(data),
-        });
-        const json = await response.json();
-        return json.link || longUrl; // Retorna o link original em caso de falha
+        await executeTelegramRequest(token, chatId, message);
+        resArea.innerText = '✅ Mensagem de teste enviada com sucesso!';
+        resArea.style.color = 'var(--accent-jonbet)';
     } catch (error) {
-        console.error('Erro ao encurtar o link:', error);
-        throw error;
+        resArea.innerText = `❌ Falha ao enviar: ${error.message}`;
+        resArea.style.color = 'var(--accent-blaze)';
+    } finally {
+        resArea.style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        setTimeout(() => { resArea.style.display = 'none'; }, 5000);
     }
 }
 
-function copyRemoteLink() {
-    const linkElement = document.getElementById('remote-link');
-    if (linkElement.getAttribute('href') === '#') return alert("Aguarde a geração do link...");
-    
-    navigator.clipboard.writeText(linkElement.href).then(() => {
-        alert("Link copiado para a área de transferência!");
-    }).catch(err => {
-        console.error('Erro ao copiar: ', err);
-        alert("Erro ao copiar link.");
-    });
-}
+async function sendTelegramList(btn) {
+    const token = document.getElementById('telegram_bot_token').value;
+    const chatId = document.getElementById('telegram_chat_id').value;
+    const message = document.getElementById('telegram_list_message').value;
+    const resArea = document.getElementById('resTelegramConfig'); // Reutiliza a área de resultado
 
-function setupReceiver() {
-    conn.on('data', (data) => {
-        const indicator = document.getElementById('remote-status-indicator');
-        if (indicator) {
-            indicator.classList.add('receiving');
-            setTimeout(() => indicator.classList.remove('receiving'), 200);
-        }
-
-        console.log("Comando recebido:", data);
-        switch(data.action) {
-            case 'scroll_toggle': toggleAutoScroll(); break;
-            case 'panic': togglePanic(); break;
-            case 'speed_up': adjustSpeed(0.1); break;
-            case 'speed_down': adjustSpeed(-0.1); break;
-            case 'stage_mode': toggleStageMode(); break;
-            case 'next_block': scrollBlock(1); break;
-            case 'prev_block': scrollBlock(-1); break;
-            case 'blackout': changeTheme('theme-black'); break;
-            case 'message': showRemoteMessage(data.payload); break;
-            case 'reset_timer': resetTimer(); break;
-            case 'timer_toggle': toggleTimer(); break;
-            case 'lyrics_scroll': toggleLyricsScroll(); break;
-            case 'theme_default': changeTheme('default'); break;
-            case 'reload': window.location.reload(); break;
-            case 'jump_to_block': jumpToBlock(data.payload.index); break;
-        }
-    });
-
-    conn.on('close', () => {
-        const indicator = document.getElementById('remote-status-indicator');
-        if (indicator) {
-            indicator.classList.remove('connected');
-            indicator.classList.remove('blinking');
-        }
-    });
-}
-
-function sendRemote(action, payload = null) {
-    if (conn && conn.open) {
-        conn.send({ action, payload });
-        // Feedback visual de clique
-        navigator.vibrate(50); 
-    } else {
-        alert("Não conectado ao palco.");
+    if (!token || !chatId) {
+        resArea.innerText = '❌ Preencha o Token e o ID do Chat nas configurações acima.';
+        resArea.style.color = 'var(--accent-blaze)';
+        resArea.style.display = 'block';
+        setTimeout(() => { resArea.style.display = 'none'; }, 4000);
+        return;
     }
-}
-
-function sendRemoteMessage() {
-    const input = document.getElementById('remote-msg-input');
-    const text = input.value.trim();
-    if (text) {
-        sendRemote('message', text);
-        input.value = '';
-    }
-}
-
-let messageTimeout;
-function showRemoteMessage(text) {
-    const el = document.getElementById('remote-message-overlay');
-    el.textContent = text;
-    el.style.display = 'block';
-    
-    clearTimeout(messageTimeout);
-    messageTimeout = setTimeout(() => {
-        el.style.display = 'none';
-    }, 5000); // Exibe por 5 segundos
-}
-
-function scrollBlock(direction) {
-    // Simples scroll de página por enquanto
-    window.scrollBy({
-        top: direction * window.innerHeight * 0.8,
-        behavior: 'smooth'
-    });
-}
-
-function initRemoteBattery() {
-    if ('getBattery' in navigator) {
-        navigator.getBattery().then(function(battery) {
-            updateBatteryUI(battery);
-            battery.addEventListener('levelchange', function() { updateBatteryUI(battery); });
-            battery.addEventListener('chargingchange', function() { updateBatteryUI(battery); });
-        });
-    }
-}
-
-function updateBatteryUI(battery) {
-    const el = document.getElementById('remote-battery');
-    if(el) {
-        const level = Math.round(battery.level * 100);
-        const charging = battery.charging ? '⚡' : '';
-        el.textContent = `🔋 ${level}% ${charging}`;
-        
-        if(level <= 20 && !battery.charging) el.style.color = 'red';
-        else el.style.color = 'var(--primary)';
-    }
-}
-
-function updateRemoteHighlight(index) {
-    const container = document.getElementById('remote-block-jumper');
-    if (!container) return;
-    const buttons = container.querySelectorAll('button');
-    buttons.forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-    });
-}
-
-// Inicializa verificação remota
-initRemoteSystem();
-
-
-function toggleRemoteLock() {
-    const lockScreen = document.getElementById('remote-lock-screen');
-    if (!lockScreen) return;
-
-    if (lockScreen.style.display === 'none') {
-        lockScreen.style.display = 'flex';
-    } else {
-        lockScreen.style.display = 'none';
-    }
-}
-
-function updateRemoteLyrics(data) {
-    const titleEl = document.getElementById('remote-lyrics-title');
-    const contentEl = document.getElementById('remote-lyrics-content');
-    
-    if (titleEl) titleEl.textContent = data.title;
-    if (contentEl) contentEl.textContent = data.lyrics;
-
-    // Feedback visual no botão para avisar que chegou letra nova
-    const btn = document.getElementById('btn-remote-lyrics');
-    if(btn) {
-        btn.style.boxShadow = "0 0 15px #fff";
-        setTimeout(() => btn.style.boxShadow = "none", 1000);
-    }
-}
-
-function toggleRemoteLyrics() {
-    const overlay = document.getElementById('remote-lyrics-overlay');
-    overlay.style.display = (overlay.style.display === 'none') ? 'flex' : 'none';
-}
-
-function adjustRemoteFontSize(change) {
-    const content = document.getElementById('remote-lyrics-content');
-    let current = parseFloat(window.getComputedStyle(content).fontSize);
-    content.style.fontSize = (current + change) + 'px';
-}
-
-let remoteLyricsScrollInterval;
-let isRemoteLyricsScrolling = false;
-let remoteLyricsScrollAccumulator = 0;
-let currentRemoteSpeed = 3;
-
-function updateRemoteLyricsScroll(data) {
-    const syncCheckbox = document.getElementById('remote-lyrics-sync');
-    if (syncCheckbox && !syncCheckbox.checked) {
-        stopRemoteLyricsScroll();
+    if (!message.trim()) {
+        resArea.innerText = '❌ A caixa de mensagem da lista está vazia.';
+        resArea.style.color = 'var(--accent-blaze)';
+        resArea.style.display = 'block';
+        setTimeout(() => { resArea.style.display = 'none'; }, 4000);
         return;
     }
 
-    if (data.active) {
-        startRemoteLyricsScroll(data.speed);
-    } else {
-        stopRemoteLyricsScroll();
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Enviando...';
+    btn.disabled = true;
+    resArea.style.display = 'none';
+
+    try {
+        await executeTelegramRequest(token, chatId, message);
+        resArea.innerText = '✅ Lista enviada com sucesso para o seu grupo/canal!';
+        resArea.style.color = 'var(--accent-jonbet)';
+        document.getElementById('telegram_list_message').value = ''; // Limpa o campo após o envio
+    } catch (error) {
+        resArea.innerText = `❌ Falha ao enviar a lista: ${error.message}`;
+        resArea.style.color = 'var(--accent-blaze)';
+    } finally {
+        resArea.style.display = 'block';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        setTimeout(() => { resArea.style.display = 'none'; }, 5000);
     }
 }
 
-function startRemoteLyricsScroll(speed) {
-    currentRemoteSpeed = speed;
-    if (isRemoteLyricsScrolling) return;
-    
-    isRemoteLyricsScrolling = true;
-    remoteLyricsScrollAccumulator = 0;
-    const content = document.getElementById('remote-lyrics-content');
-    
-    function scroll() {
-        if (!isRemoteLyricsScrolling) return;
-        remoteLyricsScrollAccumulator += currentRemoteSpeed * 0.2;
-        if (remoteLyricsScrollAccumulator >= 1) {
-            const pixels = Math.floor(remoteLyricsScrollAccumulator);
-            if (content) content.scrollTop += pixels;
-            remoteLyricsScrollAccumulator -= pixels;
+async function openTelegramAccess(btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Abrindo...';
+    btn.disabled = true;
+
+    let url = 'https://web.telegram.org'; // URL Padrão (Fallback)
+
+    try {
+        const settings = await getTelegramSettings();
+        if (settings && settings.bot_token) {
+            // 1. Tenta obter o username do bot para abrir direto no chat dele
+            const response = await fetch(`https://api.telegram.org/bot${settings.bot_token}/getMe`);
+            const data = await response.json();
+            if (data.ok && data.result.username) {
+                url = `https://t.me/${data.result.username}`;
+            } else if (settings.chat_id && settings.chat_id.startsWith('@')) {
+                 // 2. Se falhar o bot, tenta o canal se for público (ex: @canal)
+                 url = `https://t.me/${settings.chat_id.substring(1)}`;
+            }
         }
-        remoteLyricsScrollInterval = requestAnimationFrame(scroll);
+    } catch (e) {
+        console.error("Erro ao resolver link do Telegram:", e);
     }
-    remoteLyricsScrollInterval = requestAnimationFrame(scroll);
+
+    window.open(url, '_blank');
+    
+    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1500);
 }
 
-function stopRemoteLyricsScroll() {
-    isRemoteLyricsScrolling = false;
-    cancelAnimationFrame(remoteLyricsScrollInterval);
-}
+async function getTelegramSettings() {
+    // 0. Tenta pegar dos inputs visíveis na tela primeiro (para garantir que o que o usuário vê é o que é usado)
+    const domToken = document.getElementById('telegram_bot_token') ? document.getElementById('telegram_bot_token').value.trim() : null;
+    const domChatId = document.getElementById('telegram_chat_id') ? document.getElementById('telegram_chat_id').value.trim() : null;
 
-function updateRemoteClock() {
-    const el = document.getElementById('remote-clock');
-    if (el) {
-        const now = new Date();
-        el.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if (domToken && domChatId && isValidTelegramToken(domToken) && isValidTelegramChatId(domChatId)) {
+        return { bot_token: domToken, chat_id: domChatId };
+    }
+
+    // 1. Prioriza as configurações locais do usuário (da aba Conexão)
+    const localToken = localStorage.getItem('telegram_bot_token');
+    const localChatId = localStorage.getItem('telegram_chat_id');
+    if (localToken && localChatId) {
+        // Valida as configurações locais antes de usá-las para evitar erros no envio automático
+        if (isValidTelegramToken(localToken) && isValidTelegramChatId(localChatId)) {
+            return { bot_token: localToken, chat_id: localChatId };
+        }
+        console.warn("⚠️ Configurações locais do Telegram inválidas encontradas e ignoradas.");
+    }
+    try {
+        if (typeof db === 'undefined' || !db) return null;
+        const doc = await db.collection("settings").doc("telegram").get();
+        if (doc.exists) {
+            return doc.data();
+        }
+        return null; // No settings found
+    } catch (error) {
+        console.error("Erro ao buscar configurações do Telegram:", error);
+        return null;
     }
 }
 
-function toggleRemoteFullscreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            alert(`Erro ao entrar em tela cheia: ${err.message}`);
-        });
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
+async function sendTelegramNotification(message, targetChatId = null) {
+    const settings = await getTelegramSettings();
+    if (!settings || !settings.bot_token || !settings.chat_id) {
+        throw new Error("Configurações do Telegram ausentes. Verifique a aba 'Conexão'.");
+    }
+
+    const { bot_token: token, chat_id: adminChatId } = settings;
+    const finalChatId = targetChatId || adminChatId; // Usa o alvo específico ou o do admin
+    
+    // A função executeTelegramRequest já realiza as validações de Token e Chat ID
+    await executeTelegramRequest(token, finalChatId, message);
+    console.log("Notificação enviada para o admin via Telegram.");
+}
+
+// Função genérica para botões de envio
+async function handleTelegramSendButton(btn, elementId, defaultText = "") {
+    const contentElement = document.getElementById(elementId);
+    const content = contentElement ? contentElement.innerText : "";
+
+    if (!content || (defaultText && content.trim() === defaultText) || content.trim() === "") {
+        alert("Gere o conteúdo primeiro antes de enviar para o Telegram.");
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Enviando...';
+    btn.disabled = true;
+
+    try {
+        await sendTelegramNotification(content);
+        btn.innerHTML = '✅ Enviado!';
+    } catch (error) {
+        alert(`Falha ao enviar para o Telegram: ${error.message}`);
+        btn.innerHTML = '❌ Erro';
+    } finally {
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }, 3000);
+    }
+}
+
+async function sendGeneratedListToTelegram(btn) {
+    await handleTelegramSendButton(btn, 'suite_resGerador', "Resultado aqui...");
+}
+
+async function sendAnalysisToTelegram(btn) {
+    await handleTelegramSendButton(btn, 'suite_resAnalise', "Aguardando dados...");
+}
+
+async function sendIABrancoToTelegram(btn) {
+    await handleTelegramSendButton(btn, 'suite_resIABranco');
+}
+
+// --- VERIFICAÇÃO PERIÓDICA DE PERMISSÕES ---
+
+let permissionCheckInterval = null;
+
+async function verifyTelegramBotPermissions() {
+    const settings = await getTelegramSettings();
+    if (!settings) return; // Sem configurações, não há o que checar
+
+    const { bot_token: token, chat_id: chatId } = settings;
+    const resArea = document.getElementById('resTelegramConfig');
+
+    try {
+        // 1. Obtém informações do próprio bot para saber seu ID
+        const meUrl = `https://api.telegram.org/bot${token}/getMe`;
+        const meRes = await fetch(meUrl);
+        const meData = await meRes.json();
+
+        if (!meData.ok) throw new Error("Token inválido ou falha na API.");
+        const botId = meData.result.id;
+
+        // 2. Verifica o status do bot no chat configurado
+        const memberUrl = `https://api.telegram.org/bot${token}/getChatMember?chat_id=${chatId}&user_id=${botId}`;
+        const memberRes = await fetch(memberUrl);
+        const memberData = await memberRes.json();
+
+        if (!memberData.ok) {
+            throw new Error(`Bot sem acesso ao chat: ${memberData.description}`);
+        }
+
+        const status = memberData.result.status;
+        const canSendMessages = memberData.result.can_send_messages !== false; 
+
+        // Status possíveis: creator, administrator, member, restricted, left, kicked
+        const isRestricted = status === 'restricted';
+
+        if (status === 'kicked' || status === 'left') {
+            console.warn(`⚠️ O Bot foi removido ou saiu do grupo. Status: ${status}`);
+            if (resArea) {
+                resArea.innerText = `⚠️ ALERTA: O Bot não está mais no grupo (Status: ${status}).`;
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+            }
+        } else if (isRestricted && !canSendMessages) {
+            console.warn(`⚠️ O Bot está restrito e não pode enviar mensagens.`);
+            if (resArea) {
+                resArea.innerText = `⚠️ ALERTA: O Bot está silenciado no grupo.`;
+                resArea.style.color = 'var(--accent-blaze)';
+                resArea.style.display = 'block';
+            }
+        } else {
+            console.log(`✅ Status do Bot no grupo: ${status} (Operacional)`);
+        }
+
+    } catch (error) {
+        console.error("Erro ao verificar permissões do Telegram:", error);
+    }
+}
+
+function startPeriodicPermissionCheck(intervalMinutes = 10) {
+    if (permissionCheckInterval) clearInterval(permissionCheckInterval);
+    verifyTelegramBotPermissions(); // Executa imediatamente
+    permissionCheckInterval = setInterval(verifyTelegramBotPermissions, intervalMinutes * 60 * 1000);
+    console.log(`🔄 Verificação periódica do Telegram iniciada (a cada ${intervalMinutes} min).`);
+}
+
+function stopPeriodicPermissionCheck() {
+    if (permissionCheckInterval) {
+        clearInterval(permissionCheckInterval);
+        permissionCheckInterval = null;
+        console.log("⏹️ Verificação periódica do Telegram parada.");
+    }
+}
+
+let autoFetchIntervalId = null; // Declaração explícita para melhor gerenciamento do intervalo
+
+// ==========================================
+// INÍCIO: SCRIPTS DE gerador_de_lista2.html
+// ==========================================
+
+// --- LÓGICA DE PLATAFORMA (SUITE) ---
+function suite_selectPlatform(platform, isSync = false) {
+    document.getElementById('suite_platformSelector').value = platform;
+    document.getElementById('suite_btn-blaze').classList.remove('active');
+    document.getElementById('suite_btn-jonbet').classList.remove('active');
+    document.getElementById(`suite_btn-${platform}`).classList.add('active');
+
+    const suitePanel = document.querySelector('.layout-panel.suite');
+    if (platform === 'blaze') {
+        suitePanel.classList.remove('platform-jonbet');
+    } else { // jonbet
+        suitePanel.classList.add('platform-jonbet');
+    }
+    // Sincroniza com o outro painel, evitando loop infinito
+    if (!isSync) {
+        dash_selectPlatform(platform, true);
+    }
+}
+
+// --- LÓGICA DE ABAS (SUITE) ---
+function suite_openTab(tabName) {
+    let i, content, btns;
+    content = document.querySelectorAll(".suite .tab-content");
+    btns = document.querySelectorAll(".suite .tab-btn");
+
+    for (i = 0; i < content.length; i++) {
+        content[i].classList.remove("active");
+    }
+    for (i = 0; i < btns.length; i++) {
+        btns[i].classList.remove("active");
+    }
+
+    // Popula os dados do usuário quando a aba de configurações é aberta
+    if (tabName === 'config') {
+        populateUserSettings();
+    }
+
+    // Verifica se a aba existe antes de tentar ativá-la
+    const targetTab = document.getElementById('suite_' + tabName);
+    if (targetTab) {
+        targetTab.classList.add("active");
+    }
+    // CORREÇÃO: Verifica se o botão da aba existe antes de tentar adicionar a classe 'active'.
+    // Isso evita o erro quando clicamos em um botão que não está na lista de abas (como o de Configurações).
+    const tabButton = document.querySelector(`.suite .tab-btn[onclick="suite_openTab('${tabName}')"]`);
+    if (tabButton) {
+        tabButton.classList.add("active");
+    }
+}
+
+function populateUserSettings() {
+    const username = sessionStorage.getItem('operatorName');
+    const accessLevel = sessionStorage.getItem('accessLevel');
+
+    if (!username) return;
+
+    document.getElementById('config_username').textContent = username;
+    document.getElementById('config_accessLevel').textContent = accessLevel;
+
+    let expirationText = 'Permanente'; // Padrão para admin
+    let telegramIdText = 'N/A'; // Padrão
+
+    // Busca os detalhes do usuário no localStorage para encontrar a data de expiração e o ID
+    if (accessLevel !== 'admin') {
+        try { // A lógica de usuários agora dependerá da sessão
+            const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
+            const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+            if (currentUser) {
+                if (currentUser.expiresAt) {
+                    expirationText = new Date(currentUser.expiresAt).toLocaleString('pt-BR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                } else {
+                    expirationText = 'Permanente';
+                }
+                // Pega o ID do Telegram do usuário
+                telegramIdText = currentUser.telegramId || 'Não vinculado';
+            }
+        } catch (e) {
+            console.error("Erro ao buscar dados do usuário:", e);
+            expirationText = 'Erro ao carregar';
+            telegramIdText = 'Erro ao carregar';
         }
     }
+
+    // SUGESTÃO: Adiciona destaque visual para data de expiração próxima
+    const expiresAtSpan = document.getElementById('config_expiresAt');
+    expiresAtSpan.style.color = ''; // Reseta a cor
+    expiresAtSpan.style.fontWeight = ''; // Reseta o peso da fonte
+
+    if (accessLevel !== 'admin' && expirationText !== 'Permanente' && expirationText.includes('/')) {
+        const users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
+        const currentUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+        if (currentUser && currentUser.expiresAt) {
+            const expirationDate = new Date(currentUser.expiresAt);
+            const daysLeft = (expirationDate - new Date()) / (1000 * 60 * 60 * 24);
+
+            if (daysLeft <= 1) { // Menos de 1 dia
+                expiresAtSpan.style.color = 'var(--accent-blaze)';
+                expiresAtSpan.style.fontWeight = 'bold';
+            } else if (daysLeft <= 3) { // Menos de 3 dias
+                expiresAtSpan.style.color = '#ffc107'; // Amarelo
+                expiresAtSpan.style.fontWeight = 'bold';
+            }
+        }
+    }
+    document.getElementById('config_expiresAt').textContent = expirationText;
+    document.getElementById('config_telegramId').textContent = telegramIdText;
 }
+
+function suite_clearTextarea(elementId) {
+    const textarea = document.getElementById(elementId);
+    if (textarea) {
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}
+
+function suite_limparAnalisador() {
+    suite_clearTextarea('suite_inputHistorico');
+    document.getElementById('suite_resAnalise').innerText = 'Aguardando dados...';
+}
+
+function suite_updateQtdLabel() {
+    const estrategia = document.getElementById('suite_estrategia').value;
+    const label = document.getElementById('suite_labelQtdSinais');
+    if (estrategia === 'branco') {
+        label.innerText = 'Quantidade de Tiros:';
+    } else {
+        label.innerText = 'Quantidade de Sinais:';
+    }
+}
+
+function suite_gerarSinaisSimples() {
+    const qtd = parseInt(document.getElementById('suite_qtdSinais').value);
+    const intervaloInput = document.getElementById('suite_intervalo').value;
+    const intervalos = intervaloInput.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+    if (intervalos.length === 0) {
+        alert("Por favor, insira um valor de intervalo válido."); return;
+    }
+    const est = document.getElementById('suite_estrategia').value;
+    const platform = document.getElementById('suite_platformSelector').value;
+    const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+    const selectElement = document.getElementById('suite_estrategia');
+    const userName = sessionStorage.getItem('operatorName') || 'Operador';
+    const strategyName = selectElement.options[selectElement.selectedIndex].text;
+    const filterByBestMinute = document.getElementById('suite_filterByBestMinute').checked;
+    const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
+    
+    let out = `🚀 *LISTA DE OPERAÇÕES*\n`;
+    out += `🚦 Plataforma: *${platformName}*\n`;
+    out += `👤 Operador: *${userName}*\n`;
+    out += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+    out += `🎯 Estratégia: *${strategyName}*\n`;
+
+    if (est === 'cacadorBranco') {
+        intervalo = 15; // Força o intervalo para 15 minutos
+    }
+
+    if (est === 'branco') {
+        out += `♻️ 06 Entradas\n`;
+    } else {
+        out += `🛡️ Proteção no Branco ⚪️\n`;
+        out += `♻️ ATÉ *G1*\n`;
+    }
+    out += `--------------------------------\n`;
+    let signalsGenerated = 0;
+    let attempts = 0; // Para evitar loop infinito
+
+    let bestMinutes = filterByBestMinute ? getBestPerformingMinutes(minAssertiveness) : [];
+    if (filterByBestMinute && bestMinutes.length === 0) {
+        // Se o filtro estiver ativo e nenhuma hora boa for encontrada,
+        // tenta forçar uma análise do histórico disponível no painel direito.
+        // Isso garante que getBestPerformingMinutes tenha dados para trabalhar.
+        dash_enviarParaAnalise(); // Isso irá processar os dados em dash_inputData
+        bestMinutes = getBestPerformingMinutes(minAssertiveness); // Tenta novamente após a análise
+
+        if (bestMinutes.length === 0) {
+            // SUGESTÃO: Adiciona um botão para desativar o filtro e tentar novamente.
+            const resGerador = document.getElementById('suite_resGerador');
+            resGerador.innerHTML = `
+                <div style="padding: 15px; background-color: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; color: #ffc107;">
+                    <p style="margin: 0 0 10px 0;"><strong>Aviso:</strong> Nenhum minuto com bom desempenho foi encontrado no histórico.</p>
+                    <button onclick="document.getElementById('suite_filterByBestMinute').checked = false; suite_gerarSinaisSimples();" style="padding: 8px 12px; border: none; border-radius: 5px; background-color: #ff9800; color: #000; font-weight: bold; cursor: pointer;">
+                        Desativar Filtro e Gerar Lista
+                    </button>
+                </div>`;
+            return;
+        }
+    }
+
+    let db = new Date();
+    db.setMinutes(db.getMinutes() + 1);
+    db.setSeconds(0);
+
+    // Aumenta o limite de tentativas para acomodar a busca por minutos ideais
+    while (signalsGenerated < qtd && attempts < (qtd * 500)) { // Aumentado de 100 para 500
+        attempts++;
+        // Pega o próximo intervalo do ciclo
+        let minutosParaAdicionar = intervalos[signalsGenerated % intervalos.length];
+
+        if (est === 'jikanSazonal') {
+            const currentHour = db.getHours();
+            const intervalModifier = (currentHour >= 6 && currentHour < 18) ? 0.8 : 1.2;
+            minutosParaAdicionar = Math.round(minutosParaAdicionar * intervalModifier);
+        }
+
+        // Se o filtro estiver ativo, verifica se o minuto do sinal é um dos melhores
+        if (filterByBestMinute) {
+            let potentialTime = new Date(db.getTime() + (minutosParaAdicionar * 60000));
+            if (!bestMinutes.includes(potentialTime.getMinutes())) {
+                // Se não for uma boa hora, avança o tempo e tenta de novo
+                db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+                continue; // Pula para a próxima iteração do loop
+            }
+        }
+
+        // Se passou na verificação (ou se o filtro está desligado), gera o sinal
+        signalsGenerated++;
+
+        let i = signalsGenerated - 1; // Para manter a lógica de alternância
+
+        db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+
+        const h1 = db.getHours().toString().padStart(2,'0') + ':' + db.getMinutes().toString().padStart(2,'0');
+
+        let cor, emo;
+        // SUGESTÃO: Agrupa as estratégias de branco
+        if (est === 'branco' || est === 'cacadorBranco') {
+            cor = "BRANCO";
+            emo = "⚪";
+        } else {
+            switch(est) {
+                case 'padrao': cor = (i % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                case 'sequenciaInversa': cor = (i % 2 === 0) ? "PRETO" : "VERMELHO"; break;
+                case 'xadrez': cor = (i % 2 === 0) ? "PRETO" : "VERMELHO"; break;
+                case 'duplos': cor = (Math.floor(i / 2) % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                case 'triplos': cor = (Math.floor(i / 3) % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                case 'focoVermelho': cor = (Math.random() < 0.7) ? "VERMELHO" : "PRETO"; break;
+                case 'focoPreto': cor = (Math.random() < 0.7) ? "PRETO" : "VERMELHO"; break;
+                case 'jikanSazonal': cor = (i % 2 === 0) ? "VERMELHO" : "PRETO"; break;
+                default: cor = (Math.random() > 0.5) ? "VERMELHO" : "PRETO";
+            }
+
+            if (cor === "VERMELHO") {
+                emo = (platform === 'jonbet') ? '🟢' : '🔴';
+            } else {
+                emo = '⚫';
+            }
+        }
+        out += `🕒 ${h1} ➔ ${emo}\n`;
+    }
+    out += `--------------------------------\n✅ Gerencie sua banca!\n`;
+    document.getElementById('suite_resGerador').innerText = out;
+    enviarListaParaCorretor(out);
+
+}
+
+// Função auxiliar para calcular desvio padrão
+function calculateStandardDeviation(array) {
+    const n = array.length;
+    const mean = array.reduce((a, b) => a + b) / n;
+    return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+}
+
+function suite_toggleIaBrancoMode(isAuto) {
+    const historicoContainer = document.getElementById('suite_iaBranco_historico_container');
+    const estrategiaSelect = document.getElementById('suite_iaBranco_estrategia');
+    const agressividadeContainer = document.getElementById('suite_iaBranco_agressividade_container');
+    historicoContainer.style.display = isAuto ? 'none' : 'block';
+    agressividadeContainer.style.display = isAuto ? 'block' : 'none';
+    // estrategiaSelect.disabled = isAuto; // Mantém o seletor de estratégia habilitado
+}
+// SUGESTÃO: Função para mostrar/ocultar opções da estratégia "Branco Próximo"
+function suite_toggleBrancoProximoOptions() {
+    const estrategia = document.getElementById('suite_iaBranco_estrategia').value;
+    const optionsContainer = document.getElementById('suite_brancoProximo_options_container');
+    optionsContainer.style.display = (estrategia === 'brancoProximo') ? 'block' : 'none';
+}
+
+function suite_gerarSinaisBrancoIA() {
+    const qtd = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value);
+    const historicoInput = document.getElementById('suite_iaBranco_historico').value;
+    const est = document.getElementById('suite_iaBranco_estrategia').value;
+    const platform = document.getElementById('suite_platformSelector').value;
+    const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+    const selectElement = document.getElementById('suite_iaBranco_estrategia');
+    const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
+    const userName = sessionStorage.getItem('operatorName') || 'Operador';
+    const strategyName = selectElement.options[selectElement.selectedIndex].text;
+    const isAutoMode = document.getElementById('suite_iaBranco_autoMode').checked;
+    const agressividade = document.getElementById('suite_iaBranco_agressividade').value;
+
+    let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
+    out += `🚦 Plataforma: *${platformName}*\n`;
+    
+    const targetDate = new Date();
+    if (dateChoice === 'amanha') {
+        targetDate.setDate(targetDate.getDate() + 1);
+    }
+    out += `📅 Data: *${targetDate.toLocaleDateString('pt-BR')}*\n`;
+    out += `👤 Operador: *${userName}*\n`;
+    if (isAutoMode) {
+        out += `🎯 Estratégia: *${strategyName} (Auto ${agressividade})*\n`;
+    } else {
+        out += `🎯 Estratégia: *${strategyName}*\n`;
+    }
+    out += `♻️ 6 Entradas\n`;
+    out += `--------------------------------\n`;
+
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    const horarios = historicoInput.split('\n').map(l => l.trim()).filter(l => timeRegex.test(l));
+    
+    // CORREÇÃO: Move a verificação para dentro do 'else', permitindo que a estratégia 'brancoProximo'
+    // execute sua própria lógica de verificação de dados sem ser bloqueada aqui.
+    if (est !== 'brancoProximo' && !isAutoMode && horarios.length < 2) {
+        document.getElementById('suite_resIABranco').innerText = "⚠️ É necessário fornecer pelo menos 2 horários no histórico para que a I.A. possa analisar e gerar os sinais.";
+        return;
+    }
+
+    let db = new Date(); // Ponto de partida é sempre o horário atual para gerar sinais futuros.
+
+
+    let analysisNote = '';
+    let projectionIntervals = [];
+
+    if (horarios.length > 1) {
+        const intervals = [];
+        for (let i = 1; i < horarios.length; i++) {
+            intervals.push(timeDifferenceInMinutes(horarios[i-1], horarios[i]));
+        }
+        const mediaIntervalos = intervals.length > 0 ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0; // Garante que não haja divisão por zero
+
+        switch(est) {
+            case 'iaPreditivaBranco': // 1. I.A. Preditiva
+                if (mediaIntervalos > 0) {
+                    projectionIntervals = [mediaIntervalos];
+                    analysisNote = `🧠 Média Aprendida: ${mediaIntervalos} min`;
+                }
+                break;
+            case 'produtividadeHora': // 2. Análise de Produtividade
+                const firstTime = horarios[0];
+                const lastTime = horarios[horarios.length - 1];
+                const totalDurationHours = timeDifferenceInMinutes(firstTime, lastTime) / 60;
+                if (totalDurationHours > 0) {
+                    const brancosPorHora = horarios.length / totalDurationHours;
+                    const intervaloProdutividade = Math.round(60 / brancosPorHora);
+                    if (intervaloProdutividade > 0) {
+                        projectionIntervals = [intervaloProdutividade];
+                        analysisNote = `📈 Produtividade: ${brancosPorHora.toFixed(2)} brancos/h. Intervalo: ${intervaloProdutividade} min`;
+                    }
+                }
+                break;
+            case 'horarioPico': // 3. Análise de Horário de Pico
+                const weightedSum = horarios.reduce((sum, time) => {
+                    const [h, m] = time.split(':').map(Number);
+                    const decimalHour = h + m / 60;
+                    return sum + decimalHour; // Peso = 1 para cada ocorrência
+                }, 0);
+                const mediaPonderada = weightedSum / horarios.length;
+                const picoH = Math.floor(mediaPonderada);
+                const picoM = Math.round((mediaPonderada - picoH) * 60);
+                analysisNote = `🎯 Horário de Pico (Média): ${picoH.toString().padStart(2,'0')}:${picoM.toString().padStart(2,'0')}`;
+                // Gera sinais em torno do horário de pico
+                // O ponto de partida (db) continua sendo o horário atual.
+                projectionIntervals = [60]; // Gera um sinal por hora perto do pico
+                break;
+            case 'velocidadeConclusao': // 4. Análise de Velocidade
+                if (mediaIntervalos > 0) {
+                    const taxaConclusao = 1 / mediaIntervalos; // brancos por minuto
+                    const tempoRestante = 1 / taxaConclusao; // minutos para o próximo
+                    projectionIntervals = [Math.round(tempoRestante)];
+                    analysisNote = `⚡ Taxa: 1 branco a cada ${Math.round(tempoRestante)} min`;
+                }
+                break;
+            case 'pomodoroOtimizado': // 5. Análise de Ciclo (Pomodoro)
+                const stdDev = calculateStandardDeviation(intervals);
+                const complexidade = Math.min(10, Math.max(1, Math.round(stdDev / 5))); // Escala de 1 a 10
+                let pausa;
+                if (complexidade <= 3) pausa = 5;
+                else if (complexidade <= 7) pausa = 10;
+                else pausa = 15;
+                projectionIntervals = [25, pausa]; // Alterna trabalho e pausa
+                analysisNote = `🍅 Ciclo Pomodoro: Complexidade ${complexidade} -> Pausa de ${pausa} min`;
+                break;
+            case 'eficienciaTemporal': // 6. Análise de Eficiência Temporal
+                const duracaoTotal = timeDifferenceInMinutes(horarios[0], horarios[horarios.length - 1]);
+                const tempoAtivo = intervals.reduce((a, b) => a + b, 0);
+                if (duracaoTotal > 0) {
+                    const eficiencia = (tempoAtivo / duracaoTotal); // Mais perto de 1 = mais espalhado
+                    const intervaloAjustado = Math.round(mediaIntervalos * eficiencia);
+                    if (intervaloAjustado > 0) {
+                        projectionIntervals = [intervaloAjustado];
+                        analysisNote = `⏱️ Eficiência: ${(100 / eficiencia).toFixed(0)}%. Intervalo ajustado: ${intervaloAjustado} min`;
+                    }
+                }
+                break;
+            case 'distribuicao702010': // 7. Análise de Distribuição (70/20/10)
+                const sortedIntervals = [...intervals].sort((a, b) => a - b);
+                const p70 = sortedIntervals[Math.floor(sortedIntervals.length * 0.7)];
+                const p90 = sortedIntervals[Math.floor(sortedIntervals.length * 0.9)];
+                // 70% curtos (até p70), 20% médios (até p90), 10% longos (acima de p90)
+                const curtos = sortedIntervals.filter(i => i <= p70);
+                const medios = sortedIntervals.filter(i => i > p70 && i <= p90);
+                const longos = sortedIntervals.filter(i => i > p90);
+                const avgCurto = Math.round(curtos.reduce((a, b) => a + b, 0) / (curtos.length || 1));
+                const avgMedio = Math.round(medios.reduce((a, b) => a + b, 0) / (medios.length || 1));
+                const avgLongo = Math.round(longos.reduce((a, b) => a + b, 0) / (longos.length || 1));
+                projectionIntervals = [avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgCurto, avgMedio, avgMedio, avgLongo];
+                analysisNote = `📊 Distribuição 70/20/10: [${avgCurto}, ${avgMedio}, ${avgLongo}] min`;
+                break;
+            case 'brancoProximo': // 8. Branco Próximo (Análise por Hora)
+                analysisNote = `🎯 Análise de Padrões de Cores pré-Branco`;
+                
+                // SUGESTÃO: Agora busca o histórico do campo "Entrada Manual / Análise Final"
+                const historyText = document.getElementById('dash_inputData').value;
+                if (!historyText || historyText.trim().length < 10) { // Verifica se há conteúdo suficiente
+                    document.getElementById('suite_resIABranco').innerText = "⚠️ Para a estratégia 'Branco Próximo', é necessário ter um histórico válido no campo 'Entrada Manual / Análise Final' do painel direito.";
+                    return;
+                }
+                // A verificação de conteúdo foi movida para a lógica principal da estratégia.
+                // const fullHistoryForPatterns = document.getElementById('suite_inputHistorico').value;
+                // if (!fullHistoryForPatterns.trim()) {
+                //     document.getElementById('suite_resIABranco').innerText = "⚠️ Para a estratégia 'Branco Próximo', cole o histórico completo de cores na aba 'Analisar Histórico' primeiro.";
+                //     return;
+                // }
+                // Esta estratégia não usa um intervalo de projeção, ela gera sinais diretamente.
+                // A lógica será tratada após este bloco switch.
+                break;
+            default:
+                // Por padrão, usa a média se nenhuma outra estratégia for correspondida
+                projectionIntervals = [mediaIntervalos];
+                break;
+        }
+    }
+    
+    // Lógica para MODO AUTOMÁTICO (sem histórico)
+    if (isAutoMode) {
+        analysisNote = `🤖 Modo Automático (${agressividade}) Ativado`;
+        const intervalos = {
+            conservador: {
+                iaPreditivaBranco: [40, 50, 60],
+                produtividadeHora: [30],
+                horarioPico: [60, 75],
+                velocidadeConclusao: [25, 35],
+                pomodoroOtimizado: [45, 15],
+                eficienciaTemporal: [40, 50],
+                distribuicao702010: [30, 30, 45, 45, 60, 90]
+            },
+            moderado: {
+                iaPreditivaBranco: [25, 35, 45],
+                produtividadeHora: [20],
+                horarioPico: [60],
+                velocidadeConclusao: [15, 20],
+                pomodoroOtimizado: [25, 5, 25, 15],
+                eficienciaTemporal: [30, 40],
+                distribuicao702010: [15, 15, 15, 30, 30, 60]
+            },
+            agressivo: {
+                iaPreditivaBranco: [15, 20, 25],
+                produtividadeHora: [10],
+                horarioPico: [45],
+                velocidadeConclusao: [8, 12],
+                pomodoroOtimizado: [20, 5],
+                eficienciaTemporal: [15, 25],
+                distribuicao702010: [10, 10, 15, 15, 20, 30]
+            }
+        };
+
+        switch(est) {
+            case 'iaPreditivaBranco': projectionIntervals = intervalos[agressividade].iaPreditivaBranco; break;
+            case 'produtividadeHora': projectionIntervals = intervalos[agressividade].produtividadeHora; break;
+            case 'horarioPico': projectionIntervals = intervalos[agressividade].horarioPico; break;
+            case 'velocidadeConclusao': projectionIntervals = intervalos[agressividade].velocidadeConclusao; break;
+            case 'pomodoroOtimizado': projectionIntervals = intervalos[agressividade].pomodoroOtimizado; break;
+            case 'eficienciaTemporal': projectionIntervals = intervalos[agressividade].eficienciaTemporal; break;
+            case 'distribuicao702010': projectionIntervals = intervalos[agressividade].distribuicao702010; break;
+            default:
+                projectionIntervals = intervalos[agressividade].iaPreditivaBranco; // Padrão genérico
+                break;
+        }
+    }
+
+    if (analysisNote) {
+        out += `${analysisNote}\n--------------------------------\n`;
+    }
+
+    // CORREÇÃO: A estratégia 'brancoProximo' tem sua própria lógica de geração e não usa 'projectionIntervals'.
+    // Portanto, esta verificação de intervalo deve ser pulada para essa estratégia específica,
+    // permitindo que ela prossiga para sua lógica de análise de padrões de cores.
+    if (est !== 'brancoProximo') {
+        if (projectionIntervals.length === 0 || projectionIntervals.every(p => p <= 0)) {
+            document.getElementById('suite_resIABranco').innerText = "⚠️ Não foi possível calcular um padrão de intervalo com base no histórico fornecido. Verifique os dados.";
+            return;
+        }
+    }
+
+    // Lógica específica para a nova estratégia "Branco Próximo"
+    // SUGESTÃO: Lógica completamente refeita para analisar padrões de cores
+    // CORREÇÃO: Lógica ajustada para ler do painel direito (Entrada Manual / Análise Final)
+    if (est === 'brancoProximo') {
+        const rawData = document.getElementById('dash_inputData').value;
+        // CORREÇÃO: Se a estratégia for 'brancoProximo', a lógica de geração de sinais é diferente.
+        // O resultado é gerado aqui e a função deve terminar para não ser sobrescrito.
+        // Por isso, a variável 'out' é reiniciada e a função retorna no final deste bloco.
+        out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n` + out.split('\n').slice(1, 6).join('\n') + '\n';
+
+
+        const platform = document.getElementById('dash_platformSelector').value;
+
+        // 1. Processa o texto do histórico para extrair os números
+        const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
+        const numeros = [];
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
+            const proximoToken = tokens[i + 1];
+            if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
+                numeros.push(parseInt(token));
+                i++; // Pula o horário
+            }
+        }
+
+        // 2. Mantém os números (pedras) para análise, revertendo para a ordem cronológica
+        const historyNumbers = numeros.reverse();
+
+        if (historyNumbers.length < 5) {
+            document.getElementById('suite_resIABranco').innerText = "⚠️ Histórico insuficiente para análise de padrões. São necessários pelo menos 5 resultados.";
+            return;
+        }
+
+        // SUGESTÃO: Pega o tamanho do padrão selecionado pelo usuário
+        const patternSize = parseInt(document.getElementById('suite_brancoProximo_patternSize').value);
+
+        // 3. Análise de Padrões (agora com números)
+        const patterns = {};
+        // Encontra todos os padrões de NÚMEROS do tamanho escolhido que antecedem um branco (número 0)
+        for (let i = patternSize; i < historyNumbers.length; i++) {
+            // Verifica se o número atual é um branco (0)
+            if (historyNumbers[i] === 0) {
+                // Pega o padrão de números anteriores
+                const patternSequence = historyNumbers.slice(i - patternSize, i);
+                
+                // Garante que o padrão não contenha outro branco
+                if (patternSequence.every(num => num !== 0)) {
+                    const pattern = patternSequence.join('-');
+                    patterns[pattern] = (patterns[pattern] || 0) + 1;
+                }
+            }
+        }
+
+        // 4. Encontra o padrão de números mais frequente
+        let mostFrequentPattern = null;
+        let maxCount = 0;
+        for (const p in patterns) {
+            if (patterns[p] > maxCount) {
+                mostFrequentPattern = p;
+                maxCount = patterns[p];
+            }
+        }
+
+        if (mostFrequentPattern) {
+            // REFINAMENTO: Em vez de mostrar apenas o padrão dominante, agora listamos todos os padrões encontrados.
+            out += `🎯 Padrões Encontrados (que antecedem o 0):\n`;
+            const sortedPatterns = Object.entries(patterns).sort(([,a],[,b]) => b-a); // Ordena por frequência
+
+            sortedPatterns.forEach(([pattern, count]) => {
+                const isDominant = pattern === mostFrequentPattern ? ' (Dominante 🔥)' : '';
+                out += `   - ${pattern.replace(/-/g, ' → ')} (x${count})${isDominant}\n`;
+            });
+            out += `\n`; // Adiciona uma linha em branco para separar
+
+            out += `--------------------------------\n`;
+
+            // REFINAMENTO: A lógica de projeção inteligente foi restaurada.
+            // 1. Calcula o intervalo médio específico do padrão encontrado.
+            const patternIntervals = [];
+            const patternOccurrences = historyNumbers.map((num, i) => (num === 0 && historyNumbers.slice(i - patternSize, i).join('-') === mostFrequentPattern) ? i : -1).filter(i => i !== -1);
+            for (let i = 1; i < patternOccurrences.length; i++) {
+                patternIntervals.push(patternOccurrences[i] - patternOccurrences[i-1]);
+            }
+            const patternAvgInterval = patternIntervals.length > 0 ? Math.round(patternIntervals.reduce((a, b) => a + b, 0) / patternIntervals.length) : 0;
+            
+            // 2. Calcula o intervalo médio geral de todos os brancos como um fallback.
+            const allIntervals = [];
+            let lastWhiteIndex = -1;
+            for (let i = 0; i < historyNumbers.length; i++) {
+                if (historyNumbers[i] === 0) {
+                    if (lastWhiteIndex !== -1) allIntervals.push(i - lastWhiteIndex);
+                    lastWhiteIndex = i;
+                }
+            }
+            const generalAvgInterval = allIntervals.length > 0 ? Math.round(allIntervals.reduce((a, b) => a + b, 0) / allIntervals.length) : 15;
+            
+            // 3. NOVO CÁLCULO: Soma os números do padrão dominante para criar um novo fator de intervalo.
+            const patternSumInterval = mostFrequentPattern.split('-').map(Number).reduce((a, b) => a + b, 0);
+
+            // 4. REFINAMENTO: Em vez de escolher um intervalo, agora combinamos os três em uma média ponderada.
+            // Isso "soma" todas as lógicas em um único cálculo final.
+            const baseInterval = patternAvgInterval > 0 ? patternAvgInterval : generalAvgInterval;
+            const projectionInterval = Math.round((baseInterval * 0.6) + (patternSumInterval * 0.4)); // 60% peso para o tempo, 40% para a soma
+
+            out += `🔥 Padrão dominante identificado!\n`;
+            out += `Projetando com base no intervalo de ${projectionInterval} min.\n`;
+            out += `(Cálculo híbrido: Média de tempo: ${baseInterval}min, Soma do padrão: ${patternSumInterval})\n`;
+            out += `\n`;
+            // REFINAMENTO: Adiciona um limite de tempo para a geração de sinais.
+            // A lista não se estenderá por mais de 1 hora a partir do momento da geração.
+            let signalTime = new Date();
+            const timeLimit = new Date(signalTime.getTime() + 60 * 60 * 1000); // Limite de 1 hora
+
+            if (projectionInterval <= 0) out += 'Intervalo de projeção inválido (0 min). Nenhum sinal gerado.\n';
+
+            // REFINAMENTO: Aumenta o número de iterações para garantir que a lista seja preenchida
+            // com o máximo de sinais possível dentro do limite de 1 hora.
+            for (let i = 0; i < 30 && projectionInterval > 0; i++) { // Tenta gerar até 30 sinais, mas o limite de tempo prevalece.
+                signalTime.setMinutes(signalTime.getMinutes() + projectionInterval);
+                // Se o próximo sinal ultrapassar o limite de 1 hora, para a geração.
+                if (signalTime > timeLimit) break;
+                const timeString = signalTime.getHours().toString().padStart(2, '0') + ':' + signalTime.getMinutes().toString().padStart(2, '0');
+                out += `🕒 ${timeString} ➔ ⚪\n`;
+            }
+        } else {
+            out += `Nenhum padrão de ${patternSize} pedras antes de um branco foi encontrado no histórico fornecido.\n`;
+        }
+        out += `--------------------------------\n`
+        out += `⚠️ Use como base para suas análises.`;
+        document.getElementById('suite_resIABranco').innerText = out;
+        return; // Finaliza a execução para não sobrescrever o resultado.
+    }
+
+    // CORREÇÃO: Este bloco de geração de sinais foi movido para cá.
+    // Ele agora é executado para todas as estratégias que usam 'projectionIntervals',
+    // pois a estratégia 'brancoProximo' já retornou e finalizou sua execução.
+    const startTime = new Date();
+    const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000); // Limite de 24 horas
+
+    for (let i = 0; i < qtd; i++) {
+        if (projectionIntervals.length === 0) break; // Segurança
+        let minutosParaAdicionar = projectionIntervals[i % projectionIntervals.length];
+
+        if (est === 'iaPreditivaBranco' && minutosParaAdicionar > 0) {
+            const randomFactor = Math.random();
+            let dynamicInterval = Math.round(minutosParaAdicionar * (randomFactor > 0.7 ? 1.2 + randomFactor : 0.6 + randomFactor));
+            minutosParaAdicionar = Math.max(1, dynamicInterval);
+        }
+
+        db.setMinutes(db.getMinutes() + minutosParaAdicionar);
+
+        if (db > endTime) {
+            out += `\n-- Limite de 24h atingido --\n`;
+            break;
+        }
+
+        const h1 = db.getHours().toString().padStart(2, '0') + ':' + db.getMinutes().toString().padStart(2, '0');
+        out += `🕒 ${h1} ➔ ⚪\n`;
+    }
+
+    out += `--------------------------------\n`
+    out += `⚠️ Use como base para suas análises.`;
+    document.getElementById('suite_resIABranco').innerText = out;
+
+}
+
+// ==========================================
+// INÍCIO: SCRIPTS DE coressao_de_sinais.html (DASHBOARD)
+// ==========================================
+
+// --- LÓGICA DE PLATAFORMA (DASHBOARD) ---
+function dash_selectPlatform(platform, isSync = false) {
+    const dashSelector = document.getElementById('dash_platformSelector');
+    if (dashSelector) dashSelector.value = platform;
+    
+    const btnBlaze = document.getElementById('dash_btn-blaze');
+    const btnJonbet = document.getElementById('dash_btn-jonbet');
+    
+    if (btnBlaze) btnBlaze.classList.remove('active');
+    if (btnJonbet) btnJonbet.classList.remove('active');
+    
+    const targetBtn = document.getElementById(`dash_btn-${platform}`);
+    if (targetBtn) targetBtn.classList.add('active');
+
+    const dashPanel = document.querySelector('.layout-panel.dashboard');
+    if (dashPanel) {
+        if (platform === 'blaze') {
+            dashPanel.classList.remove('platform-jonbet');
+        } else { // jonbet
+            dashPanel.classList.add('platform-jonbet');
+        }
+    }
+    
+    // Sincroniza com o painel SUITE para manter consistência
+    if (!isSync && typeof suite_selectPlatform === 'function') {
+        suite_selectPlatform(platform, true);
+    }
+}
+
+// --- LÓGICA DE ABAS (DASHBOARD) ---
+function dash_openTab(tabName) {
+    const content = document.querySelectorAll(".dashboard .tab-content");
+    const btns = document.querySelectorAll(".dashboard .tab-btn");
+
+    content.forEach(c => c.classList.remove("active"));
+    btns.forEach(b => b.classList.remove("active"));
+
+    const targetContent = document.getElementById('dash_' + tabName);
+    if (targetContent) targetContent.classList.add("active");
+    
+    const tabButton = document.querySelector(`.dashboard .tab-btn[onclick="dash_openTab('${tabName}')"]`);
+    if (tabButton) tabButton.classList.add("active");
+}
+
+// ==========================================
+// INICIALIZAÇÃO AUTOMÁTICA
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage(); // Carrega Token e ID salvos
+    applySavedTheme(); // Aplica o tema (claro/escuro) salvo
+    startPeriodicPermissionCheck(); // Inicia monitoramento do bot
+});
