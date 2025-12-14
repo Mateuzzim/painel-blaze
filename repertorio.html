@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&M // SYSTEM VAQUEJADA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;700;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Verifica se o usuário está autenticado
+        // Se for modo remoto (celular), pula a autenticação
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('remote') && localStorage.getItem('isAuthenticated') !== 'true' && sessionStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'index.html';
+        }
+    </script>
+</head>
+<body>
+
+    <header>
+        <button type="button" id="btn-menu-toggle" class="menu-toggle-btn" onclick="toggleMobileMenu()">☰</button>
+        <div class="top-controls-wrapper">
+            <button type="button" class="top-icon-btn" onclick="openRemoteConnectModal()" title="CONECTAR CELULAR">
+                📡
+                <span id="remote-status-indicator" class="status-dot"></span>
+            </button>
+            <button type="button" class="top-icon-btn" onclick="openConfigModal()" title="CONFIGURAÇÕES">⚙</button>
+        </div>
+        
+        <div class="brand-wrapper">
+            <h1 id="band-name-display" data-text="MENDES & MATEUS">MENDES <span>&</span> MATEUS</h1>
+            <div id="band-subtitle-display" class="sub-header">>> MODO: PASSAGEM DE SOM // STATUS: ONLINE</div>
+        </div>
+        
+        <!-- CRONÔMETRO DE SHOW -->
+        <div class="timer-container">
+            <div id="timer-display" class="timer-display">00:00:00</div>
+            <div class="timer-controls">
+                <button type="button" id="btn-timer-toggle" onclick="toggleTimer()">▶</button>
+                <button type="button" onclick="resetTimer()">↺</button>
+            </div>
+        </div>
+
+        <!-- JUMP TO BLOCK (MODO PALCO) -->
+        <div id="block-jumper" class="block-jumper"></div>
+        
+        <div class="search-container">
+            <input type="search" id="search-input" class="search-input" placeholder="BUSCAR MÚSICA, ID OU RITMO..." oninput="filterRepertoire()">
+        </div>
+        <div id="stats-counter" class="stats-counter">CARREGANDO DADOS...</div>
+
+        <div class="header-controls">
+            <button type="button" id="btn-stage-mode" class="action-btn" onclick="toggleStageMode()"><span class="btn-icon">🎤</span> MODO PALCO</button>
+        </div>
+    </header>
+
+    <div class="container" id="repertoire-container">
+    </div>
+
+    <!-- MODAL -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:var(--primary); margin-bottom:20px; text-transform:uppercase;">Novo Bloco</h2>
+            
+            <div class="form-group">
+                <label class="form-label">ID DO BLOCO</label>
+                <input type="text" id="new-id" class="input-field" placeholder="Ex: B04">
+            </div>
+            <div class="form-group">
+                <label class="form-label">RITMO</label>
+                <input type="text" id="new-rhythm" class="input-field" placeholder="Ex: FORRÓ">
+            </div>
+            <div class="form-group">
+                <label class="form-label">MÚSICAS</label>
+                <div id="songs-inputs"></div>
+                <button type="button" class="action-btn" style="width:100%; font-size:0.8rem; margin-top:5px;" onclick="addSongInput()">+ MÚSICA</button>
+            </div>
+            <div style="text-align:right; margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                <button type="button" class="action-btn" style="border-color:#555; color:#888;" onclick="closeModal()">CANCELAR</button>
+                <button type="button" class="action-btn" onclick="saveBlock()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÃO -->
+    <div id="config-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px;">
+            <h2 style="color:var(--primary); margin-bottom:20px; text-transform:uppercase;">SISTEMA & CONFIGURAÇÃO</h2>
+            
+            <div class="form-group" style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+                <label class="form-label">FERRAMENTAS DE REPERTÓRIO</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button type="button" class="action-btn" onclick="openModal()"><span class="btn-icon">📝</span> ADICIONAR BLOCO</button>
+                    <button type="button" class="action-btn" onclick="undo()"><span class="btn-icon">↩</span> DESFAZER</button>
+                    <button type="button" class="action-btn" onclick="redo()"><span class="btn-icon">↪</span> REFAZER</button>
+                    <button type="button" id="btn-toggle-all" class="action-btn" onclick="toggleAllBlocks()"><span class="btn-icon">📂</span> RECOLHER TODOS</button>
+                    <button type="button" id="btn-quick-select" class="action-btn" onclick="toggleSelectionMode()"><span class="btn-icon">⚡</span> SETLIST RÁPIDO</button>
+                    <button type="button" class="action-btn" onclick="openImportModal()"><span class="btn-icon">📋</span> IMPORTAR</button>
+                </div>
+                
+                <label class="form-label">DADOS & BACKUP</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <button type="button" class="action-btn" onclick="exportRepertoire()"><span class="btn-icon">📥</span> EXPORTAR TXT</button>
+                    <button type="button" class="action-btn" onclick="exportRepertoirePDF()"><span class="btn-icon">📄</span> EXPORTAR PDF</button>
+                    <button type="button" class="action-btn" onclick="shareViaWhatsApp()"><span class="btn-icon">📱</span> COMPARTILHAR WHATSAPP</button>
+                    <button type="button" class="action-btn" onclick="copyRepertoireToClipboard()"><span class="btn-icon">📋</span> COPIAR (CLIPBOARD)</button>
+                    <button type="button" class="action-btn" onclick="openRemoteConnectModal()"><span class="btn-icon">📡</span> CONECTAR CELULAR</button>
+                    <button type="button" class="action-btn" onclick="backupSystemData()"><span class="btn-icon">💾</span> BACKUP JSON</button>
+                    <button type="button" class="action-btn" onclick="triggerRestore()"><span class="btn-icon">📤</span> RESTAURAR</button>
+                    <input type="file" id="restore-input" style="display:none" accept=".json" onchange="restoreBackup(this)">
+                </div>
+
+                <label class="form-label">GERENCIAR SETLISTS & TEMA</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <div class="setlist-controls">
+                        <select id="setlist-selector" class="theme-select" onchange="switchSetlist(this.value)" aria-label="Selecionar Setlist"></select>
+                        <button type="button" class="action-btn" onclick="createNewSetlist()" title="Novo Repertório"><span class="btn-icon">+</span></button>
+                        <button type="button" class="action-btn btn-delete" onclick="deleteCurrentSetlist()" title="Excluir Repertório"><span class="btn-icon">🗑</span></button>
+                    </div>
+                    <select id="theme-selector" class="theme-select" onchange="changeTheme(this.value)" aria-label="Selecionar Tema">
+                        <option value="default">TEMA: PADRÃO (NEON)</option>
+                        <option value="theme-blue">TEMA: AZUL CYBER</option>
+                        <option value="theme-light">TEMA: CLARO (DIA)</option>
+                        <option value="theme-yellow">TEMA: AMARELO (SOL)</option>
+                        <option value="theme-white">TEMA: BRANCO (MINIMAL)</option>
+                        <option value="theme-red">TEMA: VERMELHO (ALERT)</option>
+                        <option value="theme-black">TEMA: PRETO (BLACKOUT)</option>
+                        <option value="custom">TEMA: PERSONALIZADO</option>
+                    </select>
+                    <input type="color" id="custom-color-picker" style="height:30px; width:40px; border:none; background:none; cursor:pointer; display:none; margin-left:10px;" onchange="updateCustomColor(this.value)" title="Escolher Cor">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">NOME DA BANDA</label>
+                <input type="text" id="config-band-name" class="input-field" placeholder="Ex: MENDES & MATEUS">
+            </div>
+            <div class="form-group">
+                <label class="form-label">SUBTÍTULO / STATUS</label>
+                <input type="text" id="config-band-subtitle" class="input-field" placeholder="Ex: AO VIVO">
+            </div>
+            <div class="form-group">
+                <label class="form-label">MENSAGEM DE RODAPÉ (MARQUEE)</label>
+                <input type="text" id="config-marquee-text" class="input-field" placeholder="Ex: Próximo show: 20/10 - Siga @mendesemateus">
+            </div>
+            <div class="form-group">
+                <label class="form-label">VELOCIDADE MARQUEE (SEGUNDOS)</label>
+                <input type="number" id="config-marquee-speed" class="input-field" placeholder="20" min="5" max="100">
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="config-resume-scroll" style="width:auto; accent-color:var(--primary); cursor:pointer;">
+                <label class="form-label" for="config-resume-scroll" style="margin:0; cursor:pointer; display:inline;">RETOMAR SCROLL AO FECHAR LETRA</label>
+            </div>
+            <div class="form-group">
+                <label class="form-label">MENSAGEM DE PÂNICO</label>
+                <input type="text" id="config-panic-message" class="input-field" placeholder="Ex: PAUSA TÉCNICA">
+            </div>
+            <div class="form-group">
+                <label class="form-label">TEXTO DO RODAPÉ (HUD)</label>
+                <input type="text" id="config-footer-text" class="input-field" placeholder="Ex: /// MENDES & MATEUS REPERTÓRIO ///">
+            </div>
+            
+            <div class="form-group" style="border-top: 1px solid #333; padding-top: 20px; margin-top: 20px;">
+                <label class="form-label">AJUDA & ATALHOS</label>
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid #333; font-family: 'Roboto Mono'; font-size: 0.8rem; color: #ccc; line-height: 1.6;">
+                    <p><strong style="color:var(--primary)">[ESPAÇO]</strong> Expandir/Recolher bloco visível</p>
+                    <p><strong style="color:var(--primary)">[SETAS ↑/↓]</strong> Ajustar velocidade (Modo Palco)</p>
+                    <p><strong style="color:var(--primary)">[CTRL + Z]</strong> Desfazer alteração</p>
+                    <p><strong style="color:var(--primary)">[CLIQUE NO Nº]</strong> Marcar música como tocada</p>
+                    <p><strong style="color:var(--primary)">[CLIQUE NO TOM]</strong> Transpor tom da música</p>
+                </div>
+            </div>
+
+            <div style="text-align:right; margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                <button type="button" class="action-btn" style="border-color:#555; color:#888;" onclick="closeConfigModal()">CANCELAR</button>
+                <button type="button" class="action-btn" onclick="saveConfig()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MARQUEE (MODO PALCO) -->
+    <div id="stage-marquee" class="stage-marquee">
+        <div id="marquee-text-display" class="marquee-content"></div>
+    </div>
+
+    <!-- CONTROLES DE AUTOSCROLL (MODO PALCO) -->
+    <div id="autoscroll-controls" class="autoscroll-controls">
+        <button type="button" id="btn-scroll-toggle" onclick="toggleAutoScroll()">▶</button>
+        <button type="button" onclick="adjustSpeed(-0.1)">-</button>
+        <input type="range" id="scroll-speed" min="-10" max="10" step="0.1" value="1.0" oninput="updateScrollSpeed()">
+        <button type="button" onclick="adjustSpeed(0.1)">+</button>
+        <span id="speed-label">VEL: 1.0</span>
+        <button type="button" id="btn-panic" onclick="togglePanic()" title="PÂNICO (PARAR TUDO)">🚨</button>
+    </div>
+
+    <!-- BARRA DE SELEÇÃO RÁPIDA -->
+    <div id="selection-bar" class="selection-bar">
+        <span id="selection-count">0 MÚSICAS SELECIONADAS</span>
+        <button type="button" class="action-btn" style="background:var(--primary); color:#000;" onclick="finishSelection()">CRIAR SETLIST</button>
+    </div>
+
+    <!-- RODAPÉ FUTURISTA -->
+    <footer>
+        <div class="footer-decor"></div>
+        <div class="footer-hud">
+            <div class="hud-left">
+                <div class="sys-status"></div>
+                <span>SYSTEM: <span style="color:#fff;">ONLINE</span></span>
+            </div>
+            <div class="hud-center" id="footer-text-display">/// MENDES & MATEUS REPERTÓRIO ///</div>
+            <div class="hud-right">
+                V.2.5 [STABLE]
+                <button type="button" onclick="localStorage.removeItem('isAuthenticated'); sessionStorage.removeItem('isAuthenticated'); window.location.href='index.html'" style="background:none; border:none; color:#ff4444; font-family:'Oxanium'; font-weight:bold; cursor:pointer; margin-left:15px; text-transform:uppercase;">[ SAIR ]</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL DE ALTERAÇÃO DE TOM -->
+    <div id="key-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h2 style="color:var(--primary); margin-bottom:10px;">ALTERAR TOM</h2>
+            <div id="key-song-title" style="color:#888; font-size:0.9rem; margin-bottom:20px;"></div>
+            
+            <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:20px;">
+                <button type="button" class="action-btn" style="margin:0; font-size:1.2rem; width:45px;" onclick="transposeKey(-1)">-</button>
+                <input type="text" id="new-key-input" class="input-field" style="text-align:center; font-size:1.5rem; width:100px; text-transform:uppercase;">
+                <button type="button" class="action-btn" style="margin:0; font-size:1.2rem; width:45px;" onclick="transposeKey(1)">+</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <button type="button" class="action-btn" style="border-color:#555; color:#888;" onclick="closeKeyModal()">CANCELAR</button>
+                <button type="button" class="action-btn" onclick="saveKeyChange()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST DE VELOCIDADE -->
+    <div id="speed-toast">VEL: 1.0</div>
+
+    <!-- MENSAGEM DE PÂNICO -->
+    <div id="panic-overlay">PAUSA TÉCNICA</div>
+
+    <!-- MENSAGEM REMOTA (AVISO) -->
+    <div id="remote-message-overlay"></div>
+
+    <!-- MODAL DE LETRA -->
+    <div id="lyrics-modal" class="modal-overlay">
+        <div class="modal-content lyrics-content">
+            <div class="lyrics-decor-header">/// SYSTEM_LYRICS_DB // ACCESS_GRANTED</div>
+            
+            <!-- Cabeçalho com Título e Controles -->
+            <div class="lyrics-header-row">
+                <h2 id="lyrics-song-title" class="lyrics-title-display">TÍTULO DA MÚSICA</h2>
+                <div class="lyrics-controls">
+                    <button type="button" class="control-btn" onclick="adjustLyricsFontSize(-2)">A-</button>
+                    <button type="button" class="control-btn" onclick="adjustLyricsFontSize(2)">A+</button>
+                    <button type="button" class="control-btn" onclick="toggleLyricsEditMode()" id="btn-lyrics-edit-toggle">✏ EDITAR</button>
+                </div>
+            </div>
+            
+            <!-- Área de Visualização (Teleprompter) -->
+            <div id="lyrics-view" class="lyrics-view-area"></div>
+            
+            <!-- Área de Edição (Oculta por padrão) -->
+            <textarea id="lyrics-input" class="input-field lyrics-editor" style="display:none;" placeholder="Cole a letra aqui..."></textarea>
+
+            <!-- Rodapé com Controles de Palco -->
+            <div class="lyrics-footer-row">
+                <button type="button" class="action-btn" onclick="toggleLyricsScroll()" id="btn-lyrics-scroll">▶ SCROLL</button>
+                <div style="display:flex; align-items:center; gap:5px; margin-left:10px;">
+                    <span style="font-size:0.7rem; color:#888; font-family:'Oxanium';">VEL:</span>
+                    <input type="range" id="lyrics-scroll-speed" min="1" max="10" step="1" value="3" style="width:80px; accent-color:var(--primary); cursor: pointer;" title="Velocidade do Scroll" oninput="syncLyricsSpeed()">
+                </div>
+                <div style="flex:1"></div>
+                <button type="button" class="action-btn" style="border-color:#555; color:#888;" onclick="closeLyricsModal()">FECHAR</button>
+                <button type="button" id="btn-save-lyrics" class="action-btn" style="display:none;" onclick="saveLyrics()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE IMPORTAÇÃO -->
+    <div id="import-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 style="color:var(--primary); margin-bottom:10px;">IMPORTAR REPERTÓRIO</h2>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:15px; font-family:'Roboto Mono';">Cole sua lista abaixo (Word/WhatsApp) ou carregue um arquivo .txt.</p>
+            
+            <textarea id="import-text-area" class="input-field" style="height: 200px; resize: vertical; font-family: 'Roboto Mono'; margin-bottom: 15px;" placeholder="Exemplo:\n\nBLOCO FORRÓ\nMúsica 1 - Sol\nMúsica 2 (Ré)\n\nBLOCO PISADINHA\n..."></textarea>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <input type="file" id="import-file-input" accept=".txt" style="color:#888; font-size:0.8rem;" onchange="handleFileImport(this)">
+                <div style="display:flex; gap:5px;">
+                    <button type="button" class="action-btn" style="border-color:#555; color:#888;" onclick="closeImportModal()">CANCELAR</button>
+                    <button type="button" class="action-btn btn-delete" onclick="processImport(true)">SUBSTITUIR</button>
+                    <button type="button" class="action-btn" onclick="processImport(false)">ADICIONAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONEXÃO REMOTA (QR CODE) -->
+    <div id="remote-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <h2 style="color:var(--primary); margin-bottom:10px;">CONTROLE REMOTO</h2>
+            <p style="color:#ccc; font-size:0.9rem; margin-bottom:20px;">Escaneie com o celular ou clique no link abaixo.</p>
+            
+            <div id="qrcode" style="display:flex; justify-content:center; margin-bottom:20px; background:#fff; padding:10px; border-radius:8px;"></div>
+            
+            <a id="remote-link" href="#" target="_blank" style="display: block; margin-bottom: 10px; color: var(--secondary); word-break: break-all; text-decoration: underline;"></a>
+            <button type="button" class="action-btn" style="margin-bottom: 20px; font-size: 0.8rem;" onclick="copyRemoteLink()">📋 COPIAR LINK</button>
+            
+            <div id="remote-status" style="color:var(--secondary); font-family:'Roboto Mono'; font-size:0.8rem; margin-bottom:15px;">AGUARDANDO CONEXÃO...</div>
+            
+            <button type="button" class="action-btn" onclick="document.getElementById('remote-modal').style.display='none'">FECHAR</button>
+        </div>
+    </div>
+
+    <!-- INTERFACE DO CONTROLE REMOTO (CELULAR) -->
+    <div id="remote-interface" style="display:none;">
+        <div class="remote-header">
+            M&M REMOTE CONTROL
+            <div id="remote-clock" style="font-size: 1.2rem; color: #fff; margin-top: 5px; font-weight: bold;">--:--</div>
+        </div>
+        <div class="remote-grid">
+            <button class="remote-btn" onclick="sendRemote('scroll_toggle')">⏯ PLAY/PAUSE</button>
+            <button class="remote-btn panic" onclick="sendRemote('panic')">🚨 PÂNICO</button>
+            <button class="remote-btn" onclick="sendRemote('speed_down')">➖ VELOCIDADE</button>
+            <button class="remote-btn" onclick="sendRemote('speed_up')">➕ VELOCIDADE</button>
+            <button class="remote-btn" onclick="sendRemote('stage_mode')">🎤 MODO PALCO</button>
+            <button class="remote-btn" onclick="sendRemote('prev_block')">⬆ BLOCO ANT.</button>
+            <button class="remote-btn" onclick="sendRemote('next_block')">⬇ PRÓX. BLOCO</button>
+            <button class="remote-btn" onclick="sendRemote('blackout')">🌑 BLACKOUT</button>
+            <button class="remote-btn" onclick="sendRemote('theme_default')">☀ TEMA PADRÃO</button>
+            <button class="remote-btn" onclick="sendRemote('reset_timer')">⏱ RESET TIMER</button>
+            <button class="remote-btn" onclick="sendRemote('timer_toggle')">⏯ TIMER</button>
+            <button class="remote-btn" onclick="sendRemote('lyrics_scroll')">📜 SCROLL LETRA</button>
+            <button class="remote-btn" onclick="sendRemote('reload')">🔄 RECARREGAR</button>
+            <button class="remote-btn" id="btn-remote-lyrics" onclick="toggleRemoteLyrics()">👁 VER LETRA</button>
+            <div class="remote-input-group">
+                <input type="text" id="remote-msg-input" placeholder="AVISO PARA O PALCO..." maxlength="30">
+                <button class="remote-btn" onclick="sendRemoteMessage()">ENVIAR</button>
+            </div>
+            <button class="remote-btn" onclick="toggleRemoteFullscreen()">⛶ TELA CHEIA</button>
+            <button class="remote-btn" onclick="toggleRemoteLock()">🔒 BLOQUEAR</button>
+            <div id="remote-block-jumper" class="remote-block-jumper" style="grid-column: span 2;">
+            </div>
+        </div>
+        <div class="remote-footer-bar">
+            <div id="remote-feedback">CONECTADO</div>
+            <div id="remote-battery"></div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE LETRA NO CONTROLE REMOTO -->
+    <div id="remote-lyrics-overlay" style="display:none;">
+        <div class="remote-lyrics-header">
+            <span id="remote-lyrics-title">AGUARDANDO...</span>
+            <button onclick="toggleRemoteLyrics()" style="background:none; border:none; color:#ff4444; font-size:1.5rem; padding: 0 10px;">✕</button>
+        </div>
+        <div id="remote-lyrics-content">Nenhuma letra carregada. Abra uma música no PC.</div>
+        <div class="remote-lyrics-controls">
+            <div style="display:flex; align-items:center; gap:5px; margin-right:10px;">
+                <input type="checkbox" id="remote-lyrics-sync" checked style="width:20px; height:20px; accent-color:var(--primary);">
+                <label for="remote-lyrics-sync" style="color:#fff; font-family:'Roboto Mono'; font-size:0.8rem;">SYNC</label>
+            </div>
+            <button onclick="adjustRemoteFontSize(-2)">A-</button>
+            <button onclick="adjustRemoteFontSize(2)">A+</button>
+        </div>
+    </div>
+
+    <!-- TELA DE BLOQUEIO DO CONTROLE REMOTO -->
+    <div id="remote-lock-screen" style="display:none;">
+        <div class="lock-icon">LOCKED</div>
+        <button class="unlock-btn" onclick="toggleRemoteLock()">PRESSIONE PARA DESBLOQUEAR</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
