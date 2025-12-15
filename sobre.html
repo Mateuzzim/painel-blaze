@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - Cortex Virtual</title>
+    <style>
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        .content-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { margin-bottom: 10px; padding-left: 20px; position: relative; }
+        .feature-list li::before { content: '▹'; color: #00d2ff; position: absolute; left: 0; }
+        .version-tag { display: inline-block; padding: 2px 8px; background: #00d2ff; color: #000; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-left: 10px; }
+        .footer-copy { text-align: center; margin-top: 30px; color: #666; font-size: 0.8rem; border-top: 1px solid #333; padding-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">SOBRE O SISTEMA</h1>
+            </div>
+
+            <div class="content-box">
+                <h2>Cortex Virtual <span class="version-tag">v2.5.0</span></h2>
+                <p>O Cortex Virtual é uma suíte avançada de análise probabilística e automação para mercados de Double. Desenvolvido com foco em precisão e usabilidade, o sistema integra inteligência artificial para identificação de padrões e geração de sinais.</p>
+            </div>
+
+            <div class="content-box">
+                <h3>🚀 Funcionalidades Principais</h3>
+                <ul class="feature-list">
+                    <li><strong>I.A Cores & Branco:</strong> Algoritmos preditivos para geração de listas de alta assertividade.</li>
+                    <li><strong>Robô Automático:</strong> Automação de estratégias em tempo real com proteção de capital.</li>
+                    <li><strong>Análise Estatística:</strong> Ferramentas para identificar tendências, ciclos e melhores horários.</li>
+                    <li><strong>Corretores de Lista:</strong> Validação automática de sinais contra o histórico real.</li>
+                    <li><strong>Integração Telegram:</strong> Notificações e controle remoto via bot.</li>
+                    <li><strong>Gestão de Usuários:</strong> Sistema completo de controle de acesso e expiração.</li>
+                </ul>
+            </div>
+
+            <div class="content-box">
+                <h3>🛠️ Informações Técnicas</h3>
+                <p>Desenvolvido utilizando tecnologias web modernas e integração com Firebase para persistência de dados segura. O sistema opera com criptografia de ponta a ponta para garantir a segurança das informações dos usuários.</p>
+            </div>
+
+            <div class="footer-copy">
+                &copy; <span id="year"></span> Cortex Virtual. Todos os direitos reservados.<br>
+                Desenvolvido para alta performance.
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

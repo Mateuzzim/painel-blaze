@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Branco</title>
+    <style>
+        /* Estilos baseados no index.html */
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 8px 16px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .platform-btn.active { background: #00d2ff; color: #000; font-weight: bold; border-color: #00d2ff; }
+        .platform-jonbet .platform-btn.active { background: #00ff88; border-color: #00ff88; }
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f0f13; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, select:focus, textarea:focus { border-color: #00d2ff; outline: none; }
+        .btn-action { width: 100%; padding: 12px; background: linear-gradient(90deg, #00d2ff, #0088cc); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-copy { width: 100%; padding: 10px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-copy:hover { background: #444; }
+        .output-area { background: #000; border: 1px solid #333; padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: #00d2ff; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .manual-btn { cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        /* Footer Futurista */
+        .futuristic-footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; position: relative; overflow: hidden; background: rgba(10, 10, 15, 0.8); }
+        .futuristic-footer::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); animation: footer-scan 3s linear infinite; }
+        @keyframes footer-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">ANÁLISE BRANCO</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="suite_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                </div>
+            </div>
+
+            <div id="suite_branco">
+                <h2>⚪ Analise branco</h2>
+                <div class="control-group">
+                    <label>Estratégia de Análise para Branco:</label>
+                    <select id="suite_estrategiaBranco" onchange="suite_toggleStrategyInputs()">
+                        <option value="media">1. Média dos Intervalos</option>
+                        <option value="minimo">2. Intervalo Mínimo (Agressivo)</option>
+                        <option value="espelho12h">3. Espelhamento de Horário (12h)</option>
+                        <option value="fibonacci">4. Soma Fibonacci</option>
+                        <option value="minutosOuro">5. Minutos de Ouro</option>
+                        <option value="somaTotal">6. Soma Total dos Intervalos</option>
+                        <option value="custom">7. Estratégia Personalizada</option>
+                        <option value="offset">8. Deslocamento Fixo</option>
+                        <option value="padraoHoras">9. Padrão de Horas</option>
+                        <option value="brianTracy">10. Fórmula Ponderada (Brian Tracy)</option>
+                        <option value="pitagoras">11. Teorema de Pitágoras</option>
+                        <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
+                        <option value="ciclosMercado">12. Ciclos de Mercado</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Quantidade de Sinais a Gerar:</label>
+                    <input type="number" id="suite_qtdSinaisBranco" value="15" min="1">
+                </div>
+                <div class="control-group">
+                    <label>Intervalo Mínimo entre Sinais (minutos):</label>
+                    <input type="number" id="suite_intervaloMinimoBranco" value="0" min="0">
+                    <div class="hint">Não gerará sinais dentro deste intervalo de tempo após o sinal anterior. 0 para desativar.</div>
+                </div>
+                <div class="control-group">
+                    <label>Nº de Entradas (Tentativas/Gale):</label>
+                    <input type="number" id="suite_entradasBranco" value="3" min="1">
+                    <div class="hint">Quantas minutos cobrir após o sinal (Ex: 3).</div>
+                </div>
+                <div class="control-group" id="suite_customStrategyContainer" style="display:none;">
+                    <label>Padrão Personalizado (minutos, separados por vírgula):</label>
+                    <input type="text" id="suite_customPattern" placeholder="Ex: 10, 25, 12, 40">
+                </div>
+                <div class="control-group" id="suite_fixedOffsetContainer" style="display:none;">
+                    <label>Intervalo de Deslocamento (minutos):</label>
+                    <input type="number" id="suite_fixedOffsetValue" placeholder="Ex: 15 (ou -5 para subtrair)">
+                </div>
+                <div class="control-group">
+                    <label>Data da Lista:</label>
+                    <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
+                        <input type="hidden" id="suite_branco_date_selector" value="hoje">
+                        <button class="platform-btn active" id="suite_branco_btn_hoje" onclick="suite_selectDate('branco', 'hoje')">Hoje</button>
+                        <button class="platform-btn" id="suite_branco_btn_amanha" onclick="suite_selectDate('branco', 'amanha')">Amanhã</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Cole o Histórico Copiado:</label>
+                    <div class="hint">Cole a lista de horários (HH:MM) em que o branco saiu. Um por linha.</div>
+                    <textarea id="suite_inputHistoricoBranco" oninput="suite_autoFormatBrancoInput(this)" placeholder="Exemplo: 13:00 BRANCO"></textarea>
+                </div>
+                <div class="inline-controls" style="align-items: center; margin-bottom: 20px;">
+                    <button class="btn-action" style="background-color: #fff; color: #000; border: 1px solid #aaa; font-size: 0.8rem;" onclick="suite_analisarParaBranco()">⚪ LISTA BRANCO</button>
+                    <button class="btn-action" onclick="suite_limparAnalisadorBranco()" style="margin-top: 10px; background-color: #555; font-size: 0.8rem;">LIMPAR</button>
+                </div>
+                <div class="output-area" id="suite_resBranco" style="margin-top: 0;">
+                    Aguardando análise para o branco...
+                </div>
+                <button id="suite_copy-signals-button-branco" class="btn-copy" onclick="copiar('suite_resBranco', this)">📋 COPIAR SINAIS</button>
+            </div>
+        </div>
+    </div>
+    <footer class="futuristic-footer">
+        &copy; <span id="currentYear"></span> Cortex Virtual. Todos os direitos reservados.
+    </footer>
+
+    <script>
+        function suite_selectPlatform(platform) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+            
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+        }
+
+        function copiar(elementId, btn) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copiado!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function suite_selectDate(tabPrefix, choice) {
+            document.getElementById(`suite_${tabPrefix}_date_selector`).value = choice;
+            document.getElementById(`suite_${tabPrefix}_btn_hoje`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_amanha`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_${choice}`).classList.add('active');
+        }
+
+        function suite_toggleStrategyInputs() {
+            const estrategia = document.getElementById('suite_estrategiaBranco').value;
+            document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';
+            document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
+        }
+
+        let suite_formatTimeout;
+        function suite_autoFormatBrancoInput(textarea) {
+            clearTimeout(suite_formatTimeout);
+            suite_formatTimeout = setTimeout(() => {
+                const timeRegex = /^\d{2}:\d{2}$/;
+                const lines = textarea.value.split('\n');
+                const formattedLines = lines
+                    .map(line => line.trim())
+                    .filter(line => timeRegex.test(line) || /^\d{2}:\d{2} BRANCO$/.test(line))
+                    .map(line => timeRegex.test(line) ? `${line} BRANCO` : line);
+                textarea.value = formattedLines.join('\n');
+            }, 500);
+        }
+
+        function suite_limparAnalisadorBranco() {
+            document.getElementById('suite_inputHistoricoBranco').value = '';
+            document.getElementById('suite_resBranco').innerText = 'Aguardando análise para o branco...';
+        }
+
+        function calculateStandardDeviation(array) {
+            if (!array || array.length < 2) return 0;
+            const n = array.length;
+            const mean = array.reduce((a, b) => a + b) / n;
+            const variance = array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+            return Math.sqrt(variance);
+        }
+
+        function getIntervals(times) {
+            const intervals = [];
+            for (let i = 1; i < times.length; i++) {
+                const [h1, m1] = times[i - 1].split(':').map(Number);
+                const [h2, m2] = times[i].split(':').map(Number);
+                const date1 = new Date(0, 0, 0, h1, m1);
+                const date2 = new Date(0, 0, 0, h2, m2);
+                let diff = (date2 - date1) / (1000 * 60);
+                if (diff < 0) diff += 24 * 60;
+                intervals.push(diff);
+            }
+            return intervals;
+        }
+
+        function projectSignals(startTime, intervalPattern, signalLimit, minInterval = 0) {
+            let signals = [];
+            let proximaEntrada = new Date(startTime);
+            let ultimoSinalGeradoTime = null;
+            let patternIndex = 0;
+            let attempts = 0;
+    
+            while (signals.length < signalLimit && attempts < signalLimit * 100) {
+                attempts++;
+                if (intervalPattern.length === 0) break;
+                const minutosParaAdicionar = intervalPattern[patternIndex % intervalPattern.length];
+                patternIndex++;
+    
+                if (minutosParaAdicionar <= 0) continue;
+                proximaEntrada.setMinutes(proximaEntrada.getMinutes() + minutosParaAdicionar);
+    
+                const isIntervalRespected = !ultimoSinalGeradoTime || ((proximaEntrada.getTime() - ultimoSinalGeradoTime.getTime()) / (1000 * 60)) >= minInterval;
+    
+                if (isIntervalRespected) {
+                    signals.push(`🕒 ${proximaEntrada.getHours().toString().padStart(2, '0')}:${proximaEntrada.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
+                    ultimoSinalGeradoTime = new Date(proximaEntrada);
+                }
+            }
+            return signals;
+        }
+
+        function suite_analisarParaBranco() {
+            const estrategia = document.getElementById('suite_estrategiaBranco').value;
+            const input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
+            const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
+            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value) || 15;
+            const numEntradas = parseInt(document.getElementById('suite_entradasBranco').value) || 3;
+            const resultsDiv = document.getElementById('suite_resBranco');
+
+            if (!input) {
+                alert("Por favor, cole a lista de horários dos brancos.");
+                return;
+            }
+
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])/;
+            const horarios = input.split('\n')
+                .map(l => l.trim())
+                .map(l => { const m = l.match(timeRegex); return m ? m[0] : null; })
+                .filter(l => l !== null);
+
+            if (horarios.length === 0) {
+                alert("Nenhum horário válido encontrado no histórico."); return;
+            }
+
+            if (horarios.length < 2 && !['custom', 'offset', 'espelho12h', 'minutosOuro'].includes(estrategia)) {
+                resultsDiv.innerText = "⚠️ É necessário fornecer pelo menos 2 horários de branco para analisar.";
+                return;
+            }
+
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const selectElement = document.getElementById('suite_estrategiaBranco');
+            const dateChoice = document.getElementById('suite_branco_date_selector').value;
+            const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
+
+            const targetDate = new Date();
+            if (dateChoice === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            const dataLista = targetDate.toLocaleDateString('pt-BR');
+
+            let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `📅 Data: *${dataLista}*\n`;
+            out += `🎯 Estratégia: *${strategyName}*\n`;
+            out += `🔄 Entradas: *${numEntradas}* (Cobrir até ${numEntradas} min)\n`;
+            if (intervaloMinimo > 0) {
+                out += `🔢 Sinais: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
+            }
+
+            let lastTime = new Date();
+            let pattern = [];
+            let projectedSignals = [];
+
+            switch (estrategia) {
+                case 'media': pattern = getIntervals(horarios); if (pattern.length > 0) { const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length); projectedSignals = projectSignals(lastTime, [media], qtdSinais, intervaloMinimo); } break;
+                case 'minimo': pattern = getIntervals(horarios); if (pattern.length > 0) { const min = Math.min(...pattern.filter(i => i > 0)); if(min > 0) projectedSignals = projectSignals(lastTime, [min], qtdSinais, intervaloMinimo); } break;
+                case 'espelho12h': horarios.slice(0, qtdSinais).forEach(h => { let date = new Date(); const [hr, mn] = h.split(':').map(Number); date.setHours(hr + 12, mn); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
+                case 'fibonacci': projectedSignals = projectSignals(lastTime, [5, 8, 13, 21, 34, 55], qtdSinais, intervaloMinimo); break;
+                case 'minutosOuro': const minuteCounts = {}; horarios.forEach(h => { const min = h.split(':')[1]; minuteCounts[min] = (minuteCounts[min] || 0) + 1; }); const goldenMinutes = Object.keys(minuteCounts).sort((a, b) => minuteCounts[b] - minuteCounts[a]).slice(0, 5); let projTime = new Date(lastTime); while(projectedSignals.length < qtdSinais && goldenMinutes.length > 0) { projTime.setHours(projTime.getHours() + 1); if (projectedSignals.length >= qtdSinais) break; goldenMinutes.forEach(min => { if(projectedSignals.length < qtdSinais) projectedSignals.push(`🕒 ${projTime.getHours().toString().padStart(2, '0')}:${min} ➔ ⚪`); }); } break;
+                case 'somaTotal': pattern = getIntervals(horarios); if (pattern.length > 0) { const totalSum = pattern.reduce((a, b) => a + b, 0); let finalTime = new Date(lastTime); finalTime.setMinutes(finalTime.getMinutes() + totalSum); projectedSignals.push(`🕒 ${finalTime.getHours().toString().padStart(2, '0')}:${finalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); } break;
+                case 'custom': const customPatternStr = document.getElementById('suite_customPattern').value; if (!customPatternStr) { projectedSignals = "Insira um padrão."; break; } pattern = customPatternStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0); projectedSignals = projectSignals(lastTime, pattern, qtdSinais, intervaloMinimo); break;
+                case 'offset': const offsetValue = parseInt(document.getElementById('suite_fixedOffsetValue').value); if (isNaN(offsetValue)) { projectedSignals = "Insira um deslocamento."; break; } [...horarios].reverse().slice(0, qtdSinais).forEach(h => { const [hr, mn] = h.split(':').map(Number); let date = new Date(); date.setHours(hr, mn + offsetValue, 0, 0); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
+                case 'padraoHoras':
+                    const hourlyPatterns = {};
+                    horarios.forEach(h => {
+                        const [hr, mn] = h.split(':').map(Number);
+                        if (!hourlyPatterns[hr]) hourlyPatterns[hr] = [];
+                        hourlyPatterns[hr].push(mn);
+                    });
+                    Object.keys(hourlyPatterns).slice(0, qtdSinais).forEach(hr => {
+                        const minutes = hourlyPatterns[hr];
+                        const avgMinute = Math.round(minutes.reduce((a, b) => a + b, 0) / minutes.length);
+                        projectedSignals.push(`🕒 ${hr.toString().padStart(2, '0')}:${avgMinute.toString().padStart(2, '0')} ➔ ⚪`);
+                    });
+                    break;
+                case 'brianTracy':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length > 0) {
+                        const weightedSum = pattern.reduce((sum, interval, index) => sum + interval * (index + 1), 0);
+                        const totalWeight = pattern.reduce((sum, interval, index) => sum + (index + 1), 0);
+                        const weightedAvg = Math.round(weightedSum / totalWeight);
+                        const projectionPattern = [weightedAvg, ...pattern.slice(-4).reverse()];
+                        projectedSignals = projectSignals(lastTime, projectionPattern, qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'pitagoras':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const a = pattern[pattern.length - 2];
+                        const b = pattern[pattern.length - 1];
+                        const c = Math.round(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
+                        if (c > 0) projectedSignals = projectSignals(lastTime, [c], qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'ciclosMercado':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const lastInterval = pattern[pattern.length - 1];
+                        const secondLastInterval = pattern[pattern.length - 2];
+                        const acceleration = lastInterval - secondLastInterval;
+                        const nextInterval = Math.round(lastInterval + acceleration);
+                        if (nextInterval > 0) projectedSignals = projectSignals(lastTime, [nextInterval], qtdSinais, intervaloMinimo);
+                    }
+                    break;
+                case 'jikan_tradicional':
+                    pattern = getIntervals(horarios);
+                    if (pattern.length >= 2) {
+                        const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length);
+                        const desvioPadrao = calculateStandardDeviation(pattern);
+                        const jikanPattern = [
+                            Math.max(1, Math.round(media + desvioPadrao / 2)),
+                            Math.max(1, Math.round(media - desvioPadrao / 2))
+                        ];
+                        projectedSignals = projectSignals(lastTime, jikanPattern, qtdSinais, intervaloMinimo);
+                    }
+                    break;
+            }
+
+            out += `--------------------------------\n`;
+            if (projectedSignals && projectedSignals.length > 0) {
+                let signalArray = Array.isArray(projectedSignals) ? projectedSignals : [projectedSignals];
+                if (intervaloMinimo > 0) {
+                    let parsedSignals = [];
+                    const timeRegex = /(\d{2}):(\d{2})/;
+                    signalArray.forEach(sig => {
+                        const match = sig.match(timeRegex);
+                        if (match) {
+                            const minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
+                            parsedSignals.push({ original: sig, minutes: minutes });
+                        } else {
+                            parsedSignals.push({ original: sig, minutes: -1 });
+                        }
+                    });
+                    parsedSignals.sort((a, b) => a.minutes - b.minutes);
+                    let filtered = [];
+                    let lastMinutes = -9999;
+                    parsedSignals.forEach(item => {
+                        if (item.minutes === -1 || (item.minutes - lastMinutes >= intervaloMinimo)) {
+                            filtered.push(item.original);
+                            if (item.minutes !== -1) lastMinutes = item.minutes;
+                        }
+                    });
+                    signalArray = filtered;
+                }
+                let uniqueSignals = [...new Set(signalArray)];
+                uniqueSignals.sort((a, b) => a.localeCompare(b));
+                out += uniqueSignals.join('\n');
+            } else {
+                out += "Nenhum sinal foi gerado.";
+            }
+            out += `\n--------------------------------\n`;
+            out += `⚠️ Use como base para suas análises.`;
+            resultsDiv.innerText = out;
+        }
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

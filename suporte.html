@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte - Cortex Virtual</title>
+    <style>
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        .content-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; }
+        .contact-list { list-style: none; padding: 0; }
+        .contact-list li { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .contact-icon { font-size: 1.5rem; }
+        .contact-link { color: #00d2ff; text-decoration: none; font-weight: bold; transition: color 0.3s; }
+        .contact-link:hover { color: #fff; text-decoration: underline; }
+        .footer-copy { text-align: center; margin-top: 30px; color: #666; font-size: 0.8rem; border-top: 1px solid #333; padding-top: 15px; }
+
+        /* Estilos para o FAQ */
+        .faq-list { padding-left: 0; }
+        .faq-list dt {
+            font-weight: bold;
+            color: #ff9800;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .faq-list dt:hover { background: rgba(255, 255, 255, 0.1); }
+        .faq-list dt::after { content: '+'; font-size: 1.2rem; color: #00d2ff; font-weight: bold; }
+        .faq-list dt.active { color: #00d2ff; }
+        .faq-list dt.active::after { content: '-'; color: #ff0055; }
+        .faq-list dd {
+            margin-left: 0; margin-bottom: 15px; color: #ccc; border-left: 2px solid #333; padding: 15px; line-height: 1.6;
+            background: rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .faq-list dd.active { display: block; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilos para botões de controle do FAQ */
+        .faq-controls { margin-bottom: 15px; display: flex; gap: 10px; }
+        .faq-btn {
+            padding: 6px 12px; font-size: 0.8rem; background: #333;
+            border: 1px solid #555; color: #fff; border-radius: 4px;
+            cursor: pointer; transition: background 0.3s;
+        }
+        .faq-btn:hover { background: #444; border-color: #666; }
+
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">CENTRAL DE SUPORTE</h1>
+            </div>
+
+            <div class="content-box">
+                <h2>Precisa de Ajuda?</h2>
+                <p>Nossa equipe está pronta para auxiliar com dúvidas técnicas, problemas de acesso ou configurações do sistema. Entre em contato através dos canais abaixo:</p>
+            </div>
+
+            <div class="content-box">
+                <h3>📞 Canais de Atendimento</h3>
+                <ul class="contact-list">
+                    <li>
+                        <span class="contact-icon">✈️</span>
+                        <div>
+                            <strong>Telegram Oficial:</strong><br>
+                            <a href="tg://resolve?domain=SuporteCortex" class="contact-link" target="_blank">@SuporteCortex</a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="contact-icon">📧</span>
+                        <div>
+                            <strong>E-mail:</strong><br>
+                            <a href="mailto:suporte@cortexvirtual.com" class="contact-link">suporte@cortexvirtual.com</a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="contact-icon">📱</span>
+                        <div>
+                            <strong>WhatsApp:</strong><br>
+                            <a href="https://whatsapp.com/dl/" class="contact-link" target="_blank">Clique para Iniciar Conversa</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="content-box">
+                <h3>❓ Perguntas Frequentes (FAQ)</h3>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="faq-search" placeholder="🔍 Buscar dúvida..." style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; border-radius: 4px;">
+                </div>
+                <div class="faq-controls">
+                    <button id="faq-expand-all" class="faq-btn">Expandir Tudo</button>
+                    <button id="faq-collapse-all" class="faq-btn">Recolher Tudo</button>
+                </div>
+                <dl class="faq-list">
+                    <dt>Como eu ativo os robôs (Branco e Automático)?</dt>
+                    <dd>Primeiro, vá ao painel principal e ative a "Auto-Busca" no coletor de dados à direita. Depois, navegue até a aba do robô desejado (no menu principal) e clique no botão "ATIVAR ROBÔ". Ele só funcionará se a coleta de dados estiver ativa.</dd>
+
+                    <dt>Esqueci minha senha, o que eu faço?</dt>
+                    <dd>Na tela de login, clique em "Esqueci minha senha". Você será instruído a entrar em contato com o suporte via Telegram para que possamos verificar sua identidade e redefinir seu acesso com segurança.</dd>
+
+                    <dt>A "Auto-Busca" falhou ou o robô parou de funcionar. E agora?</dt>
+                    <dd>Isso geralmente acontece quando o token de acesso da plataforma expira. Para resolver, vá até a aba "Configurações" (ícone de usuário no topo) e insira um novo token de acesso válido no campo "Token de Acesso Blaze". Se não souber como obter um, contate o suporte.</dd>
+                    
+                    <dt>Posso usar o sistema em mais de um dispositivo ao mesmo tempo?</dt>
+                    <dd>Não é recomendado. O uso simultâneo em múltiplos dispositivos pode causar conflitos na sessão e no registro de atividades, levando a um comportamento inesperado dos robôs e análises.</dd>
+                </dl>
+            </div>
+
+            <div class="footer-copy">
+                &copy; <span id="year"></span> Cortex Virtual. Todos os direitos reservados.
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Lógica do Acordeão FAQ
+        const allDt = document.querySelectorAll('.faq-list dt');
+        const allDd = document.querySelectorAll('.faq-list dd');
+
+        allDt.forEach(dt => {
+            dt.addEventListener('click', () => {
+                dt.classList.toggle('active');
+                const dd = dt.nextElementSibling;
+                if (dd) dd.classList.toggle('active');
+            });
+        });
+
+        document.getElementById('faq-expand-all').addEventListener('click', () => {
+            allDt.forEach(dt => dt.classList.add('active'));
+            allDd.forEach(dd => dd.classList.add('active'));
+        });
+
+        document.getElementById('faq-collapse-all').addEventListener('click', () => {
+            allDt.forEach(dt => dt.classList.remove('active'));
+            allDd.forEach(dd => dd.classList.remove('active'));
+        });
+
+        // Busca no FAQ
+        document.getElementById('faq-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            allDt.forEach(dt => {
+                const dd = dt.nextElementSibling;
+                const text = (dt.textContent + " " + dd.textContent).toLowerCase();
+                if (text.includes(term)) {
+                    dt.style.display = '';
+                } else {
+                    dt.style.display = 'none';
+                    dd.classList.remove('active');
+                    dt.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

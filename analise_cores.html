@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Cores</title>
+    <style>
+        /* Estilos adaptados do index.html */
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 8px 16px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .platform-btn.active { background: #00d2ff; color: #000; font-weight: bold; border-color: #00d2ff; }
+        .platform-jonbet .platform-btn.active { background: #00ff88; border-color: #00ff88; }
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f0f13; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, select:focus, textarea:focus { border-color: #00d2ff; outline: none; }
+        .btn-action { width: 100%; padding: 12px; background: linear-gradient(90deg, #00d2ff, #0088cc); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-copy { width: 100%; padding: 10px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-copy:hover { background: #444; }
+        .output-area { background: #000; border: 1px solid #333; padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: #00d2ff; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .stats-box { display: flex; gap: 10px; margin-bottom: 15px; background: #222; padding: 10px; border-radius: 4px; justify-content: space-around; }
+        .stat-item { font-size: 0.9rem; }
+        .manual-btn { cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">ANÁLISE CORES</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="suite_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                </div>
+            </div>
+
+            <div id="suite_analisador">
+                <h2>📊 Análise Cores</h2>
+                <div class="control-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin-bottom: 0;">Cole o Histórico Copiado:</label>
+                        <div class="header-buttons" style="display: flex; gap: 5px;">
+                            <button onclick="suite_limparAnalisador()" class="manual-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
+                        </div>
+                    </div>
+                    <div class="hint" style="margin-top: 0;">Cole o texto do histórico aqui.</div>
+                    <textarea id="suite_inputHistorico" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui a lista copiada..." style="height: 120px;"></textarea>
+                </div>
+                
+                <div class="stats-box" id="suite_analisador_stats" style="display: none;">
+                    <div class="stat-item"><span id="suite_analisador_platform-emoji">🔴</span> <span id="suite_analisador_count-red">0 (0%)</span></div>
+                    <div class="stat-item">⚫ <span id="suite_analisador_count-black">0 (0%)</span></div>
+                    <div class="stat-item">⚪ <span id="suite_analisador_count-white">0</span></div>
+                    <div class="stat-item" style="font-weight:bold;">Total: <span id="suite_analisador_count-total">0</span></div>
+                </div>
+
+                <div class="control-group">
+                    <label>Estratégia de Análise:</label>
+                    <select id="suite_analiseEstrategia">
+                        <option value="auto">Análise de Tendência (Auto)</option>
+                        <option value="maioria">Seguir a Maioria</option>
+                        <option value="minoria">Seguir a Minoria (Equilíbrio)</option>
+                        <option value="contra">Contrariar o Último Resultado</option>
+                        <option value="alternado">Padrão Alternado (Xadrez)</option>
+                        <option value="euler">Onda de Euler</option>
+                        <option value="gauss">Curva de Gauss (Últimos 7)</option>
+                        <option value="galois">Ciclo de Galois (V-P-V)</option>
+                        <option value="einstein">Relatividade de Einstein (V-P-P-P)</option>
+                    </select>
+                </div>
+                <div class="inline-controls">
+                    <div class="control-group">
+                        <label>Quantidade de Sinais:</label>
+                        <input type="number" id="suite_qtdProjecoes" value="5">
+                    </div>
+                    <div class="control-group">
+                        <label>Intervalo (Minutos):</label>
+                        <input type="text" id="suite_analiseIntervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
+                        <div class="hint">Use múltiplos valores separados por vírgula.</div>
+                    </div>
+                </div>
+                <button class="btn-action" onclick="suite_analisarEGerar()">🔍 ANALISAR E GERAR</button>
+                <div class="output-area" id="suite_resAnalise">Aguardando dados...</div>
+                <div class="inline-controls" style="margin-top: 10px;">
+                    <button class="btn-copy" onclick="copiar('suite_resAnalise', this)" style="width: 100%;">📋 COPIAR ANÁLISE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function suite_selectPlatform(platform) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+            
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+            
+            const emoji = platform === 'jonbet' ? '🟢' : '🔴';
+            const emojiEl = document.getElementById('suite_analisador_platform-emoji');
+            if(emojiEl) emojiEl.innerText = emoji;
+        }
+
+        function copiar(elementId, btn) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copiado!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function suite_limparAnalisador() {
+            document.getElementById('suite_inputHistorico').value = '';
+            document.getElementById('suite_resAnalise').innerText = 'Aguardando dados...';
+            document.getElementById('suite_analisador_stats').style.display = 'none';
+        }
+
+        let suite_formatarTimeout;
+        function suite_formatarInputHistorico(textarea) {
+            clearTimeout(suite_formatarTimeout);
+            suite_formatarTimeout = setTimeout(() => {
+                const valorOriginal = textarea.value.trim();
+                const linhas = valorOriginal.split('\n');
+                const resultadosFinais = [];
+                const timeRegex = /^\d{2}:\d{2}$/;
+                const numberRegex = /^\d{1,2}$/;
+                const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
+                const platformSelector = document.getElementById('suite_platformSelector');
+                const isJonbet = platformSelector && platformSelector.value === 'jonbet';
+
+                 for (let i = 0; i < linhas.length; i++) {
+                     const linhaAtual = linhas[i].trim();
+                     if (fullDateRegex.test(linhaAtual)) {
+                         const linha1 = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                         const linha2 = linhas[i + 2] ? linhas[i + 2].trim() : '';
+                         let numero, horario, cor;
+                         if (numberRegex.test(linha1) && timeRegex.test(linha2)) {
+                             numero = parseInt(linha1); horario = linha2; i += 2; 
+                         } else if (timeRegex.test(linha1)) {
+                             numero = 0; horario = linha1; i += 1; 
+                         }
+                         if (horario) {
+                             if (numero === 0) cor = 'BRANCO';
+                             else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
+                             else if (numero >= 8 && numero <= 14) cor = 'PRETO';
+                             if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
+                             resultadosFinais.push(`${horario} ${cor}`);
+                         }
+                     } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
+                         let linha = linhaAtual.toUpperCase();
+                         if (isJonbet) linha = linha.replace('VERMELHO', 'VERDE');
+                         resultadosFinais.push(linha);
+                     } else if (timeRegex.test(linhaAtual)) {
+                         const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
+                         if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(proximaLinha)) {
+                             let cor = proximaLinha.toUpperCase();
+                             if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
+                             resultadosFinais.push(`${linhaAtual} ${cor}`);
+                             i++;
+                         } else {
+                             resultadosFinais.push(`${linhaAtual} BRANCO`);
+                         }
+                     }
+                 }
+                textarea.value = resultadosFinais.join('\n');
+                suite_atualizarStats(resultadosFinais);
+            }, 500);
+        }
+
+        function suite_atualizarStats(linhas) {
+            let r = 0, b = 0, w = 0;
+            linhas.forEach(l => {
+                if(l.includes('VERMELHO') || l.includes('VERDE')) r++;
+                else if(l.includes('PRETO')) b++;
+                else if(l.includes('BRANCO')) w++;
+            });
+            const total = r + b + w;
+            document.getElementById('suite_analisador_count-red').innerText = `${r} (${total > 0 ? ((r/total)*100).toFixed(0) : 0}%)`;
+            document.getElementById('suite_analisador_count-black').innerText = `${b} (${total > 0 ? ((b/total)*100).toFixed(0) : 0}%)`;
+            document.getElementById('suite_analisador_count-white').innerText = w;
+            document.getElementById('suite_analisador_count-total').innerText = total;
+            document.getElementById('suite_analisador_stats').style.display = 'flex';
+        }
+
+        function suite_analisarEGerar() {
+            const input = document.getElementById('suite_inputHistorico').value.trim();
+            if(!input) { alert('Cole o histórico primeiro.'); return; }
+            const lines = input.split('\n').filter(l => l.trim() !== '');
+            if(lines.length < 5) { alert('Histórico insuficiente para análise.'); return; }
+            const estrategia = document.getElementById('suite_analiseEstrategia').value;
+            const qtd = parseInt(document.getElementById('suite_qtdProjecoes').value) || 5;
+            const intervalosStr = document.getElementById('suite_analiseIntervalo').value;
+            const intervalos = intervalosStr.split(',').map(i => parseFloat(i.trim())).filter(i => !isNaN(i) && i > 0);
+            if(intervalos.length === 0) { alert('Intervalo inválido.'); return; }
+
+            const lastColors = lines.map(l => {
+                if(l.includes('VERMELHO') || l.includes('VERDE')) return 'R';
+                if(l.includes('PRETO')) return 'B';
+                if(l.includes('BRANCO')) return 'W';
+                return null;
+            }).filter(c => c !== null);
+
+            let prediction = 'R';
+            const last = lastColors[lastColors.length - 1];
+            
+            if (estrategia === 'maioria') {
+                const rCount = lastColors.filter(c => c === 'R').length;
+                const bCount = lastColors.filter(c => c === 'B').length;
+                prediction = rCount > bCount ? 'R' : 'B';
+            } else if (estrategia === 'minoria') {
+                const rCount = lastColors.filter(c => c === 'R').length;
+                const bCount = lastColors.filter(c => c === 'B').length;
+                prediction = rCount < bCount ? 'R' : 'B';
+            } else if (estrategia === 'contra' || estrategia === 'alternado') {
+                prediction = last === 'R' ? 'B' : 'R';
+            } else {
+                prediction = Math.random() > 0.5 ? 'R' : 'B';
+            }
+
+            const platform = document.getElementById('suite_platformSelector').value;
+            let signals = [];
+            let currentTime = new Date();
+            currentTime.setSeconds(0);
+            currentTime.setMinutes(currentTime.getMinutes() + 1);
+
+            for(let i=0; i<qtd; i++) {
+                const add = intervalos[i % intervalos.length];
+                currentTime.setMinutes(currentTime.getMinutes() + add);
+                const hh = currentTime.getHours().toString().padStart(2, '0');
+                const mm = currentTime.getMinutes().toString().padStart(2, '0');
+                let currentPred = prediction;
+                if(estrategia === 'alternado' && i > 0) {
+                    currentPred = (signals[i-1].includes('🔴') || signals[i-1].includes('🟢')) ? 'B' : 'R';
+                }
+                const cEmoji = currentPred === 'R' ? (platform === 'jonbet' ? '🟢' : '🔴') : '⚫';
+                signals.push(`🕒 ${hh}:${mm} ➔ ${cEmoji}`);
+            }
+            const out = `📊 *ANÁLISE GERADA*\n🎯 Estratégia: ${estrategia.toUpperCase()}\n--------------------------------\n${signals.join('\n')}\n--------------------------------\n✅ Gerencie sua banca!`;
+            document.getElementById('suite_resAnalise').innerText = out;
+        }
+    </script>
+</body>
+</html>

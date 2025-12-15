@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I.A Cores - Gerador</title>
+    <style>
+        /* Estilos copiados e adaptados do index.html */
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .layout-panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn {
+            padding: 8px 16px;
+            border: 1px solid #444;
+            background: #222;
+            color: #888;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .platform-btn.active {
+            background: #00d2ff;
+            color: #000;
+            font-weight: bold;
+            border-color: #00d2ff;
+        }
+        .platform-jonbet .platform-btn.active {
+            background: #00ff88;
+            border-color: #00ff88;
+        }
+
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f0f13;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #00d2ff; outline: none; }
+        
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #00d2ff, #0088cc);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-copy {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-copy:hover { background: #444; }
+
+        .output-area {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin-top: 15px;
+            color: #00d2ff;
+        }
+
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        .toggle-switch-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">I.A CORES</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="suite_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                </div>
+            </div>
+
+            <div id="suite_gerador">
+                <h2>🤖 Gerador de Sinais</h2>
+                <div class="inline-controls">
+                    <div class="control-group">
+                        <label id="suite_labelQtdSinais">Quantidade de Sinais:</label>
+                        <input type="number" id="suite_qtdSinais" value="10" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Intervalo (Minutos):</label>
+                        <input type="text" id="suite_intervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
+                        <div class="hint">Use múltiplos valores separados por vírgula para um ciclo.</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Modo de Operação:</label>
+                    <select id="suite_estrategia" onchange="suite_updateQtdLabel()">
+                        <option value="padrao">Padrão Alternado</option>
+                        <option value="sequenciaInversa">Sequência Inversa</option>
+                        <option value="aleatorio">Aleatório</option>
+                        <option value="xadrez">Modo Xadrez</option>
+                        <option value="surf">Modo Surf</option>
+                        <option value="quebra">Modo Quebra</option>                        
+                        <option value="duplos">Duplos Alternados</option>
+                        <option value="triplos">Triplos Alternados</option>
+                        <option value="focoVermelho">Foco no Vermelho</option>
+                        <option value="focoPreto">Foco no Preto</option>
+                        <option value="jikanSazonal">Ritmo Sazonal (Jikan)</option>
+                    </select>
+                </div>
+                
+                <div class="toggle-switch-container" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
+                        <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label for="suite_filterByBestMinute" style="margin-bottom:0;">ATIVAR FILTRO:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="suite_filterByBestMinute">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="hint" style="width: 100%; margin-top: 5px; font-size: 0.7em;">(Requer histórico abaixo)</div>
+                </div>
+
+                <!-- Campo de Histórico Adicionado para Dependência do Filtro -->
+                <div class="control-group">
+                    <label>Histórico para Filtro (Cole aqui):</label>
+                    <textarea id="dash_autoInput" style="height: 80px;" placeholder="Cole o histórico (Data/Roll/Hora) para análise de assertividade..."></textarea>
+                </div>
+
+                <div id="suite_bestMinutesLogContainer" style="margin-bottom: 15px; display: none;">
+                    <label style="font-size: 0.85em; text-transform: uppercase; opacity: 0.8;">🔎 Log de Minutos (Assertividade):</label>
+                    <div id="suite_bestMinutesLog" class="output-area" style="margin-top: 5px; min-height: 50px; max-height: 120px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6;">
+                    </div>
+                </div>
+
+                <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
+                <div class="output-area" id="suite_resGerador">Resultado aqui...</div>
+                <div class="inline-controls" style="margin-top: 10px;">
+                    <button class="btn-copy" onclick="copiar('suite_resGerador', this)" style="margin-top: 0; width: 100%;">📋 COPIAR LISTA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function suite_selectPlatform(platform) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+            
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+        }
+
+        function suite_updateQtdLabel() {
+            // Função auxiliar placeholder
+        }
+
+        function copiar(elementId, btn) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copiado!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
+            const bestMinutes = [];
+            const autoInput = document.getElementById('dash_autoInput');
+            let rawData = autoInput ? autoInput.value.trim() : '';
+
+            if (!rawData) {
+                if (logElementId) document.getElementById(logElementId).innerHTML = 'Sem dados para análise.';
+                return [];
+            }
+
+            const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
+            let results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i];
+                const proximoToken = tokens[i + 1];
+                if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
+                    results.push({ numero: parseInt(token), horario: proximoToken });
+                    i++;
+                }
+            }
+
+            if (results.length > 100) results = results.slice(0, 100);
+            results.reverse();
+
+            if (results.length < 2) return [];
+
+            const minuteStats = {};
+            for (let i = 1; i < results.length; i++) {
+                const previousResult = results[i - 1];
+                const currentResult = results[i];
+                const minute = parseInt(currentResult.horario.split(':')[1]);
+
+                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
+
+                const previousColor = dash_identificarCor(previousResult.numero);
+                const currentColor = dash_identificarCor(currentResult.numero);
+                let isWin = false;
+
+                if (currentColor !== 'branco') {
+                    if (strategy === 'focoVermelho') { if (currentColor === 'vermelho') isWin = true; }
+                    else if (strategy === 'focoPreto') { if (currentColor === 'preto') isWin = true; }
+                    else if (strategy === 'surf' || strategy === 'duplos') { if (previousColor !== 'branco' && previousColor === currentColor) isWin = true; }
+                    else { if (previousColor !== 'branco' && previousColor !== currentColor) isWin = true; }
+                }
+                if (isWin) minuteStats[minute].wins++;
+                minuteStats[minute].total++;
+            }
+
+            for (const minute in minuteStats) {
+                const stats = minuteStats[minute];
+                if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) {
+                    bestMinutes.push(parseInt(minute));
+                }
+            }
+            return bestMinutes;
+        }
+
+        function suite_gerarSinaisSimples() {
+            const qtdSinais = parseInt(document.getElementById('suite_qtdSinais').value) || 10;
+            const intervaloInput = document.getElementById('suite_intervalo').value;
+            const estrategiaSelect = document.getElementById('suite_estrategia');
+            const estrategia = estrategiaSelect.value;
+            const estrategiaTexto = estrategiaSelect.options[estrategiaSelect.selectedIndex].text;
+            const outputDiv = document.getElementById('suite_resGerador');
+            
+            const intervalos = intervaloInput.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i > 0);
+            if (intervalos.length === 0) { outputDiv.innerText = "⚠️ Insira intervalos válidos."; return; }
+
+            const filterActive = document.getElementById('suite_filterByBestMinute').checked;
+            let bestMinutes = [];
+            if (filterActive) {
+                const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
+                bestMinutes = getBestPerformingMinutes(minAssertiveness, 'suite_bestMinutesLog', estrategia);
+                document.getElementById('suite_bestMinutesLogContainer').style.display = 'block';
+                if (bestMinutes.length === 0) { outputDiv.innerText = `⚠️ Filtro: Nenhum minuto atingiu ${minAssertiveness}%.`; return; }
+            }
+
+            let currentTime = new Date();
+            currentTime.setSeconds(0, 0);
+            currentTime.setMinutes(currentTime.getMinutes() + 1);
+            let signals = [];
+            let intervalIndex = 0;
+            let attempts = 0;
+            const platform = document.getElementById('suite_platformSelector').value;
+
+            while (signals.length < qtdSinais && attempts < qtdSinais * 100) {
+                attempts++;
+                const minutesToAdd = intervalos[intervalIndex % intervalos.length];
+                intervalIndex++;
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                
+                if (filterActive && !bestMinutes.includes(currentTime.getMinutes())) continue;
+
+                const hh = currentTime.getHours().toString().padStart(2, '0');
+                const mm = currentTime.getMinutes().toString().padStart(2, '0');
+                let colorEmoji = (platform === 'jonbet') ? '🟢' : '🔴';
+                const i = signals.length;
+
+                if (estrategia === 'padrao' && i % 2 !== 0) colorEmoji = '⚫';
+                else if (estrategia === 'sequenciaInversa' && i % 2 === 0) colorEmoji = '⚫';
+                else if (estrategia === 'focoPreto') colorEmoji = '⚫';
+                else if (estrategia === 'aleatorio' && Math.random() > 0.5) colorEmoji = '⚫';
+                else if (estrategia === 'duplos' && Math.floor(i / 2) % 2 !== 0) colorEmoji = '⚫';
+                else if (estrategia === 'triplos' && Math.floor(i / 3) % 2 !== 0) colorEmoji = '⚫';
+                else if (!['focoVermelho', 'padrao', 'sequenciaInversa', 'focoPreto', 'aleatorio', 'duplos', 'triplos'].includes(estrategia) && i % 2 !== 0) colorEmoji = '⚫';
+
+                signals.push(`🕒 ${hh}:${mm} ➔ ${colorEmoji}`);
+            }
+
+            if (signals.length === 0) { outputDiv.innerText = "⚠️ Não foi possível gerar sinais com os filtros atuais."; return; }
+
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const dateStr = new Date().toLocaleDateString('pt-BR');
+            
+            let out = `🚀 *LISTA DE OPERAÇÕES*\n🚦 Plataforma: *${platformName}*\n📅 Data: ${dateStr}\n🎯 Estratégia: *${estrategiaTexto}*\n🛡️ Proteção no Branco ⚪️\n♻️ ATÉ *G1*\n--------------------------------\n${signals.join('\n')}\n--------------------------------\n✅ Gerencie sua banca!`;
+            outputDiv.innerText = out;
+        }
+    </script>
+</body>
+</html>

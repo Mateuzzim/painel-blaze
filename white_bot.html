@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Branco</title>
+    <style>
+        /* Styles adapted from index.html */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; flex-direction: column; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1, h2, h3 { margin: 0; }
+        h2 { margin-bottom: 15px; color: var(--accent); }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 8px 16px; border: 1px solid #444; background: #222; color: var(--text-muted); cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .platform-btn.active { background: var(--accent); color: #000; font-weight: bold; border-color: var(--accent); }
+        .platform-jonbet .platform-btn.active { background: var(--accent-jonbet); border-color: var(--accent-jonbet); }
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .manual-btn { cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; }
+        .output-area { background: #000; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: var(--accent); }
+        
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .toggle-switch-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; }
+
+        /* Futuristic Elements */
+        .futuristic-collapse-btn { width: 100%; margin-bottom: 15px; padding: 10px; background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a); border: 1px solid #333; color: #00d2ff; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .futuristic-scoreboard { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; padding: 15px; background: rgba(10, 10, 15, 0.6); border: 1px solid #333; border-radius: 12px; }
+        .score-card { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+        .score-card.win { border-bottom: 2px solid #00ff88; }
+        .score-card.loss { border-bottom: 2px solid #ff0055; }
+        .score-value { font-size: 1.8rem; font-weight: 800; }
+        .win-text { color: #00ff88; }
+        .loss-text { color: #ff0055; }
+        .panel-glow-active { animation: neon-border-pulse 1.5s infinite alternate !important; }
+        @keyframes neon-border-pulse { 0% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.5); border-color: #00d2ff; } 100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.8); border-color: #fff; } }
+        
+        /* Protection Panel */
+        .protection-panel { background: rgba(0, 20, 40, 0.95); border: 1px solid #00d2ff; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .protection-panel.active { border: 2px solid #00d2ff; animation: pulse-recovery-border 1.5s infinite alternate; }
+        .protection-panel.disabled { opacity: 0.6; border-color: #333; background: rgba(20,20,20,0.4); }
+        @keyframes pulse-recovery-border { 0% { border-color: #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); } 100% { border-color: #fff; box-shadow: 0 0 30px rgba(0, 210, 255, 0.6); } }
+        
+        /* Data Collector Styles */
+        .futuristic-data-box { border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05); }
+        #dash_grid-real-time { display: flex; flex-wrap: wrap; gap: 10px; row-gap: 35px; padding: 10px 5px 25px 5px; max-height: 250px; overflow-y: auto; align-content: flex-start; }
+        #dash_grid-real-time.reverse-direction { flex-direction: row-reverse !important; justify-content: flex-end !important; }
+        .badge { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin: 3px; border-radius: 8px; font-weight: 900; font-size: 1.1rem; position: relative; background: #0f0f13; border: 1px solid #333; color: #fff; }
+        .badge.vermelho { border-color: #ff0000; color: #ff0000; }
+        .badge.preto { border-color: #444; color: #888; }
+        .badge.branco { border-color: #fff; background: rgba(255,255,255,0.1); color: #fff; }
+        .badge .time-overlay { position: absolute; bottom: 2px; right: 2px; font-size: 0.5rem; color: rgba(255,255,255,0.5); }
+        
+        /* Stats Table */
+        .futuristic-stats-box table tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .active-strategy-highlight { animation: strategy-pulse 2s infinite; font-weight: bold; color: #fff; }
+        @keyframes strategy-pulse { 0% { background-color: rgba(0, 210, 255, 0.05); } 50% { background-color: rgba(0, 210, 255, 0.15); } 100% { background-color: rgba(0, 210, 255, 0.05); } }
+        .chart-tooltip { position: fixed; background: rgba(10, 15, 25, 0.95); border: 1px solid #333; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; pointer-events: none; z-index: 9999; display: none; }
+        .radar-animation { width: 12px; height: 12px; background-color: #ff9800; border-radius: 50%; display: inline-block; animation: radar-wave 1.5s infinite ease-out; }
+        @keyframes radar-wave { 0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.5); } 100% { box-shadow: 0 0 0 20px rgba(255, 152, 0, 0); } }
+        .radar-animation.found { background-color: #ff0055; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">ROBÔ BRANCO</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="platformSelector" value="blaze">
+                    <button class="platform-btn active" id="btn-blaze" onclick="selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="btn-jonbet" onclick="selectPlatform('jonbet')" style="display: none;">Jonbet</button>
+                </div>
+            </div>
+
+            <!-- Data Collector (Essential for standalone operation) -->
+            <div id="auto-import-box" class="futuristic-data-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                    <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label for="toggleReverseDirection" style="font-size: 0.8rem; color: #aaa; margin: 0; cursor: pointer;">Inverter:</label>
+                            <label class="switch" style="transform: scale(0.8); margin: 0;">
+                                <input type="checkbox" id="toggleReverseDirection" onchange="toggleRealTimeDirection()" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start; align-items: center; gap: 15px;">
+                    <label for="dash_autoFetchToggle" style="font-weight: bold; color: #ff9800;">Auto-Busca:</label>
+                    <label class="switch">
+                        <input type="checkbox" id="dash_autoFetchToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <textarea id="dash_autoInput" readonly style="height: 80px; background-color: #111; border: 1px solid #444; color: #aaa; font-size: 0.8rem; display: none;"></textarea>
+                <div id="real-time-history-container" class="history-container" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+                    <div class="history-header" style="padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <h4 style="margin: 0; font-size: 0.9rem; color: #ff9800;">Últimos Resultados Coletados</h4>
+                        <span id="real-time-history-count" style="font-size: 0.8rem; color: #aaa;">(0)</span>
+                    </div>
+                    <div class="history-grid" id="dash_grid-real-time"></div>
+                </div>
+            </div>
+
+            <!-- White Bot Panel -->
+            <div id="suite_white_bot">
+                <div class="toggle-switch-container" id="whiteBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                    <label for="whiteBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ BRANCO</label>
+                    <label class="switch" style="width: 50px; height: 26px;">
+                        <input type="checkbox" id="whiteBotToggle">
+                        <span class="slider" style="border-radius: 26px;"></span>
+                    </label>
+                </div>
+
+                <button id="whiteBotCollapseBtn" onclick="toggleWhiteBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
+
+                <div id="whiteBotConfigContainer">
+                    <!-- PRESETS -->
+                    <div class="control-group" style="margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 6px; border: 1px dashed #444;">
+                        <label style="margin-bottom: 8px; display: block; color: #ff9800;">📁 Presets Rápidos:</label>
+                        <div style="display: flex; gap: 5px;">
+                            <select id="whiteBotPresetSelector" style="flex: 1; margin-bottom: 0;">
+                                <option value="conservative">🛡️ Conservador (Seguro)</option>
+                                <option value="aggressive">⚔️ Agressivo (Risco)</option>
+                                <option value="custom">💾 Personalizado</option>
+                            </select>
+                            <button onclick="applyWhiteBotPreset(this)" class="manual-btn" style="padding: 0 10px; background-color: #00d2ff; color: #000; font-weight: bold; margin: 0; border: none;">CARREGAR</button>
+                            <button onclick="saveWhiteBotPreset(this)" class="manual-btn" style="padding: 0 10px; background-color: #28a745; color: #fff; margin: 0; border: none;" title="Salvar">💾</button>
+                        </div>
+                    </div>
+
+                    <!-- STRATEGY & ENTRIES -->
+                    <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="control-group" style="flex: 2;">
+                            <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
+                            <select id="whiteBotStrategy">
+                                <option value="alternating_break">1. Quebra de Alternância</option>
+                                <option value="poisson_hunt">2. Caça Poisson (8min+)</option>
+                                <option value="cacador_branco">3. Caçador de Branco (Média)</option>
+                                <option value="exponential_renewal">4. Modelo Exponencial (Renewal)</option>
+                                <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
+                                <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
+                                <option value="sum_minutes_3">7. Soma Minutos (Últimos 3)</option>
+                            </select>
+                        </div>
+                        <div class="control-group" style="flex: 1;">
+                            <label for="whiteBotEntryCount">Qtd. Entradas:</label>
+                            <input type="number" id="whiteBotEntryCount" value="6" min="1">
+                        </div>
+                    </div>
+
+                    <!-- OFFSET & ROTATION -->
+                    <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end;">
+                        <div class="control-group" style="flex: 1;">
+                            <label for="whiteBotEntryOffset">Offset (Minutos):</label>
+                            <input type="number" id="whiteBotEntryOffset" value="5" min="1" onchange="if(this.value < 1) this.value = 1;">
+                        </div>
+                        <div class="toggle-switch-container" style="flex: 1; margin-bottom: 0; height: 42px; justify-content: flex-start; align-items: center; gap: 10px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
+                            <label for="whiteBotRandomRotation" style="font-size: 0.85em; margin-bottom: 0;">🔄 Rotação: <span id="whiteBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
+                            <label class="switch" style="width: 40px; height: 20px;">
+                                <input type="checkbox" id="whiteBotRandomRotation">
+                                <span class="slider" style="border-radius: 20px;"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- PROTECTION -->
+                    <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="control-group" style="flex: 1;">
+                            <label for="whiteBotProtectionTriggerCount">Ativar Proteção (Brancos):</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" id="whiteBotProtectionTriggerCount" value="10" min="1" style="flex: 1;">
+                                <button onclick="resetWhiteBotProtectionCount(this)" class="manual-btn" style="padding: 0 10px; font-size: 0.8rem; background-color: #555; margin: 0; border: 1px solid #444;" title="Zerar">ZERAR</button>
+                            </div>
+                        </div>
+                        <div class="control-group" style="flex: 1;">
+                            <label for="whiteBotProtectionPauseCount">Pausa (Pedras):</label>
+                            <input type="number" id="whiteBotProtectionPauseCount" value="32" min="1">
+                        </div>
+                        <div class="control-group" style="flex: 1;">
+                            <label for="whiteBotProtectionResumeCount">Retomar (Brancos):</label>
+                            <input type="number" id="whiteBotProtectionResumeCount" value="2" min="1" title="Cancela a pausa se saírem X brancos">
+                        </div>
+                    </div>
+
+                    <!-- FILTER -->
+                    <div class="control-group" style="margin-bottom: 10px; border-top: 1px solid #333; padding-top: 10px;">
+                        <div class="inline-controls" style="align-items: center;">
+                            <div class="toggle-switch-container" style="justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 0; flex: 1; height: 42px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
+                                <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em; margin-bottom: 0;">⭐ Filtrar Melhores Minutos:</label>
+                                <label class="switch" style="width: 40px; height: 20px;">
+                                    <input type="checkbox" id="whiteBotBestMinuteFilter">
+                                    <span class="slider" style="border-radius: 20px;"></span>
+                                </label>
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <label for="whiteBotMinAssertiveness" style="font-size: 0.85em; margin-bottom: 0; white-space: nowrap;">Assert. Mín (%):</label>
+                                    <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GOALS -->
+                    <div class="inline-controls" style="margin-bottom: 10px;">
+                        <div class="control-group">
+                            <label for="whiteBotWinGoal">✅ Meta Wins:</label>
+                            <input type="number" id="whiteBotWinGoal" placeholder="Ex: 5" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="whiteBotLossGoal">🛑 Max Derrotas:</label>
+                            <input type="number" id="whiteBotLossGoal" placeholder="Ex: 3" min="1">
+                        </div>
+                    </div>
+
+                    <!-- TOGGLES -->
+                    <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
+                        <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                            <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
+                            <label class="switch" style="width: 40px; height: 20px;">
+                                <input type="checkbox" id="whiteBotStrategyStopLoss">
+                                <span class="slider" style="border-radius: 20px;"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                            <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Alerta Prot.:</label>
+                            <label class="switch" style="width: 40px; height: 20px;">
+                                <input type="checkbox" id="whiteBotProtectionTelegramAlert">
+                                <span class="slider" style="border-radius: 20px;"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                            <label for="whiteBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
+                            <label class="switch" style="width: 40px; height: 20px;">
+                                <input type="checkbox" id="whiteBotSoundToggle" checked>
+                                <span class="slider" style="border-radius: 20px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+
+                <div id="whiteBotProtectionPanel" class="protection-panel disabled"></div>
+
+                <div id="whiteBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                    <div id="whiteBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;"></div>
+                </div>
+
+                <div id="whiteBotResultPanel" style="margin-top: 20px;">
+                    <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar Branco</h3>
+                    <div id="whiteBotScoreboard" class="futuristic-scoreboard">
+                        <div class="score-card win">
+                            <span class="score-label">WINS</span>
+                            <span id="whiteBotWinCount" class="score-value win-text">0</span>
+                        </div>
+                        <div class="score-card loss">
+                            <span class="score-label">LOSSES</span>
+                            <span id="whiteBotLossCount" class="score-value loss-text">0</span>
+                        </div>
+                    </div>
+                    <div id="whiteBotStrategyStatsDisplay" style="padding: 0 10px; margin-bottom: 10px;"></div>
+                    <div id="whiteBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let autoFetchIntervalId = null;
+        let whiteBotProtectionUserEnabled = true;
+        let activeWhiteSignal = null;
+        let lastGeneratedWhiteSignalTime = null;
+        let whiteBotWins = 0;
+        let whiteBotWhiteWins = 0;
+        let whiteBotLosses = 0;
+        let whiteBotConsecutiveLosses = 0;
+        let lastWhiteBotResult = null;
+        let whiteBotStrategyStats = {};
+        let whiteBotProtectionWhiteCount = 0;
+        let whiteBotProtectionPauseRemaining = 0;
+        let whiteBotProtectionWhitesInPause = 0;
+        let lastProcessedGeneralTime = null;
+        let lastProcessedWhiteTime = null;
+        let whiteBotChartSegments = [];
+
+        // --- Platform & UI Functions ---
+        function selectPlatform(platform) {
+            document.getElementById('platformSelector').value = platform;
+            document.getElementById('btn-blaze').classList.remove('active');
+            document.getElementById(`btn-${platform}`).classList.add('active');
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+        }
+
+        function toggleWhiteBotConfig() {
+            const container = document.getElementById('whiteBotConfigContainer');
+            const btn = document.getElementById('whiteBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function toggleRealTimeDirection() {
+            const grid = document.getElementById('dash_grid-real-time');
+            const checkbox = document.getElementById('toggleReverseDirection');
+            if (grid && checkbox) {
+                if (checkbox.checked) grid.classList.add('reverse-direction');
+                else grid.classList.remove('reverse-direction');
+            }
+        }
+
+        // --- Data Fetching & Processing ---
+        async function dash_autoFetchBlaze() {
+            const platform = document.getElementById('platformSelector').value;
+            if (platform === 'blaze') await dash_impl_Blaze();
+        }
+
+        async function dash_impl_Blaze() {
+            const autoTextarea = document.getElementById('dash_autoInput');
+            let SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjU0MDM3MzF9.FodxcWCvsl6vn3Zfyo8097ldjvO4VABtPftJYHzD1z8";
+
+            try {
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                const baseUrl = 'https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1';
+                const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1`;
+                const targetUrl = `${baseUrl}${params}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE }
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                
+                const blazeData = await response.json();
+                let gamesArray = Array.isArray(blazeData) ? blazeData : (blazeData.records || []);
+                if (gamesArray.length === 0) throw new Error("A lista de jogos veio vazia.");
+
+                let formattedText = "";
+                gamesArray.forEach(game => {
+                    if (game.created_at && game.roll !== undefined) {
+                        const dateObj = new Date(game.created_at);
+                        const timeStr = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                        const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+                        formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`;
+                    }
+                });
+
+                autoTextarea.value = formattedText;
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+                dash_processarDados(gamesArray);
+
+            } catch (error) {
+                console.error("Erro no Auto-Fetch:", error);
+                const statusDiv = document.getElementById('whiteBotStatus');
+                if(statusDiv) statusDiv.textContent = `Erro na coleta: ${error.message}`;
+            }
+        }
+
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function dash_processarDados(gamesArray) {
+            const realTimeGrid = document.getElementById('dash_grid-real-time');
+            const realTimeCount = document.getElementById('real-time-history-count');
+            
+            if (realTimeGrid) {
+                realTimeGrid.innerHTML = '';
+                gamesArray.forEach(game => {
+                    if (game.roll !== undefined) {
+                        const cor = dash_identificarCor(game.roll);
+                        const div = document.createElement('div');
+                        div.className = `badge ${cor}`;
+                        div.innerText = game.roll;
+                        div.title = `Número: ${game.roll}`;
+                        
+                        if (game.created_at) {
+                            const timeDiv = document.createElement('div');
+                            timeDiv.className = 'time-overlay';
+                            const d = new Date(game.created_at);
+                            timeDiv.innerText = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                            div.appendChild(timeDiv);
+                        }
+                        realTimeGrid.appendChild(div);
+                    }
+                });
+                if (realTimeCount) realTimeCount.innerText = `(${gamesArray.length})`;
+            }
+            runWhiteBotLogic();
+        }
+
+        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return [];
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ numero: parseInt(tokens[i + 1]), horario: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length > 100) results.splice(100);
+            results.reverse();
+            if (results.length < 2) return [];
+
+            const minuteStats = {};
+            for (let i = 1; i < results.length; i++) {
+                const minute = parseInt(results[i].horario.split(':')[1]);
+                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
+                const currentColor = dash_identificarCor(results[i].numero);
+                let isWin = false;
+                if (strategy === 'branco' && currentColor === 'branco') isWin = true;
+                if (isWin) minuteStats[minute].wins++;
+                minuteStats[minute].total++;
+            }
+            const bestMinutes = [];
+            for (const minute in minuteStats) {
+                const stats = minuteStats[minute];
+                if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) bestMinutes.push(parseInt(minute));
+            }
+            return bestMinutes;
+        }
+
+        // --- White Bot Logic ---
+        function handleWhiteBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('whiteBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+            const container = document.getElementById('whiteBotActivationContainer');
+
+            if (isBotActive) {
+                whiteBotWins = 0; whiteBotWhiteWins = 0; whiteBotLosses = 0; whiteBotConsecutiveLosses = 0;
+                document.getElementById('whiteBotWinCount').textContent = '0';
+                document.getElementById('whiteBotLossCount').textContent = '0';
+                document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+                whiteBotStrategyStats = {};
+                whiteBotProtectionPauseRemaining = 0;
+                lastProcessedGeneralTime = null;
+                lastProcessedWhiteTime = null;
+                whiteBotProtectionWhitesInPause = 0;
+                whiteBotProtectionWhiteCount = 0;
+                updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled');
+                updateWhiteBotStrategyStatsDisplay();
+
+                if (isAutoFetchActive) {
+                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                const signalPanel = document.getElementById('whiteBotSignalPanel');
+                signalPanel.style.display = 'block';
+                document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activeWhiteSignal = null;
+                document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
+                lastGeneratedWhiteSignalTime = null;
+                document.getElementById('whiteBotSignalPanel').style.display = 'none';
+                updateWhiteBotProtectionDisplay('disabled');
+                lastWhiteBotResult = null;
+                if (container) container.classList.remove('bot-active-pulse');
+            }
+        }
+
+        function runWhiteBotLogic() {
+            const isBotActive = document.getElementById('whiteBotToggle').checked;
+            if (!isBotActive) return;
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length === 0) return;
+            if (activeWhiteSignal) checkWhiteSignalResult(results);
+            else analyzeAndCreateWhiteSignal(results);
+            updateWhiteBotStrategyStatsDisplay();
+        }
+
+        function analyzeAndCreateWhiteSignal(results) {
+            if (lastWhiteBotResult === 'loss') { lastWhiteBotResult = null; return; }
+            if (whiteBotProtectionUserEnabled) {
+                const latestTime = results[0].time;
+                if (whiteBotProtectionPauseRemaining > 0) {
+                    if (lastProcessedGeneralTime !== latestTime) {
+                        // --- DETECÇÃO DE BRANCOS NA PAUSA ---
+                        if (results[0].roll === 0) {
+                            whiteBotProtectionWhitesInPause++;
+                            const resumeTrigger = parseInt(document.getElementById('whiteBotProtectionResumeCount').value) || 2;
+                            
+                            if (whiteBotProtectionWhitesInPause >= resumeTrigger) {
+                                console.log(`Robô Branco: Pausa cancelada! ${whiteBotProtectionWhitesInPause} brancos detectados na pausa.`);
+                                sendWhiteBotTelegramAlert(`⚠️ *PROTEÇÃO CANCELADA*\n\nSaíram ${whiteBotProtectionWhitesInPause} brancos durante a pausa.\nVoltando a operar!`);
+                                whiteBotProtectionPauseRemaining = 0;
+                                whiteBotProtectionWhitesInPause = 0;
+                                whiteBotProtectionWhiteCount = 0; // Reseta contagem principal
+                                updateWhiteBotProtectionDisplay('standby');
+                                document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                            }
+                        }
+                        // -------------------------------------
+
+                        if (whiteBotProtectionPauseRemaining > 0) {
+                            whiteBotProtectionPauseRemaining--;
+                            lastProcessedGeneralTime = latestTime;
+                            
+                            if (whiteBotProtectionPauseRemaining > 0) {
+                                updateWhiteBotProtectionDisplay('active', whiteBotProtectionPauseRemaining);
+                                document.getElementById('whiteBotSignalContent').innerHTML = `<span style="color: #ffc107; font-size: 1rem;">⏸️ PAUSA DE PROTEÇÃO: RESTAM ${whiteBotProtectionPauseRemaining} PEDRAS</span><div style="font-size: 0.8rem; color: #fff; margin-top: 5px;">Brancos na Pausa: ${whiteBotProtectionWhitesInPause}/${document.getElementById('whiteBotProtectionResumeCount').value}</div>`;
+                                return;
+                            } else {
+                                // Pausa finalizada naturalmente
+                                sendWhiteBotTelegramAlert(`✅ *PROTEÇÃO FINALIZADA*\n\nPausa concluída com segurança.\nVoltando a operar.`);
+                                updateWhiteBotProtectionDisplay('standby');
+                                document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                                return;
+                            }
+                        }
+                    } else return;
+                }
+                if (results[0].roll === 0) {
+                    if (lastProcessedWhiteTime !== results[0].time) {
+                        lastProcessedWhiteTime = results[0].time;
+                        
+                        const triggerCount = parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10;
+                        whiteBotProtectionWhiteCount++;
+                        console.log(`Robô Branco: Branco detectado. Contagem atual: ${whiteBotProtectionWhiteCount}/${triggerCount}`);
+
+                        // Atualiza o display visual com a nova contagem
+                        // Se a contagem atingir o gatilho, ele mostrará rapidamente e depois entrará em pausa.
+                        updateWhiteBotProtectionDisplay('standby');
+
+                        // Lógica: Ativa a cada X brancos -> Pausa de Y pedras
+                        if (whiteBotProtectionWhiteCount >= triggerCount) {
+                            const pauseCount = parseInt(document.getElementById('whiteBotProtectionPauseCount').value) || 32;
+                            whiteBotProtectionPauseRemaining = pauseCount;
+                            whiteBotProtectionWhiteCount = 0; // Reseta a contagem para o próximo ciclo
+                            whiteBotProtectionWhitesInPause = 0; // Reseta contador da pausa
+                            console.log(`Robô Branco: PROTEÇÃO ATIVA! ${triggerCount}º Branco detectado. Pausa de ${pauseCount} pedras iniciada.`);
+                            sendWhiteBotTelegramAlert(`🛡️ *PROTEÇÃO ATIVADA*\n\nDetectado o ${triggerCount}º Branco.\nIniciando pausa de ${pauseCount} pedras.`);
+                            updateWhiteBotProtectionDisplay('active', pauseCount);
+                            return; // Interrompe análise imediata para não gerar sinal
+                        }
+                    }
+                }
+                if (lastProcessedGeneralTime !== latestTime) lastProcessedGeneralTime = latestTime;
+            } else { whiteBotProtectionPauseRemaining = 0; }
+
+            let strategy = document.getElementById('whiteBotStrategy').value;
+            const recentColors = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco').slice(0, 7);
+            if (recentColors.length < 3) return;
+            const [last, secondLast, thirdLast, fourthLast] = recentColors;
+
+            if (document.getElementById('whiteBotRandomRotation').checked) {
+                const strategiesToCheck = ['alternating_break', 'poisson_hunt', 'cacador_branco', 'exponential_renewal', 'low_entropy', 'fractal_break'];
+                for (const strat of strategiesToCheck) {
+                    let signalFound = false;
+                    if (strat === 'alternating_break') {
+                        if (recentColors.length >= 4 && last.color !== secondLast.color && secondLast.color !== thirdLast.color && thirdLast.color !== fourthLast.color) signalFound = true;
+                    } else if (strat === 'poisson_hunt') {
+                        const lastWhite = results.find(r => r.roll === 0);
+                        if (lastWhite) {
+                            const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                            const [hNow, mNow] = results[0].time.split(':').map(Number);
+                            let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                            if (diffMinutes < 0) diffMinutes += 24 * 60;
+                            if (diffMinutes >= 8) signalFound = true;
+                        }
+                    }
+                    if (signalFound) {
+                        strategy = strat;
+                        document.getElementById('whiteBotStrategy').value = strategy;
+                        const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                        const selectEl = document.getElementById('whiteBotStrategy');
+                        const strategyName = selectEl.options[selectEl.selectedIndex].text.replace(/^\d+\.\s*/, '');
+                        if (label) label.innerHTML = `<div class="radar-animation found" style="width: 8px; height: 8px; margin-right: 5px;"></div><span style="color: #ff5577; font-weight: bold;">[ ${strategyName} ]</span>`;
+                        break;
+                    }
+                }
+            }
+
+            switch (strategy) {
+                case 'alternating_break':
+                    if (recentColors.length >= 4 && last.color !== secondLast.color && secondLast.color !== thirdLast.color && thirdLast.color !== fourthLast.color) createWhiteSignal(last, last.color, strategy);
+                    break;
+                case 'poisson_hunt':
+                    const lastWhite = results.find(r => r.roll === 0);
+                    if (lastWhite) {
+                        const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                        const [hNow, mNow] = results[0].time.split(':').map(Number);
+                        let diffMinutes = (hNow * 60 + mNow) - (hLast * 60 + mLast);
+                        if (diffMinutes < 0) diffMinutes += 24 * 60;
+                        if (diffMinutes >= 8) createWhiteSignal(results[0], 'BRANCO', strategy);
+                    }
+                    break;
+            }
+        }
+
+        function createWhiteSignal(triggerResult, targetColor, strategyName, customOffset = null) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            let offset = customOffset !== null ? customOffset : parseInt(document.getElementById('whiteBotEntryOffset').value);
+            if (isNaN(offset) || offset <= 0) offset = 5;
+            signalTime.setMinutes(signalTime.getMinutes() + offset);
+
+            const useBestMinuteFilter = document.getElementById('whiteBotBestMinuteFilter');
+            if (useBestMinuteFilter && useBestMinuteFilter.checked) {
+                const minAssertiveness = parseInt(document.getElementById('whiteBotMinAssertiveness').value) || 20;
+                const bestMinutes = getBestPerformingMinutes(minAssertiveness, null, 'branco');
+                if (!bestMinutes.includes(signalTime.getMinutes())) return;
+            }
+
+            let entryCount = parseInt(document.getElementById('whiteBotEntryCount').value);
+            if (isNaN(entryCount) || entryCount < 1) entryCount = 1;
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            if (lastGeneratedWhiteSignalTime === signalTimeString) return;
+            lastGeneratedWhiteSignalTime = signalTimeString;
+
+            const day = signalTime.getDate().toString().padStart(2, '0');
+            const month = (signalTime.getMonth() + 1).toString().padStart(2, '0');
+            const year = signalTime.getFullYear();
+            const signalDateString = `${day}/${month}/${year}`;
+
+            activeWhiteSignal = { time: signalTimeString, date: signalDateString, targetColor: 'BRANCO', entryCount: entryCount, gale: 0, strategyName: strategyName };
+            const signalPanel = document.getElementById('whiteBotSignalPanel');
+            const signalContent = document.getElementById('whiteBotSignalContent');
+            signalPanel.style.border = '2px solid var(--accent)';
+            signalContent.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;"><div style="text-align: left; flex: 1;"><div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeWhiteSignal.time}</div><div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff;">⚪️</span></div><div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">EXECUTAR: ${entryCount} ENTRADAS</span></div></div><div class="signal-chart-container"><div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">⚪</div></div></div><div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;"><span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;"><div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div><span class="cortex-text-anim">⏳ Buscando Branco 1ª entrada...</span></span></div>`;
+            signalPanel.classList.add('panel-glow-active');
+            signalPanel.style.display = 'block';
+            playWhiteNotificationSound();
+        }
+
+        function checkWhiteSignalResult(results) {
+            if (!activeWhiteSignal) return;
+            const [sH, sM] = activeWhiteSignal.time.split(':').map(Number);
+            const [day, month, year] = activeWhiteSignal.date.split('/').map(Number);
+            const signalDate = new Date(year, month - 1, day, sH, sM, 0, 0);
+            const entryCount = activeWhiteSignal.entryCount || 1;
+            const relevantResults = [];
+            for (const res of results) {
+                const [rH, rM] = res.time.split(':').map(Number);
+                let resDate = new Date(year, month - 1, day, rH, rM, 0, 0);
+                if (sH > 20 && rH < 4) resDate.setDate(resDate.getDate() + 1);
+                else if (sH < 4 && rH > 20) resDate.setDate(resDate.getDate() - 1);
+                if (resDate >= signalDate) relevantResults.push({ ...res, timestamp: resDate.getTime() });
+            }
+            relevantResults.reverse();
+            let winFound = false;
+            let winIndex = 0;
+            let winResult = null;
+            const stonesToCheck = Math.min(relevantResults.length, entryCount);
+            for (let i = 0; i < stonesToCheck; i++) {
+                const res = relevantResults[i];
+                const color = dash_identificarCor(res.roll);
+                if (color.toUpperCase() === 'BRANCO') { winFound = true; winIndex = i + 1; winResult = res; break; }
+            }
+            if (winFound) {
+                const resultMessage = `✅ WIN NA ${winIndex}ª ENTRADA! (${winResult.time})`;
+                addResultToWhiteHistory(resultMessage, true, activeWhiteSignal.strategyName);
+                document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
+                activeWhiteSignal = null;
+                document.getElementById('whiteBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima análise...</span></div>';
+                return;
+            }
+            if (relevantResults.length >= entryCount) {
+                 const resultMessage = `❌ LOSS! (${activeWhiteSignal.time})`;
+                 addResultToWhiteHistory(resultMessage, false, activeWhiteSignal.strategyName);
+                 document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
+                 activeWhiteSignal = null;
+                 document.getElementById('whiteBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
+            }
+        }
+
+        function addResultToWhiteHistory(message, isWin, strategyName) {
+            const historyDiv = document.getElementById('whiteBotResultHistory');
+            const newEntry = document.createElement('div');
+            let displayMessage = message;
+            if (strategyName) {
+                let label = strategyName;
+                const select = document.getElementById('whiteBotStrategy');
+                if (select) {
+                    const option = Array.from(select.options).find(opt => opt.value === strategyName);
+                    if (option) label = option.text.replace(/^\d+\.\s*/, '');
+                }
+                displayMessage += ` <span style="font-size: 0.85em; color: #aaa; font-weight: normal;">[${label}]</span>`;
+            }
+            if (strategyName) {
+                if (!whiteBotStrategyStats[strategyName]) whiteBotStrategyStats[strategyName] = { wins: 0, losses: 0, consecutiveLosses: 0 };
+                if (isWin) { whiteBotStrategyStats[strategyName].wins++; whiteBotStrategyStats[strategyName].consecutiveLosses = 0; }
+                else { whiteBotStrategyStats[strategyName].losses++; whiteBotStrategyStats[strategyName].consecutiveLosses = (whiteBotStrategyStats[strategyName].consecutiveLosses || 0) + 1; }
+                updateWhiteBotStrategyStatsDisplay();
+                const strategyStopLossActive = document.getElementById('whiteBotStrategyStopLoss');
+                if (strategyStopLossActive && strategyStopLossActive.checked && !isWin) {
+                    if (whiteBotStrategyStats[strategyName].consecutiveLosses >= 2) {
+                         const toggle = document.getElementById('whiteBotToggle');
+                         if (toggle && toggle.checked) {
+                            toggle.checked = false;
+                            toggle.dispatchEvent(new Event('change'));
+                            const goalMsg = document.createElement('div');
+                            goalMsg.innerHTML = `🛑 <b>PAUSA AUTOMÁTICA!</b><br>Estratégia '${strategyName}' errou 2x seguidas.`;
+                            goalMsg.style.cssText = 'color: #ff6b6b; text-align: center; padding: 10px; margin-top: 5px; border: 1px dashed #ff6b6b;';
+                            if(historyDiv) historyDiv.prepend(goalMsg);
+                         }
+                    }
+                }
+            }
+            const rotationToggle = document.getElementById('whiteBotRandomRotation');
+            if (rotationToggle && rotationToggle.checked) {
+                const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                if (label) label.innerHTML = '<div class="radar-animation" style="width: 8px; height: 8px; margin-right: 5px;"></div><span class="cortex-text-anim">ANALISANDO...</span>';
+            }
+            newEntry.innerHTML = displayMessage;
+            newEntry.style.color = isWin ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+            if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
+            if (isWin) { whiteBotWins++; if (message.includes('BRANCO')) whiteBotWhiteWins++; whiteBotConsecutiveLosses = 0; lastWhiteBotResult = 'win'; }
+            else { whiteBotLosses++; whiteBotConsecutiveLosses++; lastWhiteBotResult = 'loss'; }
+            document.getElementById('whiteBotWinCount').textContent = whiteBotWins;
+            document.getElementById('whiteBotLossCount').textContent = whiteBotLosses;
+            historyDiv.prepend(newEntry);
+        }
+
+        function updateWhiteBotStrategyStatsDisplay() {
+            const container = document.getElementById('whiteBotStrategyStatsDisplay');
+            if (!container) return;
+            const strategyMap = {};
+            const select = document.getElementById('whiteBotStrategy');
+            if (select) Array.from(select.options).forEach(opt => { strategyMap[opt.value] = opt.text.replace(/^\d+\.\s*/, ''); });
+            Object.keys(whiteBotStrategyStats).forEach(key => { if (!strategyMap[key]) strategyMap[key] = key; });
+            const keys = Object.keys(strategyMap);
+            const currentStrategy = document.getElementById('whiteBotStrategy') ? document.getElementById('whiteBotStrategy').value : '';
+            const chartColors = ['#4CAF50', '#2196F3', '#FFC107', '#9C27B0', '#FF5722', '#00BCD4', '#E91E63'];
+            let totalWins = 0;
+            keys.forEach(key => { if (whiteBotStrategyStats[key]) totalWins += whiteBotStrategyStats[key].wins; });
+            let gradientSegments = [];
+            let currentAngle = 0;
+            let tableRows = '';
+            whiteBotChartSegments = [];
+            keys.forEach((key, index) => {
+                const stats = whiteBotStrategyStats[key] || { wins: 0, losses: 0 };
+                const total = stats.wins + stats.losses;
+                const rate = total > 0 ? ((stats.wins / total) * 100).toFixed(0) : 0;
+                const label = strategyMap[key] || key;
+                const color = rate >= 50 ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+                const segmentColor = chartColors[index % chartColors.length];
+                const rowClass = key === currentStrategy ? 'active-strategy-highlight' : '';
+                if (totalWins > 0 && stats.wins > 0) {
+                    const angle = (stats.wins / totalWins) * 360;
+                    gradientSegments.push(`${segmentColor} ${currentAngle}deg ${currentAngle + angle}deg`);
+                    whiteBotChartSegments.push({ label: label, startAngle: currentAngle, endAngle: currentAngle + angle, rate: rate, wins: stats.wins, color: segmentColor });
+                    currentAngle += angle;
+                }
+                tableRows += `<tr class="${rowClass}"><td style="padding: 4px;"><span style="display:inline-block;width:8px;height:8px;background-color:${segmentColor};border-radius:50%;margin-right:6px;"></span>${label}</td><td style="text-align:center; color: var(--accent-jonbet);">${stats.wins}</td><td style="text-align:center; color: var(--accent-blaze);">${stats.losses}</td><td style="text-align:right; padding: 4px; color: ${color}; font-weight:bold;">${rate}%</td></tr>`;
+            });
+            const gradientStyle = gradientSegments.length > 0 ? `conic-gradient(${gradientSegments.join(', ')})` : 'conic-gradient(#333 0deg 360deg)';
+            let html = `<div class="futuristic-stats-box" style="display: flex; align-items: flex-start; gap: 15px;"><div style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 5px;"><div style="width: 60px; height: 60px; border-radius: 50%; background: ${gradientStyle}; border: 2px solid #444; box-shadow: 0 0 10px rgba(0,0,0,0.3); cursor: help;" onmousemove="whiteBotChartHover(event)" onmouseleave="whiteBotChartLeave()"></div><div style="font-size: 0.7rem; color: #aaa; margin-top: 5px; font-weight: bold;">Wins: ${totalWins}</div></div><div style="flex: 1;"><table style="width:100%; font-size: 0.75rem; border-collapse: collapse; color: #ddd;"><thead><tr style="border-bottom: 1px solid #444;"><th style="text-align:left; padding: 4px;">Estratégia</th><th style="text-align:center;">W</th><th style="text-align:center;">L</th><th style="text-align:right; padding: 4px;">%</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`;
+            container.innerHTML = html;
+            if (!document.getElementById('whiteBotChartTooltip')) {
+                const tooltip = document.createElement('div');
+                tooltip.id = 'whiteBotChartTooltip';
+                tooltip.className = 'chart-tooltip';
+                document.body.appendChild(tooltip);
+            }
+        }
+
+        function whiteBotChartHover(event) {
+            const rect = event.target.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            let degrees = (Math.atan2(y - cy, x - cx) * 180 / Math.PI) + 90;
+            if (degrees < 0) degrees += 360;
+            const segment = whiteBotChartSegments.find(s => degrees >= s.startAngle && degrees < s.endAngle);
+            const tooltip = document.getElementById('whiteBotChartTooltip');
+            if (segment && tooltip) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = (event.clientX + 15) + 'px';
+                tooltip.style.top = (event.clientY + 15) + 'px';
+                tooltip.innerHTML = `<div style="font-weight:bold; color:${segment.color}; margin-bottom:2px;">${segment.label}</div><div>Assertividade: <span style="color:#fff; font-weight:bold;">${segment.rate}%</span></div><div style="font-size:0.75rem; color:#aaa;">Wins: ${segment.wins}</div>`;
+                tooltip.style.borderColor = segment.color;
+                tooltip.style.boxShadow = `0 0 10px ${segment.color}40`;
+            } else if (tooltip) tooltip.style.display = 'none';
+        }
+
+        function whiteBotChartLeave() {
+            const tooltip = document.getElementById('whiteBotChartTooltip');
+            if (tooltip) tooltip.style.display = 'none';
+        }
+
+        function playWhiteNotificationSound() {
+            const soundToggle = document.getElementById('whiteBotSoundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start(); osc.stop(ctx.currentTime + 0.2);
+            } catch (e) { console.error("Erro ao reproduzir som:", e); }
+        }
+
+        async function sendWhiteBotTelegramAlert(message) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar alerta Telegram:', e); }
+        }
+
+        function applyWhiteBotPreset(btn) {
+            const selector = document.getElementById('whiteBotPresetSelector');
+            const preset = selector.value;
+            let config = {};
+            if (preset === 'conservative') config = { strategy: 'cacador_branco', entryCount: 3, offset: 5, rotation: false, protTrigger: 8, protPause: 40, protResume: 2, filter: true, assertiveness: 30, stopLoss: true, protAlert: true };
+            else if (preset === 'aggressive') config = { strategy: 'alternating_break', entryCount: 8, offset: 2, rotation: true, protTrigger: 12, protPause: 15, protResume: 1, filter: false, assertiveness: 15, stopLoss: false, protAlert: false };
+            else if (preset === 'custom') {
+                const saved = localStorage.getItem('whiteBotCustomPreset');
+                if (saved) config = JSON.parse(saved);
+                else { alert('Nenhum preset personalizado salvo ainda.'); return; }
+            }
+            if (config.strategy) document.getElementById('whiteBotStrategy').value = config.strategy;
+            if (config.entryCount) document.getElementById('whiteBotEntryCount').value = config.entryCount;
+            if (config.offset) document.getElementById('whiteBotEntryOffset').value = config.offset;
+            const rotationCheck = document.getElementById('whiteBotRandomRotation');
+            if (rotationCheck) { rotationCheck.checked = !!config.rotation; rotationCheck.dispatchEvent(new Event('change')); }
+            if (config.protTrigger) document.getElementById('whiteBotProtectionTriggerCount').value = config.protTrigger;
+            if (config.protPause) document.getElementById('whiteBotProtectionPauseCount').value = config.protPause;
+            if (config.protResume) document.getElementById('whiteBotProtectionResumeCount').value = config.protResume;
+            const filterCheck = document.getElementById('whiteBotBestMinuteFilter');
+            if (filterCheck) filterCheck.checked = !!config.filter;
+            if (config.assertiveness) document.getElementById('whiteBotMinAssertiveness').value = config.assertiveness;
+            const stopLossCheck = document.getElementById('whiteBotStrategyStopLoss');
+            if (stopLossCheck) stopLossCheck.checked = !!config.stopLoss;
+            const alertCheck = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (alertCheck) alertCheck.checked = !!config.protAlert;
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function saveWhiteBotPreset(btn) {
+            const selector = document.getElementById('whiteBotPresetSelector');
+            if (selector.value !== 'custom') { alert('Selecione "Personalizado" no menu para salvar suas configurações atuais.'); selector.value = 'custom'; return; }
+            const config = {
+                strategy: document.getElementById('whiteBotStrategy').value,
+                entryCount: parseInt(document.getElementById('whiteBotEntryCount').value),
+                offset: parseInt(document.getElementById('whiteBotEntryOffset').value),
+                rotation: document.getElementById('whiteBotRandomRotation').checked,
+                protTrigger: parseInt(document.getElementById('whiteBotProtectionTriggerCount').value),
+                protPause: parseInt(document.getElementById('whiteBotProtectionPauseCount').value),
+                protResume: parseInt(document.getElementById('whiteBotProtectionResumeCount').value),
+                filter: document.getElementById('whiteBotBestMinuteFilter').checked,
+                assertiveness: parseInt(document.getElementById('whiteBotMinAssertiveness').value),
+                stopLoss: document.getElementById('whiteBotStrategyStopLoss').checked,
+                protAlert: document.getElementById('whiteBotProtectionTelegramAlert').checked
+            };
+            localStorage.setItem('whiteBotCustomPreset', JSON.stringify(config));
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function resetWhiteBotProtectionCount(btn) {
+            whiteBotProtectionWhiteCount = 0;
+            whiteBotProtectionWhitesInPause = 0;
+            if (document.getElementById('whiteBotToggle').checked && whiteBotProtectionPauseRemaining <= 0) updateWhiteBotProtectionDisplay('standby');
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function toggleWhiteBotProtectionUserPreference(checkbox) {
+            whiteBotProtectionUserEnabled = checkbox.checked;
+            if (!document.getElementById('whiteBotToggle').checked) { updateWhiteBotProtectionDisplay('disabled'); return; }
+            if (!whiteBotProtectionUserEnabled) {
+                whiteBotRecoveryEndTime = 0; whiteBotProtectionPauseRemaining = 0; whiteBotProtectionWhitesInPause = 0;
+                updateWhiteBotProtectionDisplay('user_disabled');
+                const signalContent = document.getElementById('whiteBotSignalContent');
+                if (signalContent && signalContent.innerHTML.includes('Pausado')) signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+            } else updateWhiteBotProtectionDisplay('standby');
+        }
+
+        function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
+            const panel = document.getElementById('whiteBotProtectionPanel');
+            if (!panel) return;
+            const triggerCount = document.getElementById('whiteBotProtectionTriggerCount') ? parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10 : 10;
+            const toggleHTML = `<div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);"><span style="font-size: 0.65rem; color: ${whiteBotProtectionUserEnabled ? '#00d2ff' : '#555'}; font-weight: bold; letter-spacing: 1px;">PROT.</span><label class="switch" style="transform: scale(0.6); margin: 0;"><input type="checkbox" ${whiteBotProtectionUserEnabled ? 'checked' : ''} onchange="toggleWhiteBotProtectionUserPreference(this)"><span class="slider" style="background-color: #222;"></span></label></div>`;
+
+            if (mode === 'active') {
+                panel.className = 'protection-panel active';
+                panel.innerHTML = `${toggleHTML}<div class="recovery-scan-line"></div><div style="display: flex; align-items: center; justify-content: center; gap: 15px;"><div class="shield-icon-anim">🛡️</div><div style="text-align: left;"><h3 class="cortex-text-anim" style="margin: 0; font-size: 1.2rem; letter-spacing: 1px;">PROTEÇÃO ATIVA</h3><div style="color: #00d2ff; font-size: 0.8rem; font-weight: bold;">RECUPERAÇÃO PÓS-BRANCO</div><div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">PAUSA: ${remainingStones} PEDRAS RESTANTES</div></div></div>`;
+            } else if (mode === 'standby') {
+                panel.className = 'protection-panel standby';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><div class="shield-standby-anim">🛡️</div><div style="text-align: left;"><div style="color: #fff; font-weight: bold; font-size: 0.9rem; opacity: 0.8;">SISTEMA DE PROTEÇÃO</div><div style="color: #00ff88; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">● MONITORANDO (${whiteBotProtectionWhiteCount}/${triggerCount})</div></div></div>`;
+            } else if (mode === 'user_disabled') {
+                panel.className = 'protection-panel standby';
+                panel.style.borderColor = '#444';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.6;"><span style="font-size: 1.5rem; color: #aaa;">🛡️</span><div style="text-align: left;"><div style="color: #aaa; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div><div style="color: #ffc107; font-size: 0.7rem; font-weight: bold;">DESATIVADO PELO USUÁRIO</div></div></div>`;
+            } else {
+                panel.className = 'protection-panel disabled';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span style="font-size: 1.5rem; color: #555;">🛡️</span><div style="text-align: left;"><div style="color: #888; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div><div style="color: #555; font-size: 0.7rem; font-weight: bold;">DESATIVADO</div></div></div>`;
+            }
+            panel.style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const autoFetchToggle = document.getElementById('dash_autoFetchToggle');
+            autoFetchToggle.addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    dash_autoFetchBlaze();
+                    if (autoFetchIntervalId) clearInterval(autoFetchIntervalId);
+                    autoFetchIntervalId = setInterval(dash_autoFetchBlaze, 15000);
+                } else {
+                    clearInterval(autoFetchIntervalId);
+                    autoFetchIntervalId = null;
+                }
+                handleWhiteBotToggle({ target: document.getElementById('whiteBotToggle') });
+            });
+
+            document.getElementById('whiteBotToggle').addEventListener('change', handleWhiteBotToggle);
+            updateWhiteBotProtectionDisplay('disabled');
+
+            const whiteBotRandomRotation = document.getElementById('whiteBotRandomRotation');
+            const whiteBotStrategySelect = document.getElementById('whiteBotStrategy');
+            if (whiteBotRandomRotation) {
+                whiteBotRandomRotation.addEventListener('change', (e) => {
+                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                    if (e.target.checked && label) label.innerHTML = '<div class="radar-animation" style="width: 8px; height: 8px; margin-right: 5px;"></div><span class="cortex-text-anim">ANALISANDO...</span>';
+                    else if (label) label.textContent = '';
+                });
+            }
+            if (whiteBotStrategySelect) {
+                whiteBotStrategySelect.addEventListener('change', () => {
+                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
+                    if (whiteBotRandomRotation && whiteBotRandomRotation.checked && label) {
+                        const strategyName = whiteBotStrategySelect.options[whiteBotStrategySelect.selectedIndex].text;
+                        label.textContent = `[ ${strategyName} ]`;
+                        updateWhiteBotStrategyStatsDisplay();
+                    }
+                });
+            }
+            updateWhiteBotStrategyStatsDisplay();
+            
+            // Auto-start data collection
+            autoFetchToggle.checked = true;
+            autoFetchToggle.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>

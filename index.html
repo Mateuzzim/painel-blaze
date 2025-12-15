@@ -499,6 +499,40 @@
             color: rgba(255,255,255,0.5);
             background: transparent;
         }
+        /* Footer Futurista */
+        .futuristic-footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; position: relative; overflow: hidden; background: rgba(10, 10, 15, 0.8); }
+        .futuristic-footer::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); animation: footer-scan 3s linear infinite; }
+        @keyframes footer-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        /* --- WHITE BOT SPECIFIC STYLES --- */
+        .shield-icon-anim { font-size: 3rem; display: inline-block; animation: shield-pulse 1.5s infinite; text-shadow: 0 0 15px #00d2ff; }
+        .shield-standby-anim { font-size: 1.8rem; display: inline-block; animation: shield-float 3s ease-in-out infinite; }
+
+        /* --- ANIMAÇÕES FUTURISTAS GERAIS --- */
+        @keyframes slideInUpCyber {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); filter: blur(5px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        .futuristic-entry > * {
+            animation: slideInUpCyber 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0; /* Começa invisível para a animação funcionar */
+        }
+        .futuristic-entry > *:nth-child(1) { animation-delay: 0.1s; }
+        .futuristic-entry > *:nth-child(2) { animation-delay: 0.2s; }
+        .futuristic-entry > *:nth-child(3) { animation-delay: 0.3s; }
+        .futuristic-entry > *:nth-child(4) { animation-delay: 0.4s; }
+        .futuristic-entry > *:nth-child(5) { animation-delay: 0.5s; }
+
+        /* --- ANIMAÇÃO ÍCONE CONFIGURAÇÕES --- */
+        .settings-icon-anim {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 45px; height: 45px; background: rgba(0, 210, 255, 0.05);
+            border: 1px solid #00d2ff; border-radius: 50%; margin-right: 10px;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+            animation: settings-spin 4s linear infinite;
+            font-size: 1.6rem;
+        }
+        @keyframes settings-spin { 0% { transform: rotate(0deg); border-color: #00d2ff; box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); } 50% { border-color: #fff; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.2); } 100% { transform: rotate(360deg); border-color: #00d2ff; box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); } }
     </style>
 </head>
 <body>
@@ -585,6 +619,9 @@
                 <a href="#" id="show-login-link" class="toggle-form-link">Já tem uma conta? Faça Login</a>
             </div>
         </form>
+        <div class="login-footer" style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #333; text-align: center; font-size: 0.8rem; color: #666; width: 100%;">
+            &copy; <span id="login-year">2025</span> Cortex Virtual. Todos os direitos reservados.
+        </div>
     </div>
 
     <div id="app-container" style="display: none;">
@@ -625,397 +662,102 @@
                 </div>
 
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="suite_openTab('gerador')">I.A Cores</button>
-                    <button class="tab-btn" onclick="suite_openTab('analisador')">ANÁLISE CORES</button>
-                    <button class="tab-btn" onclick="suite_openTab('corretor')">Corretor Cores</button>
-                    <button class="tab-btn" onclick="suite_openTab('corretor_branco')">Corretor Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('manual')">Gerador Manual</button>
-                    <button class="tab-btn" onclick="suite_openTab('branco')">Análise Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('ia_branco')">I.A Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('auto_bot')">Robô Auto</button>
-                    <button class="tab-btn" onclick="suite_openTab('white_bot')">Robô Branco</button>
-                    <button class="tab-btn" onclick="suite_openTab('telegram')">Telegram</button>
+                    <button class="tab-btn active" onclick="suite_openTab('menu')">Menu Principal</button>
                     <button class="tab-btn" id="suite_tab_usuarios" onclick="suite_openTab('usuarios')" title="Gerenciar Usuários" style="display: none;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </button>
                 </div>
 
-                <div id="suite_gerador" class="tab-content active">
-                    <h2>🤖 I.A Cores</h2>
-                    <div class="inline-controls" style="margin-bottom: 15px;">
-                        <div class="control-group">
-                            <label id="suite_labelQtdSinais">Quantidade de Sinais:</label>
-                            <input type="number" id="suite_qtdSinais" value="10" min="1">
-                        </div>
-                        <div class="control-group">
-                            <label>Intervalo (Minutos):</label>
-                            <input type="text" id="suite_intervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
-                            <div class="hint">Use múltiplos valores separados por vírgula para um ciclo.</div>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label>Modo de Operação:</label>
-                        <select id="suite_estrategia" onchange="suite_updateQtdLabel()">
-                            <option value="padrao">Padrão Alternado</option>
-                            <option value="sequenciaInversa">Sequência Inversa</option>
-                            <option value="aleatorio">Aleatório</option>
-                            <option value="xadrez">Modo Xadrez</option>
-                            <option value="surf">Modo Surf</option>
-                            <option value="quebra">Modo Quebra</option>                        
-                            <option value="duplos">Duplos Alternados</option>
-                            <option value="triplos">Triplos Alternados</option>
-                            <option value="focoVermelho">Foco no Vermelho</option>
-                            <option value="focoPreto">Foco no Preto</option>
-                            <option value="jikanSazonal">Ritmo Sazonal (Jikan)</option>
-                        </select>
-                    </div>
-                    <!-- SUGESTÃO: Agrupa os controles de filtro -->
-                    <div class="toggle-switch-container" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
-                            <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <label for="suite_filterByBestMinute" style="margin-bottom:0;">ATIVAR FILTRO:</label>
-                            <label class="switch">
-                                <input type="checkbox" id="suite_filterByBestMinute">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="hint" style="width: 100%; margin-top: 5px; font-size: 0.7em;">(Usa dados do painel direito)</div>
-                    </div>
-                    <!-- SUGESTÃO: Log para os melhores minutos -->
-                    <div id="suite_bestMinutesLogContainer" style="margin-bottom: 15px; display: none;">
-                        <label style="font-size: 0.85em; text-transform: uppercase; opacity: 0.8;">🔎 Log de Minutos (Assertividade):</label>
-                        <div id="suite_bestMinutesLog" class="output-area" style="margin-top: 5px; min-height: 50px; max-height: 120px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6;">
-                        </div>
-                    </div>
-                    <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
-                    <div class="output-area" id="suite_resGerador">Resultado aqui...</div>
-                    <div class="inline-controls" style="margin-top: 10px;">
-                        <button class="btn-copy" onclick="copiar('suite_resGerador', this)" style="margin-top: 0; width: 100%;">📋 COPIAR LISTA</button>
-                        <button id="send-generated-list-to-telegram-btn" class="btn-copy" style="background-color: #0088cc; display: none; margin-top: 0; width: 100%;" onclick="sendGeneratedListToTelegram(this)">🚀 ENVIAR PARA TELEGRAM</button>
+                <!-- NOVO: MENU PRINCIPAL COM BOTÕES FUTURISTAS -->
+                <div id="suite_menu" class="tab-content active">
+                    <style>
+                        .nav-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                            gap: 15px;
+                            margin-top: 10px;
+                        }
+                        .nav-btn {
+                            background: rgba(20, 25, 30, 0.8);
+                            border: 1px solid rgba(0, 210, 255, 0.15);
+                            border-radius: 12px;
+                            padding: 20px 10px;
+                            text-align: center;
+                            color: #fff;
+                            text-decoration: none;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 10px;
+                            position: relative;
+                            overflow: hidden;
+                            backdrop-filter: blur(5px);
+                        }
+                        .nav-btn:hover {
+                            transform: translateY(-5px) scale(1.03);
+                            border-color: #00d2ff;
+                            box-shadow: 0 0 25px rgba(0, 210, 255, 0.3), inset 0 0 10px rgba(0, 210, 255, 0.1);
+                            background: rgba(0, 210, 255, 0.05);
+                        }
+                        .nav-btn::before {
+                            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+                            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+                            opacity: 0; transition: 0.3s;
+                        }
+                        .nav-btn::after {
+                            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+                            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+                            transform: rotate(45deg) translateY(-100%);
+                            transition: 0.5s;
+                        }
+                        .nav-btn:hover::after {
+                            transform: rotate(45deg) translateY(100%);
+                        }
+                        .nav-btn:hover::before { opacity: 1; }
+                        .nav-icon { font-size: 2rem; margin-bottom: 5px; }
+                        .nav-title { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+                        .nav-desc { font-size: 0.7rem; color: #888; }
+                    </style>
+
+                    <div class="nav-grid">
+                        <a href="ia_cores.html" class="nav-btn"><div class="nav-icon">🤖</div><div class="nav-title">I.A Cores</div><div class="nav-desc">Gerador de Sinais</div></a>
+                        <a href="ia_branco.html" class="nav-btn"><div class="nav-icon">⚪</div><div class="nav-title">I.A Branco</div><div class="nav-desc">Estratégias Branco</div></a>
+                        
+                        <a href="analise_cores.html" class="nav-btn"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></a>
+                        <a href="analise_branco.html" class="nav-btn"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></a>
+                        
+                        <a href="corretor_cores.html" class="nav-btn"><div class="nav-icon">✅</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></a>
+                        <a href="corretor_branco.html" class="nav-btn"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></a>
+                        
+                        <a href="gerador_manual.html" class="nav-btn"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></a>
+                        
+                        <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Auto</div><div class="nav-desc">Automação Cores</div></div>
+                        <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
+                        
+                        <a href="telegram.html" class="nav-btn" style="border-color: #24A1DE;"><div class="nav-icon">📡</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></a>
+                        
+                        <a href="sobre.html" class="nav-btn" style="border-color: #888;"><div class="nav-icon">ℹ️</div><div class="nav-title" style="color: #ccc;">Sobre</div><div class="nav-desc">Informações</div></a>
+                        
+                        <a href="suporte.html" class="nav-btn" style="border-color: #28a745;"><div class="nav-icon">📞</div><div class="nav-title" style="color: #28a745;">Suporte</div><div class="nav-desc">Ajuda</div></a>
                     </div>
                 </div>
 
-                <div id="suite_analisador" class="tab-content">
-                    <h2>📊 Análise Cores</h2>
-                    <div class="control-group" style="display: block !important;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin-bottom: 0;">Cole o Histórico Copiado:</label>
-                            <div class="header-buttons" style="display: flex; gap: 5px;">
-                                <button onclick="suite_limparAnalisador()" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                            </div>
-                        </div>
-                        <div class="hint" style="margin-top: 0;">Cole o texto do histórico aqui.</div>
-                        <textarea id="suite_inputHistorico" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui a lista copiada..."></textarea>
-                    </div>
-                    <div class="stats-box" id="suite_analisador_stats" style="display: none; margin-top: 0; margin-bottom: 15px;">
-                        <div class="stat-item stat-dynamic-color"><span class="suite_analisador_platform-emoji">🔴</span> <span id="suite_analisador_count-red">0 (0%)</span></div>
-                        <div class="stat-item">⚫ <span id="suite_analisador_count-black">0 (0%)</span></div>
-                        <div class="stat-item">⚪ <span id="suite_analisador_count-white">0</span></div>
-                        <div class="stat-item" style="font-weight:bold;">Total: <span id="suite_analisador_count-total">0</span></div>
-                    </div>
-                    <div class="control-group">
-                        <label>Estratégia de Análise:</label>
-                        <select id="suite_analiseEstrategia">
-                            <option value="auto">Análise de Tendência (Auto)</option>
-                            <option value="maioria">Seguir a Maioria</option>
-                            <option value="minoria">Seguir a Minoria (Equilíbrio)</option>
-                            <option value="contra">Contrariar o Último Resultado</option>
-                            <option value="alternado">Padrão Alternado (Xadrez)</option>
-                            <option value="euler">Onda de Euler</option>
-                            <option value="gauss">Curva de Gauss (Últimos 7)</option>
-                            <option value="galois">Ciclo de Galois (V-P-V)</option>
-                            <option value="einstein">Relatividade de Einstein (V-P-P-P)</option>
-                        </select>
-                    </div>
-                    <div class="inline-controls" style="margin-bottom: 15px;">
-                        <div class="control-group">
-                            <label>Quantidade de Sinais:</label>
-                            <input type="number" id="suite_qtdProjecoes" value="5">
-                        </div>
-                        <div class="control-group">
-                            <label>Intervalo (Minutos):</label>
-                            <input type="text" id="suite_analiseIntervalo" value="2" placeholder="Ex: 2 ou 2,5,3">
-                            <div class="hint">Use múltiplos valores separados por vírgula para um ciclo.</div>
-                        </div>
-                    </div>
-                    <div class="inline-controls" style="margin-top: 0;">
-                        <button class="btn-action" onclick="suite_analisarEGerar()">🔍 ANALISAR E GERAR</button>
-                    </div>
-                    <div class="output-area" id="suite_resAnalise">Aguardando dados...</div>
-                    <div class="inline-controls" style="margin-top: 10px;"><button class="btn-copy" onclick="copiar('suite_resAnalise', this)" style="margin-top: 0; width: 100%;">📋 COPIAR ANÁLISE</button><button id="send-analysis-to-telegram-btn" class="btn-copy" style="background-color: #0088cc; display: none; margin-top: 0; width: 100%;" onclick="sendAnalysisToTelegram(this)">🚀 ENVIAR PARA TELEGRAM</button></div>
-                </div>
-
-                <div id="suite_corretor" class="tab-content">
-                    <h2>✅ Corretor Cores</h2>
-                     <div class="control-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin-bottom: 0;">Cole a Lista de Sinais Gerada:</label>
-                            <div class="header-buttons">
-                                <button onclick="suite_clearTextarea('suite_correctorSignalsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                            </div>
-                        </div>
-                        <textarea id="suite_correctorSignalsInput" placeholder="Cole aqui a lista completa que você gerou..."></textarea>
-                    </div>
-                     <div class="control-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin-bottom: 0;">Cole o Histórico de Resultados Reais:</label>
-                            <div class="header-buttons">
-                                <button onclick="suite_clearTextarea('suite_correctorResultsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                            </div>
-                        </div>
-                        <textarea id="suite_correctorResultsInput" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>                    </div>
-                    <div class="inline-controls">
-                        <button class="btn-action" onclick="suite_corrigirSinais()">CORRIGIR LISTA</button>
-                        <button class="btn-action" style="background-color: #555;" onclick="suite_limparCorretor()">LIMPAR</button>
-                    </div>
-                    <div class="output-area" id="suite_resCorrector">Aguardando dados para correção...</div>
-                    <button class="btn-copy" onclick="copiar('suite_resCorrector', this)">📋 COPIAR PLACAR</button>
-                </div>
-
-                <div id="suite_corretor_branco" class="tab-content">
-                    <h2>⚪ Corretor Branco</h2>
-                     <div class="control-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin-bottom: 0;">Cole a Lista de Sinais de Branco Gerada:</label>
-                            <div class="header-buttons">
-                                <button onclick="suite_clearTextarea('suite_correctorBrancoSignalsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                            </div>
-                        </div>
-                        <textarea id="suite_correctorBrancoSignalsInput" placeholder="Cole aqui a lista de sinais para o branco..."></textarea>
-                    </div>
-                    <div class="control-group">
-                        <label>Nº de Entradas para Win:</label>
-                        <input type="number" id="suite_correctorBrancoEntradas" value="3" min="1" placeholder="Ex: 3">
-                        <div class="hint">Quantas casas verificar após o sinal para um acerto.</div>
-                    </div>
-                     <div class="control-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <label style="margin-bottom: 0;">Cole o Histórico de Resultados Reais:</label>
-                            <div class="header-buttons">
-                                <button onclick="suite_clearTextarea('suite_correctorBrancoResultsInput')" class="manual-btn util-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                            </div>
-                        </div>
-                        <textarea id="suite_correctorBrancoResultsInput" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui o histórico de resultados da plataforma..."></textarea>
-                    </div>
-                    <div class="inline-controls">
-                        <button class="btn-action" onclick="suite_corrigirSinaisBranco()">CORRIGIR LISTA DE BRANCO</button>
-                        <button class="btn-action" style="background-color: #555;" onclick="suite_limparCorretorBranco()">LIMPAR</button>                    </div>
-                    <div class="output-area" id="suite_resCorrectorBranco">Aguardando dados para correção...</div>
-                    <button class="btn-copy" onclick="copiar('suite_resCorrectorBranco', this)">📋 COPIAR PLACAR</button>
-                </div>
-
-                <div id="suite_manual" class="tab-content">
-                    <h2>✍️ Gerador Manual</h2>
-                    <div class="control-group">
-                        <div class="main-color-grid">
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('V')">V</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('P')">P</button>
-                            <button class="manual-btn color-b" onclick="suite_appendToManualPattern('B')">B</button>
-                        </div>
-                        <div class="manual-button-grid">
-                            <button class="manual-btn color-b" onclick="suite_appendToManualPattern('0')">0</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('1')">1</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('2')">2</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('3')">3</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('4')">4</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('5')">5</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('6')">6</button>
-                            <button class="manual-btn color-v" onclick="suite_appendToManualPattern('7')">7</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('8')">8</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('9')">9</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('10')">10</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('11')">11</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('12')">12</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('13')">13</button>
-                            <button class="manual-btn color-p" onclick="suite_appendToManualPattern('14')">14</button>
-                        </div>
-                        <div class="util-button-grid">
-                            <button class="manual-btn util-btn" onclick="suite_manualBackspace()">⌫ DESFAZER</button>
-                            <button class="manual-btn util-btn" onclick="suite_manualInvert()" style="font-size: 1.2rem;">🔄</button>
-                            <button class="manual-btn util-btn" onclick="suite_manualClear()">LIMPAR TUDO</button>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label>Sequência de Sinais:</label>
-                        <textarea id="suite_manualPatternInput" placeholder="Use V, P, B, 0-14. Ex: V P 1 14 B"></textarea>
-                        <div class="hint" style="display: none;">V=Vermelho, P=Preto, B=Branco, 0-14=Nº</div>
-                    </div>
-                    <div class="inline-controls">
-                        <div class="control-group">
-                            <label>Quantidade de Sinais:</label>
-                            <input type="number" id="suite_manualQtdSinais" value="10" min="1">
-                        </div>
-                        <div class="control-group">
-                            <label>Intervalo (Minutos):</label>
-                            <input type="number" id="suite_manualIntervalo" value="2" min="1">
-                        </div>
-                    </div>
-                    <div class="inline-controls">
-                        <button class="btn-action" onclick="suite_gerarListaManual()" style="font-size: 0.9rem;">✍️ GERAR LISTA MANUAL</button>
-                        <button class="btn-copy" onclick="copiar('suite_resManual', this)" style="margin-top: 10px;">📋 COPIAR LISTA</button>
-                    </div>
-                    <div class="output-area" id="suite_resManual">Aguardando sequência...</div>
-                </div>
-
-                <div id="suite_branco" class="tab-content"> 
-                    <h2>⚪ Analise branco</h2>
-                    <!-- NOVO: Toggle para usar histórico automático do painel direito -->
-                    <div class="toggle-switch-container" style="margin-bottom: 15px;">
-                        <label for="suite_autoImportBrancoHistory">Usar Histórico Automático (Painel Direito):</label>
-                        <label class="switch">
-                            <input type="checkbox" id="suite_autoImportBrancoHistory">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="control-group">
-                        <label>Estratégia de Análise para Branco:</label>
-                        <select id="suite_estrategiaBranco" onchange="suite_toggleStrategyInputs()">
-                            <option value="media">1. Média dos Intervalos</option>
-                            <option value="minimo">2. Intervalo Mínimo (Agressivo)</option>
-                            <option value="espelho12h">3. Espelhamento de Horário (12h)</option>
-                            <option value="fibonacci">4. Soma Fibonacci</option>
-                            <option value="minutosOuro">5. Minutos de Ouro</option>
-                            <option value="somaTotal">6. Soma Total dos Intervalos</option>
-                            <option value="custom">7. Estratégia Personalizada</option>
-                            <option value="offset">8. Deslocamento Fixo</option>
-                            <option value="padraoHoras">9. Padrão de Horas</option>
-                            <option value="brianTracy">10. Fórmula Ponderada (Brian Tracy)</option>
-                            <option value="pitagoras">11. Teorema de Pitágoras</option>
-                            <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
-                            <option value="ciclosMercado">12. Ciclos de Mercado</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label>Quantidade de Sinais a Gerar:</label>
-                        <input type="number" id="suite_qtdSinaisBranco" value="15" min="1">
-                    </div>
-                    <div class="control-group">
-                        <label>Intervalo Mínimo entre Sinais (minutos):</label>
-                        <input type="number" id="suite_intervaloMinimoBranco" value="0" min="0">
-                        <div class="hint">Não gerará sinais dentro deste intervalo de tempo após o sinal anterior. 0 para desativar.</div>
-                    </div>
-                    <div class="control-group">
-                        <label>Nº de Entradas (Tentativas/Gale):</label>
-                        <input type="number" id="suite_entradasBranco" value="3" min="1">
-                        <div class="hint">Quantos minutos cobrir após o sinal (Ex: 3).</div>
-                    </div>
-                    <div class="control-group" id="suite_customStrategyContainer" style="display:none;">
-                        <label>Padrão Personalizado (minutos, separados por vírgula):</label>
-                        <input type="text" id="suite_customPattern" placeholder="Ex: 10, 25, 12, 40">
-                    </div>
-                    <div class="control-group" id="suite_fixedOffsetContainer" style="display:none;">
-                        <label>Intervalo de Deslocamento (minutos):</label>
-                        <input type="number" id="suite_fixedOffsetValue" placeholder="Ex: 15 (ou -5 para subtrair)">
-                    </div>
-                    <div class="control-group">
-                        <label>Data da Lista:</label>
-                        <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
-                            <input type="hidden" id="suite_branco_date_selector" value="hoje">
-                            <button class="platform-btn active" id="suite_branco_btn_hoje" onclick="suite_selectDate('branco', 'hoje')">Hoje</button>
-                            <button class="platform-btn" id="suite_branco_btn_amanha" onclick="suite_selectDate('branco', 'amanha')">Amanhã</button>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label>Cole o Histórico Copiado:</label>
-                        <div class="hint">Cole a lista de horários (HH:MM) em que o branco saiu. Um por linha.</div>
-                        <textarea id="suite_inputHistoricoBranco" oninput="suite_autoFormatBrancoInput(this)" placeholder="Exemplo: 13:00 BRANCO"></textarea>
-                    </div>
-                    <div class="inline-controls" style="align-items: center; margin-bottom: 20px;">
-                        <button class="btn-action" style="background-color: #fff; color: #000; border: 1px solid #aaa; font-size: 0.8rem;" onclick="suite_analisarParaBranco()">⚪ LISTA BRANCO</button>
-                        <button class="btn-action" onclick="suite_limparAnalisadorBranco()" style="margin-top: 10px; background-color: #555; font-size: 0.8rem;">LIMPAR</button>
-                    </div>
-                    <div class="output-area" id="suite_resBranco" style="margin-top: 0;">
-                        Aguardando análise para o branco...
-                    </div>
-                    <button id="suite_copy-signals-button-branco" class="btn-copy" onclick="copiar('suite_resBranco', this)">📋 COPIAR SINAIS</button>
-                </div>
-
-                <div id="suite_ia_branco" class="tab-content">
-                    <h2>🤖 I.A Branco</h2>
-                    <div class="toggle-switch-container" style="margin-bottom: 20px;">
-                        <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
-                        <label class="switch">
-                            <input type="checkbox" id="suite_iaBranco_autoMode" onchange="suite_toggleIaBrancoMode(this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="control-group" id="suite_iaBranco_agressividade_container" style="display: none;">
-                        <label>Nível de Agressividade (Automático):</label>
-                        <select id="suite_iaBranco_agressividade">
-                            <option value="moderado" selected>Moderado</option>
-                            <option value="conservador">Conservador</option>
-                            <option value="agressivo">Agressivo</option>
-                        </select>
-                    </div>
-                    <div class="control-group" id="suite_iaBranco_historico_container">
-                        <label>Cole o Histórico Copiado:</label>
-                        <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
-                        <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
-                    </div>
-
-                    <div class="inline-controls" style="margin-bottom: 15px;">
-                        <div class="control-group">
-                            <label>Quantidade de Sinais:</label>
-                            <input type="number" id="suite_iaBranco_qtdSinais" value="6" min="1">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label>Data da Lista:</label>
-                        <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
-                            <input type="hidden" id="suite_ia_branco_date_selector" value="hoje">
-                            <button class="platform-btn active" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
-                            <button class="platform-btn" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label>Estratégia de I.A. para Branco:</label>
-                        <select id="suite_iaBranco_estrategia" onchange="suite_toggleBrancoProximoOptions()">
-                            <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
-                            <option value="produtividadeHora">2. Análise de Produtividade</option>
-                            <option value="horarioPico">3. Análise de Horário de Pico</option>
-                            <option value="velocidadeConclusao">4. Análise de Velocidade</option>
-                            <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
-                            <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
-                            <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
-                            <option value="brancoProximo">8. Branco Próximo (Análise por Minuto)</option>
-                        </select>
-                    </div>
-                    <!-- SUGESTÃO: Opções específicas para a estratégia "Branco Próximo" -->
-                    <div class="control-group" id="suite_brancoProximo_options_container" style="display: none; border-left: 3px solid var(--accent); padding-left: 15px; margin-top: 20px;">
-                        <label for="suite_brancoProximo_patternSize">TAMANHO DO PADRÃO</label>
-                        <select id="suite_brancoProximo_patternSize">
-                            <option value="1">1 Pedra</option>
-                            <option value="2">2 Pedras</option>
-                            <option value="3" selected>3 Pedras</option>
-                            <option value="4">4 Pedras</option>
-                        </select>
-                        <div class="hint">Quantas pedras (números) antes do branco a I.A. deve procurar como padrão.</div>
-                    </div>
-                    <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
-                    <div class="output-area" id="suite_resIABranco">Aguardando geração...</div>
-                    <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
-                </div>
-
-                <!-- NOVO: PAINEL DO ROBÔ AUTOMÁTICO -->
+                <!-- AUTO BOT TAB (INTEGRATED) -->
                 <div id="suite_auto_bot" class="tab-content">
-                    <h2>🤖 Robô Automático</h2>
-                    <div class="toggle-switch-container" id="autoBotActivationContainer" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                    <button class="btn-back" onclick="suite_openTab('menu')" style="display: none;">⬅ Voltar ao Menu</button>
+                    
+                    <div class="toggle-switch-container" id="autoBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
                         <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ AUTOMÁTICO</label>
                         <label class="switch">
                             <input type="checkbox" id="autoBotToggle">
                             <span class="slider"></span>
                         </label>
                     </div>
-
                     <button id="autoBotCollapseBtn" onclick="toggleAutoBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
-
                     <div id="autoBotConfigContainer">
-                        <!-- NOVO: SELETOR DE ESTRATÉGIA -->
                         <div class="control-group" style="margin-bottom: 20px;">
                             <label for="autoBotStrategy">Estratégia de Análise:</label>
                             <select id="autoBotStrategy">
@@ -1027,43 +769,21 @@
                                 <option value="king_of_table">6. Rei da Mesa</option>
                                 <option value="chess_break">7. Quebra de Xadrez</option>
                                 <option value="post_white_value">8. Pós-Branco (Valor)</option>
-                                <option value="fibonacci_streak">9. Quebra Fibonacci</option>
                             </select>
                         </div>
-
-                        <!-- NOVO: ROTAÇÃO DE ESTRATÉGIA -->
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
                             <label for="autoBotRandomRotation" style="font-size: 0.95em;">🔄 Rotação Aleatória: <span id="autoBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="autoBotRandomRotation">
                                 <span class="slider" style="border-radius: 26px;"></span>
                             </label>
                         </div>
-
-                        <!-- NOVO: TEMPO DE ENTRADA -->
                         <div class="control-group" style="margin-bottom: 20px;">
                             <label for="autoBotEntryTime">Tempo de Entrada (minutos):</label>
                             <input type="number" id="autoBotEntryTime" value="3" min="2">
                             <div class="hint">Tempo a adicionar após a análise (Mínimo: 2).</div>
                         </div>
-
-                        <!-- NOVO: FILTRO MELHORES MINUTOS -->
-                        <div class="control-group" style="margin-bottom: 20px; border-top: 1px solid #333; padding-top: 15px;">
-                            <div class="toggle-switch-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <label for="autoBotBestMinuteFilter" style="font-size: 0.95em;">⭐ Filtrar Melhores Minutos:</label>
-                                <label class="switch" style="width: 50px; height: 26px;">
-                                    <input type="checkbox" id="autoBotBestMinuteFilter">
-                                    <span class="slider" style="border-radius: 26px;"></span>
-                                </label>
-                            </div>
-                            <div class="control-group">
-                                <label for="autoBotMinAssertiveness" style="font-size: 0.9em;">Assertividade Mínima (%):</label>
-                                <input type="number" id="autoBotMinAssertiveness" value="80" min="1" max="100">
-                            </div>
-                        </div>
-
-                        <!-- NOVO: SONS DO ROBÔ -->
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
                             <label for="autoBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="autoBotSoundToggle" checked>
@@ -1071,48 +791,26 @@
                             </label>
                         </div>
                     </div>
-
-                    <div id="autoBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">
-                        Robô Desativado.
-                    </div>
-
-                    <!-- Painel para o Sinal Gerado -->
+                    <div id="autoBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
                     <div id="autoBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
-                        <div id="autoBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;">
-                            <!-- O sinal será inserido aqui pelo JavaScript -->
-                        </div>
+                        <div id="autoBotSignalContent"></div>
                     </div>
-
-                    <!-- Painel para o Placar/Resultado -->
                     <div id="autoBotResultPanel" style="margin-top: 20px;">
                         <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar Recente</h3>
-                        <!-- NOVO: Placar de Win/Loss -->
                         <div id="autoBotScoreboard" class="futuristic-scoreboard">
-                            <div class="score-card win">
-                                <span class="score-label">WINS</span>
-                                <span id="autoBotWinCount" class="score-value win-text">0</span>
-                            </div>
-                            <div class="score-card white-win">
-                                <span class="score-label">BRANCOS</span>
-                                <span id="autoBotWhiteWinCount" class="score-value white-win-text">0</span>
-                            </div>
-                            <div class="score-card loss">
-                                <span class="score-label">LOSSES</span>
-                                <span id="autoBotLossCount" class="score-value loss-text">0</span>
-                            </div>
+                            <div class="score-card win"><span class="score-label">WINS</span><span id="autoBotWinCount" class="score-value win-text">0</span></div>
+                            <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="autoBotWhiteWinCount" class="score-value white-win-text">0</span></div>
+                            <div class="score-card loss"><span class="score-label">LOSSES</span><span id="autoBotLossCount" class="score-value loss-text">0</span></div>
                         </div>
-
-                        <div id="autoBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">
-                            Aguardando o primeiro resultado...
-                        </div>
+                        <div id="autoBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
                     </div>
                 </div>
-                <!-- FIM DO PAINEL DO ROBÔ AUTOMÁTICO -->
 
-                <!-- NOVO: PAINEL DO ROBÔ BRANCO (DUPLICADO) -->
+                <!-- WHITE BOT TAB (INTEGRATED) -->
                 <div id="suite_white_bot" class="tab-content">
-                    <h2>⚪ Robô Branco</h2>
-                    <div class="toggle-switch-container" id="whiteBotActivationContainer" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                    <button class="btn-back" onclick="suite_openTab('menu')" style="display: none;">⬅ Voltar ao Menu</button>
+                    
+                    <div class="toggle-switch-container" id="whiteBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
                         <label for="whiteBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ BRANCO</label>
                         <label class="switch" style="width: 50px; height: 26px;">
                             <input type="checkbox" id="whiteBotToggle">
@@ -1123,7 +821,7 @@
                     <button id="whiteBotCollapseBtn" onclick="toggleWhiteBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
 
                     <div id="whiteBotConfigContainer">
-                        <!-- PRESETS DE CONFIGURAÇÃO -->
+                        <!-- PRESETS -->
                         <div class="control-group" style="margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 6px; border: 1px dashed #444;">
                             <label style="margin-bottom: 8px; display: block; color: #ff9800;">📁 Presets Rápidos:</label>
                             <div style="display: flex; gap: 5px;">
@@ -1132,13 +830,13 @@
                                     <option value="aggressive">⚔️ Agressivo (Risco)</option>
                                     <option value="custom">💾 Personalizado</option>
                                 </select>
-                                <button onclick="applyWhiteBotPreset(this)" class="manual-btn util-btn" style="padding: 0 10px; background-color: #00d2ff; color: #000; font-weight: bold; margin: 0; border: none;">CARREGAR</button>
-                                <button onclick="saveWhiteBotPreset(this)" class="manual-btn util-btn" style="padding: 0 10px; background-color: #28a745; color: #fff; margin: 0; border: none;" title="Salvar configuração atual em Personalizado">💾</button>
+                                <button onclick="applyWhiteBotPreset(this)" class="manual-btn" style="padding: 0 10px; background-color: #00d2ff; color: #000; font-weight: bold; margin: 0; border: none;">CARREGAR</button>
+                                <button onclick="saveWhiteBotPreset(this)" class="manual-btn" style="padding: 0 10px; background-color: #28a745; color: #fff; margin: 0; border: none;" title="Salvar">💾</button>
                             </div>
                         </div>
 
-                        <!-- SELETOR DE ESTRATÉGIA E ENTRADAS -->
-                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- STRATEGY & ENTRIES -->
+                        <div class="inline-controls" style="margin-bottom: 10px;">
                             <div class="control-group" style="flex: 2;">
                                 <label for="whiteBotStrategy">Estratégia de Branco Análise</label>
                                 <select id="whiteBotStrategy">
@@ -1157,28 +855,28 @@
                             </div>
                         </div>
 
-                        <!-- OFFSET E ROTAÇÃO (COMBINADOS) -->
-                        <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- OFFSET & ROTATION -->
+                        <div class="inline-controls" style="margin-bottom: 10px; align-items: flex-end;">
                             <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotEntryOffset">Offset (Minutos):</label>
                                 <input type="number" id="whiteBotEntryOffset" value="5" min="1" onchange="if(this.value < 1) this.value = 1;">
                             </div>
                             <div class="toggle-switch-container" style="flex: 1; margin-bottom: 0; height: 42px; justify-content: flex-start; align-items: center; gap: 10px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
                                 <label for="whiteBotRandomRotation" style="font-size: 0.85em; margin-bottom: 0;">🔄 Rotação: <span id="whiteBotCurrentStrategyLabel" style="color: #00aaff; font-weight: bold;"></span></label>
-                                <label class="switch" style="width: 40px; height: 20px;">
+                                <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotRandomRotation">
-                                    <span class="slider" style="border-radius: 20px;"></span>
+                                    <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- PROTEÇÃO (COMBINADOS) -->
-                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <!-- PROTECTION -->
+                        <div class="inline-controls" style="margin-bottom: 10px;">
                             <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotProtectionTriggerCount">Ativar Proteção (Brancos):</label>
                                 <div style="display: flex; gap: 5px;">
                                     <input type="number" id="whiteBotProtectionTriggerCount" value="10" min="1" style="flex: 1;">
-                                    <button onclick="resetWhiteBotProtectionCount(this)" class="manual-btn util-btn" style="padding: 0 10px; font-size: 0.8rem; background-color: #555; margin: 0; border: 1px solid #444;" title="Zerar">ZERAR</button>
+                                    <button onclick="resetWhiteBotProtectionCount(this)" class="manual-btn" style="padding: 0 10px; font-size: 0.8rem; background-color: #555; margin: 0; border: 1px solid #444;" title="Zerar">ZERAR</button>
                                 </div>
                             </div>
                             <div class="control-group" style="flex: 1;">
@@ -1186,77 +884,70 @@
                                 <input type="number" id="whiteBotProtectionPauseCount" value="32" min="1">
                             </div>
                             <div class="control-group" style="flex: 1;">
-                                <label for="whiteBotProtectionResetCount">Sair se (Brancos):</label>
-                                <input type="number" id="whiteBotProtectionResetCount" value="1" min="1" title="Cancela a pausa se sair X brancos">
+                                <label for="whiteBotProtectionResumeCount">Retomar (Brancos):</label>
+                                <input type="number" id="whiteBotProtectionResumeCount" value="2" min="1" title="Cancela a pausa se saírem X brancos">
                             </div>
                         </div>
 
-                        <!-- NOVO: FILTRO MELHORES MINUTOS (WHITE) -->
-                        <div class="control-group" style="margin-bottom: 10px; border-top: 1px solid #333; padding-top: 10px;">
-                            <div class="inline-controls" style="align-items: center; display: flex; flex-wrap: wrap; gap: 10px;">
-                                <div class="toggle-switch-container" style="justify-content: flex-start; align-items: center; gap: 10px; margin-bottom: 0; flex: 1; height: 42px; border: 1px solid #333; border-radius: 4px; padding: 0 10px;">
-                                    <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em; margin-bottom: 0;">⭐ Filtrar Melhores Minutos:</label>
-                                    <label class="switch" style="width: 40px; height: 20px;">
-                                        <input type="checkbox" id="whiteBotBestMinuteFilter">
-                                        <span class="slider" style="border-radius: 20px;"></span>
-                                    </label>
-                                </div>
-                                <div class="control-group" style="flex: 1; margin-bottom: 0;">
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <label for="whiteBotMinAssertiveness" style="font-size: 0.85em; margin-bottom: 0; white-space: nowrap;">Assert. Mín (%):</label>
-                                        <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- META DE WINS E LOSS -->
-                        <div class="inline-controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
-                            <div class="control-group">
+                        <!-- FILTER & GOALS -->
+                        <div class="inline-controls" style="margin-bottom: 10px;">
+                            <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotWinGoal">✅ Meta Wins:</label>
                                 <input type="number" id="whiteBotWinGoal" placeholder="Ex: 5" min="1">
                             </div>
-                            <div class="control-group">
+                            <div class="control-group" style="flex: 1;">
                                 <label for="whiteBotLossGoal">🛑 Max Derrotas:</label>
                                 <input type="number" id="whiteBotLossGoal" placeholder="Ex: 3" min="1">
                             </div>
                         </div>
-                        <div class="hint" style="margin-top: -10px; margin-bottom: 15px;">O robô para ao atingir Wins ou Derrotas Consecutivas.</div>
-
-                        <!-- TOGGLES: STOP LOSS E SONS -->
-                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center; display: flex; flex-wrap: wrap; gap: 10px;">
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: flex-start; gap: 10px; flex: 1;">
+                        
+                        <!-- TOGGLES -->
+                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
                                 <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
+                                <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotStrategyStopLoss">
-                                <span class="slider" style="border-radius: 26px;"></span>
+                                    <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: flex-end; gap: 10px; flex: 1;">
-                                <label for="whiteBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                    <input type="checkbox" id="whiteBotSoundToggle" checked>
-                                <span class="slider" style="border-radius: 26px;"></span>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                                <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em;">⭐ Filtro Min:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="whiteBotBestMinuteFilter">
+                                    <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
+                            </div>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                                <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Alerta:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="whiteBotProtectionTelegramAlert">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                                <label for="whiteBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="whiteBotSoundToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                             <div style="display: flex; align-items: center; gap: 5px; justify-content: center;">
+                                <label for="whiteBotMinAssertiveness" style="font-size: 0.85em; margin-bottom: 0; white-space: nowrap;">Assert. Mín (%):</label>
+                                <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px; width: 60px;">
                             </div>
                         </div>
                     </div>
 
-                    <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">
-                        Robô Desativado.
-                    </div>
+                    <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
 
-                    <!-- Painel de Proteção (Sempre Visível quando ativo) -->
                     <div id="whiteBotProtectionPanel" class="protection-panel disabled"></div>
 
-                    <!-- Painel para o Sinal Gerado -->
                     <div id="whiteBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
-                        <div id="whiteBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;">
-                            <!-- O sinal será inserido aqui pelo JavaScript -->
-                        </div>
+                        <div id="whiteBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;"></div>
                     </div>
 
-                    <!-- Painel para o Placar/Resultado -->
                     <div id="whiteBotResultPanel" style="margin-top: 20px;">
                         <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar Branco</h3>
                         <div id="whiteBotScoreboard" class="futuristic-scoreboard">
@@ -1269,19 +960,13 @@
                                 <span id="whiteBotLossCount" class="score-value loss-text">0</span>
                             </div>
                         </div>
-
-                        <!-- Estatísticas por Estratégia -->
                         <div id="whiteBotStrategyStatsDisplay" style="padding: 0 10px; margin-bottom: 10px;"></div>
-
-                        <div id="whiteBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">
-                            Aguardando o primeiro resultado...
-                        </div>
+                        <div id="whiteBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
                     </div>
                 </div>
-                <!-- FIM DO PAINEL DO ROBÔ BRANCO -->
 
                 <div id="suite_config" class="tab-content">
-                    <h2>⚙️ Configurações Gerais</h2>
+                    <h2><span class="settings-icon-anim">⚙️</span> Configurações Gerais</h2>
 
                     <!-- Seção de Dados do Usuário -->
                     <div id="user-account-details" style="margin-bottom: 30px; padding: 15px; border: 1px solid #444; border-radius: 8px;">
@@ -1347,7 +1032,7 @@
                     </div>
                 </div>
 
-                <div id="suite_usuarios" class="tab-content">
+                <div id="suite_usuarios" class="tab-content futuristic-entry">
                     <h2>🚀 Gerenciamento de Usuários</h2>
                     <form id="suite_userRegistrationForm" onsubmit="registerUser(event)">
                         <div class="control-group">
@@ -1448,41 +1133,6 @@
                     </div>
                 </div>
 
-                <div id="suite_telegram" class="tab-content">
-                    <h2>📡 Configuração do Telegram</h2>
-                    
-                    <div class="control-group">
-                        <label>🤖 Token do Bot:</label>
-                        <input type="text" id="telegram_bot_token" placeholder="Cole o Token do BotFather aqui...">
-                        <div class="hint">Ex: 123456789:AAH...</div>
-                    </div>
-                
-                    <div class="control-group">
-                        <label>🆔 ID do Chat (Grupo ou Canal):</label>
-                        <input type="text" id="telegram_chat_id" placeholder="Cole o ID do canal ou grupo...">
-                        <div class="hint">Ex: -100123456789 (Certifique-se de adicionar o robô como Admin no grupo)</div>
-                    </div>
-                
-                    <div class="inline-controls">
-                        <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
-                        <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
-                    </div>
-                    
-                    <div class="inline-controls" style="margin-top: 10px;">
-                        <button class="btn-cyber btn-access-neon" onclick="openTelegramAccess(this)">✈️ Acessar Telegram / Bot</button>
-                    </div>
-                
-                    <div id="resTelegramConfig" class="output-area" style="display:none; min-height: auto; margin-top: 15px; text-align: center; padding: 10px; font-weight: bold;"></div>
-                
-                    <hr style="border-color: #333; margin: 25px 0;">
-                
-                    <h3>📨 Envio Rápido (Teste)</h3>
-                    <div class="control-group">
-                        <label>Mensagem Personalizada:</label>
-                        <textarea id="telegram_list_message" placeholder="Digite algo para enviar agora..."></textarea>
-                    </div>
-                    <button class="btn-cyber btn-send-neon" onclick="sendTelegramList(this)">✈️ Enviar Mensagem</button>
-                </div>
             </div>
 
             <div class="layout-panel dashboard">
@@ -1513,14 +1163,14 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-            <button id="dash_fetchDataBtn" onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: none;">
-                ⏳ Buscando...
+            <button id="dash_fetchDataBtn" onclick="dash_autoFetchBlaze()" style="width: auto; padding: 6px 12px; background-color: #ff9800; color: #000; font-weight: bold; border: none; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
+                BUSCAR DADOS
             </button>
             </div>
         </div>
 
         <!-- SUGESTÃO: Toggles de automação em linha -->
-        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start; align-items: center; gap: 15px; display: none;">
+        <div class="toggle-switch-container" style="margin-bottom: 10px; justify-content: flex-start; align-items: center; gap: 15px;">
             <!-- Análise Automática -->
             <label for="dash_autoAnalyzeToggle" style="font-weight: bold; color: #28a745;">Análise Automática:</label>
             <label class="switch">
@@ -1580,64 +1230,6 @@
     <script src="firebase-config.js"></script>
     <script>
         let autoFetchIntervalId = null;
-
-        // --- FUNÇÕES AUXILIARES MOVIDAS PARA O ESCOPO PRINCIPAL ---
-        let suite_formatarTimeout;
-        function suite_formatarInputHistorico(textarea) {
-            clearTimeout(suite_formatarTimeout);
-            suite_formatarTimeout = setTimeout(() => {
-                const valorOriginal = textarea.value.trim();
-                const linhas = valorOriginal.split('\n');
-                const resultadosFinais = [];
-                const timeRegex = /^\d{2}:\d{2}$/;
-                const numberRegex = /^\d{1,2}$/;
-                const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
-                const platformSelector = document.getElementById('suite_platformSelector');
-                const isJonbet = platformSelector && platformSelector.value === 'jonbet';
-
-                for (let i = 0; i < linhas.length; i++) {
-                    const linhaAtual = linhas[i].trim();
-                    if (fullDateRegex.test(linhaAtual)) {
-                        const linha1 = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                        const linha2 = linhas[i + 2] ? linhas[i + 2].trim() : '';
-        
-                        let numero, horario, cor;
-                        if (numberRegex.test(linha1) && timeRegex.test(linha2)) {
-                            numero = parseInt(linha1);
-                            horario = linha2;
-                            i += 2; 
-                        } else if (timeRegex.test(linha1)) {
-                            numero = 0; 
-                            horario = linha1;
-                            i += 1; 
-                        }
-        
-                        if (horario) {
-                            if (numero === 0) cor = 'BRANCO';
-                            else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
-                            else if (numero >= 8 && numero <= 14) cor = 'PRETO';
-                            if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
-                            resultadosFinais.push(`${horario} ${cor}`);
-                        }
-                    } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
-                        let linha = linhaAtual.toUpperCase();
-                        if (isJonbet) linha = linha.replace('VERMELHO', 'VERDE');
-                        resultadosFinais.push(linha);
-                    } else if (timeRegex.test(linhaAtual)) {
-                        const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                        if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(proximaLinha)) {
-                            let cor = proximaLinha.toUpperCase();
-                            if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
-                            resultadosFinais.push(`${linhaAtual} ${cor}`);
-                            i++;
-                        } else {
-                            resultadosFinais.push(`${linhaAtual} BRANCO`);
-                        }
-                    }
-                }
-                textarea.value = resultadosFinais.join('\n');
-            }, 500); 
-        }
 
         // Função para migrar senhas antigas (Base64) para Bcrypt
         async function migratePasswords() {
@@ -1753,11 +1345,6 @@
             localStorage.setItem('suite_platform', platform);
         }
 
-        function suite_clearTextarea(id) {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        }
-
         function copiar(elementId, btn) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -1783,857 +1370,8 @@
              }
         }
 
-        function suite_updateQtdLabel() {
-            // Função auxiliar para atualizar labels se necessário
-        }
-
-        function suite_gerarSinaisSimples() {
-            const qtdSinais = parseInt(document.getElementById('suite_qtdSinais').value) || 10;
-            const intervaloInput = document.getElementById('suite_intervalo').value;
-            const estrategiaSelect = document.getElementById('suite_estrategia');
-            const estrategia = estrategiaSelect.value;
-            const estrategiaTexto = estrategiaSelect.options[estrategiaSelect.selectedIndex].text;
-            const outputDiv = document.getElementById('suite_resGerador');
-            
-            const intervalos = intervaloInput.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i > 0);
-            
-            if (intervalos.length === 0) {
-                outputDiv.innerText = "⚠️ Por favor, insira intervalos válidos.";
-                return;
-            }
-
-            // Lógica do Filtro de Assertividade (Últimas 100 pedras)
-            const filterActive = document.getElementById('suite_filterByBestMinute').checked;
-            let bestMinutes = [];
-
-            if (filterActive) {
-                const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
-                bestMinutes = getBestPerformingMinutes(minAssertiveness, 'suite_bestMinutesLog', estrategia);
-                
-                const logContainer = document.getElementById('suite_bestMinutesLogContainer');
-                if (logContainer) logContainer.style.display = 'block';
-
-                if (bestMinutes.length === 0) {
-                    outputDiv.innerText = `⚠️ Filtro Ativo: Nenhum minuto atingiu ${minAssertiveness}% de assertividade com a estratégia '${estrategiaTexto}' nas últimas 100 pedras.`;
-                    return;
-                }
-            } else {
-                const logContainer = document.getElementById('suite_bestMinutesLogContainer');
-                if (logContainer) logContainer.style.display = 'none';
-            }
-
-            let currentTime = new Date();
-            currentTime.setSeconds(0, 0);
-            currentTime.setMinutes(currentTime.getMinutes() + 1);
-
-            let signals = [];
-            let intervalIndex = 0;
-            let attempts = 0;
-            const maxAttempts = qtdSinais * 100; // Limite de segurança para o loop
-
-            const platform = document.getElementById('suite_platformSelector').value;
-
-            while (signals.length < qtdSinais && attempts < maxAttempts) {
-                attempts++;
-                const minutesToAdd = intervalos[intervalIndex % intervalos.length];
-                intervalIndex++;
-                
-                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
-                
-                // Se o filtro estiver ativo, verifica se o minuto atual é um dos "melhores minutos"
-                if (filterActive) {
-                    if (!bestMinutes.includes(currentTime.getMinutes())) {
-                        continue; // Pula este horário se não estiver na lista de melhores minutos
-                    }
-                }
-
-                const hh = currentTime.getHours().toString().padStart(2, '0');
-                const mm = currentTime.getMinutes().toString().padStart(2, '0');
-                
-                let colorEmoji = (platform === 'jonbet') ? '🟢' : '🔴';
-                
-                // FIX: Define 'i' com base na quantidade de sinais já gerados para manter o padrão de cores
-                const i = signals.length;
-
-                if (estrategia === 'padrao' && i % 2 !== 0) colorEmoji = '⚫';
-                else if (estrategia === 'sequenciaInversa' && i % 2 === 0) colorEmoji = '⚫';
-                else if (estrategia === 'focoPreto') colorEmoji = '⚫';
-                else if (estrategia === 'aleatorio' && Math.random() > 0.5) colorEmoji = '⚫';
-                else if (estrategia === 'duplos' && Math.floor(i / 2) % 2 !== 0) colorEmoji = '⚫';
-                else if (estrategia === 'triplos' && Math.floor(i / 3) % 2 !== 0) colorEmoji = '⚫';
-                else if (!['focoVermelho', 'padrao', 'sequenciaInversa', 'focoPreto', 'aleatorio', 'duplos', 'triplos'].includes(estrategia) && i % 2 !== 0) colorEmoji = '⚫';
-
-                // ADIÇÃO: Intervalo no output
-                signals.push(`🕒 ${hh}:${mm} ➔ ${colorEmoji}`);
-            }
-
-            if (signals.length === 0) {
-                outputDiv.innerText = "⚠️ Não foi possível gerar sinais com os filtros atuais. Tente diminuir a assertividade ou mudar a estratégia.";
-                return;
-            }
-
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-            const userName = sessionStorage.getItem('operatorName') || 'Operador';
-            const dateStr = new Date().toLocaleDateString('pt-BR');
-            
-            let out = `🚀 *LISTA DE OPERAÇÕES*\n`;
-            out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `👤 Operador: *${userName}*\n`;
-            out += `📅 Data: ${dateStr}\n`;
-            out += `🎯 Estratégia: *${estrategiaTexto}*\n`;
-            out += `⌚️ Intervalo (Minutos): ${intervalos.join(', ')}\n`;
-            out += `🛡️ Proteção no Branco ⚪️\n`;
-            out += `♻️ ATÉ *G1*\n`;
-            out += `--------------------------------\n`;
-            out += `${signals.join('\n')}\n`;
-            out += `--------------------------------\n`;
-            out += `✅ Gerencie sua banca!`;
-            outputDiv.innerText = out;
-        }
-
         // ==========================================
-        // FUNÇÕES FALTANTES (STUBS/IMPLEMENTAÇÕES)
-        // ==========================================
-
-        function calculateStandardDeviation(array) {
-            if (!array || array.length < 2) return 0;
-            const n = array.length;
-            const mean = array.reduce((a, b) => a + b) / n;
-            const variance = array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
-            return Math.sqrt(variance);
-        }
-
-        function suite_corrigirSinais() {
-            const signalsInput = document.getElementById('suite_correctorSignalsInput').value;
-            const resultsInput = document.getElementById('suite_correctorResultsInput').value;
-            const resultsDiv = document.getElementById('suite_resCorrector');
-
-            if (!signalsInput || !resultsInput) {
-                alert("Por favor, preencha a lista de sinais e o histórico de resultados.");
-                return;
-            }
-
-            const signalRegex = /🕒 (\d{2}:\d{2}) ➔ (🔴|🟢|⚫|⚪)/g;
-            const parsedSignals = [];
-            let match;
-            
-            while ((match = signalRegex.exec(signalsInput)) !== null) {
-                parsedSignals.push({
-                    time: match[1],
-                    color: (match[2] === '🔴' || match[2] === '🟢') ? 'VERMELHO' : (match[2] === '⚫' ? 'PRETO' : 'BRANCO'),
-                    original: match[0]
-                });
-            }
-
-            if (parsedSignals.length === 0) {
-                resultsDiv.innerText = "Nenhum sinal válido encontrado. Verifique o formato.";
-                return;
-            }
-
-            const allResults = [];
-            const resultLines = resultsInput.split('\n');
-            const resultRegex = /(\d{2}:\d{2})\s+(VERMELHO|PRETO|BRANCO|VERDE)/i;
-
-            resultLines.forEach(line => {
-                const m = resultRegex.exec(line);
-                if (m) {
-                    let color = m[2].toUpperCase();
-                    if (color === 'VERDE') color = 'VERMELHO';
-                    allResults.push({ time: m[1], color: color });
-                }
-            });
-
-            let wins = 0;
-            let losses = 0;
-            let whiteWins = 0;
-            let winsFirst = 0;
-            let winsG1 = 0;
-            let currentWinStreak = 0;
-            let maxWinStreak = 0;
-            let currentLossStreak = 0;
-            let maxLossStreak = 0;
-
-            const detailedResults = [];
-            const hourlyStats = {};
-
-            parsedSignals.forEach(signal => {
-                const hour = signal.time.split(':')[0];
-
-                if (!hourlyStats[hour]) hourlyStats[hour] = { wins: 0, losses: 0, total: 0 };
-                hourlyStats[hour].total++;
-
-                // Filtra os resultados do minuto exato e ordena cronologicamente (Antigo -> Novo)
-                // Assumindo que allResults está do mais recente para o mais antigo
-                const resultsForMinute = allResults.filter(r => r.time === signal.time).reverse();
-
-                let status = 'LOSS';
-                let suffix = '❌';
-                let isWhite = false;
-                let winType = null;
-
-                if (resultsForMinute.length > 0) {
-                    // 1. Verifica a Primeira Pedra (Entrada Principal)
-                    const r1 = resultsForMinute[0];
-                    if (r1.color === signal.color) {
-                        status = 'WIN';
-                        suffix = '✅';
-                        winType = 'G0';
-                    } else if (r1.color === 'BRANCO') {
-                        status = 'WIN';
-                        suffix = '✅⚪️';
-                        isWhite = true;
-                        winType = 'G0';
-                    } else {
-                        // 2. Se perdeu na primeira, verifica a Segunda Pedra (Gale 1)
-                        if (resultsForMinute.length > 1) {
-                            const r2 = resultsForMinute[1];
-                            if (r2.color === signal.color) {
-                                status = 'WIN';
-                                suffix = '❇️';
-                                winType = 'G1';
-                            } else if (r2.color === 'BRANCO') {
-                                status = 'WIN';
-                                suffix = '❇️⚪️';
-                                isWhite = true;
-                                winType = 'G1';
-                            } else {
-                                status = 'LOSS';
-                                suffix = '❌';
-                            }
-                        } else {
-                            status = 'LOSS';
-                            suffix = '❌';
-                        }
-                    }
-                }
-
-                if (status === 'WIN') {
-                    wins++;
-                    hourlyStats[hour].wins++;
-                    if (isWhite) whiteWins++;
-                    if (winType === 'G0') winsFirst++;
-                    if (winType === 'G1') winsG1++;
-                    
-                    currentWinStreak++;
-                    currentLossStreak = 0;
-                    if (currentWinStreak > maxWinStreak) maxWinStreak = currentWinStreak;
-
-                    detailedResults.push(`${signal.original} ${suffix}`);
-                } else {
-                    losses++;
-                    hourlyStats[hour].losses++;
-                    
-                    currentLossStreak++;
-                    currentWinStreak = 0;
-                    if (currentLossStreak > maxLossStreak) maxLossStreak = currentLossStreak;
-
-                    detailedResults.push(`${signal.original} ${suffix}`);
-                }
-            });
-
-            const total = parsedSignals.length;
-            const assertividade = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-
-            let hourlyOutput = "";
-            Object.keys(hourlyStats).sort().forEach(h => {
-                const stats = hourlyStats[h];
-                const pct = stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(1) : 0;
-                hourlyOutput += `• ${h}h: ${pct}% (${stats.wins}/${stats.total})\n`;
-            });
-
-            let out = `📊 **RESULTADO DA CORREÇÃO**\n`;
-            out += `(Baseado em ${total} sinais analisados)\n`;
-            out += `--------------------------------\n`;
-            out += `📈 Assertividade: ${assertividade}% (${wins}W / ${losses}L)\n`;
-            out += `--------------------------------\n`;
-            out += `Total de Sinais: ${total}\n`;
-            out += `Assertividade: ${assertividade}%\n\n`;
-            out += `✅ Wins: ${wins}\n`;
-            out += `❌ Losses: ${losses}\n`;
-            out += `--------------------------------\n`;
-            out += `Wins de Primeira: ${winsFirst}\n`;
-            out += `Wins no G1: ${winsG1}\n`;
-            out += `Brancos Pagos: ${whiteWins} ⚪️\n`;
-            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
-            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n\n`;
-            out += `📈 ASSERTIVIDADE POR HORA ---\n`;
-            out += hourlyOutput;
-            out += `\n`;
-            out += detailedResults.join('\n');
-
-            window.hourlyStatsFromCorrector = hourlyStats;
-            resultsDiv.innerText = out;
-        }
-
-        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
-            const bestMinutes = [];
-            // Prioriza o Coletor Automático (dash_autoInput), fallback para manual
-            const autoInput = document.getElementById('dash_autoInput');
-            const manualInput = document.getElementById('dash_inputData');
-            let rawData = '';
-            
-            if (autoInput && autoInput.value.trim() !== '') rawData = autoInput.value.trim();
-            else if (manualInput) rawData = manualInput.value.trim();
-
-            if (!rawData || rawData.trim() === '') {
-                if (logElementId) document.getElementById(logElementId).innerHTML = 'Sem dados para análise (Coletor Vazio).';
-                return [];
-            }
-
-            const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
-            const results = [];
-            for (let i = 0; i < tokens.length; i++) {
-                const token = tokens[i];
-                const proximoToken = tokens[i + 1];
-                if (!isNaN(parseInt(token)) && proximoToken && proximoToken.includes(':')) {
-                    results.push({ numero: parseInt(token), horario: proximoToken });
-                    i++;
-                }
-            }
-
-            // Limita às últimas 100 pedras (assumindo que a lista vem do mais recente para o mais antigo)
-            if (results.length > 100) {
-                results = results.slice(0, 100);
-            }
-            // Inverte para ordem cronológica (Antigo -> Novo) para análise de padrão
-            results.reverse();
-
-            if (results.length < 2) {
-                if (logElementId) document.getElementById(logElementId).innerHTML = 'Histórico insuficiente (< 2).';
-                return [];
-            }
-
-            const minuteStats = {}; // { "05": { wins: 5, total: 7 }, ... }
-            for (let i = 1; i < results.length; i++) {
-                const previousResult = results[i - 1];
-                const currentResult = results[i];
-                const minute = parseInt(currentResult.horario.split(':')[1]); // Usa inteiro para chave
-
-                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
-
-                const previousColor = dash_identificarCor(previousResult.numero);
-                const currentColor = dash_identificarCor(currentResult.numero);
-
-                let isWin = false;
-
-                // Lógica de Win baseada na Estratégia Selecionada
-                if (strategy === 'branco') {
-                    // Para estratégia de branco, conta apenas se saiu branco
-                    if (currentColor === 'branco') isWin = true;
-                } else if (currentColor !== 'branco') {
-                    if (strategy === 'focoVermelho') {
-                        if (currentColor === 'vermelho') isWin = true;
-                    } else if (strategy === 'focoPreto') {
-                        if (currentColor === 'preto') isWin = true;
-                    } else if (strategy === 'surf' || strategy === 'duplos') {
-                        // Surf/Duplos = Repetição da cor anterior
-                        if (previousColor !== 'branco' && previousColor === currentColor) isWin = true;
-                    } else {
-                        // Padrão/Xadrez/Alternado/Quebra = Alternância da cor anterior
-                        if (previousColor !== 'branco' && previousColor !== currentColor) isWin = true;
-                    }
-                }
-
-                if (isWin) {
-                    minuteStats[minute].wins++;
-                }
-                minuteStats[minute].total++;
-            }
-
-            // SUGESTÃO: Lógica para popular o log
-            const logContainer = document.getElementById('suite_bestMinutesLogContainer');
-            const logElement = logElementId ? document.getElementById(logElementId) : null;
-            if (logElement && logContainer) {
-                logElement.innerHTML = ''; // Limpa o log anterior
- 
-                // SUGESTÃO: Encontra o minuto com a maior assertividade
-                let bestMinuteEntry = { minute: null, assertiveness: -1 };
-                const validMinutes = [];
- 
-                for (const minute in minuteStats) {
-                    const stats = minuteStats[minute];
-                    const assertiveness = (stats.wins / stats.total) * 100;
-                    if (stats.total > 0 && assertiveness >= threshold) {
-                        bestMinutes.push(parseInt(minute));
-                        validMinutes.push({ minute, stats, assertiveness });
- 
-                        if (assertiveness > bestMinuteEntry.assertiveness) {
-                            bestMinuteEntry = { minute, assertiveness };
-                        }
-                    }
-                }
- 
-                // Ordena os minutos encontrados numericamente
-                validMinutes.sort((a, b) => parseInt(a.minute) - parseInt(b.minute));
- 
-                let logContent = '';
-                validMinutes.forEach(entry => {
-                    const { minute, stats, assertiveness } = entry;
-                    const isBest = minute === bestMinuteEntry.minute;
-                    const highlightStyle = isBest ? 'color: var(--accent-jonbet); font-weight: bold;' : '';
-                    const trophy = isBest ? ' 🏆' : '';
- 
-                    logContent += `<span style="${highlightStyle}"><strong>Minuto ${minute}:</strong> ${assertiveness.toFixed(1)}%${trophy}</span> <span style="color: #aaa;">(${stats.wins}W / ${stats.total}T)</span><br>`;
-                });
- 
-                logElement.innerHTML = logContent || '<span style="color: #aaa;">Nenhum minuto atingiu a assertividade mínima.</span>';
-                logContainer.style.display = 'block';
-            } else { // Fallback para quando não há log
-                for (const minute in minuteStats) {
-                    const stats = minuteStats[minute];
-                    if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) {
-                        bestMinutes.push(parseInt(minute));
-                    }
-                }
-            }
-
-            console.log("Melhores minutos encontrados:", bestMinutes);
-            return bestMinutes;
-        }
-
-        function suite_corrigirSinaisBranco() {
-            const signalsInput = document.getElementById('suite_correctorBrancoSignalsInput').value;
-            const resultsInput = document.getElementById('suite_correctorBrancoResultsInput').value;
-            const numEntradas = parseInt(document.getElementById('suite_correctorBrancoEntradas').value) || 1;
-            const resultsDiv = document.getElementById('suite_resCorrectorBranco');
-
-            if (!signalsInput || !resultsInput) { alert("Por favor, preencha a lista de sinais e o histórico de resultados."); return; }
-
-            const signalRegex = new RegExp('🕒 (\\d{2}:\\d{2}) ➔ (⚪)', 'g');
-            const parsedSignals = [];
-            const originalSignalLines = [];
-            // SUGESTÃO: Processa o histórico de resultados em uma lista ordenada de objetos {time, color}
-            const allResults = [];
-            const resultRegex = /(\d{2}:\d{2})\s+(VERMELHO|PRETO|BRANCO|VERDE)/gi;
-            let resultMatch;
-            while ((resultMatch = resultRegex.exec(resultsInput)) !== null) {
-                allResults.push({ time: resultMatch[1], color: resultMatch[2].toUpperCase() });
-            }
-
-            // Pega o horário do último resultado no histórico para saber até onde podemos corrigir
-            const lastResultTime = allResults.length > 0 ? allResults[0].time : null;
-
-            let match;
-            while ((match = signalRegex.exec(signalsInput)) !== null) {
-                parsedSignals.push({ time: match[1], color: "BRANCO" });
-                originalSignalLines.push(match[0]);
-            }
-
-            let wins = 0, losses = 0, winsPorGale = Array(numEntradas).fill(0);
-            let maxWinStreak = 0, currentWinStreak = 0, maxLossStreak = 0, currentLossStreak = 0;
-            let detailedResults = [];
-
-            for (let i = 0; i < parsedSignals.length; i++) {
-                const signal = parsedSignals[i];
-
-                // Define o tempo de início e fim da janela de verificação para este sinal.
-                const [signalH, signalM] = signal.time.split(':').map(Number);
-                const signalStartTime = new Date(0, 0, 0, signalH, signalM);
-                const signalEndTime = new Date(signalStartTime.getTime() + numEntradas * 60 * 1000); // Janela de N minutos
-
-                // Procura por um resultado de BRANCO dentro da janela de tempo.
-                let foundWinInGale = false;
-                let winGale = -1;
-                for (const result of allResults) {
-                    if (result.color === 'BRANCO') {
-                        const [resultH, resultM] = result.time.split(':').map(Number);
-                        const resultTime = new Date(0, 0, 0, resultH, resultM);
-
-                        // Verifica se o resultado está dentro da janela de N minutos a partir do sinal
-                        if (resultTime >= signalStartTime && resultTime < signalEndTime) {
-                            foundWinInGale = true;
-                            // Calcula em qual "gale" (minuto) o win ocorreu
-                            const diffMinutes = (resultTime - signalStartTime) / (1000 * 60);
-                            winGale = Math.floor(diffMinutes);
-                            break; // Encontrou o win, para de procurar
-                        }
-                    }
-                }
-
-                if (foundWinInGale) {
-                    wins++;
-                    winsPorGale[winGale]++;
-                    currentWinStreak++;
-                    currentLossStreak = 0;
-                    const winText = winGale > 0 ? '❇️' : '✅⚪️';
-                    detailedResults.push(`${originalSignalLines[i]} ${winText}`);
-                } else {
-                    // SUGESTÃO: Se um win não foi encontrado, marca como loss diretamente.
-                    losses++;
-                    currentLossStreak++;
-                    currentWinStreak = 0;
-                    detailedResults.push(`${originalSignalLines[i]} ❌`);
-                }
-                maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
-                maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
-            }
-
-            const totalSignals = parsedSignals.length;
-            const assertividade = totalSignals > 0 ? ((wins / totalSignals) * 100).toFixed(1) : 0;
-
-            let out = `✅ **PLACAR FINAL (BRANCO)**\n`;
-            out += `--------------------------------\n`;
-            out += `Total de Sinais: ${totalSignals}\n`;
-            out += `Assertividade: ${assertividade}%\n\n`;
-            out += `Wins: ${wins}\n`;
-            out += `Losses: ${losses}\n`;
-            out += `--------------------------------\n`;
-            out += `Maior Seq. de Wins: ${maxWinStreak} ✅\n`;
-            out += `Maior Seq. de Losses: ${maxLossStreak} ❌\n\n`;
-            out += detailedResults.join('\n');
-
-            resultsDiv.innerText = out;
-        }
-
-
-        function suite_limparCorretor() {
-            document.getElementById('suite_correctorSignalsInput').value = '';
-            document.getElementById('suite_correctorResultsInput').value = '';
-            document.getElementById('suite_resCorrector').innerText = 'Aguardando dados para correção...';
-        }
-
-        let suite_correctorFormatTimeout;
-        function suite_formatCorrectorResultsInput(textarea) {
-            // SUGESTÃO: Adiciona um debounce para não executar a formatação a cada tecla digitada
-            clearTimeout(suite_correctorFormatTimeout);
-            suite_correctorFormatTimeout = setTimeout(() => {
-                // Regex para identificar linhas que são apenas horários (HH:MM)
-                const timeRegex = /^\d{2}:\d{2}$/;
-                const lines = textarea.value.split('\n');
-                
-                const formattedLines = lines
-                    .map(line => line.trim()) // Remove espaços em branco
-                    .filter(line => timeRegex.test(line)) // Mantém apenas as linhas que são horários válidos
-                    .map(time => `${time} BRANCO`); // Formata para o padrão "HH:MM BRANCO"
-
-                // Atualiza o valor do textarea com as linhas formatadas
-                textarea.value = formattedLines.join('\n');
-
-            }, 500); // Aguarda 500ms após o usuário parar de digitar para formatar
-        }
-
-        function suite_limparCorretorBranco() {
-            document.getElementById('suite_correctorBrancoSignalsInput').value = '';
-            document.getElementById('suite_correctorBrancoResultsInput').value = '';
-            document.getElementById('suite_resCorrectorBranco').innerText = 'Aguardando dados para correção...';
-        }
-
-        function suite_toggleStrategyInputs() {
-            const estrategia = document.getElementById('suite_estrategiaBranco').value;
-            document.getElementById('suite_customStrategyContainer').style.display = (estrategia === 'custom') ? 'block' : 'none';
-            document.getElementById('suite_fixedOffsetContainer').style.display = (estrategia === 'offset') ? 'block' : 'none';
-        }
-
-        function suite_toggleQtdSinaisBranco() {
-            // Função ajustada: Não desabilita mais o campo de quantidade para permitir controle total
-            const qtdSinaisInput = document.getElementById('suite_qtdSinaisBranco');
-            if(qtdSinaisInput) {
-                qtdSinaisInput.disabled = false;
-                qtdSinaisInput.style.backgroundColor = '';
-            }
-        }
-
-        let suite_formatTimeout;
-        function suite_autoFormatBrancoInput(textarea) {
-            // SUGESTÃO: Lógica de formatação unificada para os campos de histórico de branco.
-            clearTimeout(suite_formatTimeout);
-            suite_formatTimeout = setTimeout(() => {
-                // Regex para identificar linhas que são apenas horários (HH:MM)
-                const timeRegex = /^\d{2}:\d{2}$/;
-                const lines = textarea.value.split('\n');
-                
-                const formattedLines = lines
-                    .map(line => line.trim()) // Remove espaços em branco
-                    .filter(line => timeRegex.test(line) || /^\d{2}:\d{2} BRANCO$/.test(line)) // Mantém horários ou horários já formatados
-                    .map(line => timeRegex.test(line) ? `${line} BRANCO` : line); // Adiciona BRANCO se for apenas horário
-
-                // Atualiza o valor do textarea com as linhas formatadas e limpas
-                textarea.value = formattedLines.join('\n');
-
-            }, 500); // Aguarda 500ms após o usuário parar de digitar para formatar
-        }
-
-        function suite_analisarParaBranco() {
-            const estrategia = document.getElementById('suite_estrategiaBranco').value;
-            const useAutoHistory = document.getElementById('suite_autoImportBrancoHistory').checked;
-            let input = '';
-            let sourceOfHistory = '';
-
-            if (useAutoHistory) {
-                // Tenta pegar do dash_autoInput (Coletor Automático) primeiro, fallback para dash_inputData
-                const autoInput = document.getElementById('dash_autoInput');
-                const manualInput = document.getElementById('dash_inputData');
-                let rawData = '';
-                let isFromAutoCollector = false;
-
-                if (autoInput && autoInput.value.trim() !== '') {
-                    rawData = autoInput.value.trim();
-                    sourceOfHistory = 'Histórico Automático (Coletor)';
-                    isFromAutoCollector = true;
-                } else if (manualInput) {
-                    rawData = manualInput.value.trim();
-                    sourceOfHistory = 'Histórico Automático (Manual)';
-                }
-
-                // Parser robusto de tokens (extrai horários onde o roll é 0)
-                const tokens = rawData.split(/[\s,]+/).filter(n => n.trim() !== '');
-                const whiteTimes = [];
-                
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i];
-                    if (!isNaN(parseInt(token))) {
-                        const roll = parseInt(token);
-                        const nextToken = tokens[i+1];
-                        if (nextToken && nextToken.includes(':')) {
-                            if (roll === 0) whiteTimes.push(nextToken);
-                            i++; 
-                        }
-                    }
-                }
-                
-                // Se vier do coletor (Recente -> Antigo), inverte para Cronológico (Antigo -> Novo)
-                if (isFromAutoCollector) whiteTimes.reverse();
-
-                input = whiteTimes.join('\n');
-            } else {
-                input = document.getElementById('suite_inputHistoricoBranco').value.trim().replace(/\r\n/g, '\n');
-                sourceOfHistory = 'Histórico Manual';
-            }
-            const intervaloMinimo = parseInt(document.getElementById('suite_intervaloMinimoBranco').value) || 0;
-            // Correção: A quantidade de sinais deve respeitar o input do usuário
-            const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value) || 15;
-            const numEntradas = document.getElementById('suite_entradasBranco') ? (parseInt(document.getElementById('suite_entradasBranco').value) || 3) : 3;
-            const resultsDiv = document.getElementById('suite_resBranco');
-
-            if (!input) {
-                alert("Por favor, cole a lista de horários dos brancos ou ative a opção de usar o histórico automático.");
-                return;
-            }
-
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])/;
-            const horarios = input.split('\n')
-                .map(l => l.trim())
-                .map(l => { const m = l.match(timeRegex); return m ? m[0] : null; })
-                .filter(l => l !== null);
-
-            if (horarios.length === 0) {
-                alert("Nenhum horário válido encontrado no histórico. É necessário um histórico para a análise."); return;
-            }
-
-            if (horarios.length < 2 && !['custom', 'offset', 'espelho12h', 'minutosOuro'].includes(estrategia)) {
-                resultsDiv.innerText = "⚠️ É necessário fornecer pelo menos 2 horários de branco para analisar.";
-                return;
-            }
-
-            function getIntervals(times) {
-                const intervals = [];
-                for (let i = 1; i < times.length; i++) {
-                    const [h1, m1] = times[i - 1].split(':').map(Number);
-                    const [h2, m2] = times[i].split(':').map(Number);
-                    const date1 = new Date(0, 0, 0, h1, m1);
-                    const date2 = new Date(0, 0, 0, h2, m2);
-                    let diff = (date2 - date1) / (1000 * 60);
-                    if (diff < 0) diff += 24 * 60;
-                    intervals.push(diff);
-                }
-                return intervals;
-            }
-
-            function projectSignals(startTime, intervalPattern, signalLimit, minInterval = 0) {
-                let signals = [];
-                let proximaEntrada = new Date(startTime);
-                let ultimoSinalGeradoTime = null;
-                let patternIndex = 0;
-                let attempts = 0;
-        
-                while (signals.length < signalLimit && attempts < signalLimit * 100) { // Limite de segurança
-                    attempts++;
-                    if (intervalPattern.length === 0) break;
-                    const minutosParaAdicionar = intervalPattern[patternIndex % intervalPattern.length];
-                    patternIndex++;
-        
-                    if (minutosParaAdicionar <= 0) continue;
-                    proximaEntrada.setMinutes(proximaEntrada.getMinutes() + minutosParaAdicionar);
-        
-                    // Se um intervalo mínimo foi definido, verifica se o novo sinal o respeita.
-                    // Se não houver último sinal, ou se o tempo decorrido for maior ou igual ao intervalo, o sinal é válido.
-                    const isIntervalRespected = !ultimoSinalGeradoTime || ((proximaEntrada.getTime() - ultimoSinalGeradoTime.getTime()) / (1000 * 60)) >= minInterval;
-        
-                    if (isIntervalRespected) {
-                        signals.push(`🕒 ${proximaEntrada.getHours().toString().padStart(2, '0')}:${proximaEntrada.getMinutes().toString().padStart(2, '0')} ➔ ⚪`);
-                        ultimoSinalGeradoTime = new Date(proximaEntrada); // Atualiza a referência de tempo do último sinal gerado
-                    }
-                }
-                return signals;
-            }
-
-            const platform = document.getElementById('suite_platformSelector').value;
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-            const selectElement = document.getElementById('suite_estrategiaBranco');
-            const userName = sessionStorage.getItem('operatorName') || 'Operador';
-            const dateChoice = document.getElementById('suite_branco_date_selector').value;
-            const strategyName = selectElement.options[selectElement.selectedIndex].text.replace(/^\d+\.\s*/, '');
-
-            const targetDate = new Date();
-            if (dateChoice === 'amanha') {
-                targetDate.setDate(targetDate.getDate() + 1);
-            }
-            const dataLista = targetDate.toLocaleDateString('pt-BR');
-
-            let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
-            out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `👤 Operador: *${userName}*\n`;
-            out += `📅 Data: *${dataLista}*\n`;
-            out += `📚 Fonte do Histórico: *${sourceOfHistory}*\n`;
-            out += `🎯 Estratégia: *${strategyName}*\n`;
-            out += `🔄 Entradas: *${numEntradas}* (Cobrir até ${numEntradas} min)\n`;
-            if (intervaloMinimo > 0) {
-                out += `🔢 Sinais: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
-            }
-
-            let lastTime = new Date(); // Ponto de partida é sempre o horário atual.
-            let pattern = [];
-            let projectedSignals = [];
-
-            // Lógica das estratégias (resumida para brevidade)
-            switch (estrategia) {
-                case 'media': pattern = getIntervals(horarios); if (pattern.length > 0) { const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length); projectedSignals = projectSignals(lastTime, [media], qtdSinais, intervaloMinimo); } break;
-                case 'minimo': pattern = getIntervals(horarios); if (pattern.length > 0) { const min = Math.min(...pattern.filter(i => i > 0)); if(min > 0) projectedSignals = projectSignals(lastTime, [min], qtdSinais, intervaloMinimo); } break;
-                case 'espelho12h': horarios.slice(0, qtdSinais).forEach(h => { let date = new Date(); const [hr, mn] = h.split(':').map(Number); date.setHours(hr + 12, mn); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
-                case 'fibonacci': projectedSignals = projectSignals(lastTime, [5, 8, 13, 21, 34, 55], qtdSinais, intervaloMinimo); break;
-                case 'minutosOuro': const minuteCounts = {}; horarios.forEach(h => { const min = h.split(':')[1]; minuteCounts[min] = (minuteCounts[min] || 0) + 1; }); const goldenMinutes = Object.keys(minuteCounts).sort((a, b) => minuteCounts[b] - minuteCounts[a]).slice(0, 5); let projTime = new Date(lastTime); while(projectedSignals.length < qtdSinais && goldenMinutes.length > 0) { projTime.setHours(projTime.getHours() + 1); if (projectedSignals.length >= qtdSinais) break; goldenMinutes.forEach(min => { if(projectedSignals.length < qtdSinais) projectedSignals.push(`🕒 ${projTime.getHours().toString().padStart(2, '0')}:${min} ➔ ⚪`); }); } break;
-                case 'somaTotal': pattern = getIntervals(horarios); if (pattern.length > 0) { const totalSum = pattern.reduce((a, b) => a + b, 0); let finalTime = new Date(lastTime); finalTime.setMinutes(finalTime.getMinutes() + totalSum); projectedSignals.push(`🕒 ${finalTime.getHours().toString().padStart(2, '0')}:${finalTime.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); } break;
-                case 'custom': const customPatternStr = document.getElementById('suite_customPattern').value; if (!customPatternStr) { projectedSignals = "Insira um padrão."; break; } pattern = customPatternStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0); projectedSignals = projectSignals(lastTime, pattern, qtdSinais, intervaloMinimo); break;
-                case 'offset': const offsetValue = parseInt(document.getElementById('suite_fixedOffsetValue').value); if (isNaN(offsetValue)) { projectedSignals = "Insira um deslocamento."; break; } [...horarios].reverse().slice(0, qtdSinais).forEach(h => { const [hr, mn] = h.split(':').map(Number); let date = new Date(); date.setHours(hr, mn + offsetValue, 0, 0); projectedSignals.push(`🕒 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ➔ ⚪`); }); break;
-                case 'padraoHoras':
-                    const hourlyPatterns = {};
-                    horarios.forEach(h => {
-                        const [hr, mn] = h.split(':').map(Number);
-                        if (!hourlyPatterns[hr]) hourlyPatterns[hr] = [];
-                        hourlyPatterns[hr].push(mn);
-                    });
-                    Object.keys(hourlyPatterns).slice(0, qtdSinais).forEach(hr => {
-                        const minutes = hourlyPatterns[hr];
-                        const avgMinute = Math.round(minutes.reduce((a, b) => a + b, 0) / minutes.length);
-                        projectedSignals.push(`🕒 ${hr.toString().padStart(2, '0')}:${avgMinute.toString().padStart(2, '0')} ➔ ⚪`);
-                    });
-                    break;
-                case 'brianTracy':
-                    pattern = getIntervals(horarios);
-                    if (pattern.length > 0) {
-                        // Calcula a média ponderada, dando mais peso aos intervalos recentes
-                        const weightedSum = pattern.reduce((sum, interval, index) => sum + interval * (index + 1), 0);
-                        const totalWeight = pattern.reduce((sum, interval, index) => sum + (index + 1), 0);
-                        const weightedAvg = Math.round(weightedSum / totalWeight);
-
-                        // Usa a média ponderada para o primeiro sinal e os intervalos mais recentes para os seguintes
-                        const projectionPattern = [weightedAvg, ...pattern.slice(-4).reverse()];
-                        projectedSignals = projectSignals(lastTime, projectionPattern, qtdSinais, intervaloMinimo);
-                    }
-                    break;
-                case 'pitagoras':
-                    pattern = getIntervals(horarios);
-                    if (pattern.length >= 2) {
-                        const a = pattern[pattern.length - 2];
-                        const b = pattern[pattern.length - 1];
-                        const c = Math.round(Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)));
-                        if (c > 0) projectedSignals = projectSignals(lastTime, [c], qtdSinais, intervaloMinimo);
-                    }
-                    break;
-                case 'ciclosMercado':
-                    pattern = getIntervals(horarios);
-                    if (pattern.length >= 2) {
-                        const lastInterval = pattern[pattern.length - 1];
-                        const secondLastInterval = pattern[pattern.length - 2];
-                        const acceleration = lastInterval - secondLastInterval;
-                        const nextInterval = Math.round(lastInterval + acceleration);
-                        if (nextInterval > 0) projectedSignals = projectSignals(lastTime, [nextInterval], qtdSinais, intervaloMinimo);
-                    }
-                    break;
-                case 'jikan_tradicional':
-                    pattern = getIntervals(horarios);
-                    if (pattern.length >= 2) {
-                        const media = Math.round(pattern.reduce((a, b) => a + b, 0) / pattern.length);
-                        const desvioPadrao = calculateStandardDeviation(pattern);
-                        // Fórmula Jikan: alterna entre a média e a média ajustada pelo desvio
-                        const jikanPattern = [
-                            Math.max(1, Math.round(media + desvioPadrao / 2)),
-                            Math.max(1, Math.round(media - desvioPadrao / 2))
-                        ];
-                        projectedSignals = projectSignals(lastTime, jikanPattern, qtdSinais, intervaloMinimo);
-                    }
-                    break;
-            }
-
-            out += `--------------------------------\n`;
-            if (projectedSignals && projectedSignals.length > 0) {
-                let signalArray = Array.isArray(projectedSignals) ? projectedSignals : [projectedSignals];
-                
-                // Filtro de Intervalo Mínimo (Pós-processamento para garantir respeito ao intervalo)
-                if (intervaloMinimo > 0) {
-                    let parsedSignals = [];
-                    const timeRegex = /(\d{2}):(\d{2})/;
-                    
-                    signalArray.forEach(sig => {
-                        const match = sig.match(timeRegex);
-                        if (match) {
-                            const minutes = parseInt(match[1]) * 60 + parseInt(match[2]);
-                            parsedSignals.push({ original: sig, minutes: minutes });
-                        } else {
-                            parsedSignals.push({ original: sig, minutes: -1 });
-                        }
-                    });
-
-                    parsedSignals.sort((a, b) => a.minutes - b.minutes);
-
-                    let filtered = [];
-                    let lastMinutes = -9999;
-                    parsedSignals.forEach(item => {
-                        if (item.minutes === -1 || (item.minutes - lastMinutes >= intervaloMinimo)) {
-                            filtered.push(item.original);
-                            if (item.minutes !== -1) lastMinutes = item.minutes;
-                        }
-                    });
-                    signalArray = filtered;
-                }
-
-                let uniqueSignals = [...new Set(signalArray)];
-                uniqueSignals.sort((a, b) => a.localeCompare(b)); // Ordena
-                out += uniqueSignals.join('\n');
-            } else {
-                out += "Nenhum sinal foi gerado.";
-            }
-            out += `\n--------------------------------\n`;
-            out += `⚠️ Use como base para suas análises.`;
-
-            resultsDiv.innerText = out;
-
-        }
-
-        function suite_limparAnalisadorBranco() {
-            suite_clearTextarea('suite_inputHistoricoBranco');
-            document.getElementById('suite_resBranco').innerText = 'Aguardando análise para o branco...';
-        }
-
-        function timeDifferenceInMinutes(time1, time2) {
-            const [h1, m1] = time1.split(':').map(Number);
-            const [h2, m2] = time2.split(':').map(Number);
-            const date1 = new Date(0, 0, 0, h1, m1);
-            const date2 = new Date(0, 0, 0, h2, m2);
-            let diff = (date2 - date1) / (1000 * 60);
-            if (diff < 0) diff += 24 * 60;
-            return diff;
-        }
-
-        function suite_selectDate(tabPrefix, choice) {
-            document.getElementById(`suite_${tabPrefix}_date_selector`).value = choice;
-            document.getElementById(`suite_${tabPrefix}_btn_hoje`).classList.remove('active');
-            document.getElementById(`suite_${tabPrefix}_btn_amanha`).classList.remove('active');
-            document.getElementById(`suite_${tabPrefix}_btn_${choice}`).classList.add('active');
-        }
-
-        // ==========================================
-        // FIM: SCRIPTS DE gerador_de_lista2.html
+        // FIM: SCRIPTS DE analise_branco.html
         // ==========================================
 
 
@@ -2670,7 +1408,6 @@
             let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
             if (!SEU_TOKEN_BLAZE) {
                 SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjU0MDM3MzF9.FodxcWCvsl6vn3Zfyo8097ldjvO4VABtPftJYHzD1z8"; 
-                SEU_TOKEN_BLAZE = ""; // REMOVIDO POR SEGURANÇA. Insira seu token aqui se necessário ou use localStorage.
             }
             // ======================================================
 
@@ -2869,18 +1606,6 @@
             // localStorage.setItem('dashboardActiveTab', tabName);
         }
 
-        function dash_limparTudo() {
-            document.getElementById('dash_inputData').value = '';
-            document.getElementById('dash_grid-resultados').innerHTML = '';
-            // A linha abaixo foi comentada para não limpar o histórico por hora, conforme solicitado.
-            // document.getElementById('dash_grid-resultados-hora').innerHTML = '';
-            document.getElementById('dash_count-red').innerText = '0';
-            document.getElementById('dash_count-black').innerText = '0';
-            document.getElementById('dash_count-white').innerText = '0';
-            document.getElementById('dash_count-total').innerText = '0';
-            document.getElementById('dash_log-estrategia').innerHTML = 'Aguardando dados...';            
-        }
-
         let dash_timeoutLimpeza;
         function dash_limparInput(textarea) {
             clearTimeout(dash_timeoutLimpeza);
@@ -2963,11 +1688,11 @@
 
             const target = document.getElementById('dash_targetHistory').value;
             // SUGESTÃO: Chama a lógica do robô automático sempre que os dados são processados.
-            runAutoBotLogic();
-            runWhiteBotLogic(); // Executa a lógica do Robô Branco
 
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
+            runWhiteBotLogic(); // Garante que o Robô Branco analise os novos dados
+            runAutoBotLogic(); // Garante que o Robô Automático analise os novos dados
         }
 
 function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
@@ -3120,45 +1845,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
-        function dash_limparHistorico(gridId) {
-            const grid = document.getElementById(gridId);
-            if (grid) {
-                grid.innerHTML = '';
-            }
-        }
-
-        function dash_copiarHistorico(gridId, btnElement) {
-            const grid = document.getElementById(gridId);
-            const badges = Array.from(grid.children).reverse();
-            let exportText = '';
-            const platform = document.getElementById('dash_platformSelector').value;
-
-            if (badges.length === 0) { alert('Não há histórico para copiar.'); return; }
-
-            badges.forEach(badge => {
-                const timeElement = badge.querySelector('.time-overlay');
-                if (timeElement) {
-                    const horario = timeElement.innerText;
-                    let cor;
-                    if (badge.classList.contains('vermelho')) { cor = (platform === 'jonbet') ? 'VERDE' : 'VERMELHO'; }
-                    else if (badge.classList.contains('preto')) { cor = 'PRETO'; }
-                    else if (badge.classList.contains('branco')) { cor = 'BRANCO'; }
-                    else { cor = 'DESCONHECIDO'; }
-                    exportText += `${horario} ${cor}\n`;
-                }
-            });
-
-            // Executa a cópia e atualiza o botão diretamente aqui
-            navigator.clipboard.writeText(exportText).then(() => {
-                if (btnElement) {
-                    const originalText = btnElement.innerHTML;
-                    btnElement.innerHTML = '✅ Copiado!';
-                    btnElement.disabled = true;
-                    setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; }, 2000);
-                }
-            }).catch(err => console.error("Erro ao copiar histórico: ", err));
-        }
-
         function toggleRealTimeDirection() {
             const grid = document.getElementById('dash_grid-real-time');
             const checkbox = document.getElementById('toggleReverseDirection');
@@ -3230,97 +1916,49 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             document.getElementById('reg_accessLevel').addEventListener('change', toggleTrialDurationField);
             setupPermissionControls();
 
-            // NOVO: Listener para o toggle de histórico automático do Analisador Branco
-            const autoImportBrancoHistoryToggle = document.getElementById('suite_autoImportBrancoHistory');
-            const manualBrancoHistoryTextarea = document.getElementById('suite_inputHistoricoBranco');
-
-            if (autoImportBrancoHistoryToggle && manualBrancoHistoryTextarea) {
-                autoImportBrancoHistoryToggle.addEventListener('change', () => {
-                    manualBrancoHistoryTextarea.disabled = autoImportBrancoHistoryToggle.checked;
-                    manualBrancoHistoryTextarea.style.backgroundColor = autoImportBrancoHistoryToggle.checked ? '#333' : ''; // Escurece quando desabilitado
-                    manualBrancoHistoryTextarea.value = ''; // Limpa o input manual quando o automático é ativado
-                });
-            }
             // SUGESTÃO: Configura o link de suporte dinamicamente
             // Adiciona o listener para o novo controle do input de quantidade de sinais
-            document.getElementById('suite_intervaloMinimoBranco').addEventListener('input', suite_toggleQtdSinaisBranco);
-            suite_toggleQtdSinaisBranco(); // Chama uma vez para definir o estado inicial
             const supportLink = document.getElementById('support-link');
-            if (supportLink) {
-                supportLink.href = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
-            }
             // Inicializa o app principal
+            
+            // Inicializa listener do Robô Branco
+            if(document.getElementById('whiteBotToggle')) document.getElementById('whiteBotToggle').addEventListener('change', handleWhiteBotToggle);
+
+            // Inicializa listener do Robô Automático
+            if(document.getElementById('autoBotToggle')) document.getElementById('autoBotToggle').addEventListener('change', handleAutoBotToggle);
+
+            
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
 
-            // NOVO: Inicializa a lógica do Robô Automático
-            const autoBotToggle = document.getElementById('autoBotToggle');
-            if (autoBotToggle) autoBotToggle.addEventListener('change', handleAutoBotToggle);
-
-            // NOVO: Inicializa a lógica do Robô Branco
-            const whiteBotToggle = document.getElementById('whiteBotToggle');
-            if (whiteBotToggle) whiteBotToggle.addEventListener('change', handleWhiteBotToggle);
-
-            // Listeners para o Robô Branco (Rotação e Estratégia)
-            // Inicializa o painel de proteção como desativado visualmente
-            updateWhiteBotProtectionDisplay('disabled');
-
-            const whiteBotRandomRotation = document.getElementById('whiteBotRandomRotation');
-            const whiteBotStrategySelect = document.getElementById('whiteBotStrategy');
-            if (whiteBotRandomRotation) {
-                whiteBotRandomRotation.addEventListener('change', (e) => {
-                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
-                    if (e.target.checked && label) {
-                        label.innerHTML = '<div class="radar-animation" style="width: 8px; height: 8px; margin-right: 5px;"></div><span class="cortex-text-anim">ANALISANDO...</span>';
-                    } else if (label) {
-                        label.textContent = '';
-                    }
-                });
-            }
-            if (whiteBotStrategySelect) {
-                whiteBotStrategySelect.addEventListener('change', () => {
-                    const label = document.getElementById('whiteBotCurrentStrategyLabel');
-                    if (whiteBotRandomRotation && whiteBotRandomRotation.checked && label) {
-                        const strategyName = whiteBotStrategySelect.options[whiteBotStrategySelect.selectedIndex].text;
-                        label.textContent = `[ ${strategyName} ]`;
-                        updateWhiteBotStrategyStatsDisplay(); // Atualiza o destaque ao mudar manualmente
-                    }
-                });
-            }
-
-            // NOVO: Listener para mostrar estratégia ao lado da rotação
-            const autoBotRandomRotation = document.getElementById('autoBotRandomRotation');
-            const autoBotStrategySelect = document.getElementById('autoBotStrategy');
-            
-            if (autoBotRandomRotation) {
-                autoBotRandomRotation.addEventListener('change', (e) => {
-                    const label = document.getElementById('autoBotCurrentStrategyLabel');
-                    if (e.target.checked) {
-                        label.innerHTML = '<div class="radar-animation" style="width: 8px; height: 8px; margin-right: 5px;"></div><span class="cortex-text-anim">ANALISANDO...</span>';
-                    } else {
-                        label.textContent = '';
-                    }
-                });
-            }
-            
-            if (autoBotStrategySelect) {
-                autoBotStrategySelect.addEventListener('change', () => {
-                    const label = document.getElementById('autoBotCurrentStrategyLabel');
-                    if (autoBotRandomRotation && autoBotRandomRotation.checked && label) {
-                        const strategyName = autoBotStrategySelect.options[autoBotStrategySelect.selectedIndex].text;
-                        label.textContent = `[ ${strategyName} ]`;
-                    }
-                });
-            }
-
-            // Inicializa o display de estatísticas do Robô Branco (mesmo vazio)
-            updateWhiteBotStrategyStatsDisplay();
-            
             // SUGESTÃO: Inicializa e atualiza o relógio
             updateClock(); // Chama uma vez para exibir imediatamente
             setInterval(updateClock, 1000); // Atualiza a cada segundo
-            checkManualLogin();
+            
+            // Atualiza o ano no rodapé do login
+            const loginYearEl = document.getElementById('login-year');
+            if (loginYearEl) loginYearEl.textContent = new Date().getFullYear();
+
+            updateWhiteBotProtectionDisplay('disabled'); // Estado inicial da proteção
             initializeApp();
+            
+            checkManualLogin();
+
+            // Restaura estado do Robô Branco (DESATIVADO PARA NÃO INICIAR AO LOGIN)
+            // const savedWhiteBotState = localStorage.getItem('whiteBotActive') === 'true';
+            // const whiteBotToggle = document.getElementById('whiteBotToggle');
+            // if (whiteBotToggle && savedWhiteBotState) {
+            //     whiteBotToggle.checked = true;
+            //     handleWhiteBotToggle({ target: whiteBotToggle });
+            // }
+
+            // Restaura estado do Robô Automático (DESATIVADO PARA NÃO INICIAR AO LOGIN)
+            // const savedAutoBotState = localStorage.getItem('autoBotActive') === 'true';
+            // const autoBotToggle = document.getElementById('autoBotToggle');
+            // if (autoBotToggle && savedAutoBotState) {
+            //     autoBotToggle.checked = true;
+            //     handleAutoBotToggle({ target: autoBotToggle });
+            // }
 
             // Lógica para fazer o anúncio de atualização desaparecer
             const announcement = document.getElementById('update-announcement');
@@ -3339,12 +1977,259 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         });
 
-        // Configura o link do botão de suporte do Telegram
-        const supportButton = document.getElementById('telegram-support-button');
-        if (supportButton) {
-            const supportURL = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
-            supportButton.href = supportURL;
+        // --- FUNÇÕES DO ROBÔ AUTOMÁTICO (INTEGRADO) ---
+        let activeSignal = null;
+        let lastGeneratedSignalTime = null;
+        let autoBotWins = 0;
+        let autoBotWhiteWins = 0;
+        let autoBotLosses = 0;
+        let lastAutoBotResult = null;
+
+        function handleAutoBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('autoBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+            const container = document.getElementById('autoBotActivationContainer');
+            const navBtn = document.getElementById('btn-nav-auto-bot');
+
+            localStorage.setItem('autoBotActive', isBotActive);
+
+            if (isBotActive) {
+                if (isAutoFetchActive) {
+                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Ativado. Monitorando...</span>';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                const signalPanel = document.getElementById('autoBotSignalPanel');
+                signalPanel.style.display = 'block';
+                document.getElementById('autoBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+                if (navBtn) navBtn.classList.add('bot-active-pulse');
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activeSignal = null;
+                lastGeneratedSignalTime = null;
+                document.getElementById('autoBotSignalPanel').style.display = 'none';
+                autoBotWins = 0; autoBotWhiteWins = 0; autoBotLosses = 0;
+                document.getElementById('autoBotWinCount').textContent = '0';
+                document.getElementById('autoBotWhiteWinCount').textContent = '0';
+                document.getElementById('autoBotLossCount').textContent = '0';
+                lastAutoBotResult = null;
+                if (container) container.classList.remove('bot-active-pulse');
+                if (navBtn) navBtn.classList.remove('bot-active-pulse');
+            }
         }
+
+        function toggleAutoBotConfig() {
+            const container = document.getElementById('autoBotConfigContainer');
+            const btn = document.getElementById('autoBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function runAutoBotLogic() {
+            if (!document.getElementById('autoBotToggle').checked) return;
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length === 0) return;
+
+            if (activeSignal) {
+                checkSignalResult(results);
+            } else {
+                analyzeAndCreateSignal(results);
+            }
+        }
+
+        function analyzeAndCreateSignal(results) {
+            if (lastAutoBotResult === 'loss') { lastAutoBotResult = null; return; }
+            const strategy = document.getElementById('autoBotStrategy').value;
+            const recentColors = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco').slice(0, 3);
+            if (recentColors.length < 3) return;
+            const [last, secondLast, thirdLast] = recentColors;
+
+            switch (strategy) {
+                case 'alternating_break': if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) createAutoSignal(last, last.color); break;
+                case 'follow_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color); break;
+                case 'counter_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color === 'vermelho' ? 'preto' : 'vermelho'); break;
+                case 'reversal_protection': if (last.color === 'preto' && secondLast.color === 'preto') createAutoSignal(last, 'vermelho'); break;
+                case 'post_white_value': if (results[0].roll === 0) createAutoSignal(results[0], 'vermelho'); break;
+            }
+        }
+
+        function createAutoSignal(triggerResult, targetColor) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            let entryTime = parseInt(document.getElementById('autoBotEntryTime').value) || 2;
+            signalTime.setMinutes(signalTime.getMinutes() + entryTime);
+
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            if (lastGeneratedSignalTime === signalTimeString) return;
+            lastGeneratedSignalTime = signalTimeString;
+
+            const upperTargetColor = targetColor.toUpperCase();
+            const targetColorEmoji = upperTargetColor === 'VERMELHO' ? '🔴' : '⚫';
+
+            activeSignal = { time: signalTimeString, date: triggerResult.date, targetColor: upperTargetColor, gale: 0 };
+            const signalPanel = document.getElementById('autoBotSignalPanel');
+            const signalContent = document.getElementById('autoBotSignalContent');
+            signalContent.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between;"><div style="text-align: left;"><div class="cortex-text-anim" style="font-size: 1.3rem;">🕒 ${activeSignal.time}</div><div style="font-size: 1rem;">ENTRAR = ${targetColorEmoji} + ⚪️</div></div><div class="signal-chart-container"><div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${targetColorEmoji}</div></div></div><div style="margin-top: 15px; text-align: center;"><span class="cortex-text-anim">⏳ Aguardando resultado...</span></div>`;
+            signalPanel.classList.add('panel-glow-active');
+            signalPanel.style.display = 'block';
+            playAutoBotNotificationSound();
+        }
+
+        function playAutoBotNotificationSound() {
+            if (!document.getElementById('autoBotSoundToggle').checked) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        // --- FUNÇÕES DO ROBÔ BRANCO (INTEGRADO) ---
+        let whiteBotProtectionWhitesInPause = 0;
+
+        function handleWhiteBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('whiteBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+            const container = document.getElementById('whiteBotActivationContainer');
+            const navBtn = document.getElementById('btn-nav-white-bot');
+
+            localStorage.setItem('whiteBotActive', isBotActive);
+
+            if (isBotActive) {
+                whiteBotWins = 0; whiteBotWhiteWins = 0; whiteBotLosses = 0; whiteBotConsecutiveLosses = 0;
+                document.getElementById('whiteBotWinCount').textContent = '0';
+                document.getElementById('whiteBotLossCount').textContent = '0';
+                document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+                whiteBotStrategyStats = {};
+                whiteBotProtectionPauseRemaining = 0;
+                lastProcessedGeneralTime = null;
+                lastProcessedWhiteTime = null;
+                whiteBotProtectionWhitesInPause = 0;
+                whiteBotProtectionWhiteCount = 0;
+                updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled');
+                updateWhiteBotStrategyStatsDisplay();
+
+                if (isAutoFetchActive) {
+                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                const signalPanel = document.getElementById('whiteBotSignalPanel');
+                signalPanel.style.display = 'block';
+                document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+                if (navBtn) navBtn.classList.add('bot-active-pulse');
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activeWhiteSignal = null;
+                document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
+                lastGeneratedWhiteSignalTime = null;
+                document.getElementById('whiteBotSignalPanel').style.display = 'none';
+                updateWhiteBotProtectionDisplay('disabled');
+                lastWhiteBotResult = null;
+                if (container) container.classList.remove('bot-active-pulse');
+                if (navBtn) navBtn.classList.remove('bot-active-pulse');
+            }
+        }
+
+        function toggleWhiteBotConfig() {
+            const container = document.getElementById('whiteBotConfigContainer');
+            const btn = document.getElementById('whiteBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function resetWhiteBotProtectionCount(btn) {
+            whiteBotProtectionWhiteCount = 0;
+            whiteBotProtectionWhitesInPause = 0;
+            if (document.getElementById('whiteBotToggle').checked && whiteBotProtectionPauseRemaining <= 0) updateWhiteBotProtectionDisplay('standby');
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function toggleWhiteBotProtectionUserPreference(checkbox) {
+            whiteBotProtectionUserEnabled = checkbox.checked;
+            if (!document.getElementById('whiteBotToggle').checked) { updateWhiteBotProtectionDisplay('disabled'); return; }
+            if (!whiteBotProtectionUserEnabled) {
+                whiteBotRecoveryEndTime = 0; whiteBotProtectionPauseRemaining = 0; whiteBotProtectionWhitesInPause = 0;
+                updateWhiteBotProtectionDisplay('user_disabled');
+                const signalContent = document.getElementById('whiteBotSignalContent');
+                if (signalContent && signalContent.innerHTML.includes('Pausado')) signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+            } else updateWhiteBotProtectionDisplay('standby');
+        }
+
+        function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
+            const panel = document.getElementById('whiteBotProtectionPanel');
+            if (!panel) return;
+            const triggerCount = document.getElementById('whiteBotProtectionTriggerCount') ? parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10 : 10;
+            const toggleHTML = `<div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);"><span style="font-size: 0.65rem; color: ${whiteBotProtectionUserEnabled ? '#00d2ff' : '#555'}; font-weight: bold; letter-spacing: 1px;">PROT.</span><label class="switch" style="transform: scale(0.6); margin: 0;"><input type="checkbox" ${whiteBotProtectionUserEnabled ? 'checked' : ''} onchange="toggleWhiteBotProtectionUserPreference(this)"><span class="slider" style="background-color: #222;"></span></label></div>`;
+
+            if (mode === 'active') {
+                panel.className = 'protection-panel active';
+                panel.innerHTML = `${toggleHTML}<div class="recovery-scan-line"></div><div style="display: flex; align-items: center; justify-content: center; gap: 15px;"><div class="shield-icon-anim">🛡️</div><div style="text-align: left;"><h3 class="cortex-text-anim" style="margin: 0; font-size: 1.2rem; letter-spacing: 1px;">PROTEÇÃO ATIVA</h3><div style="color: #00d2ff; font-size: 0.8rem; font-weight: bold;">RECUPERAÇÃO PÓS-BRANCO</div><div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">PAUSA: ${remainingStones} PEDRAS RESTANTES</div></div></div>`;
+            } else if (mode === 'standby') {
+                panel.className = 'protection-panel standby';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><div class="shield-standby-anim">🛡️</div><div style="text-align: left;"><div style="color: #fff; font-weight: bold; font-size: 0.9rem; opacity: 0.8;">SISTEMA DE PROTEÇÃO</div><div style="color: #00ff88; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">● MONITORANDO (${whiteBotProtectionWhiteCount}/${triggerCount})</div></div></div>`;
+            } else if (mode === 'user_disabled') {
+                panel.className = 'protection-panel standby';
+                panel.style.borderColor = '#444';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.6;"><span style="font-size: 1.5rem; color: #aaa;">🛡️</span><div style="text-align: left;"><div style="color: #aaa; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div><div style="color: #ffc107; font-size: 0.7rem; font-weight: bold;">DESATIVADO PELO USUÁRIO</div></div></div>`;
+            } else {
+                panel.className = 'protection-panel disabled';
+                panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span style="font-size: 1.5rem; color: #555;">🛡️</span><div style="text-align: left;"><div style="color: #888; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div><div style="color: #555; font-size: 0.7rem; font-weight: bold;">DESATIVADO</div></div></div>`;
+            }
+            panel.style.display = 'block';
+        }
+
+        async function sendWhiteBotTelegramAlert(message) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+            if (!token || !chatId) return;
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar alerta Telegram:', e); }
+        }
+
+        // Configura o link do botão de suporte do Telegram
+        // const supportButton = document.getElementById('telegram-support-button');
+        // if (supportButton) {
+        //     const supportURL = `tg://resolve?domain=${TELEGRAM_SUPPORT_USERNAME}`;
+        //     supportButton.href = supportURL;
+        // }
 
         // ==========================================
         // NOVA FUNÇÃO: SALVAR NO FIREBASE
@@ -3500,84 +2385,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             document.getElementById('user-form-submit-btn').textContent = 'CADASTRAR USUÁRIO';
             document.getElementById('user-form-cancel-btn').style.display = 'none';
             toggleTrialDurationField(); // Mostra/oculta o campo de duração conforme o nível de acesso
-        }
-
-        function registerUser_OLD(event) {
-            event.preventDefault();
-            const form = document.getElementById('suite_userRegistrationForm');
-            const outputArea = document.getElementById('suite_resCadastro');            
-            
-            const username = document.getElementById('reg_username').value.trim();
-            const password = document.getElementById('reg_password').value;
-            const contact = document.getElementById('reg_contact').value.trim();
-            const telegramId = document.getElementById('reg_telegram_id').value.trim();
-            const confirmPassword = document.getElementById('reg_confirmPassword').value;
-            const accessLevel = document.getElementById('reg_accessLevel').value;
-
-            outputArea.style.display = 'block'; // Mostra a área de output
-
-            if (!username || !password) {
-                outputArea.innerText = '❌ ERRO: Nome de usuário e senha são obrigatórios!';
-                outputArea.style.color = 'var(--accent-blaze)';
-                return;
-            }
-
-            if (telegramId && !/^\d+$/.test(telegramId)) {
-                outputArea.innerText = '❌ ERRO: O ID do Telegram deve conter apenas números!';
-                outputArea.style.color = 'var(--accent-blaze)';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                outputArea.innerText = '❌ ERRO: As senhas não coincidem!';
-                outputArea.style.color = 'var(--accent-blaze)';
-                return;
-            }
-            
-            // Lógica para cadastro pelo administrador (acesso imediato)
-            try { // A lógica de usuários agora dependerá da sessão
-                let users = JSON.parse(sessionStorage.getItem('app_users_temp')) || [];
-                if (users.find(u => u.username.toLowerCase() === username.toLowerCase()) || username.toLowerCase() === 'operador') {
-                    outputArea.innerText = `❌ ERRO: O nome de usuário "${username}" já existe!`;
-                    outputArea.style.color = 'var(--accent-blaze)';
-                    return;
-                }
-
-                const trialDays = document.getElementById('reg_trial_days').value;
-                let expirationDate = null;
-                if (trialDays && !isNaN(parseInt(trialDays))) {
-                    const expDate = new Date();
-                    expDate.setDate(expDate.getDate() + parseInt(trialDays));
-                    expirationDate = expDate.toISOString();
-                }
-
-                const newUser = {
-                    username: username,
-                    password: btoa(password), // Ofusca a senha usando Base64
-                    contact: contact || null, // Salva o contato ou null se estiver vazio
-                    telegramId: telegramId || null,
-                    accessLevel: accessLevel,
-                    expiresAt: expirationDate
-                };
-
-                users.push(newUser);
-                sessionStorage.setItem('app_users_temp', JSON.stringify(users));
-
-                outputArea.innerText = `✅ SUCESSO: Usuário "${username}" cadastrado.`;
-                outputArea.style.color = 'var(--accent-jonbet)';
-                form.reset();
-                // Limpa a mensagem de sucesso após alguns segundos
-                setTimeout(() => {
-                    outputArea.style.display = 'none';
-                    outputArea.innerText = '';
-                }, 5000);
-                populateUserList(); // Atualiza a lista de usuários
-                sendAdminNotification('✅ Novo Usuário Criado', `O usuário '${username}' foi cadastrado com sucesso.`);
-            } catch (e) {
-                console.error("Erro ao salvar usuário:", e);
-                outputArea.innerText = '❌ ERRO: Falha ao salvar o usuário no armazenamento local.';
-                outputArea.style.color = 'var(--accent-blaze)';
-            }
         }
 
         let currentUserListPage = 1;
@@ -4452,19 +3259,16 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
              // Atualiza o título principal com o nome do operador
             // SUGESTÃO: Ativa a busca automática por padrão ao carregar a página
             const autoFetchToggleDefault = document.getElementById('dash_autoFetchToggle');
-            if (autoFetchToggleDefault && !autoFetchToggleDefault.checked) {
+            if (autoFetchToggleDefault) {
                 // GARANTIA: Certifique-se de que a análise automática também esteja ativada
                 const autoAnalyzeToggle = document.getElementById('dash_autoAnalyzeToggle');
                 if (autoAnalyzeToggle) autoAnalyzeToggle.checked = true;
 
-                console.log("Auto-Busca toggle not checked, attempting to activate."); // Log para depuração
-                // Marca o checkbox como ativado
+                // Marca o checkbox como ativado e dispara o evento para iniciar (mesmo se já estiver marcado visualmente)
                 autoFetchToggleDefault.checked = true;
-                // Dispara o evento 'change' para iniciar a lógica de busca automática
                 autoFetchToggleDefault.dispatchEvent(new Event('change'));
                 console.log("Auto-Busca iniciada automaticamente por padrão após o login.");
             }
-            console.log("Current state of autoFetchToggleDefault.checked:", autoFetchToggleDefault ? autoFetchToggleDefault.checked : 'N/A'); // Log para depuração
 
             // Ativa a Análise Automática por padrão ao carregar a página
             const autoAnalyzeToggleDefault = document.getElementById('dash_autoAnalyzeToggle');
@@ -4607,7 +3411,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
 
             // Restaura abas e plataformas
-            const suiteActiveTab = 'gerador'; // Padrão, já que não há mais localStorage
+            const suiteActiveTab = 'menu'; // Padrão, já que não há mais localStorage
             suite_openTab(suiteActiveTab);
 
             dash_openTab('analise');
@@ -4631,16 +3435,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // ==========================================
         // INÍCIO: LÓGICA DO ROBÔ AUTOMÁTICO
         // ==========================================
-
-        let activeSignal = null; // Armazena o sinal que está sendo monitorado
-        let lastGeneratedSignalTime = null; // Evita repetição de sinais para o mesmo horário
-        let autoBotWins = 0;
-        let autoBotWhiteWins = 0;
-        let autoBotLosses = 0;
-        let lastAutoBotResult = null; // NOVO: Rastreia o último resultado (win/loss)
-        let autoBotPlayCount = 0; // Contador para rotação de estratégia
-        let lastAutoBotResultSignature = null; // Assinatura do último resultado processado
-
         // VARIÁVEIS DO ROBÔ BRANCO
         let whiteBotProtectionUserEnabled = true; // Preferência do usuário para o sistema de proteção
         let activeWhiteSignal = null;
@@ -4657,134 +3451,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // Variáveis para Recuperação Pós-Branco
         let whiteBotRecoveryEndTime = 0;
         let whiteBotProtectionPauseRemaining = 0; // Contagem regressiva de pedras para a pausa
-        let whiteBotWhitesDuringPause = 0; // Contador de brancos durante a pausa
         let lastProcessedGeneralTime = null; // Rastreia a última pedra geral para contar a pausa
         let lastProcessedWhiteTime = null;
-
-        function handleAutoBotToggle(event) {
-            const isBotActive = event.target.checked;
-            const statusDiv = document.getElementById('autoBotStatus');
-            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
-            const container = document.getElementById('autoBotActivationContainer');
-
-            if (isBotActive) {
-                if (isAutoFetchActive) {
-                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Ativado. Monitorando novos resultados...</span>';
-                } else {
-                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" no painel direito para o robô funcionar.';
-                    statusDiv.style.color = '#ffc107';
-                }
-                // Exibe o painel com mensagem de aguardando
-                const signalPanel = document.getElementById('autoBotSignalPanel');
-                const signalContent = document.getElementById('autoBotSignalContent');
-                signalPanel.style.display = 'block';
-                signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
-                if (container) container.classList.add('bot-active-pulse');
-            } else {
-                statusDiv.textContent = 'Robô Desativado.';
-                statusDiv.style.color = '#aaa';
-                // Limpa qualquer sinal ativo se o robô for desligado
-                activeSignal = null;
-                lastGeneratedSignalTime = null;
-                document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
-                document.getElementById('autoBotSignalPanel').style.display = 'none';
-                // Reseta o placar
-                autoBotWins = 0;
-                autoBotWhiteWins = 0;
-                autoBotLosses = 0;
-                document.getElementById('autoBotWinCount').textContent = '0';
-                document.getElementById('autoBotWhiteWinCount').textContent = '0';
-                document.getElementById('autoBotLossCount').textContent = '0';
-                lastAutoBotResult = null; // Reseta o rastreador de resultado
-                autoBotPlayCount = 0;
-                lastAutoBotResultSignature = null;
-                if (container) container.classList.remove('bot-active-pulse');
-            }
-        }
-
-        function handleWhiteBotToggle(event) {
-            const isBotActive = event.target.checked;
-            const statusDiv = document.getElementById('whiteBotStatus');
-            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
-            const container = document.getElementById('whiteBotActivationContainer');
-
-            if (isBotActive) {
-                // Reseta o placar ao INICIAR o robô, para que o último resultado fique visível ao parar
-                whiteBotWins = 0; whiteBotWhiteWins = 0; whiteBotLosses = 0; whiteBotConsecutiveLosses = 0;
-                document.getElementById('whiteBotWinCount').textContent = '0';
-                document.getElementById('whiteBotLossCount').textContent = '0';
-                document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
-                whiteBotStrategyStats = {};
-                whiteBotRecoveryEndTime = 0; // Reseta timer de recuperação
-                whiteBotProtectionPauseRemaining = 0; // Reseta contador de pausa
-                whiteBotWhitesDuringPause = 0;
-                lastProcessedGeneralTime = null;
-                lastProcessedWhiteTime = null;
-                whiteBotProtectionWhiteCount = 0; // Reseta contagem de brancos
-                updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled'); // Inicia visual conforme preferência
-                updateWhiteBotStrategyStatsDisplay();
-
-                if (isAutoFetchActive) {
-                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
-                } else {
-                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" no painel direito.';
-                    statusDiv.style.color = '#ffc107';
-                }
-                const signalPanel = document.getElementById('whiteBotSignalPanel');
-                const signalContent = document.getElementById('whiteBotSignalContent');
-                signalPanel.style.display = 'block';
-                signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
-                if (container) container.classList.add('bot-active-pulse');
-            } else {
-                statusDiv.textContent = 'Robô Desativado.';
-                statusDiv.style.color = '#aaa';
-                activeWhiteSignal = null;
-                document.getElementById('whiteBotSignalPanel').classList.remove('panel-glow-active');
-                lastGeneratedWhiteSignalTime = null;
-                document.getElementById('whiteBotSignalPanel').style.display = 'none';
-                updateWhiteBotProtectionDisplay('disabled'); // Define visual como Desativado
-                lastWhiteBotResult = null;
-                if (container) container.classList.remove('bot-active-pulse');
-            }
-        }
-
-        // Esta função será chamada de dentro de `dash_processarDados`
-        function runAutoBotLogic() {
-            const isBotActive = document.getElementById('autoBotToggle').checked;
-            if (!isBotActive) return; // Se o robô não estiver ativo, não faz nada
-
-            const rawData = sessionStorage.getItem('raw_blaze_data');
-            if (!rawData) return; // Precisa de dados para trabalhar
-
-            // 1. Processar os dados para obter uma lista de resultados
-            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
-            const results = [];
-            for (let i = 0; i < tokens.length; i++) {
-                // A estrutura é DATA, NÚMERO, HORA
-                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
-                    results.push({
-                        date: tokens[i],
-                        roll: parseInt(tokens[i + 1]),
-                        time: tokens[i + 2]
-                    });
-                    i += 2;
-                }
-            }
-
-            if (results.length === 0) return;
-
-            const lastResult = results[0]; // O primeiro da lista é o mais recente
-
-            // 2. Verificar se já existe um sinal ativo
-            if (activeSignal) {
-                // Se temos um sinal ativo, vamos verificar o resultado dele
-                // CORREÇÃO: Passa a lista completa de resultados para ter mais contexto se necessário
-                checkSignalResult(results);
-            } else {
-                // Se não há sinal ativo, analisa o histórico para decidir se cria um
-                analyzeAndCreateSignal(results);
-            }
-        }
 
         function runWhiteBotLogic() {
             const isBotActive = document.getElementById('whiteBotToggle').checked;
@@ -4814,172 +3482,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             updateWhiteBotStrategyStatsDisplay();
         }
 
-        function rotateAutoBotStrategy() {
-            const select = document.getElementById('autoBotStrategy');
-            const options = select.options;
-            // Escolhe uma nova estratégia aleatória, diferente da atual se possível
-            let randomIndex;
-            do {
-                randomIndex = Math.floor(Math.random() * options.length);
-            } while (options.length > 1 && randomIndex === select.selectedIndex);
-            
-            select.selectedIndex = randomIndex;
-            const strategyName = options[randomIndex].text;
-            console.log(`Robô Auto: Estratégia rotacionada para "${strategyName}"`);
-            
-            // Feedback visual rápido no status
-            const statusDiv = document.getElementById('autoBotStatus');
-            if (statusDiv) {
-                statusDiv.textContent = `🔄 Estratégia alterada para: ${strategyName}`;
-                statusDiv.style.color = '#00aaff';
-            }
-
-            // ATUALIZAÇÃO: Mostra a estratégia no label da rotação
-            const rotationLabel = document.getElementById('autoBotCurrentStrategyLabel');
-            if (rotationLabel) {
-                rotationLabel.textContent = `[ ${strategyName} ]`;
-            }
-        }
-
-        // NOVA LÓGICA DE ANÁLISE
-        function analyzeAndCreateSignal(results) {
-            // NOVO: Verifica se o último resultado foi um LOSS. Se sim, pausa por uma rodada.
-            if (lastAutoBotResult === 'loss') {
-                console.log("Robô Auto: Pausado após um LOSS. Aguardando próximo resultado para reavaliar.");
-                // Reseta o estado para permitir que o robô analise novamente na próxima rodada.
-                lastAutoBotResult = null; 
-                return; // Ignora a criação de um novo sinal nesta rodada.
-            }
-
-            const strategy = document.getElementById('autoBotStrategy').value;
-
-            // 1. Pega os últimos resultados (ignorando brancos) para análise
-            const recentColors = results
-                .map(r => ({...r, color: dash_identificarCor(r.roll)}))
-                .filter(r => r.color !== 'branco')
-                .slice(0, 3);
-
-            // A maioria das estratégias precisa de pelo menos 2 ou 3 resultados
-            if (recentColors.length < 3) { 
-                console.log(`Robô Auto: Aguardando mais resultados para análise (necessário 3, atual ${recentColors.length}).`);
-                return; // Não há dados suficientes para a estratégia
-            }
-
-            const [last, secondLast, thirdLast] = recentColors;
-
-            // 2. Executa a lógica da estratégia selecionada
-            switch (strategy) {
-                case 'alternating_break':
-                    // ESTRATÉGIA 1: Procurar por um padrão de 3 cores alternadas (ex: V, P, V)
-                    const isAlternatingPattern = last.color !== secondLast.color && secondLast.color !== thirdLast.color;
-                    if (isAlternatingPattern) {
-                        console.log(`Robô Auto (Alternância): Padrão detectado (${thirdLast.color}, ${secondLast.color}, ${last.color}). Gerando sinal.`);
-                        // Cria um sinal para quebrar a alternância (entrar na mesma cor do último)
-                        createAutoSignal(last, last.color);
-                    }
-                    break;
-
-                case 'follow_trend':
-                    // ESTRATÉGIA 2: Procurar por 2 cores iguais e seguir a tendência
-                    const isDoublePatternFollow = last.color === secondLast.color;
-                    if (isDoublePatternFollow) {
-                        console.log(`Robô Auto (Seguir Tendência): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal.`);
-                        createAutoSignal(last, last.color);
-                    }
-                    break;
-
-                case 'counter_trend':
-                    // ESTRATÉGIA 3: Procurar por 2 cores iguais e quebrar a tendência
-                    const isDoublePatternCounter = last.color === secondLast.color;
-                    if (isDoublePatternCounter) {
-                        console.log(`Robô Auto (Contra Tendência): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal.`);
-                        const targetColor = last.color === 'vermelho' ? 'preto' : 'vermelho';
-                        createAutoSignal(last, targetColor);
-                    }
-                    break;
-
-                case 'reversal_protection':
-                    // ESTRATÉGIA 4: Reversão com Proteção (P-P -> V)
-                    // Procura por dois pretos consecutivos e entra no vermelho
-                    if (last.color === 'preto' && secondLast.color === 'preto') {
-                        console.log(`Robô Auto (Reversão com Proteção): Padrão detectado (${secondLast.color}, ${last.color}). Gerando sinal para VERMELHO.`);
-                        createAutoSignal(last, 'vermelho'); // Aposta principal no VERMELHO
-                    }
-                    // A proteção no branco já é adicionada automaticamente na função createAutoSignal
-                    break;
-
-                case 'surf_flow':
-                    // ESTRATÉGIA 5: Surf no Fluxo (Seguir a Tendência)
-                    // Lógica: Se uma cor domina os últimos 10 resultados (>=60%) e ela acabou de sair, aposte nela.
-                    const validLast10 = results
-                        .map(r => ({...r, color: dash_identificarCor(r.roll)}))
-                        .filter(r => r.color !== 'branco')
-                        .slice(0, 10);
-                    
-                    if (validLast10.length >= 10) {
-                        const blackCount = validLast10.filter(r => r.color === 'preto').length;
-                        const redCount = validLast10.filter(r => r.color === 'vermelho').length;
-
-                        if (blackCount >= 6 && last.color === 'preto') {
-                            console.log(`Robô Auto (Surf): Fluxo Preto detectado (${blackCount}/10). Entrando Preto.`);
-                            createAutoSignal(last, 'preto');
-                        } else if (redCount >= 6 && last.color === 'vermelho') {
-                            console.log(`Robô Auto (Surf): Fluxo Vermelho detectado (${redCount}/10). Entrando Vermelho.`);
-                            createAutoSignal(last, 'vermelho');
-                        }
-                    }
-                    break;
-
-                case 'king_of_table':
-                    // ESTRATÉGIA 6: Rei da Mesa (Foco no 5 e vizinhos 4, 6)
-                    if ([4, 5, 6].includes(last.roll)) {
-                        console.log(`Robô Auto (Rei da Mesa): Gatilho ${last.roll} detectado. Entrando VERMELHO.`);
-                        createAutoSignal(last, 'vermelho');
-                    }
-                    break;
-
-                case 'chess_break':
-                    // ESTRATÉGIA 7: Quebra de Xadrez (Apostar na repetição após uma alternância)
-                    if (last.color !== secondLast.color) {
-                        console.log(`Robô Auto (Quebra Xadrez): Alternância ${secondLast.color}->${last.color}. Apostando na repetição de ${last.color}.`);
-                        createAutoSignal(last, last.color);
-                    }
-                    break;
-
-                case 'post_white_value':
-                    // ESTRATÉGIA 8: Pós-Branco (Valor) - Baseada em Laplace Smoothing
-                    // Se o último resultado foi Branco, a probabilidade de Vermelho é alta (~85%).
-                    if (results[0].roll === 0) {
-                        console.log(`Robô Auto (Pós-Branco): Branco detectado. Entrada de valor em VERMELHO.`);
-                        createAutoSignal(results[0], 'vermelho');
-                    }
-                    break;
-
-                case 'fibonacci_streak':
-                    // ESTRATÉGIA 9: Quebra de Sequência Fibonacci
-                    // Se a sequência de cores atual tiver comprimento igual a um número Fibonacci (2, 3, 5, 8, 13...),
-                    // aposta na quebra (cor oposta).
-                    
-                    // Verifica se o último resultado é uma cor válida (ignora se for branco)
-                    const lastRollColor = dash_identificarCor(results[0].roll);
-                    if (lastRollColor === 'branco') break;
-
-                    let streak = 0;
-                    for (let i = 0; i < results.length; i++) {
-                        if (dash_identificarCor(results[i].roll) === lastRollColor) streak++;
-                        else break;
-                    }
-
-                    const fibNumbers = [2, 3, 5, 8, 13, 21];
-                    if (fibNumbers.includes(streak)) {
-                        console.log(`Robô Auto (Fibonacci): Sequência de ${streak} ${lastRollColor}s detectada. Quebra indicada.`);
-                        const target = lastRollColor === 'vermelho' ? 'preto' : 'vermelho';
-                        createAutoSignal(results[0], target);
-                    }
-                    break;
-            }
-        }
-
         // LÓGICA DE ANÁLISE DO ROBÔ BRANCO
         function analyzeAndCreateWhiteSignal(results) {
             if (lastWhiteBotResult === 'loss') {
@@ -4996,23 +3498,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (whiteBotProtectionPauseRemaining > 0) {
                     // Verifica se entrou uma nova pedra (horário diferente) para decrementar
                     if (lastProcessedGeneralTime !== latestTime) {
-                        // Verifica se saiu branco durante a pausa para resetar
-                        if (results[0].roll === 0) {
-                            whiteBotWhitesDuringPause++;
-                            const resetTrigger = parseInt(document.getElementById('whiteBotProtectionResetCount').value) || 1;
-                            
-                            if (whiteBotWhitesDuringPause >= resetTrigger) {
-                                console.log(`Robô Branco: Pausa cancelada! ${whiteBotWhitesDuringPause} brancos detectados.`);
-                                whiteBotProtectionPauseRemaining = 0;
-                                whiteBotWhitesDuringPause = 0;
-                                updateWhiteBotProtectionDisplay('standby');
-                                const signalContent = document.getElementById('whiteBotSignalContent');
-                                if (signalContent) signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
-                                lastProcessedGeneralTime = latestTime;
-                                return;
-                            }
-                        }
-
                         whiteBotProtectionPauseRemaining--;
                         lastProcessedGeneralTime = latestTime;
                         
@@ -5051,7 +3536,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         if (whiteBotProtectionWhiteCount >= triggerCount) {
                             const pauseCount = parseInt(document.getElementById('whiteBotProtectionPauseCount').value) || 32;
                             whiteBotProtectionPauseRemaining = pauseCount;
-                            whiteBotWhitesDuringPause = 0;
                             whiteBotProtectionWhiteCount = 0; // Reseta a contagem para o próximo ciclo
                             console.log(`Robô Branco: PROTEÇÃO ATIVA! ${triggerCount}º Branco detectado. Pausa de ${pauseCount} pedras iniciada.`);
                             updateWhiteBotProtectionDisplay('active', pauseCount);
@@ -5271,223 +3755,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     }
                     break;
             }
-        }
-
-        // FUNÇÃO PARA RESETAR CONTAGEM DE PROTEÇÃO MANUALMENTE
-        function resetWhiteBotProtectionCount(btn) {
-            whiteBotProtectionWhiteCount = 0;
-            console.log("Robô Branco: Contagem de proteção resetada manualmente.");
-            
-            const isBotActive = document.getElementById('whiteBotToggle').checked;
-            if (isBotActive && whiteBotProtectionPauseRemaining <= 0) {
-                 updateWhiteBotProtectionDisplay('standby');
-            }
-
-            if(btn) {
-                 const originalText = btn.innerText;
-                 btn.innerText = '✅';
-                 setTimeout(() => btn.innerText = originalText, 1000);
-            }
-        }
-
-        // FUNÇÃO PARA ALTERNAR PREFERÊNCIA DO USUÁRIO (PROTEÇÃO)
-        function toggleWhiteBotProtectionUserPreference(checkbox) {
-            whiteBotProtectionUserEnabled = checkbox.checked;
-            const isBotActive = document.getElementById('whiteBotToggle').checked;
-
-            if (!isBotActive) {
-                updateWhiteBotProtectionDisplay('disabled');
-                return;
-            }
-
-            if (!whiteBotProtectionUserEnabled) {
-                whiteBotRecoveryEndTime = 0;
-                whiteBotProtectionPauseRemaining = 0;
-                whiteBotWhitesDuringPause = 0;
-                updateWhiteBotProtectionDisplay('user_disabled');
-                // Remove aviso de pausa se houver
-                const signalContent = document.getElementById('whiteBotSignalContent');
-                if (signalContent && signalContent.innerHTML.includes('Pausado')) {
-                     signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
-                }
-            } else {
-                updateWhiteBotProtectionDisplay('standby');
-            }
-        }
-
-        // FUNÇÃO VISUAL: ATUALIZA PAINEL DE PROTEÇÃO (STANDBY / ATIVO)
-        function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
-            const panel = document.getElementById('whiteBotProtectionPanel');
-            if (!panel) return;
-
-            const triggerCount = document.getElementById('whiteBotProtectionTriggerCount') ? parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10 : 10;
-            // Botão Toggle Futurista
-            const toggleHTML = `
-                <div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);">
-                    <span style="font-size: 0.65rem; color: ${whiteBotProtectionUserEnabled ? '#00d2ff' : '#555'}; font-weight: bold; letter-spacing: 1px;">PROT.</span>
-                    <label class="switch" style="transform: scale(0.6); margin: 0;">
-                        <input type="checkbox" ${whiteBotProtectionUserEnabled ? 'checked' : ''} onchange="toggleWhiteBotProtectionUserPreference(this)">
-                        <span class="slider" style="background-color: #222;"></span>
-                    </label>
-                </div>
-            `;
-
-            if (mode === 'active') {
-                panel.className = 'protection-panel active';
-                panel.innerHTML = `
-                    ${toggleHTML}
-                    <div class="recovery-scan-line"></div>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <div class="shield-icon-anim">🛡️</div>
-                        <div style="text-align: left;">
-                            <h3 class="cortex-text-anim" style="margin: 0; font-size: 1.2rem; letter-spacing: 1px;">PROTEÇÃO ATIVA</h3>
-                            <div style="color: #00d2ff; font-size: 0.8rem; font-weight: bold;">RECUPERAÇÃO PÓS-BRANCO</div>
-                            <div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">PAUSA: ${remainingStones} PEDRAS RESTANTES</div>
-                        </div>
-                    </div>
-                `;
-                // Atualiza o painel de sinal para indicar pausa
-                const signalContent = document.getElementById('whiteBotSignalContent');
-                if (signalContent) signalContent.innerHTML = '<span style="color: #aaa; font-size: 1rem;">⏸️ Pausado pelo Sistema de Proteção</span>';
-            } else if (mode === 'standby') {
-                panel.className = 'protection-panel standby';
-                panel.innerHTML = `
-                    ${toggleHTML}
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <div class="shield-standby-anim">🛡️</div>
-                        <div style="text-align: left;">
-                            <div style="color: #fff; font-weight: bold; font-size: 0.9rem; opacity: 0.8;">SISTEMA DE PROTEÇÃO</div>
-                            <div style="color: #00ff88; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">● MONITORANDO (${whiteBotProtectionWhiteCount}/${triggerCount})</div>
-                        </div>
-                    </div>
-                `;
-            } else if (mode === 'user_disabled') {
-                panel.className = 'protection-panel standby'; // Usa estilo standby mas com texto diferente
-                panel.style.borderColor = '#444';
-                panel.innerHTML = `
-                    ${toggleHTML}
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.6;">
-                        <span style="font-size: 1.5rem; color: #aaa;">🛡️</span>
-                        <div style="text-align: left;">
-                            <div style="color: #aaa; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div>
-                            <div style="color: #ffc107; font-size: 0.7rem; font-weight: bold;">DESATIVADO PELO USUÁRIO</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                panel.className = 'protection-panel disabled';
-                panel.innerHTML = `
-                    ${toggleHTML}
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <span style="font-size: 1.5rem; color: #555;">🛡️</span>
-                        <div style="text-align: left;">
-                            <div style="color: #888; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div>
-                            <div style="color: #555; font-size: 0.7rem; font-weight: bold;">DESATIVADO</div>
-                        </div>
-                    </div>
-                `;
-            }
-            panel.style.display = 'block';
-        }
-
-        // LÓGICA DE ANÁLISE DO ROBÔ BRANCO (Cópia da lógica original para modificação independente)
-        function createAutoSignal(triggerResult, targetColor) {
-            const [h, m] = triggerResult.time.split(':').map(Number);
-            const signalTime = new Date();
-            signalTime.setHours(h, m, 0, 0);
-            
-            // Pega o tempo configurado pelo usuário
-            let entryTime = parseInt(document.getElementById('autoBotEntryTime').value);
-            if (isNaN(entryTime) || entryTime < 2) entryTime = 2; // Garante o mínimo de 2 minutos
-            signalTime.setMinutes(signalTime.getMinutes() + entryTime); 
-
-            // --- LÓGICA DE FILTRO DE MELHORES MINUTOS ---
-            const useBestMinuteFilter = document.getElementById('autoBotBestMinuteFilter');
-            if (useBestMinuteFilter && useBestMinuteFilter.checked) {
-                const currentAutoStrategy = document.getElementById('autoBotStrategy').value;
-                let analysisStrategy = 'padrao';
-                
-                // Mapeamento de estratégias do Robô para estratégias de Análise
-                if (['alternating_break', 'follow_trend', 'surf_flow', 'chess_break'].includes(currentAutoStrategy)) {
-                    analysisStrategy = 'surf'; // Busca repetição
-                } else if (['counter_trend'].includes(currentAutoStrategy)) {
-                    analysisStrategy = 'padrao'; // Busca alternância
-                } else if (['reversal_protection', 'king_of_table', 'post_white_value'].includes(currentAutoStrategy)) {
-                    analysisStrategy = 'focoVermelho'; // Foco em cor específica (Vermelho como proxy)
-                }
-
-                const minAssertiveness = parseInt(document.getElementById('autoBotMinAssertiveness').value) || 80;
-                const bestMinutes = getBestPerformingMinutes(minAssertiveness, null, analysisStrategy);
-                const targetMinute = signalTime.getMinutes();
-
-                if (!bestMinutes.includes(targetMinute)) {
-                    console.log(`Robô Auto: Sinal ignorado. Minuto ${targetMinute} não está entre os melhores (${minAssertiveness}%+) para ${analysisStrategy}.`);
-                    const statusDiv = document.getElementById('autoBotStatus');
-                    if (statusDiv) {
-                        statusDiv.innerHTML = `<span style="color: #ffc107">⚠️ Sinal ignorado (Filtro Minuto ${targetMinute}).</span>`;
-                        setTimeout(() => { 
-                            if(document.getElementById('autoBotToggle').checked) 
-                                statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Ativado. Monitorando novos resultados...</span>';
-                        }, 3000);
-                    }
-                    return; // Aborta a criação do sinal
-                }
-            }
-            // ---------------------------------------------
-
-            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
-            
-            // Evita gerar o mesmo sinal repetidamente se os dados não atualizaram
-            if (lastGeneratedSignalTime === signalTimeString) return;
-            lastGeneratedSignalTime = signalTimeString;
-
-            const day = signalTime.getDate().toString().padStart(2, '0');
-            const month = (signalTime.getMonth() + 1).toString().padStart(2, '0');
-            const year = signalTime.getFullYear();
-            const signalDateString = `${day}/${month}/${year}`;
-
-            const upperTargetColor = targetColor.toUpperCase();
-            const targetColorEmoji = upperTargetColor === 'VERMELHO' ? '🔴' : '⚫';
-
-            // Armazena os detalhes do sinal que será monitorado
-            activeSignal = {
-                time: signalTimeString, // Horário do sinal
-                date: signalDateString, // Data do sinal para evitar conflito com dias anteriores
-                targetColor: upperTargetColor, // Cor alvo (VERMELHO ou PRETO)
-                gale: 0 // 0 para a primeira entrada, 1 para o G1
-            };
-
-            // Exibe o sinal na tela
-            const signalPanel = document.getElementById('autoBotSignalPanel');
-            const signalContent = document.getElementById('autoBotSignalContent');
-
-            const targetColorStyle = upperTargetColor === 'VERMELHO' ? 'color: var(--accent-blaze);' : 'color: #ddd;';
-
-            signalContent.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                    <div style="text-align: left; flex: 1;">
-                        <div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeSignal.time}</div>
-                        <div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="${targetColorStyle} font-weight: bold; text-shadow: 0 0 5px rgba(255,255,255,0.2);">${targetColorEmoji}</span> + <span style="color: #fff;">⚪️</span></div>
-                        <div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">♻️ ATÉ G1</span></div>
-                    </div>
-                    <div class="signal-chart-container">
-                        <div class="signal-ring ring-1"></div>
-                        <div class="signal-ring ring-2"></div>
-                        <div class="signal-center-icon">${targetColorEmoji}</div>
-                    </div>
-                </div>
-                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;">
-                    <span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div>
-                        <span class="cortex-text-anim">⏳ Aguardando resultado...</span>
-                    </span>
-                </div>
-            `;
-            signalPanel.classList.add('panel-glow-active');
-            signalPanel.style.display = 'block';
-
-            console.log(`Sinal gerado para ${activeSignal.time}`);
-            playNotificationSound();
         }
 
         function createWhiteSignal(triggerResult, targetColor, strategyName, customOffset = null) {
@@ -6090,32 +4357,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
-        function playNotificationSound() {
-            const soundToggle = document.getElementById('autoBotSoundToggle');
-            if (soundToggle && !soundToggle.checked) return;
-
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-                
-                const ctx = new AudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2); // Beep curto de 200ms
-            } catch (e) {
-                console.error("Erro ao reproduzir som:", e);
-            }
-        }
-
         function playWhiteNotificationSound() {
             const soundToggle = document.getElementById('whiteBotSoundToggle');
             if (soundToggle && !soundToggle.checked) return;
@@ -6245,30 +4486,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             return { registros, brancos, janelas, padroes };
         }
 
-        function toggleWhiteBotConfig() {
-            const container = document.getElementById('whiteBotConfigContainer');
-            const btn = document.getElementById('whiteBotCollapseBtn');
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-                btn.innerHTML = '🔽 RECOLHER PAINEL';
-            } else {
-                container.style.display = 'none';
-                btn.innerHTML = '▶️ EXPANDIR PAINEL';
-            }
-        }
-
-        function toggleAutoBotConfig() {
-            const container = document.getElementById('autoBotConfigContainer');
-            const btn = document.getElementById('autoBotCollapseBtn');
-            if (container.style.display === 'none') {
-                container.style.display = 'block';
-                btn.innerHTML = '🔽 RECOLHER PAINEL';
-            } else {
-                container.style.display = 'none';
-                btn.innerHTML = '▶️ EXPANDIR PAINEL';
-            }
-        }
-
         function applyWhiteBotPreset(btn) {
             const selector = document.getElementById('whiteBotPresetSelector');
             const preset = selector.value;
@@ -6299,7 +4516,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             if (config.protTrigger) document.getElementById('whiteBotProtectionTriggerCount').value = config.protTrigger;
             if (config.protPause) document.getElementById('whiteBotProtectionPauseCount').value = config.protPause;
-            if (config.protReset) document.getElementById('whiteBotProtectionResetCount').value = config.protReset;
             
             const filterCheck = document.getElementById('whiteBotBestMinuteFilter');
             if (filterCheck) filterCheck.checked = !!config.filter;
@@ -6326,7 +4542,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 rotation: document.getElementById('whiteBotRandomRotation').checked,
                 protTrigger: parseInt(document.getElementById('whiteBotProtectionTriggerCount').value),
                 protPause: parseInt(document.getElementById('whiteBotProtectionPauseCount').value),
-                protReset: parseInt(document.getElementById('whiteBotProtectionResetCount').value),
                 filter: document.getElementById('whiteBotBestMinuteFilter').checked,
                 assertiveness: parseInt(document.getElementById('whiteBotMinAssertiveness').value),
                 stopLoss: document.getElementById('whiteBotStrategyStopLoss').checked
@@ -6334,45 +4549,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             localStorage.setItem('whiteBotCustomPreset', JSON.stringify(config));
             if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
         }
-
-        // --- FUNÇÕES DO TELEGRAM (STUBS PARA EVITAR ERROS) ---
-        function saveTelegramSettings(btn) {
-            const token = document.getElementById('telegram_bot_token').value;
-            const chatId = document.getElementById('telegram_chat_id').value;
-            if(token) localStorage.setItem('telegram_bot_token', token);
-            if(chatId) localStorage.setItem('telegram_chat_id', chatId);
-            
-            if(btn) {
-                const originalText = btn.innerText;
-                btn.innerText = '✅ Salvo!';
-                setTimeout(() => btn.innerText = originalText, 2000);
-            }
-        }
-
-        function testTelegramConnection(btn) {
-            alert('Teste de conexão: Verifique se o Bot foi adicionado ao grupo/canal como Administrador.');
-        }
-
-        function openTelegramAccess(btn) {
-            window.open('https://web.telegram.org/', '_blank');
-        }
-
-        function sendTelegramList(btn) {
-            const msg = document.getElementById('telegram_list_message').value;
-            if(!msg) return alert('Digite uma mensagem.');
-            if(typeof sendTelegramNotification === 'function') {
-                sendTelegramNotification(msg);
-                alert('Mensagem enviada (verifique o console para confirmação).');
-            } else {
-                alert('Função de envio não configurada (firebase-config.js ausente?).');
-            }
-        }
-
-        function sendGeneratedListToTelegram(btn) { alert('Funcionalidade em desenvolvimento.'); }
-        function sendAnalysisToTelegram(btn) { alert('Funcionalidade em desenvolvimento.'); }
     </script>
 </body>
-
-
-
 </html>

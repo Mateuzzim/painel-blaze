@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Manual</title>
+    <style>
+        /* Estilos adaptados do index.html */
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 8px 16px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .platform-btn.active { background: #00d2ff; color: #000; font-weight: bold; border-color: #00d2ff; }
+        .platform-jonbet .platform-btn.active { background: #00ff88; border-color: #00ff88; }
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f0f13; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, select:focus, textarea:focus { border-color: #00d2ff; outline: none; }
+        .btn-action { width: 100%; padding: 12px; background: linear-gradient(90deg, #00d2ff, #0088cc); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-copy { width: 100%; padding: 10px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-copy:hover { background: #444; }
+        .output-area { background: #000; border: 1px solid #333; padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: #00d2ff; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        
+        /* Estilos Específicos do Gerador Manual */
+        .manual-btn { cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; padding: 10px; font-weight: bold; transition: all 0.2s; }
+        .manual-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        .manual-btn:active { transform: translateY(1px); }
+        .color-v { background-color: #ff0055; border-color: #ff0055; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .color-p { background-color: #1a1a1a; border-color: #444; }
+        .color-b { background-color: #fff; color: #000; border-color: #fff; }
+        .main-color-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .manual-button-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
+        .util-button-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .util-btn { background-color: #444; font-size: 0.8rem; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">GERADOR MANUAL</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="suite_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                </div>
+            </div>
+
+            <div id="suite_manual">
+                <h2>✍️ Gerador Manual</h2>
+                <div class="control-group">
+                    <div class="main-color-grid">
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('V')">V</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('P')">P</button>
+                        <button class="manual-btn color-b" onclick="suite_appendToManualPattern('B')">B</button>
+                    </div>
+                    <div class="manual-button-grid">
+                        <button class="manual-btn color-b" onclick="suite_appendToManualPattern('0')">0</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('1')">1</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('2')">2</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('3')">3</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('4')">4</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('5')">5</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('6')">6</button>
+                        <button class="manual-btn color-v" onclick="suite_appendToManualPattern('7')">7</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('8')">8</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('9')">9</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('10')">10</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('11')">11</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('12')">12</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('13')">13</button>
+                        <button class="manual-btn color-p" onclick="suite_appendToManualPattern('14')">14</button>
+                    </div>
+                    <div class="util-button-grid">
+                        <button class="manual-btn util-btn" onclick="suite_manualBackspace()">⌫ DESFAZER</button>
+                        <button class="manual-btn util-btn" onclick="suite_manualInvert()" style="font-size: 1.2rem;">🔄</button>
+                        <button class="manual-btn util-btn" onclick="suite_manualClear()">LIMPAR TUDO</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Sequência de Sinais:</label>
+                    <textarea id="suite_manualPatternInput" placeholder="Use V, P, B, 0-14. Ex: V P 1 14 B"></textarea>
+                    <div class="hint" style="display: none;">V=Vermelho, P=Preto, B=Branco, 0-14=Nº</div>
+                </div>
+                <div class="inline-controls">
+                    <div class="control-group">
+                        <label>Quantidade de Sinais:</label>
+                        <input type="number" id="suite_manualQtdSinais" value="10" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Intervalo (Minutos):</label>
+                        <input type="number" id="suite_manualIntervalo" value="2" min="1">
+                    </div>
+                </div>
+                <div class="inline-controls">
+                    <button class="btn-action" onclick="suite_gerarListaManual()" style="font-size: 0.9rem;">✍️ GERAR LISTA MANUAL</button>
+                    <button class="btn-copy" onclick="copiar('suite_resManual', this)" style="margin-top: 10px;">📋 COPIAR LISTA</button>
+                </div>
+                <div class="output-area" id="suite_resManual">Aguardando sequência...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function suite_selectPlatform(platform) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+            
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+        }
+
+        function copiar(elementId, btn) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copiado!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function suite_appendToManualPattern(val) {
+            const input = document.getElementById('suite_manualPatternInput');
+            input.value += (input.value ? ' ' : '') + val;
+        }
+
+        function suite_manualBackspace() {
+            const input = document.getElementById('suite_manualPatternInput');
+            const parts = input.value.trim().split(' ');
+            parts.pop();
+            input.value = parts.join(' ');
+        }
+
+        function suite_manualClear() {
+            document.getElementById('suite_manualPatternInput').value = '';
+            document.getElementById('suite_resManual').innerText = 'Aguardando sequência...';
+        }
+
+        function suite_manualInvert() {
+            const input = document.getElementById('suite_manualPatternInput');
+            const parts = input.value.trim().split(' ');
+            const inverted = parts.map(p => {
+                if (p === 'V') return 'P';
+                if (p === 'P') return 'V';
+                // Inverte números (Vermelhos <-> Pretos)
+                const n = parseInt(p);
+                if (!isNaN(n)) {
+                    if (n >= 1 && n <= 7) return '8'; // Simplificação: Vira preto genérico
+                    if (n >= 8 && n <= 14) return '1'; // Simplificação: Vira vermelho genérico
+                }
+                return p;
+            });
+            input.value = inverted.join(' ');
+        }
+
+        function suite_gerarListaManual() {
+            const patternStr = document.getElementById('suite_manualPatternInput').value.trim();
+            const qtd = parseInt(document.getElementById('suite_manualQtdSinais').value) || 10;
+            const intervalo = parseInt(document.getElementById('suite_manualIntervalo').value) || 2;
+            const outputDiv = document.getElementById('suite_resManual');
+            const platform = document.getElementById('suite_platformSelector').value;
+
+            if (!patternStr) {
+                outputDiv.innerText = "⚠️ Digite ou selecione uma sequência de cores/números.";
+                return;
+            }
+
+            const pattern = patternStr.split(/\s+/);
+            let signals = [];
+            let currentTime = new Date();
+            currentTime.setSeconds(0);
+            currentTime.setMinutes(currentTime.getMinutes() + 1);
+
+            for (let i = 0; i < qtd; i++) {
+                currentTime.setMinutes(currentTime.getMinutes() + intervalo);
+                const hh = currentTime.getHours().toString().padStart(2, '0');
+                const mm = currentTime.getMinutes().toString().padStart(2, '0');
+                
+                const item = pattern[i % pattern.length];
+                let emoji = '❓';
+                
+                if (item === 'V') emoji = (platform === 'jonbet') ? '🟢' : '🔴';
+                else if (item === 'P') emoji = '⚫';
+                else if (item === 'B') emoji = '⚪';
+                else {
+                    const n = parseInt(item);
+                    if (!isNaN(n)) {
+                        if (n === 0) emoji = '⚪';
+                        else if (n >= 1 && n <= 7) emoji = (platform === 'jonbet') ? '🟢' : '🔴';
+                        else if (n >= 8 && n <= 14) emoji = '⚫';
+                    }
+                }
+
+                signals.push(`🕒 ${hh}:${mm} ➔ ${emoji}`);
+            }
+
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const dateStr = new Date().toLocaleDateString('pt-BR');
+            
+            let out = `✍️ *LISTA MANUAL*\n🚦 Plataforma: *${platformName}*\n📅 Data: ${dateStr}\n🛡️ Proteção no Branco ⚪️\n--------------------------------\n${signals.join('\n')}\n--------------------------------\n✅ Gerencie sua banca!`;
+            outputDiv.innerText = out;
+        }
+    </script>
+</body>
+</html>

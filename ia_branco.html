@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I.A Branco</title>
+    <style>
+        /* Styles adapted from index.html */
+        body { background-color: #0f0f13; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        h1, h2 { margin: 0; }
+        h2 { margin-bottom: 15px; color: #00d2ff; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 8px 16px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; border-radius: 4px; transition: all 0.3s; }
+        .platform-btn.active { background: #00d2ff; color: #000; font-weight: bold; border-color: #00d2ff; }
+        .platform-jonbet .platform-btn.active { background: #00ff88; border-color: #00ff88; }
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0f0f13; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        input:focus, select:focus, textarea:focus { border-color: #00d2ff; outline: none; }
+        .btn-action { width: 100%; padding: 12px; background: linear-gradient(90deg, #00d2ff, #0088cc); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-copy { width: 100%; padding: 10px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-copy:hover { background: #444; }
+        .output-area { background: #000; border: 1px solid #333; padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: #00d2ff; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .manual-btn { cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; }
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .toggle-switch-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">I.A BRANCO</h1>
+                <div class="platform-switcher">
+                    <input type="hidden" id="suite_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                </div>
+            </div>
+
+            <div id="suite_ia_branco">
+                <h2>🤖 I.A Branco</h2>
+                <div class="toggle-switch-container" style="margin-bottom: 20px;">
+                    <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
+                    <label class="switch">
+                        <input type="checkbox" id="suite_iaBranco_autoMode" onchange="suite_toggleIaBrancoMode(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-group" id="suite_iaBranco_agressividade_container" style="display: none;">
+                    <label>Nível de Agressividade (Automático):</label>
+                    <select id="suite_iaBranco_agressividade">
+                        <option value="moderado" selected>Moderado</option>
+                        <option value="conservador">Conservador</option>
+                        <option value="agressivo">Agressivo</option>
+                    </select>
+                </div>
+                <div class="control-group" id="suite_iaBranco_historico_container">
+                    <label>Cole o Histórico Copiado:</label>
+                    <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
+                    <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
+                </div>
+
+                <div class="inline-controls" style="margin-bottom: 15px;">
+                    <div class="control-group">
+                        <label>Quantidade de Sinais:</label>
+                        <input type="number" id="suite_iaBranco_qtdSinais" value="6" min="1">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Data da Lista:</label>
+                    <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
+                        <input type="hidden" id="suite_ia_branco_date_selector" value="hoje">
+                        <button class="platform-btn active" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
+                        <button class="platform-btn" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Estratégia de I.A. para Branco:</label>
+                    <select id="suite_iaBranco_estrategia" onchange="suite_toggleBrancoProximoOptions()">
+                        <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
+                        <option value="produtividadeHora">2. Análise de Produtividade</option>
+                        <option value="horarioPico">3. Análise de Horário de Pico</option>
+                        <option value="velocidadeConclusao">4. Análise de Velocidade</option>
+                        <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
+                        <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
+                        <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
+                        <option value="brancoProximo">8. Branco Próximo (Análise por Minuto)</option>
+                    </select>
+                </div>
+                <!-- SUGESTÃO: Opções específicas para a estratégia "Branco Próximo" -->
+                <div class="control-group" id="suite_brancoProximo_options_container" style="display: none; border-left: 3px solid #00d2ff; padding-left: 15px; margin-top: 20px;">
+                    <label for="suite_brancoProximo_patternSize">TAMANHO DO PADRÃO</label>
+                    <select id="suite_brancoProximo_patternSize">
+                        <option value="1">1 Pedra</option>
+                        <option value="2">2 Pedras</option>
+                        <option value="3" selected>3 Pedras</option>
+                        <option value="4">4 Pedras</option>
+                    </select>
+                    <div class="hint">Quantas pedras (números) antes do branco a I.A. deve procurar como padrão.</div>
+                </div>
+                <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
+                <div class="output-area" id="suite_resIABranco">Aguardando geração...</div>
+                <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function suite_selectPlatform(platform) {
+            document.getElementById('suite_platformSelector').value = platform;
+            document.getElementById('suite_btn-blaze').classList.remove('active');
+            document.getElementById('suite_btn-jonbet').classList.remove('active');
+            document.getElementById(`suite_btn-${platform}`).classList.add('active');
+            
+            const panel = document.querySelector('.layout-panel.suite');
+            if (platform === 'jonbet') panel.classList.add('platform-jonbet');
+            else panel.classList.remove('platform-jonbet');
+        }
+
+        function copiar(elementId, btn) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copiado!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function suite_selectDate(tabPrefix, choice) {
+            document.getElementById(`suite_${tabPrefix}_date_selector`).value = choice;
+            document.getElementById(`suite_${tabPrefix}_btn_hoje`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_amanha`).classList.remove('active');
+            document.getElementById(`suite_${tabPrefix}_btn_${choice}`).classList.add('active');
+        }
+
+        let suite_formatTimeout;
+        function suite_autoFormatBrancoInput(textarea) {
+            clearTimeout(suite_formatTimeout);
+            suite_formatTimeout = setTimeout(() => {
+                const timeRegex = /^\d{2}:\d{2}$/;
+                const lines = textarea.value.split('\n');
+                const formattedLines = lines
+                    .map(line => line.trim())
+                    .filter(line => timeRegex.test(line) || /^\d{2}:\d{2} BRANCO$/.test(line))
+                    .map(line => timeRegex.test(line) ? `${line} BRANCO` : line);
+                textarea.value = formattedLines.join('\n');
+            }, 500);
+        }
+
+        function suite_toggleIaBrancoMode(isAuto) {
+            const histContainer = document.getElementById('suite_iaBranco_historico_container');
+            const aggContainer = document.getElementById('suite_iaBranco_agressividade_container');
+            if (isAuto) {
+                histContainer.style.display = 'none';
+                aggContainer.style.display = 'block';
+            } else {
+                histContainer.style.display = 'block';
+                aggContainer.style.display = 'none';
+            }
+        }
+
+        function suite_toggleBrancoProximoOptions() {
+            const strategy = document.getElementById('suite_iaBranco_estrategia').value;
+            const container = document.getElementById('suite_brancoProximo_options_container');
+            if (strategy === 'brancoProximo') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function suite_gerarSinaisBrancoIA() {
+            const isAuto = document.getElementById('suite_iaBranco_autoMode').checked;
+            const qtdSinais = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value) || 6;
+            const estrategia = document.getElementById('suite_iaBranco_estrategia').value;
+            const outputDiv = document.getElementById('suite_resIABranco');
+            const platform = document.getElementById('suite_platformSelector').value;
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
+            
+            const targetDate = new Date();
+            if (dateChoice === 'amanha') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+            const dataLista = targetDate.toLocaleDateString('pt-BR');
+
+            let signals = [];
+            let log = "";
+
+            if (isAuto) {
+                // Modo Automático (Simulação baseada em agressividade)
+                const agressividade = document.getElementById('suite_iaBranco_agressividade').value;
+                let intervalBase = 20; 
+                if (agressividade === 'conservador') intervalBase = 45;
+                if (agressividade === 'agressivo') intervalBase = 10;
+
+                let currentTime = new Date();
+                currentTime.setMinutes(currentTime.getMinutes() + 5); // Começa daqui a 5 min
+
+                for (let i = 0; i < qtdSinais; i++) {
+                    const variation = Math.floor(Math.random() * 10) - 5; // +/- 5 min
+                    currentTime.setMinutes(currentTime.getMinutes() + intervalBase + variation);
+                    const hh = currentTime.getHours().toString().padStart(2, '0');
+                    const mm = currentTime.getMinutes().toString().padStart(2, '0');
+                    signals.push(`🕒 ${hh}:${mm} ➔ ⚪`);
+                }
+                log = `Modo Automático (${agressividade})`;
+            } else {
+                // Modo Histórico
+                const input = document.getElementById('suite_iaBranco_historico').value.trim();
+                if (!input) {
+                    outputDiv.innerText = "⚠️ Cole o histórico de brancos ou ative o Modo Automático.";
+                    return;
+                }
+                
+                // Extrai horários
+                const timeRegex = /(\d{2}):(\d{2})/;
+                const times = input.split('\n').map(l => {
+                    const m = l.match(timeRegex);
+                    return m ? { h: parseInt(m[1]), m: parseInt(m[2]) } : null;
+                }).filter(t => t !== null);
+
+                if (times.length < 2) {
+                    outputDiv.innerText = "⚠️ Histórico insuficiente (mínimo 2 horários).";
+                    return;
+                }
+
+                // Lógica simplificada de projeção baseada na estratégia
+                let lastTime = new Date();
+                lastTime.setHours(times[times.length-1].h, times[times.length-1].m, 0, 0);
+                
+                // Se o último horário do histórico for muito antigo, usa o atual
+                if ((new Date() - lastTime) > 12 * 60 * 60 * 1000) {
+                    lastTime = new Date();
+                }
+
+                let intervals = [];
+                for(let i=1; i<times.length; i++) {
+                    let diff = (times[i].h * 60 + times[i].m) - (times[i-1].h * 60 + times[i-1].m);
+                    if (diff < 0) diff += 24*60;
+                    intervals.push(diff);
+                }
+                
+                let avgInterval = intervals.reduce((a,b)=>a+b,0) / intervals.length;
+                if (avgInterval < 5) avgInterval = 15; // Fallback
+
+                for (let i = 0; i < qtdSinais; i++) {
+                    lastTime.setMinutes(lastTime.getMinutes() + avgInterval);
+                    const hh = lastTime.getHours().toString().padStart(2, '0');
+                    const mm = lastTime.getMinutes().toString().padStart(2, '0');
+                    signals.push(`🕒 ${hh}:${mm} ➔ ⚪`);
+                }
+                log = `Baseado em Histórico (${estrategia})`;
+            }
+
+            let out = `🤖 *I.A BRANCO - LISTA*\n`;
+            out += `🚦 Plataforma: *${platformName}*\n`;
+            out += `📅 Data: *${dataLista}*\n`;
+            out += `🧠 Análise: *${log}*\n`;
+            out += `🔄 Entradas: *3* (Cobrir até 3 min)\n`;
+            out += `--------------------------------\n`;
+            out += signals.join('\n');
+            out += `\n--------------------------------\n`;
+            out += `⚠️ Gerencie sua banca.`;
+            
+            outputDiv.innerText = out;
+        }
+    </script>
+</body>
+</html>
