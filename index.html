@@ -555,6 +555,58 @@
         .futuristic-log-entry:last-child { border-bottom: none; }
         .futuristic-log-time { color: #666; font-size: 0.7rem; min-width: 50px; }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* --- ANIMAÇÃO PAUSA PÓS-BRANCO --- */
+        .post-white-wrapper {
+            position: relative; padding: 15px; background: rgba(20, 20, 10, 0.8);
+            border: 1px solid #ffc107; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.15) inset;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .post-white-wrapper::before {
+            content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.2), transparent);
+            transform: skewX(-25deg); animation: scan-warning 2.5s infinite; pointer-events: none;
+        }
+        @keyframes scan-warning { 0% { left: -150%; } 100% { left: 150%; } }
+        .post-white-title {
+            color: #ffc107; font-weight: 900; font-size: 1.1rem; text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 193, 7, 0.6);
+            animation: blink-warning 2s infinite alternate;
+        }
+        @keyframes blink-warning { 0% { opacity: 1; text-shadow: 0 0 10px rgba(255, 193, 7, 0.6); } 100% { opacity: 0.6; text-shadow: 0 0 2px rgba(255, 193, 7, 0.3); } }
+        .post-white-desc { color: #fff; font-size: 0.8rem; font-family: monospace; z-index: 1; }
+        .post-white-icon { font-size: 1.5rem; margin-bottom: 5px; animation: pulse-icon 1.5s infinite; }
+        @keyframes pulse-icon { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .post-white-timer {
+            font-size: 0.7rem;
+            color: #ffc107;
+            margin-top: 8px;
+            font-family: monospace;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 193, 7, 0.1);
+        }
+        /* Botão WhatsApp Login */
+        #whatsapp-support-button {
+            position: absolute;
+            top: 160px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background-color: #25D366;
+            box-shadow: 0 0 10px rgba(37, 211, 102, 0.5);
+            transition: transform 0.3s;
+        }
+        #whatsapp-support-button:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -570,6 +622,12 @@
         <a id="instagram-support-button" class="telegram-support-button" href="https://www.instagram.com/cortex_virtual?igsh=NTltcmdnMHlqZnQw&utm_source=qr" target="_blank" title="Siga-nos no Instagram">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="black">
                 <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"></path>
+            </svg>
+        </a>
+        <!-- Botão do WhatsApp -->
+        <a id="whatsapp-support-button" class="telegram-support-button" href="https://wa.me/55719996381227?text=Ol%C3%A1%2C%20gostaria%20de%20suporte%20no%20Cortex%20Virtual%21" target="_blank" title="Fale conosco no WhatsApp">
+            <svg viewBox="0 0 24 24" width="38" height="38" fill="white">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c.04-4.54 3.74-8.23 8.25-8.23m4.53 11.38c-.19-.09-1.1-.54-1.27-.61-.17-.05-.29-.09-.41.09-.12.19-.48.61-.59.74-.11.12-.22.14-.41.05-.19-.09-.82-.3-1.57-.96-.58-.52-.97-1.16-1.08-1.35-.11-.19-.01-.29.09-.38.08-.09.19-.23.29-.35.09-.11.12-.19.18-.31.06-.12.03-.23-.01-.32-.05-.09-.41-1.05-.57-1.43-.15-.38-.3-.32-.41-.32h-.35c-.12 0-.32.05-.49.23-.17.19-.64.61-.64 1.48 0 .87.64 1.71.73 1.84.09.13 1.25 1.91 3.03 2.68.42.18.75.29 1.01.37.43.13.82.11 1.13.07.35-.05 1.1-.45 1.25-.88.16-.44.16-.82.11-.9-.05-.09-.17-.14-.36-.23z"></path>
             </svg>
         </a>
         <!-- LOGO DA EMPRESA - Troque a URL em 'src' pela URL da sua imagem -->
@@ -1073,7 +1131,7 @@
                     </div>
                 </div>
 
-                <div id="suite_usuarios" class="tab-content futuristic-entry">
+                <div id="suite_usuarios" class="tab-content">
                     <h2>🚀 Gerenciamento de Usuários</h2>
                     <form id="suite_userRegistrationForm" onsubmit="registerUser(event)">
                         <div class="control-group">
@@ -2183,6 +2241,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('whiteBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
                 whiteBotStrategyStats = {};
                 whiteBotProtectionPauseRemaining = 0;
+                whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false;
                 lastProcessedGeneralTime = null;
                 lastProcessedWhiteTime = null;
@@ -2212,6 +2271,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('whiteBotSignalPanel').style.display = 'none';
                 updateWhiteBotProtectionDisplay('disabled');
                 lastWhiteBotResult = null;
+                whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false;
                 if (container) container.classList.remove('bot-active-pulse');
                 if (navBtn) navBtn.classList.remove('bot-active-pulse');
@@ -2233,26 +2293,45 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         function resetWhiteBotProtectionCount(btn) {
             whiteBotProtectionWhiteCount = 0;
             whiteBotProtectionWhitesInPause = 0;
-            if (document.getElementById('whiteBotToggle').checked && whiteBotProtectionPauseRemaining <= 0) updateWhiteBotProtectionDisplay('standby');
-            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+            if (document.getElementById('whiteBotToggle').checked && whiteBotProtectionPauseRemaining <= 0) {
+                updateWhiteBotProtectionDisplay('standby');
+            }
+            if (btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅';
+                setTimeout(() => btn.innerText = originalText, 1000);
+            }
         }
 
         function resetWhiteBotPauseWhites(btn) {
             whiteBotProtectionWhitesInPause = 0;
             const resumeInput = document.getElementById('whiteBotProtectionResumeCurrent');
             if (resumeInput) resumeInput.value = 0;
-            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+            if (btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅';
+                setTimeout(() => btn.innerText = originalText, 1000);
+            }
         }
 
         function toggleWhiteBotProtectionUserPreference(checkbox) {
             whiteBotProtectionUserEnabled = checkbox.checked;
-            if (!document.getElementById('whiteBotToggle').checked) { updateWhiteBotProtectionDisplay('disabled'); return; }
+            if (!document.getElementById('whiteBotToggle').checked) {
+                updateWhiteBotProtectionDisplay('disabled');
+                return;
+            }
             if (!whiteBotProtectionUserEnabled) {
-                whiteBotRecoveryEndTime = 0; whiteBotProtectionPauseRemaining = 0; whiteBotProtectionWhitesInPause = 0;
+                whiteBotRecoveryEndTime = 0;
+                whiteBotProtectionPauseRemaining = 0;
+                whiteBotProtectionWhitesInPause = 0;
                 updateWhiteBotProtectionDisplay('user_disabled');
                 const signalContent = document.getElementById('whiteBotSignalContent');
-                if (signalContent && signalContent.innerHTML.includes('Pausado')) signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
-            } else updateWhiteBotProtectionDisplay('standby');
+                if (signalContent && signalContent.innerHTML.includes('Pausado')) {
+                    signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
+                }
+            } else {
+                updateWhiteBotProtectionDisplay('standby');
+            }
         }
 
         function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
@@ -2284,14 +2363,20 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
         async function sendWhiteBotTelegramAlert(message) {
             const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
-            if (!toggle || !toggle.checked) return;
+            if (!toggle || !toggle.checked) {
+                return;
+            }
             const token = localStorage.getItem('telegram_bot_token');
             const chatId = localStorage.getItem('telegram_chat_id');
-            if (!token || !chatId) return;
+            if (!token || !chatId) {
+                return;
+            }
             try {
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
                 await fetch(url);
-            } catch (e) { console.error('Erro ao enviar alerta Telegram:', e); }
+            } catch (e) {
+                console.error('Erro ao enviar alerta Telegram:', e);
+            }
         }
 
         // Configura o link do botão de suporte do Telegram
@@ -2457,10 +2542,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             toggleTrialDurationField(); // Mostra/oculta o campo de duração conforme o nível de acesso
         }
 
-        let currentUserListPage = 1;
-        let totalUserPages = 1;
-        const usersPerPage = 10; // Alterado para 10 usuários por página
-        let userListSort = {
+        let currentUserListPageConfig = 1;
+        let totalUserPagesConfig = 1;
+        const usersPerPageConfig = 5; // Alterado para 5 usuários por página
+        let userListSortConfig = {
             column: 'username', // Coluna de ordenação padrão
             direction: 'asc'    // Direção padrão
         };
@@ -2496,11 +2581,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             // Lógica de Ordenação (existente)
             users.sort((a, b) => {
-                let valA = a[userListSort.column];
-                let valB = b[userListSort.column];
+                let valA = a[userListSortConfig.column];
+                let valB = b[userListSortConfig.column];
 
                 // Tratamento especial para datas de expiração
-                if (userListSort.column === 'expiresAt') {
+                if (userListSortConfig.column === 'expiresAt') {
                     // Usuários permanentes (null) são considerados "maiores" que qualquer data
                     if (valA === null) return 1;
                     if (valB === null) return -1;
@@ -2512,33 +2597,33 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     valB = String(valB).toLowerCase();
                 }
 
-                if (valA < valB) return userListSort.direction === 'asc' ? -1 : 1;
-                if (valA > valB) return userListSort.direction === 'asc' ? 1 : -1;
+                if (valA < valB) return userListSortConfig.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return userListSortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
             });
 
             document.querySelectorAll('.sortable-header').forEach(th => th.classList.remove('asc', 'desc'));
-            const activeHeader = document.getElementById(`sort-by-${userListSort.column}`);
+            const activeHeader = document.getElementById(`sort-by-${userListSortConfig.column}`);
             if (activeHeader) {
-                activeHeader.classList.add(userListSort.direction);
+                activeHeader.classList.add(userListSortConfig.direction);
             }
 
-            currentUserListPage = page;
+            currentUserListPageConfig = page;
 
-            const totalPages = Math.ceil(users.length / usersPerPage);
-            totalUserPages = totalPages;
+            const totalPages = Math.ceil(users.length / usersPerPageConfig);
+            totalUserPagesConfig = totalPages;
             if (totalPages <= 1) {
                 paginationControls.style.display = 'none';
             } else {
                 paginationControls.style.display = 'block';
             }
 
-            pageIndicator.textContent = `Página ${currentUserListPage} de ${totalPages}`;
-            prevButton.disabled = (currentUserListPage === 1);
-            nextButton.disabled = (currentUserListPage === totalPages);
+            pageIndicator.textContent = `Página ${currentUserListPageConfig} de ${totalPages}`;
+            prevButton.disabled = (currentUserListPageConfig === 1);
+            nextButton.disabled = (currentUserListPageConfig === totalPages);
 
-            const startIndex = (currentUserListPage - 1) * usersPerPage;
-            const endIndex = startIndex + usersPerPage;
+            const startIndex = (currentUserListPageConfig - 1) * usersPerPageConfig;
+            const endIndex = startIndex + usersPerPageConfig;
             const paginatedUsers = users.slice(startIndex, endIndex);
 
             tbody.innerHTML = ''; // Limpa a lista
@@ -2594,26 +2679,26 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         function sortUserList(column) {
-            if (userListSort.column === column) {
+            if (userListSortConfig.column === column) {
                 // Se clicar na mesma coluna, inverte a direção
-                userListSort.direction = userListSort.direction === 'asc' ? 'desc' : 'asc';
+                userListSortConfig.direction = userListSortConfig.direction === 'asc' ? 'desc' : 'asc';
             } else {
                 // Se clicar em uma nova coluna, define como ascendente
-                userListSort.column = column;
-                userListSort.direction = 'asc';
+                userListSortConfig.column = column;
+                userListSortConfig.direction = 'asc';
             }
             populateUserList(1); // Volta para a primeira página e reaplica a ordenação
         }
 
         function nextUserPage() {
-            if (currentUserListPage < totalUserPages) {
-                populateUserList(currentUserListPage + 1);
+            if (currentUserListPageConfig < totalUserPagesConfig) {
+                populateUserList(currentUserListPageConfig + 1);
             }
         }
 
         function prevUserPage() {
-            if (currentUserListPage > 1) {
-                populateUserList(currentUserListPage - 1);
+            if (currentUserListPageConfig > 1) {
+                populateUserList(currentUserListPageConfig - 1);
             }
         }
 
@@ -2674,7 +2759,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 await db.collection("users").doc(userId).update({ expiresAt: newExpirationDate });
 
                 console.log(`Acesso do usuário ${username} renovado até ${newExpirationDate}`);
-                populateUserList(currentUserListPage); // Atualiza a lista para mostrar a nova data
+                populateUserList(currentUserListPageConfig); // Atualiza a lista para mostrar a nova data
 
             } catch (e) {
                 console.error("Erro ao renovar o acesso do usuário:", e);
@@ -2700,7 +2785,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 const adminMessage = `O usuário *${username}* foi ${action.toUpperCase()} manualmente.`;
                 sendTelegramNotification(adminMessage);
 
-                populateUserList(currentUserListPage); // Atualiza a lista para refletir a mudança
+                populateUserList(currentUserListPageConfig); // Atualiza a lista para refletir a mudança
             } catch (e) {
                 console.error(`Erro ao ${action} o usuário:`, e);
                 alert(`Ocorreu uma falha ao tentar ${action} o usuário.`);
@@ -3519,6 +3604,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let whiteBotProtectionWhiteCount = 0; // Contador para proteção de 10 em 10
 
         let whiteBotWaitingForPostWhite = false; // Variável para controle do Pós-Branco
+        let whiteBotPostWhiteStartTime = null;
         // Variáveis para Recuperação Pós-Branco
         let whiteBotRecoveryEndTime = 0;
         let whiteBotProtectionPauseRemaining = 0; // Contagem regressiva de pedras para a pausa
@@ -3544,7 +3630,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             li.innerHTML = `<span class="futuristic-log-time">${timeStr}</span><span style="color:${color}; flex:1;">${message}</span>`;
             list.prepend(li);
-            while (list.children.length > 5) list.removeChild(list.lastChild);
+            while (list.children.length > 5) {
+                list.removeChild(list.lastChild);
+            }
         }
 
         function runWhiteBotLogic() {
@@ -3580,6 +3668,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // --- LÓGICA PÓS-BRANCO (Retomar após Loss apenas quando sair Branco) ---
             if (whiteBotWaitingForPostWhite) {
                 if (results[0].roll === 0) {
+                    whiteBotPostWhiteStartTime = null;
                     whiteBotWaitingForPostWhite = false;
                     console.log("Robô Branco: Branco detectado após Loss. Retomando análises...");
                     logWhiteBotAction('Recuperação: Branco detectado. Retomando.', 'success');
@@ -3589,7 +3678,22 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 } else {
                     const signalContent = document.getElementById('whiteBotSignalContent');
                     if (signalContent && !signalContent.innerHTML.includes('PAUSA')) {
-                         signalContent.innerHTML = '<span style="color: #ffc107; font-size: 1rem;">⏸️ PAUSA PÓS-LOSS: AGUARDANDO BRANCO ⚪</span>';
+                        let waitingTimeStr = 'AGUARDANDO...';
+                        if (whiteBotPostWhiteStartTime) {
+                            const now = new Date();
+                            const diffMinutes = Math.floor((now - whiteBotPostWhiteStartTime) / (1000 * 60));
+                            if (diffMinutes > 0) {
+                                waitingTimeStr = `HÁ ${diffMinutes} MINUTO${diffMinutes > 1 ? 'S' : ''}`;
+                            }
+                        }
+
+                         signalContent.innerHTML = `
+                            <div class="post-white-wrapper">
+                                <div class="post-white-icon">⚠️</div>
+                                <div class="post-white-title">PAUSA TÁTICA</div>
+                                <div class="post-white-desc">AGUARDANDO RETORNO DO BRANCO ⚪</div>
+                                <div class="post-white-timer">${waitingTimeStr}</div>
+                            </div>`;
                     }
                     return; // Mantém pausado
                 }
@@ -3778,7 +3882,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                             for (let i = 0; i < recentForEntropy.length - 1; i++) {
                                 const curr = dash_identificarCor(recentForEntropy[i].roll);
                                 const prev = dash_identificarCor(recentForEntropy[i+1].roll);
-                                if (curr === prev) score += 1; else score -= 1;
+                                if (curr === prev) {
+                                    score += 1;
+                                } else {
+                                    score -= 1;
+                                }
                             }
                             if (score <= -4) signalFound = true;
                         }
@@ -4326,6 +4434,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (message.includes('BRANCO')) whiteBotWhiteWins++;
                 whiteBotConsecutiveLosses = 0;
                 lastWhiteBotResult = 'win';
+                whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false; // Garante que não esteja esperando se ganhou
             } else {
                 whiteBotLosses++;
@@ -4335,6 +4444,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 // Ativa espera Pós-Branco se o toggle estiver ligado
                 const postWhiteToggle = document.getElementById('whiteBotPostWhiteRecovery');
                 if (postWhiteToggle && postWhiteToggle.checked) {
+                    whiteBotPostWhiteStartTime = new Date();
                     whiteBotWaitingForPostWhite = true;
                 }
             }
@@ -4700,20 +4810,37 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 else { alert('Nenhum preset personalizado salvo ainda.'); return; }
             }
 
-            if (config.strategy) document.getElementById('whiteBotStrategy').value = config.strategy;
-            if (config.entryCount) document.getElementById('whiteBotEntryCount').value = config.entryCount;
-            if (config.offset) document.getElementById('whiteBotEntryOffset').value = config.offset;
+            if (config.strategy) {
+                document.getElementById('whiteBotStrategy').value = config.strategy;
+            }
+            if (config.entryCount) {
+                document.getElementById('whiteBotEntryCount').value = config.entryCount;
+            }
+            if (config.offset) {
+                document.getElementById('whiteBotEntryOffset').value = config.offset;
+            }
             
             const rotationCheck = document.getElementById('whiteBotRandomRotation');
-            if (rotationCheck) { rotationCheck.checked = !!config.rotation; rotationCheck.dispatchEvent(new Event('change')); }
+            if (rotationCheck) {
+                rotationCheck.checked = !!config.rotation;
+                rotationCheck.dispatchEvent(new Event('change'));
+            }
 
-            if (config.protTrigger) document.getElementById('whiteBotProtectionTriggerCount').value = config.protTrigger;
-            if (config.protPause) document.getElementById('whiteBotProtectionPauseCount').value = config.protPause;
+            if (config.protTrigger) {
+                document.getElementById('whiteBotProtectionTriggerCount').value = config.protTrigger;
+            }
+            if (config.protPause) {
+                document.getElementById('whiteBotProtectionPauseCount').value = config.protPause;
+            }
             
             const filterCheck = document.getElementById('whiteBotBestMinuteFilter');
-            if (filterCheck) filterCheck.checked = !!config.filter;
+            if (filterCheck) {
+                filterCheck.checked = !!config.filter;
+            }
             
-            if (config.assertiveness) document.getElementById('whiteBotMinAssertiveness').value = config.assertiveness;
+            if (config.assertiveness) {
+                document.getElementById('whiteBotMinAssertiveness').value = config.assertiveness;
+            }
             
             const stopLossCheck = document.getElementById('whiteBotStrategyStopLoss');
             if (stopLossCheck) stopLossCheck.checked = !!config.stopLoss;
@@ -4721,7 +4848,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const postWhiteCheck = document.getElementById('whiteBotPostWhiteRecovery');
             if (postWhiteCheck) postWhiteCheck.checked = !!config.postWhite;
 
-            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+            if (btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅';
+                setTimeout(() => btn.innerText = originalText, 1000);
+            }
         }
 
         function saveWhiteBotPreset(btn) {
@@ -4744,7 +4875,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 postWhite: document.getElementById('whiteBotPostWhiteRecovery').checked
             };
             localStorage.setItem('whiteBotCustomPreset', JSON.stringify(config));
-            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+            if (btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅';
+                setTimeout(() => btn.innerText = originalText, 1000);
+            }
         }
     </script>
 </body>
