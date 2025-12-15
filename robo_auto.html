@@ -168,6 +168,12 @@
                             <label for="autoBotMinAssertiveness" style="font-size: 0.9em;">Assertividade Mínima (%):</label>
                             <input type="number" id="autoBotMinAssertiveness" value="80" min="1" max="100">
                         </div>
+                        <div class="control-group">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label for="autoBotAntiTrend" style="font-size: 0.9em; margin-bottom: 0; white-space: nowrap; color: #ff5555;">⛔ Anti-Seq:</label>
+                                <input type="number" id="autoBotAntiTrend" value="8" min="3" title="Bloqueia entrada se houver X cores iguais seguidas" style="padding: 5px;">
+                            </div>
+                        </div>
                     </div>
                     <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
                         <label for="autoBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
@@ -400,6 +406,20 @@
                 lastAutoBotResult = null;
                 return;
             }
+
+            // --- ANTI-SEQUÊNCIA (TENDÊNCIA) ---
+            const antiTrendLimit = parseInt(document.getElementById('autoBotAntiTrend').value) || 0;
+            if (antiTrendLimit > 0) {
+                const firstColor = dash_identificarCor(results[0].roll);
+                if (firstColor === 'vermelho' || firstColor === 'preto') {
+                    let streak = 1;
+                    for (let i = 1; i < results.length; i++) {
+                        if (dash_identificarCor(results[i].roll) === firstColor) streak++; else break;
+                    }
+                    if (streak >= antiTrendLimit) return; // Bloqueia entrada contra tendência forte
+                }
+            }
+
             const strategy = document.getElementById('autoBotStrategy').value;
             const recentColors = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco').slice(0, 3);
             if (recentColors.length < 3) return;

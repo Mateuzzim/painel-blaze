@@ -78,6 +78,17 @@
         .radar-animation.found { background-color: #ff0055; }
         .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
         .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+        /* Input Flash Animation */
+        @keyframes input-flash-green { 0% { background-color: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; border-color: #00ff88; } 100% { background-color: #222; color: #fff; box-shadow: none; border-color: #444; } }
+        .input-flash-active { animation: input-flash-green 1.5s ease-out; }
+
+        /* Futuristic Log */
+        .futuristic-log-container { display: none; margin-bottom: 15px; padding: 5px; background: rgba(5, 10, 15, 0.95); border: 1px solid #00d2ff; border-left: 4px solid #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.8); border-radius: 4px; font-family: 'Consolas', monospace; max-height: 120px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #00d2ff #111; }
+        .futuristic-log-entry { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid rgba(0, 210, 255, 0.15); color: #00d2ff; font-size: 0.85rem; animation: log-slide-in 0.3s ease-out; }
+        .futuristic-log-entry:last-child { border-bottom: none; }
+        .futuristic-log-entry:hover { background: rgba(0, 210, 255, 0.05); }
+        @keyframes log-slide-in { 0% { opacity: 0; transform: translateX(-10px); } 100% { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -201,7 +212,11 @@
                         </div>
                         <div class="control-group" style="flex: 1;">
                             <label for="whiteBotProtectionResumeCount">Retomar (Brancos):</label>
-                            <input type="number" id="whiteBotProtectionResumeCount" value="2" min="1" title="Cancela a pausa se saírem X brancos">
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" id="whiteBotProtectionResumeCount" value="2" min="1" title="Cancela a pausa se saírem X brancos" style="flex: 1;">
+                                <input type="text" id="whiteBotProtectionResumeCurrent" value="0" readonly style="width: 40px; text-align: center; background: #222; border: 1px solid #444; color: #fff; font-weight: bold;" title="Brancos detectados na pausa atual">
+                                <button onclick="resetWhiteBotPauseWhites(this)" class="manual-btn" style="padding: 0 10px; font-size: 0.8rem; background-color: #555; margin: 0; border: 1px solid #444;" title="Zerar Brancos na Pausa">ZERAR</button>
+                            </div>
                         </div>
                     </div>
 
@@ -221,6 +236,12 @@
                                     <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px;">
                                 </div>
                             </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <label for="whiteBotAntiTrend" style="font-size: 0.85em; margin-bottom: 0; white-space: nowrap; color: #ff5555;">⛔ Anti-Seq:</label>
+                                    <input type="number" id="whiteBotAntiTrend" value="8" min="3" title="Bloqueia entrada se houver X cores iguais seguidas" style="padding: 5px;">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -233,6 +254,10 @@
                         <div class="control-group">
                             <label for="whiteBotLossGoal">🛑 Max Derrotas:</label>
                             <input type="number" id="whiteBotLossGoal" placeholder="Ex: 3" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="whiteBotMaxConsecutiveLosses">⚠️ Max Loss Seguidos:</label>
+                            <input type="number" id="whiteBotMaxConsecutiveLosses" placeholder="Ex: 2" min="1" title="Para o robô se perder X vezes seguidas">
                         </div>
                     </div>
 
@@ -265,6 +290,8 @@
                 <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
 
                 <div id="whiteBotProtectionPanel" class="protection-panel disabled"></div>
+
+                <div id="whiteBotPauseLog" class="futuristic-log-container"></div>
 
                 <div id="whiteBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
                     <div id="whiteBotSignalContent" style="font-size: 1.5rem; font-weight: bold; line-height: 1.4;"></div>
@@ -481,6 +508,7 @@
                 whiteBotProtectionWhitesInPause = 0;
                 whiteBotProtectionWhiteCount = 0;
                 updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled');
+                clearWhiteBotPauseLog();
                 updateWhiteBotStrategyStatsDisplay();
 
                 if (isAutoFetchActive) {
@@ -501,6 +529,7 @@
                 lastGeneratedWhiteSignalTime = null;
                 document.getElementById('whiteBotSignalPanel').style.display = 'none';
                 updateWhiteBotProtectionDisplay('disabled');
+                clearWhiteBotPauseLog();
                 lastWhiteBotResult = null;
                 if (container) container.classList.remove('bot-active-pulse');
             }
@@ -534,6 +563,16 @@
                         // --- DETECÇÃO DE BRANCOS NA PAUSA ---
                         if (results[0].roll === 0) {
                             whiteBotProtectionWhitesInPause++;
+                            
+                            addWhiteBotPauseLog(results[0].time);
+                            
+                            const resumeInput = document.getElementById('whiteBotProtectionResumeCurrent');
+                            if (resumeInput) {
+                                resumeInput.classList.remove('input-flash-active');
+                                void resumeInput.offsetWidth; // Force reflow
+                                resumeInput.classList.add('input-flash-active');
+                            }
+
                             const resumeTrigger = parseInt(document.getElementById('whiteBotProtectionResumeCount').value) || 2;
                             
                             if (whiteBotProtectionWhitesInPause >= resumeTrigger) {
@@ -542,6 +581,7 @@
                                 whiteBotProtectionPauseRemaining = 0;
                                 whiteBotProtectionWhitesInPause = 0;
                                 whiteBotProtectionWhiteCount = 0; // Reseta contagem principal
+                                clearWhiteBotPauseLog();
                                 updateWhiteBotProtectionDisplay('standby');
                                 document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
                             }
@@ -560,6 +600,7 @@
                                 // Pausa finalizada naturalmente
                                 sendWhiteBotTelegramAlert(`✅ *PROTEÇÃO FINALIZADA*\n\nPausa concluída com segurança.\nVoltando a operar.`);
                                 updateWhiteBotProtectionDisplay('standby');
+                                clearWhiteBotPauseLog();
                                 document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
                                 return;
                             }
@@ -584,6 +625,7 @@
                             whiteBotProtectionPauseRemaining = pauseCount;
                             whiteBotProtectionWhiteCount = 0; // Reseta a contagem para o próximo ciclo
                             whiteBotProtectionWhitesInPause = 0; // Reseta contador da pausa
+                            clearWhiteBotPauseLog();
                             console.log(`Robô Branco: PROTEÇÃO ATIVA! ${triggerCount}º Branco detectado. Pausa de ${pauseCount} pedras iniciada.`);
                             sendWhiteBotTelegramAlert(`🛡️ *PROTEÇÃO ATIVADA*\n\nDetectado o ${triggerCount}º Branco.\nIniciando pausa de ${pauseCount} pedras.`);
                             updateWhiteBotProtectionDisplay('active', pauseCount);
@@ -593,6 +635,19 @@
                 }
                 if (lastProcessedGeneralTime !== latestTime) lastProcessedGeneralTime = latestTime;
             } else { whiteBotProtectionPauseRemaining = 0; }
+
+            // --- ANTI-SEQUÊNCIA (TENDÊNCIA) ---
+            const antiTrendLimit = parseInt(document.getElementById('whiteBotAntiTrend').value) || 0;
+            if (antiTrendLimit > 0) {
+                const firstColor = dash_identificarCor(results[0].roll);
+                if (firstColor === 'vermelho' || firstColor === 'preto') {
+                    let streak = 1;
+                    for (let i = 1; i < results.length; i++) {
+                        if (dash_identificarCor(results[i].roll) === firstColor) streak++; else break;
+                    }
+                    if (streak >= antiTrendLimit) return; // Bloqueia entrada contra tendência forte
+                }
+            }
 
             let strategy = document.getElementById('whiteBotStrategy').value;
             const recentColors = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco').slice(0, 7);
@@ -770,6 +825,7 @@
             document.getElementById('whiteBotWinCount').textContent = whiteBotWins;
             document.getElementById('whiteBotLossCount').textContent = whiteBotLosses;
             historyDiv.prepend(newEntry);
+            checkWhiteBotStopLimits();
         }
 
         function updateWhiteBotStrategyStatsDisplay() {
@@ -812,6 +868,37 @@
                 tooltip.id = 'whiteBotChartTooltip';
                 tooltip.className = 'chart-tooltip';
                 document.body.appendChild(tooltip);
+            }
+        }
+
+        function checkWhiteBotStopLimits() {
+            const winGoal = parseInt(document.getElementById('whiteBotWinGoal').value) || 0;
+            const lossGoal = parseInt(document.getElementById('whiteBotLossGoal').value) || 0;
+            const consecLossGoal = parseInt(document.getElementById('whiteBotMaxConsecutiveLosses').value) || 0;
+
+            let stopReason = '';
+
+            if (winGoal > 0 && whiteBotWins >= winGoal) {
+                stopReason = `✅ META BATIDA! (${whiteBotWins} Wins)`;
+            } else if (lossGoal > 0 && whiteBotLosses >= lossGoal) {
+                stopReason = `🛑 STOP LOSS GERAL! (${whiteBotLosses} Derrotas)`;
+            } else if (consecLossGoal > 0 && whiteBotConsecutiveLosses >= consecLossGoal) {
+                stopReason = `⚠️ STOP LOSS SEGUIDO! (${whiteBotConsecutiveLosses} Derrotas Consecutivas)`;
+            }
+
+            if (stopReason) {
+                const toggle = document.getElementById('whiteBotToggle');
+                if (toggle && toggle.checked) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(new Event('change'));
+                    
+                    const historyDiv = document.getElementById('whiteBotResultHistory');
+                    const msgDiv = document.createElement('div');
+                    msgDiv.innerHTML = `<div style="border: 2px solid #ff0055; padding: 15px; margin: 10px 0; text-align: center; background: rgba(255, 0, 85, 0.1); border-radius: 8px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);"><h3 style="margin:0 0 5px 0; color: #fff; text-transform: uppercase;">⛔ Robô Parado Automaticamente</h3><div style="color: #ffc107; font-weight: bold; font-size: 1.1rem;">${stopReason}</div><div style="font-size: 0.8rem; color: #ccc; margin-top: 5px;">O sistema de segurança interrompeu as operações.</div></div>`;
+                    if(historyDiv) historyDiv.prepend(msgDiv);
+                    
+                    sendWhiteBotTelegramAlert(`⛔ *ROBÔ PARADO AUTOMATICAMENTE*\n\nMotivo: ${stopReason}`);
+                }
             }
         }
 
@@ -891,6 +978,7 @@
             const filterCheck = document.getElementById('whiteBotBestMinuteFilter');
             if (filterCheck) filterCheck.checked = !!config.filter;
             if (config.assertiveness) document.getElementById('whiteBotMinAssertiveness').value = config.assertiveness;
+            if (config.antiTrend) document.getElementById('whiteBotAntiTrend').value = config.antiTrend;
             const stopLossCheck = document.getElementById('whiteBotStrategyStopLoss');
             if (stopLossCheck) stopLossCheck.checked = !!config.stopLoss;
             const alertCheck = document.getElementById('whiteBotProtectionTelegramAlert');
@@ -911,6 +999,7 @@
                 protResume: parseInt(document.getElementById('whiteBotProtectionResumeCount').value),
                 filter: document.getElementById('whiteBotBestMinuteFilter').checked,
                 assertiveness: parseInt(document.getElementById('whiteBotMinAssertiveness').value),
+                antiTrend: parseInt(document.getElementById('whiteBotAntiTrend').value),
                 stopLoss: document.getElementById('whiteBotStrategyStopLoss').checked,
                 protAlert: document.getElementById('whiteBotProtectionTelegramAlert').checked
             };
@@ -921,8 +1010,37 @@
         function resetWhiteBotProtectionCount(btn) {
             whiteBotProtectionWhiteCount = 0;
             whiteBotProtectionWhitesInPause = 0;
+            clearWhiteBotPauseLog();
             if (document.getElementById('whiteBotToggle').checked && whiteBotProtectionPauseRemaining <= 0) updateWhiteBotProtectionDisplay('standby');
             if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function resetWhiteBotPauseWhites(btn) {
+            whiteBotProtectionWhitesInPause = 0;
+            const resumeCounter = document.getElementById('whiteBotProtectionResumeCurrent');
+            if (resumeCounter) resumeCounter.value = 0;
+            clearWhiteBotPauseLog();
+            
+            if (whiteBotProtectionPauseRemaining > 0) {
+                document.getElementById('whiteBotSignalContent').innerHTML = `<span style="color: #ffc107; font-size: 1rem;">⏸️ PAUSA DE PROTEÇÃO: RESTAM ${whiteBotProtectionPauseRemaining} PEDRAS</span><div style="font-size: 0.8rem; color: #fff; margin-top: 5px;">Brancos na Pausa: 0/${document.getElementById('whiteBotProtectionResumeCount').value}</div>`;
+            }
+
+            if(btn) { const originalText = btn.innerText; btn.innerText = '✅'; setTimeout(() => btn.innerText = originalText, 1000); }
+        }
+
+        function addWhiteBotPauseLog(time) {
+            const logContainer = document.getElementById('whiteBotPauseLog');
+            if (!logContainer) return;
+            logContainer.style.display = 'block';
+            const entry = document.createElement('div');
+            entry.className = 'futuristic-log-entry';
+            entry.innerHTML = `<span style="color: #00d2ff; font-weight: bold; margin-right: 10px;">[${time}]</span><span style="color: #fff; text-shadow: 0 0 5px #fff;">⚪ ALVO DETECTADO</span><span style="margin-left: auto; font-size: 0.7rem; color: #ff9800; border: 1px solid #ff9800; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px;">EM PAUSA</span>`;
+            logContainer.prepend(entry);
+        }
+
+        function clearWhiteBotPauseLog() {
+            const logContainer = document.getElementById('whiteBotPauseLog');
+            if (logContainer) { logContainer.innerHTML = ''; logContainer.style.display = 'none'; }
         }
 
         function toggleWhiteBotProtectionUserPreference(checkbox) {
@@ -938,6 +1056,10 @@
 
         function updateWhiteBotProtectionDisplay(mode, remainingStones = 0) {
             const panel = document.getElementById('whiteBotProtectionPanel');
+            
+            const resumeCounter = document.getElementById('whiteBotProtectionResumeCurrent');
+            if (resumeCounter) resumeCounter.value = whiteBotProtectionWhitesInPause;
+
             if (!panel) return;
             const triggerCount = document.getElementById('whiteBotProtectionTriggerCount') ? parseInt(document.getElementById('whiteBotProtectionTriggerCount').value) || 10 : 10;
             const toggleHTML = `<div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 0 5px rgba(0,0,0,0.5);"><span style="font-size: 0.65rem; color: ${whiteBotProtectionUserEnabled ? '#00d2ff' : '#555'}; font-weight: bold; letter-spacing: 1px;">PROT.</span><label class="switch" style="transform: scale(0.6); margin: 0;"><input type="checkbox" ${whiteBotProtectionUserEnabled ? 'checked' : ''} onchange="toggleWhiteBotProtectionUserPreference(this)"><span class="slider" style="background-color: #222;"></span></label></div>`;
