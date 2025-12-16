@@ -841,7 +841,7 @@
                         
                         <a href="gerador_manual.html" class="nav-btn"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></a>
                         
-                        <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Auto</div><div class="nav-desc">Automação Cores</div></div>
+                        <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
                         
                         <a href="telegram.html" class="nav-btn" style="border-color: #24A1DE;"><div class="nav-icon">📡</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></a>
@@ -857,7 +857,7 @@
                     <button class="btn-back" onclick="suite_openTab('menu')" style="display: none;">⬅ Voltar ao Menu</button>
                     
                     <div class="toggle-switch-container" id="autoBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
-                        <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ AUTOMÁTICO</label>
+                        <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ CORES</label>
                         <label class="switch">
                             <input type="checkbox" id="autoBotToggle">
                             <span class="slider"></span>
@@ -906,16 +906,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="inline-controls" style="margin-bottom: 20px;">
-                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
-                                <label for="autoBotBetAmount" style="font-size: 0.8em; margin-bottom: 0;">💲 Valor Entrada:</label>
-                                <input type="number" id="autoBotBetAmount" value="10" min="1" style="padding: 5px;">
-                            </div>
-                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
-                                <label for="autoBotStopWin" style="font-size: 0.8em; margin-bottom: 0; color: #00ff88;">✅ Stop Win (Valor):</label>
-                                <input type="number" id="autoBotStopWin" value="50" min="1" style="padding: 5px;">
-                            </div>
-                        </div>
                         <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
                             <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
                                 <label for="autoBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
@@ -950,7 +940,6 @@
                             <div class="score-card win"><span class="score-label">WINS</span><span id="autoBotWinCount" class="score-value win-text">0</span></div>
                             <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="autoBotWhiteWinCount" class="score-value white-win-text">0</span></div>
                             <div class="score-card loss"><span class="score-label">LOSSES</span><span id="autoBotLossCount" class="score-value loss-text">0</span></div>
-                            <div class="score-card profit" style="border-bottom: 2px solid #00d2ff;"><span class="score-label">LUCRO</span><span id="autoBotProfitDisplay" class="score-value" style="color: #00d2ff;">R$ 0</span></div>
                         </div>
                         <div id="autoBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
                     </div>
@@ -1075,7 +1064,7 @@
                                 </label>
                             </div>
                             <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Alerta:</label>
+                                <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Telegram:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotProtectionTelegramAlert">
                                     <span class="slider" style="border-radius: 26px;"></span>
@@ -1192,6 +1181,16 @@
                             <button type="submit" class="btn-action">ALTERAR SENHA</button>
                         </form>
                         <div id="change-password-result" class="output-area" style="margin-top: 20px; text-align: center; display: none;"></div>
+                    </div>
+
+                    <!-- Seção de Manutenção / Zona de Perigo -->
+                    <div id="maintenance-section" style="margin-top: 40px; border-top: 1px solid #ff0055; padding-top: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #ff0055; text-transform: uppercase; font-size: 1rem;">Zona de Perigo</h3>
+                        <div class="control-group">
+                            <label>Limpar Memória dos Robôs</label>
+                            <div class="hint">Isso irá parar qualquer robô em execução, limpará o estado de "ligado/desligado" e removerá presets personalizados salvos. Use se os robôs estiverem com comportamento inesperado.</div>
+                            <button class="btn-action" onclick="resetRobotMemory(this)" style="background: #dc3545; margin-top: 10px;">LIMPAR MEMÓRIA E RESETAR</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1537,6 +1536,41 @@
                  btn.innerText = '✅ Salvo!';
                  setTimeout(() => btn.innerText = originalText, 2000);
              }
+        }
+
+        function resetRobotMemory(btn) {
+            if (!confirm('Tem certeza que deseja limpar a memória dos robôs? Isso irá parar os robôs em execução e apagar seus presets personalizados. Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            // 1. Para os robôs e reseta o estado deles na UI
+            const autoBotToggle = document.getElementById('autoBotToggle');
+            if (autoBotToggle && autoBotToggle.checked) {
+                autoBotToggle.checked = false;
+                autoBotToggle.dispatchEvent(new Event('change'));
+            }
+
+            const whiteBotToggle = document.getElementById('whiteBotToggle');
+            if (whiteBotToggle && whiteBotToggle.checked) {
+                whiteBotToggle.checked = false;
+                whiteBotToggle.dispatchEvent(new Event('change'));
+            }
+
+            // 2. Limpa os itens do localStorage relacionados à memória do robô
+            localStorage.removeItem('autoBotActive');
+            localStorage.removeItem('whiteBotActive');
+            localStorage.removeItem('whiteBotCustomPreset');
+            
+            console.log("Memória dos robôs limpa.");
+
+            // 3. Feedback visual
+            const resDiv = document.getElementById('suite_resConfig');
+            if (resDiv) {
+                resDiv.style.display = 'block';
+                resDiv.style.color = 'var(--accent-jonbet)';
+                resDiv.innerText = '✅ Memória dos robôs e presets foram limpos com sucesso.';
+                setTimeout(() => { resDiv.style.display = 'none'; }, 4000);
+            }
         }
 
         // ==========================================
@@ -2146,21 +2180,21 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             checkManualLogin();
 
-            // Restaura estado do Robô Branco (DESATIVADO PARA NÃO INICIAR AO LOGIN)
-            // const savedWhiteBotState = localStorage.getItem('whiteBotActive') === 'true';
-            // const whiteBotToggle = document.getElementById('whiteBotToggle');
-            // if (whiteBotToggle && savedWhiteBotState) {
-            //     whiteBotToggle.checked = true;
-            //     handleWhiteBotToggle({ target: whiteBotToggle });
-            // }
+            // Restaura estado do Robô Branco
+            const savedWhiteBotState = localStorage.getItem('whiteBotActive') === 'true';
+            const whiteBotToggle = document.getElementById('whiteBotToggle');
+            if (whiteBotToggle && savedWhiteBotState) {
+                whiteBotToggle.checked = true;
+                handleWhiteBotToggle({ target: whiteBotToggle });
+            }
 
-            // Restaura estado do Robô Automático (DESATIVADO PARA NÃO INICIAR AO LOGIN)
-            // const savedAutoBotState = localStorage.getItem('autoBotActive') === 'true';
-            // const autoBotToggle = document.getElementById('autoBotToggle');
-            // if (autoBotToggle && savedAutoBotState) {
-            //     autoBotToggle.checked = true;
-            //     handleAutoBotToggle({ target: autoBotToggle });
-            // }
+            // Restaura estado do Robô Automático
+            const savedAutoBotState = localStorage.getItem('autoBotActive') === 'true';
+            const autoBotToggle = document.getElementById('autoBotToggle');
+            if (autoBotToggle && savedAutoBotState) {
+                autoBotToggle.checked = true;
+                handleAutoBotToggle({ target: autoBotToggle });
+            }
 
             // Lógica para fazer o anúncio de atualização desaparecer
             const announcement = document.getElementById('update-announcement');
@@ -2186,7 +2220,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let autoBotWhiteWins = 0;
         let autoBotLosses = 0;
         let lastAutoBotResult = null;
-        let autoBotProfit = 0;
 
         // --- FUNÇÃO DE LOG VISUAL FUTURISTA ---
         function logAutoBotAction(message, type = 'info') {
@@ -2242,12 +2275,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 }
                 const now = new Date();
                 const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                sendAutoBotStatusTelegram(`🚀 *ROBÔ AUTO INICIADO*\n\n🕒 *Horário:* ${timeStr}\n📊 *Estratégia Inicial:* ${strategyName}`);
+                sendAutoBotStatusTelegram(`🚀 *ROBÔ CORES INICIADO*\n\n🕒 *Horário:* ${timeStr}\n📊 *Estratégia Inicial:* ${strategyName}`);
             } else {
-                // Captura lucro final da sessão antes de zerar
-                const finalProfit = autoBotProfit;
-                const profitText = finalProfit >= 0 ? `R$ ${finalProfit.toFixed(2)}` : `-R$ ${Math.abs(finalProfit).toFixed(2)}`;
-
                 statusDiv.textContent = 'Robô Desativado.';
                 statusDiv.style.color = '#aaa';
                 activeSignal = null;
@@ -2258,17 +2287,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('autoBotWhiteWinCount').textContent = '0';
                 document.getElementById('autoBotLossCount').textContent = '0';
                 
-                autoBotProfit = 0;
-                const profitEl = document.getElementById('autoBotProfitDisplay');
-                if(profitEl) { profitEl.textContent = 'R$ 0'; profitEl.style.color = '#00d2ff'; }
-
                 lastAutoBotResult = null;
                 if (container) container.classList.remove('bot-active-pulse');
                 if (navBtn) navBtn.classList.remove('bot-active-pulse');
                 const logContainer = document.getElementById('autoBotActionLog');
                 if(logContainer) logContainer.style.display = 'none';
 
-                sendAutoBotStatusTelegram(`🛑 *ROBÔ AUTO DESLIGADO*\n\n💰 *Lucro da Sessão:* ${profitText}`);
+                sendAutoBotStatusTelegram(`🛑 *ROBÔ CORES DESLIGADO*`);
             }
         }
 
@@ -2453,7 +2478,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     .replace(/\{protecao_emoji\}/g, '⚪️')
                     .replace(/\{estrategia\}/g, signalData.strategy || 'Automática');
             } else {
-                message = `🤖 *SINAL ROBÔ AUTO*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🛡️ *Proteção:* ⚪️ Branco\n📊 *Estratégia:* ${signalData.strategy || 'Automática'}\n\n✅ *Gerencie sua banca!*`;
+                message = `🤖 *SINAL ROBÔ CORES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🛡️ *Proteção:* ⚪️ Branco\n📊 *Estratégia:* ${signalData.strategy || 'Automática'}\n\n✅ *Gerencie sua banca!*`;
             }
 
             try {
@@ -2476,8 +2501,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!token || !chatId) return;
 
             const strategy = activeSignal ? (activeSignal.strategy || 'Automática') : 'Automática';
-            const profitText = autoBotProfit >= 0 ? `R$ ${autoBotProfit.toFixed(2)}` : `-R$ ${Math.abs(autoBotProfit).toFixed(2)}`;
-            const formattedMessage = `*RESULTADO ROBÔ AUTO*\n\n${resultMessage}\n📊 *Estratégia:* ${strategy}\n\n📈 *Placar:* ✅ ${autoBotWins} (⚪ ${autoBotWhiteWins}) | ❌ ${autoBotLosses}\n💰 *Lucro:* ${profitText}`;
+            const formattedMessage = `*RESULTADO ROBÔ CORES*\n\n${resultMessage}\n📊 *Estratégia:* ${strategy}\n\n📈 *Placar:* ✅ ${autoBotWins} (⚪ ${autoBotWhiteWins}) | ❌ ${autoBotLosses}`;
 
             try {
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
@@ -2666,6 +2690,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (isAutoFetchActive) {
                     statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
                 } else {
+                    sendWhiteBotStatusTelegram(`⚪️ *ROBÔ BRANCO INICIADO*`);
                     statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
                     statusDiv.style.color = '#ffc107';
                 }
@@ -2676,6 +2701,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (navBtn) navBtn.classList.add('bot-active-pulse');
             } else {
                 statusDiv.textContent = 'Robô Desativado.';
+                sendWhiteBotStatusTelegram(`🛑 *ROBÔ BRANCO DESLIGADO*\n\n📈 *Placar Final:* ✅ ${whiteBotWins} | ❌ ${whiteBotLosses}`);
                 logWhiteBotAction('Robô Branco PARADO.', 'warning');
                 statusDiv.style.color = '#aaa';
                 activeWhiteSignal = null;
@@ -2764,8 +2790,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 panel.className = 'protection-panel standby';
                 panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><div class="shield-standby-anim">🛡️</div><div style="text-align: left;"><div style="color: #fff; font-weight: bold; font-size: 0.9rem; opacity: 0.8;">SISTEMA DE PROTEÇÃO</div><div style="color: #00ff88; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">● MONITORANDO (${whiteBotProtectionWhiteCount}/${triggerCount})</div></div></div>`;
             } else if (mode === 'user_disabled') {
-                panel.className = 'protection-panel standby';
-                panel.style.borderColor = '#444';
+                panel.className = 'protection-panel disabled';
                 panel.innerHTML = `${toggleHTML}<div style="display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.6;"><span style="font-size: 1.5rem; color: #aaa;">🛡️</span><div style="text-align: left;"><div style="color: #aaa; font-weight: bold; font-size: 0.9rem;">SISTEMA DE PROTEÇÃO</div><div style="color: #ffc107; font-size: 0.7rem; font-weight: bold;">DESATIVADO PELO USUÁRIO</div></div></div>`;
             } else {
                 panel.className = 'protection-panel disabled';
@@ -2780,7 +2805,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 return;
             }
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = localStorage.getItem('telegram_chat_id');
+            const chatId = localStorage.getItem('telegram_chat_id_white');
             if (!token || !chatId) {
                 return;
             }
@@ -2789,6 +2814,73 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 await fetch(url);
             } catch (e) {
                 console.error('Erro ao enviar alerta Telegram:', e);
+            }
+        }
+
+        // NOVO: Funções de notificação para o Robô Branco
+        async function sendWhiteBotStatusTelegram(message) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!token || !chatId) return;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro status Telegram (Branco):', e); }
+        }
+
+        async function sendWhiteBotSignalTelegram(signalData) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id_white');
+            const template = localStorage.getItem('telegram_whitebot_template');
+
+            if (!token || !chatId) {
+                logWhiteBotAction('Telegram (Branco) não configurado.', 'warning');
+                return;
+            }
+
+            let message;
+            if (template && template.trim() !== '') {
+                message = template
+                    .replace(/\{horario\}/g, signalData.time)
+                    .replace(/\{entradas\}/g, signalData.entryCount)
+                    .replace(/\{estrategia\}/g, signalData.strategyName);
+            } else {
+                message = `⚪️ *SINAL ROBÔ BRANCO*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ⚪️ BRANCO\n🔄 *Entradas:* ${signalData.entryCount}\n📊 *Estratégia:* ${signalData.strategyName}\n\n✅ *Gerencie sua banca!*`;
+            }
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+                logWhiteBotAction('Sinal (Branco) enviado para Telegram.', 'success');
+            } catch (e) {
+                console.error('Erro ao enviar sinal Telegram (Branco):', e);
+                logWhiteBotAction('Erro ao enviar Telegram (Branco).', 'danger');
+            }
+        }
+
+        async function sendWhiteBotResultTelegram(resultMessage) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!token || !chatId) return;
+
+            const strategy = activeWhiteSignal ? (activeWhiteSignal.strategyName || 'Automática') : 'N/A';
+            const formattedMessage = `*RESULTADO ROBÔ BRANCO*\n\n${resultMessage}\n📊 *Estratégia:* ${strategy}\n\n📈 *Placar:* ✅ ${whiteBotWins} | ❌ ${whiteBotLosses}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) {
+                console.error('Erro ao enviar resultado Telegram (Branco):', e);
             }
         }
 
@@ -4532,6 +4624,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             signalPanel.style.display = 'block';
             logWhiteBotAction(`Sinal Gerado: Entrada no Branco (${signalTimeString})`, 'action');
             playWhiteNotificationSound();
+            sendWhiteBotSignalTelegram(activeWhiteSignal);
         }
 
         function updateAutoBotProfit(amount) {
@@ -4596,13 +4689,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const entry1 = minuteResults[minuteResults.length - 1];
             const entry1Color = dash_identificarCor(entry1.roll);
             let resultMessage = '';
-            const betAmount = parseFloat(document.getElementById('autoBotBetAmount').value) || 10;
 
             // 1. Verifica a 1ª Entrada
             if (entry1Color.toUpperCase() === activeSignal.targetColor || entry1Color === 'branco') {
                 resultMessage = `✅ WIN! (${activeSignal.time} - 1ª Pedra: ${entry1Color.toUpperCase()})`;
                 addResultToHistory(resultMessage, true);
-                updateAutoBotProfit(betAmount);
                 logAutoBotAction('WIN na 1ª Entrada! 🤑', 'success');
                 sendAutoBotResultTelegram(resultMessage);
                 document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
@@ -4619,13 +4710,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (entry2Color.toUpperCase() === activeSignal.targetColor || entry2Color === 'branco') {
                     resultMessage = `❇️ WIN G1! (${activeSignal.time} - 2ª Pedra: ${entry2Color.toUpperCase()})`;
                     addResultToHistory(resultMessage, true);
-                    updateAutoBotProfit(betAmount); // Lucro no G1 recupera e ganha a base
                     logAutoBotAction('WIN no G1! 💰', 'success');
                     sendAutoBotResultTelegram(resultMessage);
                 } else {
                     resultMessage = `❌ LOSS! (${activeSignal.time})`;
                     addResultToHistory(resultMessage, false);
-                    updateAutoBotProfit(-(betAmount * 3)); // Perde entrada + G1 (aprox 3x base)
                     logAutoBotAction('LOSS Confirmado. 📉', 'danger');
                     sendAutoBotResultTelegram(resultMessage);
                 }
@@ -4658,7 +4747,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                              console.log(`Robô Auto: Minuto (${activeSignal.time}) encerrou sem 2ª pedra. Considerando LOSS.`);
                              resultMessage = `❌ LOSS (Sem G1)! (${activeSignal.time})`;
                              addResultToHistory(resultMessage, false);
-                             updateAutoBotProfit(-(betAmount * 3));
                              logAutoBotAction('LOSS (Tempo Esgotado)', 'danger');
                              sendAutoBotResultTelegram(resultMessage);
                              document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
@@ -4702,6 +4790,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     </div>
                 `;
             }
+        }
+
+        function updateAutoBotProfit(amount) {
+            // Função desativada para remover a lógica de lucro.
         }
 
         function checkWhiteSignalResult(results) {
@@ -4892,6 +4984,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             newEntry.style.fontWeight = 'bold';
             newEntry.style.borderBottom = '1px solid #333';
             newEntry.style.padding = '5px 0';
+
+            sendWhiteBotResultTelegram(message);
 
             if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
             

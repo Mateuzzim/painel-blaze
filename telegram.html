@@ -54,22 +54,28 @@
                 
                 <div class="control-group">
                     <label>🤖 Token do Bot:</label>
-                    <input type="text" id="telegram_bot_token" placeholder="Cole o Token do BotFather aqui...">
-                    <div class="hint">Ex: 123456789:AAH...</div>
+                    <input type="password" id="telegram_bot_token" placeholder="Cole o Token do BotFather aqui...">
+                    <div class="hint">Ex: 123456789:AAH... (Este token é o mesmo para ambos os robôs)</div>
                 </div>
             
                 <div class="control-group">
-                    <label>🆔 ID do Chat (Grupo ou Canal):</label>
-                    <input type="text" id="telegram_chat_id" placeholder="Cole o ID do canal ou grupo...">
+                    <label>🆔 ID do Chat (Robô Cores):</label>
+                    <input type="password" id="telegram_chat_id" placeholder="Cole o ID do canal ou grupo para o Robô Cores...">
                     <div class="hint">Ex: -100123456789 (Certifique-se de adicionar o robô como Admin no grupo)</div>
+                </div>
+
+                <div class="control-group">
+                    <label>🆔 ID do Chat (Robô Branco):</label>
+                    <input type="password" id="telegram_chat_id_white" placeholder="Cole o ID do canal ou grupo para o Robô Branco...">
+                    <div class="hint">Ex: -100987654321 (Pode ser o mesmo ID do Robô Cores se desejar)</div>
                 </div>
             
                 <hr style="border-color: #333; margin: 25px 0;">
 
                 <h2>📝 Modelos de Mensagem</h2>
                 <div class="control-group">
-                    <label for="telegram_autobot_template">🤖 Mensagem do Robô Auto:</label>
-                    <textarea id="telegram_autobot_template" rows="6" placeholder="🤖 *SINAL ROBÔ AUTO*&#10;&#10;🕒 *Horário:* {horario}&#10;🎯 *Entrada:* {cor_emoji} {cor_nome}&#10;🛡️ *Proteção:* {protecao_emoji} Branco&#10;&#10;✅ *Gerencie sua banca!*"></textarea>
+                    <label for="telegram_autobot_template">🤖 Mensagem do Robô Cores:</label>
+                    <textarea id="telegram_autobot_template" rows="6" placeholder="🤖 *SINAL ROBÔ CORES*&#10;&#10;🕒 *Horário:* {horario}&#10;🎯 *Entrada:* {cor_emoji} {cor_nome}&#10;🛡️ *Proteção:* {protecao_emoji} Branco&#10;&#10;✅ *Gerencie sua banca!*"></textarea>
                     <div class="hint">
                         Deixe em branco para usar a mensagem padrão. Placeholders disponíveis: <br>
                         `{horario}` - Horário do sinal (Ex: 14:30)<br>
@@ -79,9 +85,21 @@
                     </div>
                 </div>
 
+                <div class="control-group">
+                    <label for="telegram_whitebot_template">⚪ Mensagem do Robô Branco:</label>
+                    <textarea id="telegram_whitebot_template" rows="6" placeholder="⚪️ *SINAL ROBÔ BRANCO*&#10;&#10;🕒 *Horário:* {horario}&#10;🎯 *Entrada:* ⚪️ BRANCO&#10;🔄 *Entradas:* {entradas}&#10;📊 *Estratégia:* {estrategia}&#10;&#10;✅ *Gerencie sua banca!*"></textarea>
+                    <div class="hint">
+                        Deixe em branco para usar a mensagem padrão. Placeholders disponíveis: <br>
+                        `{horario}` - Horário do sinal (Ex: 14:30)<br>
+                        `{entradas}` - Quantidade de entradas (Ex: 6)<br>
+                        `{estrategia}` - Nome da estratégia usada
+                    </div>
+                </div>
+
                 <div class="inline-controls">
-                    <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
-                    <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
+                    <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Tudo</button>
+                    <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'cores')">🧪 Testar Robô Cores</button>
+                    <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'branco')" style="border-color: #fff; color: #fff;">🧪 Testar Robô Branco</button>
                 </div>
                 
                 <div class="inline-controls" style="margin-top: 10px;">
@@ -107,28 +125,36 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('telegram_bot_token');
             const savedChatId = localStorage.getItem('telegram_chat_id');
+            const savedChatIdWhite = localStorage.getItem('telegram_chat_id_white');
             const savedAutoBotTemplate = localStorage.getItem('telegram_autobot_template');
+            const savedWhiteBotTemplate = localStorage.getItem('telegram_whitebot_template');
             if (savedToken) document.getElementById('telegram_bot_token').value = savedToken;
             if (savedChatId) document.getElementById('telegram_chat_id').value = savedChatId;
+            if (savedChatIdWhite) document.getElementById('telegram_chat_id_white').value = savedChatIdWhite;
             if (savedAutoBotTemplate) document.getElementById('telegram_autobot_template').value = savedAutoBotTemplate;
+            if (savedWhiteBotTemplate) document.getElementById('telegram_whitebot_template').value = savedWhiteBotTemplate;
         });
 
         function saveTelegramSettings(btn) {
             const token = document.getElementById('telegram_bot_token').value.trim();
             const chatId = document.getElementById('telegram_chat_id').value.trim();
+            const chatIdWhite = document.getElementById('telegram_chat_id_white').value.trim();
             const resDiv = document.getElementById('resTelegramConfig');
             const autoBotTemplate = document.getElementById('telegram_autobot_template').value;
+            const whiteBotTemplate = document.getElementById('telegram_whitebot_template').value;
 
             if (!token || !chatId) {
                 resDiv.style.display = 'block';
                 resDiv.style.color = '#ff0055';
-                resDiv.innerText = '❌ Preencha o Token e o ID do Chat.';
+                resDiv.innerText = '❌ Preencha pelo menos o Token e o ID do Chat do Robô Cores.';
                 return;
             }
 
             localStorage.setItem('telegram_bot_token', token);
             localStorage.setItem('telegram_chat_id', chatId);
+            localStorage.setItem('telegram_chat_id_white', chatIdWhite);
             localStorage.setItem('telegram_autobot_template', autoBotTemplate);
+            localStorage.setItem('telegram_whitebot_template', whiteBotTemplate);
 
             resDiv.style.display = 'block';
             resDiv.style.color = '#00ff88';
@@ -142,13 +168,15 @@
             }, 2000);
         }
 
-        async function testTelegramConnection(btn) {
+        async function testTelegramConnection(btn, botType) {
             const token = document.getElementById('telegram_bot_token').value.trim();
-            const chatId = document.getElementById('telegram_chat_id').value.trim();
+            const chatId = botType === 'cores' 
+                ? document.getElementById('telegram_chat_id').value.trim() 
+                : document.getElementById('telegram_chat_id_white').value.trim();
             const resDiv = document.getElementById('resTelegramConfig');
 
             if (!token || !chatId) {
-                alert('Salve as configurações primeiro ou preencha os campos.');
+                alert('Salve as configurações primeiro ou preencha os campos de Token e o ID do Chat correspondente.');
                 return;
             }
 
@@ -163,14 +191,15 @@
 
                 if (data.ok) {
                     // Se o token for válido, tenta enviar uma mensagem de teste
-                    const msgUrl = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=✅ Teste de Conexão: Cortex Virtual Conectado!`;
+                    const botName = botType === 'cores' ? 'Robô Cores' : 'Robô Branco';
+                    const msgUrl = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=✅ Teste de Conexão: ${botName} Conectado!`;
                     const msgResponse = await fetch(msgUrl);
                     const msgData = await msgResponse.json();
 
                     if (msgData.ok) {
                         resDiv.style.display = 'block';
                         resDiv.style.color = '#00ff88';
-                        resDiv.innerText = `✅ Conexão OK! Bot: ${data.result.first_name}`;
+                        resDiv.innerText = `✅ Conexão OK para ${botName}! Bot: ${data.result.first_name}`;
                     } else {
                         throw new Error(`Bot OK, mas falha ao enviar msg: ${msgData.description}`);
                     }

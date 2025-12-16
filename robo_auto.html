@@ -116,7 +116,7 @@
         <div class="layout-panel suite">
             <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
             <div class="main-header">
-                <h1 class="cortex-text-anim">ROBÔ AUTOMÁTICO</h1>
+                <h1 class="cortex-text-anim">ROBÔ CORES</h1>
                 <div class="platform-switcher">
                     <input type="hidden" id="platformSelector" value="blaze">
                     <button class="platform-btn active" id="btn-blaze" onclick="selectPlatform('blaze')">Blaze</button>
@@ -163,7 +163,7 @@
             <!-- Robot Panel -->
             <div id="suite_auto_bot">
                 <div class="toggle-switch-container" id="autoBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
-                    <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ AUTOMÁTICO</label>
+                    <label for="autoBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ CORES</label>
                     <label class="switch">
                         <input type="checkbox" id="autoBotToggle">
                         <span class="slider"></span>
@@ -664,7 +664,7 @@
                     .replace(/\{cor_emoji\}/g, emoji)
                     .replace(/\{protecao_emoji\}/g, '⚪️');
             } else {
-                message = `🤖 *SINAL ROBÔ AUTO*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🛡️ *Proteção:* ⚪️ Branco\n\n✅ *Gerencie sua banca!*`;
+                message = `🤖 *SINAL ROBÔ CORES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🛡️ *Proteção:* ⚪️ Branco\n\n✅ *Gerencie sua banca!*`;
             }
 
             try {
