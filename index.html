@@ -556,6 +556,33 @@
         .futuristic-log-time { color: #666; font-size: 0.7rem; min-width: 50px; }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
+        /* Estatísticas Numéricas Futuristas */
+        .numeric-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(10, 10, 15, 0.6);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .num-stat-card {
+            background: rgba(20, 20, 25, 0.8);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 6px 2px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .num-stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-color: #00d2ff; }
+        .num-stat-value { font-size: 1.1rem; font-weight: 900; font-family: 'Courier New', monospace; margin-bottom: 2px; }
+        .num-stat-count { font-size: 0.7rem; color: #888; }
+        .num-stat-pct { font-size: 0.65rem; color: #00d2ff; font-weight: bold; margin-top: 2px; }
+        .num-stat-bar { position: absolute; bottom: 0; left: 0; height: 2px; transition: width 0.5s; }
+
         /* --- ANIMAÇÃO PAUSA PÓS-BRANCO --- */
         .post-white-wrapper {
             position: relative; padding: 15px; background: rgba(20, 20, 10, 0.8);
@@ -849,6 +876,8 @@
                                 <option value="king_of_table">6. Rei da Mesa</option>
                                 <option value="chess_break">7. Quebra de Xadrez</option>
                                 <option value="post_white_value">8. Pós-Branco (Valor)</option>
+                            <option value="gale_reverso">9. Gale Reverso (Contra Última)</option>
+                            <option value="numeric_prob">10. Probabilidade Numérica (0-14)</option>
                             </select>
                         </div>
                         <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
@@ -863,21 +892,55 @@
                             <input type="number" id="autoBotEntryTime" value="3" min="2">
                             <div class="hint">Tempo a adicionar após a análise (Mínimo: 2).</div>
                         </div>
-                        <div class="control-group" style="margin-bottom: 20px;">
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <label for="autoBotAntiTrend" style="font-size: 0.9em; margin-bottom: 0; white-space: nowrap; color: #ff5555;">⛔ Anti-Seq:</label>
-                                <input type="number" id="autoBotAntiTrend" value="8" min="3" title="Bloqueia entrada se houver X cores iguais seguidas" style="padding: 5px;">
+                        <div class="inline-controls" style="margin-bottom: 20px;">
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <label for="autoBotAntiTrend" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #ff5555;">⛔ Anti-Seq:</label>
+                                    <input type="number" id="autoBotAntiTrend" value="8" min="3" title="Bloqueia entrada se houver X cores iguais seguidas" style="padding: 5px;">
+                                </div>
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <label for="autoBotMaxWhitesFilter" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #fff;">⚪ Max Brancos:</label>
+                                    <input type="number" id="autoBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
+                                </div>
                             </div>
                         </div>
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
-                            <label for="autoBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="autoBotSoundToggle" checked>
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
+                        <div class="inline-controls" style="margin-bottom: 20px;">
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="autoBotBetAmount" style="font-size: 0.8em; margin-bottom: 0;">💲 Valor Entrada:</label>
+                                <input type="number" id="autoBotBetAmount" value="10" min="1" style="padding: 5px;">
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="autoBotStopWin" style="font-size: 0.8em; margin-bottom: 0; color: #00ff88;">✅ Stop Win (Valor):</label>
+                                <input type="number" id="autoBotStopWin" value="50" min="1" style="padding: 5px;">
+                            </div>
+                        </div>
+                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                                <label for="autoBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="autoBotSoundToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
+                                <label for="autoBotTelegramAlert" style="font-size: 0.9em;">📡 Telegram:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="autoBotTelegramAlert">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div id="autoBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+                    
+                    <!-- LOG VISUAL FUTURISTA DO ROBÔ AUTO -->
+                    <div id="autoBotActionLog" class="futuristic-log-container" style="display: none;">
+                        <div class="futuristic-log-header"><span>LOG DE ESTRATÉGIAS</span><span>LIVE</span></div>
+                        <ul id="autoBotActionList" class="futuristic-log-list"></ul>
+                    </div>
+
                     <div id="autoBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
                         <div id="autoBotSignalContent"></div>
                     </div>
@@ -887,6 +950,7 @@
                             <div class="score-card win"><span class="score-label">WINS</span><span id="autoBotWinCount" class="score-value win-text">0</span></div>
                             <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="autoBotWhiteWinCount" class="score-value white-win-text">0</span></div>
                             <div class="score-card loss"><span class="score-label">LOSSES</span><span id="autoBotLossCount" class="score-value loss-text">0</span></div>
+                            <div class="score-card profit" style="border-bottom: 2px solid #00d2ff;"><span class="score-label">LUCRO</span><span id="autoBotProfitDisplay" class="score-value" style="color: #00d2ff;">R$ 0</span></div>
                         </div>
                         <div id="autoBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
                     </div>
@@ -1316,6 +1380,12 @@
                         <div class="stat-item">⚪ <span id="dash_count-white">0</span></div>
                         <div class="stat-item" style="font-weight:bold;">Quantidade de Sinais: <span id="dash_count-total">0</span></div>
                     </div> 
+                    
+                    <button class="futuristic-collapse-btn" onclick="toggleNumericStats()" style="margin-top: 10px;">📊 ESTATÍSTICAS NUMÉRICAS (0-14)</button>
+                    <div id="numeric-stats-container" style="display: none;">
+                        <div id="numeric-stats-grid" class="numeric-stats-grid"></div>
+                    </div>
+
                     <div class="log-container" style="display: none;">
                         <h3>Log de Estratégia</h3>
                         <div id="dash_log-estrategia">Aguardando dados...</div>
@@ -1744,6 +1814,38 @@
             return 'desconhecido';
         }
 
+        function toggleNumericStats() {
+            const el = document.getElementById('numeric-stats-container');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                // Força atualização se estiver vazio
+                const grid = document.getElementById('numeric-stats-grid');
+                if(grid && grid.innerHTML === '') dash_processarDados();
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function dash_updateNumericStats(results) {
+            const grid = document.getElementById('numeric-stats-grid');
+            if (!grid) return;
+            
+            const counts = Array(15).fill(0);
+            results.forEach(r => { 
+                const n = parseInt(r.numero);
+                if (!isNaN(n) && n >= 0 && n <= 14) counts[n]++; 
+            });
+            const total = results.length || 1;
+            
+            grid.innerHTML = counts.map((count, num) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                const color = dash_identificarCor(num);
+                const colorHex = color === 'vermelho' ? '#ff0055' : (color === 'preto' ? '#888' : '#fff');
+                const textColor = color === 'vermelho' ? '#ff0055' : (color === 'preto' ? '#ccc' : '#fff');
+                return `<div class="num-stat-card" style="border-bottom: 2px solid ${colorHex};"><div class="num-stat-value" style="color:${textColor}; text-shadow: 0 0 5px ${colorHex}40;">${num}</div><div class="num-stat-count">${count}x</div><div class="num-stat-pct">${pct}%</div><div class="num-stat-bar" style="width:${pct}%; background:${colorHex};"></div></div>`;
+            }).join('');
+        }
+
         function dash_processarDados(carregandoPagina = false) {
             // SUGESTÃO: Simplifica a lógica para ler diretamente do campo de coleta automática.
             // O campo #dash_inputData torna-se um fallback ou pode ser removido.
@@ -1790,6 +1892,7 @@
 
             dash_atualizarDashboard(resultados, numerosPuros.length, target);
             dash_executarEstrategia(numerosPuros);
+            dash_updateNumericStats(resultados); // Atualiza o painel de estatísticas numéricas
             runWhiteBotLogic(); // Garante que o Robô Branco analise os novos dados
             runAutoBotLogic(); // Garante que o Robô Automático analise os novos dados
         }
@@ -2083,6 +2186,29 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let autoBotWhiteWins = 0;
         let autoBotLosses = 0;
         let lastAutoBotResult = null;
+        let autoBotProfit = 0;
+
+        // --- FUNÇÃO DE LOG VISUAL FUTURISTA ---
+        function logAutoBotAction(message, type = 'info') {
+            const container = document.getElementById('autoBotActionLog');
+            const list = document.getElementById('autoBotActionList');
+            if (!container || !list) return;
+
+            container.style.display = 'block';
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            const li = document.createElement('li');
+            li.className = 'futuristic-log-entry';
+            let color = '#ccc';
+            if (type === 'success') color = '#00ff88';
+            else if (type === 'danger') color = '#ff0055';
+            else if (type === 'action') color = '#00d2ff';
+            
+            li.innerHTML = `<span class="futuristic-log-time">${timeStr}</span><span style="color:${color}; flex:1;">${message}</span>`;
+            list.prepend(li);
+            while (list.children.length > 8) list.removeChild(list.lastChild);
+        }
 
         function handleAutoBotToggle(event) {
             const isBotActive = event.target.checked;
@@ -2105,7 +2231,23 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('autoBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
                 if (container) container.classList.add('bot-active-pulse');
                 if (navBtn) navBtn.classList.add('bot-active-pulse');
+                logAutoBotAction('Robô Iniciado. Buscando padrões...', 'info');
+
+                // Notificação de Início Telegram
+                let strategyName = 'Desconhecida';
+                const select = document.getElementById('autoBotStrategy');
+                if (select) {
+                    const option = Array.from(select.options).find(opt => opt.value === select.value);
+                    if (option) strategyName = option.text.replace(/^\d+\.\s*/, '');
+                }
+                const now = new Date();
+                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                sendAutoBotStatusTelegram(`🚀 *ROBÔ AUTO INICIADO*\n\n🕒 *Horário:* ${timeStr}\n📊 *Estratégia Inicial:* ${strategyName}`);
             } else {
+                // Captura lucro final da sessão antes de zerar
+                const finalProfit = autoBotProfit;
+                const profitText = finalProfit >= 0 ? `R$ ${finalProfit.toFixed(2)}` : `-R$ ${Math.abs(finalProfit).toFixed(2)}`;
+
                 statusDiv.textContent = 'Robô Desativado.';
                 statusDiv.style.color = '#aaa';
                 activeSignal = null;
@@ -2115,9 +2257,18 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 document.getElementById('autoBotWinCount').textContent = '0';
                 document.getElementById('autoBotWhiteWinCount').textContent = '0';
                 document.getElementById('autoBotLossCount').textContent = '0';
+                
+                autoBotProfit = 0;
+                const profitEl = document.getElementById('autoBotProfitDisplay');
+                if(profitEl) { profitEl.textContent = 'R$ 0'; profitEl.style.color = '#00d2ff'; }
+
                 lastAutoBotResult = null;
                 if (container) container.classList.remove('bot-active-pulse');
                 if (navBtn) navBtn.classList.remove('bot-active-pulse');
+                const logContainer = document.getElementById('autoBotActionLog');
+                if(logContainer) logContainer.style.display = 'none';
+
+                sendAutoBotStatusTelegram(`🛑 *ROBÔ AUTO DESLIGADO*\n\n💰 *Lucro da Sessão:* ${profitText}`);
             }
         }
 
@@ -2171,21 +2322,247 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 }
             }
 
-            const strategy = document.getElementById('autoBotStrategy').value;
+            // --- FILTRO DE EXCESSO DE BRANCOS ---
+            const maxWhitesInput = document.getElementById('autoBotMaxWhitesFilter');
+            const maxWhites = maxWhitesInput ? (parseInt(maxWhitesInput.value) || 0) : 0;
+            if (maxWhites > 0) {
+                const recentForWhites = results.slice(0, 20);
+                const whiteCount = recentForWhites.filter(r => r.roll === 0).length;
+                if (whiteCount >= maxWhites) return; // Bloqueia entrada
+            }
+
+            let strategy = document.getElementById('autoBotStrategy').value;
             const recentColors = results.map(r => ({...r, color: dash_identificarCor(r.roll)})).filter(r => r.color !== 'branco').slice(0, 3);
             if (recentColors.length < 3) return;
             const [last, secondLast, thirdLast] = recentColors;
 
+            // --- LÓGICA DE ROTAÇÃO ALEATÓRIA ---
+            if (document.getElementById('autoBotRandomRotation').checked) {
+                const strategies = ['alternating_break', 'follow_trend', 'counter_trend', 'reversal_protection', 'post_white_value', 'surf_flow', 'king_of_table', 'chess_break', 'gale_reverso', 'numeric_prob'];
+                // Embaralha as estratégias para ser realmente aleatório
+                for (let i = strategies.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [strategies[i], strategies[j]] = [strategies[j], strategies[i]];
+                }
+
+                for (const strat of strategies) {
+                    let match = false;
+                    if (strat === 'alternating_break') {
+                        if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) match = true;
+                    } else if (strat === 'follow_trend') {
+                        if (last.color === secondLast.color) match = true;
+                    } else if (strat === 'counter_trend') {
+                        if (last.color === secondLast.color) match = true;
+                    } else if (strat === 'reversal_protection') {
+                        if (last.color === 'preto' && secondLast.color === 'preto') match = true;
+                    } else if (strat === 'post_white_value') {
+                        if (results[0].roll === 0) match = true;
+                    } else if (strat === 'surf_flow') {
+                        if (last.color === secondLast.color && secondLast.color === thirdLast.color) match = true;
+                    } else if (strat === 'king_of_table') {
+                        let cnt = 0;
+                        const target = last.color;
+                        for(let k=0; k<5 && k<results.length; k++) {
+                            if(dash_identificarCor(results[k].roll) === target) cnt++;
+                        }
+                        if(cnt >= 4) match = true;
+                    } else if (strat === 'chess_break') {
+                        if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) match = true;
+                    } else if (strat === 'gale_reverso') {
+                        match = true; // Sempre tenta quebrar a última cor
+                    } else if (strat === 'numeric_prob') {
+                        const targetNum = results[0].roll;
+                        let r = 0, b = 0;
+                        for (let k = 1; k < results.length - 1; k++) {
+                            if (results[k].roll === targetNum) {
+                                const nc = dash_identificarCor(results[k-1].roll);
+                                if (nc === 'vermelho') r++; else if (nc === 'preto') b++;
+                            }
+                        }
+                        if ((r + b) >= 3 && Math.abs(r - b) >= 1) match = true;
+                    }
+
+                    if (match) {
+                        strategy = strat;
+                        document.getElementById('autoBotStrategy').value = strategy;
+                        const label = document.getElementById('autoBotCurrentStrategyLabel');
+                        if (label) {
+                             const select = document.getElementById('autoBotStrategy');
+                             const option = Array.from(select.options).find(opt => opt.value === strategy);
+                             const strategyName = option ? option.text.replace(/^\d+\.\s*/, '') : strategy;
+                             label.innerHTML = `<div class="radar-animation found" style="width: 8px; height: 8px; margin-right: 5px;"></div><span style="color: #00aaff; font-weight: bold;">[ ${strategyName} ]</span>`;
+                        }
+                        break;
+                    }
+                }
+            }
+
             switch (strategy) {
-                case 'alternating_break': if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) createAutoSignal(last, last.color); break;
-                case 'follow_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color); break;
-                case 'counter_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color === 'vermelho' ? 'preto' : 'vermelho'); break;
-                case 'reversal_protection': if (last.color === 'preto' && secondLast.color === 'preto') createAutoSignal(last, 'vermelho'); break;
-                case 'post_white_value': if (results[0].roll === 0) createAutoSignal(results[0], 'vermelho'); break;
+                case 'alternating_break': if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) createAutoSignal(last, last.color, strategy); break;
+                case 'follow_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color, strategy); break;
+                case 'counter_trend': if (last.color === secondLast.color) createAutoSignal(last, last.color === 'vermelho' ? 'preto' : 'vermelho', strategy); break;
+                case 'reversal_protection': if (last.color === 'preto' && secondLast.color === 'preto') createAutoSignal(last, 'vermelho', strategy); break;
+                case 'post_white_value': if (results[0].roll === 0) createAutoSignal(results[0], 'vermelho', strategy); break;
+                case 'surf_flow': if (last.color === secondLast.color && secondLast.color === thirdLast.color) createAutoSignal(last, last.color, strategy); break;
+                case 'king_of_table':
+                    let redCnt = 0, blackCnt = 0;
+                    for(let k=0; k<5 && k<results.length; k++) {
+                        const c = dash_identificarCor(results[k].roll);
+                        if(c === 'vermelho') redCnt++; else if(c === 'preto') blackCnt++;
+                    }
+                    if (redCnt >= 4) createAutoSignal(last, 'vermelho', strategy);
+                    else if (blackCnt >= 4) createAutoSignal(last, 'preto', strategy);
+                    break;
+                case 'chess_break': if (last.color !== secondLast.color && secondLast.color !== thirdLast.color) createAutoSignal(last, last.color, strategy); break;
+                case 'gale_reverso': createAutoSignal(last, last.color === 'vermelho' ? 'preto' : 'vermelho', strategy); break;
+                case 'numeric_prob':
+                    const targetNum = results[0].roll;
+                    let r = 0, b = 0;
+                    for (let k = 1; k < results.length - 1; k++) {
+                        if (results[k].roll === targetNum) {
+                            const nc = dash_identificarCor(results[k-1].roll);
+                            if (nc === 'vermelho') r++; else if (nc === 'preto') b++;
+                        }
+                    }
+                    if ((r + b) >= 3) { if (r > b) createAutoSignal(results[0], 'vermelho', strategy); else if (b > r) createAutoSignal(results[0], 'preto', strategy); }
+                    break;
             }
         }
 
-        function createAutoSignal(triggerResult, targetColor) {
+        async function sendAutoBotTelegramSignal(signalData) {
+            const toggle = document.getElementById('autoBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+            const template = localStorage.getItem('telegram_autobot_template');
+
+            if (!token || !chatId) {
+                logAutoBotAction('Telegram não configurado.', 'warning');
+                return;
+            }
+
+            const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : '⚫';
+            let message;
+
+            if (template && template.trim() !== '') {
+                message = template
+                    .replace(/\{horario\}/g, signalData.time)
+                    .replace(/\{cor_nome\}/g, signalData.targetColor)
+                    .replace(/\{cor_emoji\}/g, emoji)
+                    .replace(/\{protecao_emoji\}/g, '⚪️')
+                    .replace(/\{estrategia\}/g, signalData.strategy || 'Automática');
+            } else {
+                message = `🤖 *SINAL ROBÔ AUTO*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🛡️ *Proteção:* ⚪️ Branco\n📊 *Estratégia:* ${signalData.strategy || 'Automática'}\n\n✅ *Gerencie sua banca!*`;
+            }
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+                logAutoBotAction('Sinal enviado para Telegram.', 'success');
+            } catch (e) {
+                console.error('Erro ao enviar sinal Telegram:', e);
+                logAutoBotAction('Erro ao enviar Telegram.', 'danger');
+            }
+        }
+
+        async function sendAutoBotResultTelegram(resultMessage) {
+            const toggle = document.getElementById('autoBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            const strategy = activeSignal ? (activeSignal.strategy || 'Automática') : 'Automática';
+            const profitText = autoBotProfit >= 0 ? `R$ ${autoBotProfit.toFixed(2)}` : `-R$ ${Math.abs(autoBotProfit).toFixed(2)}`;
+            const formattedMessage = `*RESULTADO ROBÔ AUTO*\n\n${resultMessage}\n📊 *Estratégia:* ${strategy}\n\n📈 *Placar:* ✅ ${autoBotWins} (⚪ ${autoBotWhiteWins}) | ❌ ${autoBotLosses}\n💰 *Lucro:* ${profitText}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) {
+                console.error('Erro ao enviar resultado Telegram:', e);
+            }
+        }
+
+        async function sendAutoBotStatusTelegram(message) {
+            const toggle = document.getElementById('autoBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro status Telegram:', e); }
+        }
+
+        // --- CONTROLE REMOTO VIA TELEGRAM ---
+        let telegramPollingInterval = null;
+        let telegramLastUpdateId = 0;
+
+        function startTelegramPolling() {
+            if (telegramPollingInterval) clearInterval(telegramPollingInterval);
+            telegramPollingInterval = setInterval(async () => {
+                const token = localStorage.getItem('telegram_bot_token');
+                if (!token) return;
+
+                try {
+                    const response = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${telegramLastUpdateId + 1}&timeout=0`);
+                    const data = await response.json();
+
+                    if (data.ok && data.result.length > 0) {
+                        for (const update of data.result) {
+                            telegramLastUpdateId = update.update_id;
+                            if (update.message && update.message.text) {
+                                processTelegramCommand(update.message.text, update.message.chat.id);
+                            }
+                        }
+                    }
+                } catch (e) { /* Ignora erros de rede no polling */ }
+            }, 5000);
+        }
+
+        async function processTelegramCommand(text, chatId) {
+            const parts = text.trim().split(' ');
+            const command = parts[0].toLowerCase();
+            const arg = parts[1];
+
+            if (command === '/estrategia' || command === '/strategy') {
+                const stratMap = {
+                    '1': 'alternating_break', '2': 'follow_trend', '3': 'counter_trend',
+                    '4': 'reversal_protection', '5': 'surf_flow', '6': 'king_of_table',
+                    '7': 'chess_break', '8': 'post_white_value', '9': 'gale_reverso', '10': 'numeric_prob'
+                };
+                const token = localStorage.getItem('telegram_bot_token');
+
+                if (!arg || !stratMap[arg]) {
+                    const msg = "📋 *Estratégias Disponíveis:*\n\n1. Quebra de Alternância\n2. Seguir Tendência\n3. Contra Tendência\n4. Reversão com Proteção\n5. Surf no Fluxo\n6. Rei da Mesa\n7. Quebra de Xadrez\n8. Pós-Branco\n9. Gale Reverso\n10. Probabilidade Numérica\n\nUse: `/estrategia [número]`";
+                    await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+                    return;
+                }
+
+                const select = document.getElementById('autoBotStrategy');
+                if (select) {
+                    select.value = stratMap[arg];
+                    const rotation = document.getElementById('autoBotRandomRotation');
+                    if (rotation && rotation.checked) rotation.checked = false; // Desativa rotação para fixar a escolhida
+                    
+                    const option = Array.from(select.options).find(opt => opt.value === stratMap[arg]);
+                    const stratName = option ? option.text.replace(/^\d+\.\s*/, '') : stratMap[arg];
+                    
+                    logAutoBotAction(`Comando Telegram: Estratégia definida para ${stratName}`, 'action');
+                    await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(`✅ *Estratégia Alterada!*\n\nNova: *${stratName}*`)}&parse_mode=Markdown`);
+                }
+            }
+        }
+
+        function createAutoSignal(triggerResult, targetColor, strategyName) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
             signalTime.setHours(h, m, 0, 0);
@@ -2199,13 +2576,49 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const upperTargetColor = targetColor.toUpperCase();
             const targetColorEmoji = upperTargetColor === 'VERMELHO' ? '🔴' : '⚫';
 
-            activeSignal = { time: signalTimeString, date: triggerResult.date, targetColor: upperTargetColor, gale: 0 };
+            // Obtém nome amigável da estratégia
+            let friendlyName = strategyName;
+            const select = document.getElementById('autoBotStrategy');
+            if (select) {
+                const option = Array.from(select.options).find(opt => opt.value === strategyName);
+                if (option) friendlyName = option.text.replace(/^\d+\.\s*/, '');
+            }
+
+            activeSignal = { time: signalTimeString, date: triggerResult.date, targetColor: upperTargetColor, gale: 0, strategy: friendlyName };
             const signalPanel = document.getElementById('autoBotSignalPanel');
             const signalContent = document.getElementById('autoBotSignalContent');
-            signalContent.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between;"><div style="text-align: left;"><div class="cortex-text-anim" style="font-size: 1.3rem;">🕒 ${activeSignal.time}</div><div style="font-size: 1rem;">ENTRAR = ${targetColorEmoji} + ⚪️</div></div><div class="signal-chart-container"><div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${targetColorEmoji}</div></div></div><div style="margin-top: 15px; text-align: center;"><span class="cortex-text-anim">⏳ Aguardando resultado...</span></div>`;
+            signalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="text-align: left; flex: 1;">
+                        <div style="font-family: 'Courier New', monospace; color: #00d2ff; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;">
+                            <span style="background: rgba(0, 210, 255, 0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.3);">🕒 ${activeSignal.time}</span>
+                            <span style="font-size: 0.7rem; color: #666;">ALVO</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid ${targetColorEmoji === '🔴' ? '#ff0055' : '#fff'};">
+                            <span style="color: #ccc; font-weight: bold; font-size: 0.9rem;">ENTRAR</span>
+                            <span style="color: #555;">▶</span>
+                            <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px ${targetColorEmoji === '🔴' ? 'rgba(255,0,85,0.5)' : 'rgba(255,255,255,0.2)'});">${targetColorEmoji}</span>
+                            <span style="color: #555;">+</span>
+                            <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">⚪️</span>
+                        </div>
+                    </div>
+                    <div class="signal-chart-container" style="transform: scale(0.9);">
+                        <div class="signal-ring ring-1"></div>
+                        <div class="signal-ring ring-2"></div>
+                        <div class="signal-center-icon">${targetColorEmoji}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Aguardando Resultado...</span>
+                </div>`;
             signalPanel.classList.add('panel-glow-active');
             signalPanel.style.display = 'block';
+            
+            // Log da Estratégia Escolhida
+            logAutoBotAction(`Estratégia: ${friendlyName}`, 'action');
+            
             playAutoBotNotificationSound();
+            sendAutoBotTelegramSignal(activeSignal);
         }
 
         function playAutoBotNotificationSound() {
@@ -3585,6 +3998,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     }
                 });
             }
+
+            // Inicia polling de comandos do Telegram
+            startTelegramPolling();
         }
 
         // ==========================================
@@ -4091,27 +4507,55 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             signalContent.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div style="text-align: left; flex: 1;">
-                        <div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeWhiteSignal.time}</div>
-                        <div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff;">⚪️</span></div>
-                        <div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">EXECUTAR: ${entryCount} ENTRADAS</span></div>
+                        <div style="font-family: 'Courier New', monospace; color: #00d2ff; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;">
+                            <span style="background: rgba(0, 210, 255, 0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.3);">🕒 ${activeWhiteSignal.time}</span>
+                            <span style="font-size: 0.7rem; color: #666;">ALVO</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid #fff;">
+                            <span style="color: #ccc; font-weight: bold; font-size: 0.9rem;">ENTRAR</span>
+                            <span style="color: #555;">▶</span>
+                            <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">⚪️</span>
+                        </div>
+                        <div style="font-size: 0.75rem; margin-top: 6px; color: #888; padding-left: 2px;">EXECUTAR: <span style="color: #fff; font-weight: bold;">${entryCount} ENTRADAS</span></div>
                     </div>
-                    <div class="signal-chart-container">
+                    <div class="signal-chart-container" style="transform: scale(0.9);">
                         <div class="signal-ring ring-1"></div>
                         <div class="signal-ring ring-2"></div>
                         <div class="signal-center-icon">⚪</div>
                     </div>
                 </div>
-                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;">
-                    <span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div>
-                        <span class="cortex-text-anim">⏳ Buscando Branco 1ª entrada...</span>
-                    </span>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Buscando Branco 1ª entrada...</span>
                 </div>
             `;
             signalPanel.classList.add('panel-glow-active');
             signalPanel.style.display = 'block';
             logWhiteBotAction(`Sinal Gerado: Entrada no Branco (${signalTimeString})`, 'action');
             playWhiteNotificationSound();
+        }
+
+        function updateAutoBotProfit(amount) {
+            autoBotProfit += amount;
+            const profitEl = document.getElementById('autoBotProfitDisplay');
+            if (profitEl) {
+                profitEl.textContent = `R$ ${autoBotProfit.toFixed(2)}`;
+                if (autoBotProfit > 0) profitEl.style.color = '#00ff88';
+                else if (autoBotProfit < 0) profitEl.style.color = '#ff0055';
+                else profitEl.style.color = '#00d2ff';
+            }
+
+            // Verifica Stop Win
+            const stopWinInput = document.getElementById('autoBotStopWin');
+            const stopWin = stopWinInput ? parseFloat(stopWinInput.value) : 0;
+
+            if (stopWin > 0 && autoBotProfit >= stopWin) {
+                const toggle = document.getElementById('autoBotToggle');
+                if (toggle && toggle.checked) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(new Event('change'));
+                    logAutoBotAction(`Stop Win Atingido (R$ ${autoBotProfit.toFixed(2)})! 🏆`, 'success');
+                }
+            }
         }
 
         function checkSignalResult(results) {
@@ -4152,11 +4596,15 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const entry1 = minuteResults[minuteResults.length - 1];
             const entry1Color = dash_identificarCor(entry1.roll);
             let resultMessage = '';
+            const betAmount = parseFloat(document.getElementById('autoBotBetAmount').value) || 10;
 
             // 1. Verifica a 1ª Entrada
             if (entry1Color.toUpperCase() === activeSignal.targetColor || entry1Color === 'branco') {
                 resultMessage = `✅ WIN! (${activeSignal.time} - 1ª Pedra: ${entry1Color.toUpperCase()})`;
                 addResultToHistory(resultMessage, true);
+                updateAutoBotProfit(betAmount);
+                logAutoBotAction('WIN na 1ª Entrada! 🤑', 'success');
+                sendAutoBotResultTelegram(resultMessage);
                 document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
                 activeSignal = null; // Limpa o sinal, pois já foi resolvido
                 document.getElementById('autoBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
@@ -4171,9 +4619,15 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (entry2Color.toUpperCase() === activeSignal.targetColor || entry2Color === 'branco') {
                     resultMessage = `❇️ WIN G1! (${activeSignal.time} - 2ª Pedra: ${entry2Color.toUpperCase()})`;
                     addResultToHistory(resultMessage, true);
+                    updateAutoBotProfit(betAmount); // Lucro no G1 recupera e ganha a base
+                    logAutoBotAction('WIN no G1! 💰', 'success');
+                    sendAutoBotResultTelegram(resultMessage);
                 } else {
                     resultMessage = `❌ LOSS! (${activeSignal.time})`;
                     addResultToHistory(resultMessage, false);
+                    updateAutoBotProfit(-(betAmount * 3)); // Perde entrada + G1 (aprox 3x base)
+                    logAutoBotAction('LOSS Confirmado. 📉', 'danger');
+                    sendAutoBotResultTelegram(resultMessage);
                 }
                 document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
                 activeSignal = null;
@@ -4204,6 +4658,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                              console.log(`Robô Auto: Minuto (${activeSignal.time}) encerrou sem 2ª pedra. Considerando LOSS.`);
                              resultMessage = `❌ LOSS (Sem G1)! (${activeSignal.time})`;
                              addResultToHistory(resultMessage, false);
+                             updateAutoBotProfit(-(betAmount * 3));
+                             logAutoBotAction('LOSS (Tempo Esgotado)', 'danger');
+                             sendAutoBotResultTelegram(resultMessage);
                              document.getElementById('autoBotSignalPanel').classList.remove('panel-glow-active');
                              activeSignal = null;
                              document.getElementById('autoBotSignalContent').innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><div class="radar-animation"></div><span style="color: #aaa; font-size: 1.2rem;">Aguardando próxima entrada...</span></div>';
@@ -4222,21 +4679,26 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 signalContent.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                         <div style="text-align: left; flex: 1;">
-                            <div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeSignal.time}</div>
-                            <div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="${targetColorStyle} font-weight: bold; text-shadow: 0 0 5px rgba(255,255,255,0.2);">${targetColorEmoji}</span> + <span style="color: #fff;">⚪️</span></div>
-                            <div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">♻️ ATÉ G1</span></div>
+                            <div style="font-family: 'Courier New', monospace; color: #ff9800; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;">
+                                <span style="background: rgba(255, 152, 0, 0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(255, 152, 0, 0.3);">🕒 ${activeSignal.time}</span>
+                                <span style="font-size: 0.7rem; color: #666;">GALE 1</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid #ff9800;">
+                                <span style="color: #ccc; font-weight: bold; font-size: 0.9rem;">ENTRAR</span>
+                                <span style="color: #555;">▶</span>
+                                <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px ${targetColorEmoji === '🔴' ? 'rgba(255,0,85,0.5)' : 'rgba(255,255,255,0.2)'});">${targetColorEmoji}</span>
+                                <span style="color: #555;">+</span>
+                                <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">⚪️</span>
+                            </div>
                         </div>
-                        <div class="signal-chart-container">
-                            <div class="signal-ring ring-1"></div>
+                        <div class="signal-chart-container" style="transform: scale(0.9);">
+                            <div class="signal-ring ring-1" style="border-top-color: #ff9800;"></div>
                             <div class="signal-ring ring-2"></div>
                             <div class="signal-center-icon">${targetColorEmoji}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;">
-                        <span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div>
-                            <span class="cortex-text-anim">⏳ Aguardando 2ª pedra...</span>
-                        </span>
+                    <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                        <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">♻️ Vamos para o G1...</span>
                     </div>
                 `;
             }
@@ -4309,21 +4771,25 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                      signalContent.innerHTML = `
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                             <div style="text-align: left; flex: 1;">
-                                <div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeWhiteSignal.time}</div>
-                                <div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff;">⚪️</span></div>
-                                <div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">EXECUTAR: ${entryCount} ENTRADAS</span></div>
+                                <div style="font-family: 'Courier New', monospace; color: #ff9800; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;">
+                                    <span style="background: rgba(255, 152, 0, 0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(255, 152, 0, 0.3);">🕒 ${activeWhiteSignal.time}</span>
+                                    <span style="font-size: 0.7rem; color: #666;">ENTRADA ${currentEntry}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid #ff9800;">
+                                    <span style="color: #ccc; font-weight: bold; font-size: 0.9rem;">ENTRAR</span>
+                                    <span style="color: #555;">▶</span>
+                                    <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">⚪️</span>
+                                </div>
+                                <div style="font-size: 0.75rem; margin-top: 6px; color: #888; padding-left: 2px;">EXECUTAR: <span style="color: #fff; font-weight: bold;">${entryCount} ENTRADAS</span></div>
                             </div>
-                            <div class="signal-chart-container">
-                                <div class="signal-ring ring-1"></div>
+                            <div class="signal-chart-container" style="transform: scale(0.9);">
+                                <div class="signal-ring ring-1" style="border-top-color: #ff9800;"></div>
                                 <div class="signal-ring ring-2"></div>
                                 <div class="signal-center-icon">⚪</div>
                             </div>
                         </div>
-                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;">
-                            <span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div>
-                                <span class="cortex-text-anim">⏳ Buscando Branco ${currentEntry}ª entrada...</span>
-                            </span>
+                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                            <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Buscando Branco ${currentEntry}ª entrada...</span>
                         </div>
                      `;
                  }

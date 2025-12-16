@@ -64,6 +64,21 @@
                     <div class="hint">Ex: -100123456789 (Certifique-se de adicionar o robô como Admin no grupo)</div>
                 </div>
             
+                <hr style="border-color: #333; margin: 25px 0;">
+
+                <h2>📝 Modelos de Mensagem</h2>
+                <div class="control-group">
+                    <label for="telegram_autobot_template">🤖 Mensagem do Robô Auto:</label>
+                    <textarea id="telegram_autobot_template" rows="6" placeholder="🤖 *SINAL ROBÔ AUTO*&#10;&#10;🕒 *Horário:* {horario}&#10;🎯 *Entrada:* {cor_emoji} {cor_nome}&#10;🛡️ *Proteção:* {protecao_emoji} Branco&#10;&#10;✅ *Gerencie sua banca!*"></textarea>
+                    <div class="hint">
+                        Deixe em branco para usar a mensagem padrão. Placeholders disponíveis: <br>
+                        `{horario}` - Horário do sinal (Ex: 14:30)<br>
+                        `{cor_nome}` - Nome da cor (Ex: VERMELHO)<br>
+                        `{cor_emoji}` - Emoji da cor (Ex: 🔴)<br>
+                        `{protecao_emoji}` - Emoji da proteção (Ex: ⚪️)
+                    </div>
+                </div>
+
                 <div class="inline-controls">
                     <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Configs</button>
                     <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this)">🧪 Testar Conexão</button>
@@ -92,14 +107,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('telegram_bot_token');
             const savedChatId = localStorage.getItem('telegram_chat_id');
+            const savedAutoBotTemplate = localStorage.getItem('telegram_autobot_template');
             if (savedToken) document.getElementById('telegram_bot_token').value = savedToken;
             if (savedChatId) document.getElementById('telegram_chat_id').value = savedChatId;
+            if (savedAutoBotTemplate) document.getElementById('telegram_autobot_template').value = savedAutoBotTemplate;
         });
 
         function saveTelegramSettings(btn) {
             const token = document.getElementById('telegram_bot_token').value.trim();
             const chatId = document.getElementById('telegram_chat_id').value.trim();
             const resDiv = document.getElementById('resTelegramConfig');
+            const autoBotTemplate = document.getElementById('telegram_autobot_template').value;
 
             if (!token || !chatId) {
                 resDiv.style.display = 'block';
@@ -110,6 +128,7 @@
 
             localStorage.setItem('telegram_bot_token', token);
             localStorage.setItem('telegram_chat_id', chatId);
+            localStorage.setItem('telegram_autobot_template', autoBotTemplate);
 
             resDiv.style.display = 'block';
             resDiv.style.color = '#00ff88';

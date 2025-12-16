@@ -729,7 +729,29 @@
             const signalPanel = document.getElementById('whiteBotSignalPanel');
             const signalContent = document.getElementById('whiteBotSignalContent');
             signalPanel.style.border = '2px solid var(--accent)';
-            signalContent.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;"><div style="text-align: left; flex: 1;"><div class="cortex-text-anim" style="font-size: 1.3rem; margin-bottom: 4px;">🕒 ${activeWhiteSignal.time}</div><div style="font-size: 1rem; color: #ddd;"><span class="cortex-text-anim">ENTRAR</span> = <span style="color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff;">⚪️</span></div><div style="font-size: 0.85rem; margin-top: 4px;"><span class="cortex-text-anim">EXECUTAR: ${entryCount} ENTRADAS</span></div></div><div class="signal-chart-container"><div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">⚪</div></div></div><div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center;"><span style="font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;"><div class="radar-animation" style="width: 8px; height: 8px; margin-right:0;"></div><span class="cortex-text-anim">⏳ Buscando Branco 1ª entrada...</span></span></div>`;
+            signalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="text-align: left; flex: 1;">
+                        <div style="font-family: 'Courier New', monospace; color: #00d2ff; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;">
+                            <span style="background: rgba(0, 210, 255, 0.1); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.3);">🕒 ${activeWhiteSignal.time}</span>
+                            <span style="font-size: 0.7rem; color: #666;">ALVO</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border-left: 2px solid #fff;">
+                            <span style="color: #ccc; font-weight: bold; font-size: 0.9rem;">ENTRAR</span>
+                            <span style="color: #555;">▶</span>
+                            <span style="font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">⚪️</span>
+                        </div>
+                        <div style="font-size: 0.75rem; margin-top: 6px; color: #888; padding-left: 2px;">EXECUTAR: <span style="color: #fff; font-weight: bold;">${entryCount} ENTRADAS</span></div>
+                    </div>
+                    <div class="signal-chart-container" style="transform: scale(0.9);">
+                        <div class="signal-ring ring-1"></div>
+                        <div class="signal-ring ring-2"></div>
+                        <div class="signal-center-icon">⚪</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Buscando Branco 1ª entrada...</span>
+                </div>`;
             signalPanel.classList.add('panel-glow-active');
             signalPanel.style.display = 'block';
             playWhiteNotificationSound();
