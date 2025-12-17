@@ -673,16 +673,18 @@ body.light-theme .dashboard .toggle-switch-container { border-color: var(--borde
 #login-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* MODIFICADO: Impede que o conteúdo seja cortado em telas pequenas. */
     align-items: center;
     height: 100vh;
     width: 100%;
     position: fixed;
     top: 0;
     left: 0;
-    /* background: var(--bg-color); A cor de fundo foi removida para mostrar a imagem do body */
     z-index: 1000;
     transition: opacity 0.5s ease-out;
+    overflow-y: auto; /* GARANTE a rolagem vertical quando o conteúdo é maior que a tela. */
+    padding-top: 3vh; /* Adiciona um espaçamento no topo para não colar na borda. */
+    padding-bottom: 3vh;
 }
 #login-form, #self-register-form {
     background-color: var(--card-bg);
@@ -821,11 +823,6 @@ body.light-theme #login-form { border-color: var(--border-color); }
     transform: scale(1);
     pointer-events: auto;
     display: flex !important; /* Garante que seja exibido como flex */
-}
-#login-container {
-    /* Garante que o container se ajuste ao conteúdo, mas sem forçar uma altura mínima grande */
-    /* min-height: 650px; */ /* REMOVIDO: Esta linha causava o problema de layout em telas menores */
-    overflow-y: auto; /* Adicionado: Permite rolagem interna se o formulário for maior que a tela */
 }
 
 /* Botão de Suporte Telegram Animado */

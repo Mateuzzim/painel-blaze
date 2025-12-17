@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Análise Integrado</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -21,6 +20,10 @@
         }
         .bot-active-pulse {
             animation: blink-green-border 1.5s infinite;
+        }
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes radar-wave {
             0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.5); }
@@ -617,7 +620,7 @@
         }
         /* Botão WhatsApp Login */
         #whatsapp-support-button {
-            position: absolute;
+            position: fixed; /* MODIFICADO: Garante que o botão não role com a página. */
             top: 160px;
             right: 20px;
             width: 60px;
@@ -851,15 +854,6 @@
                         
                         <div class="nav-btn" onclick="openTool('suporte.html', 'Suporte')" style="border-color: #28a745;"><div class="nav-icon">📞</div><div class="nav-title" style="color: #28a745;">Suporte</div><div class="nav-desc">Ajuda</div></div>
                     </div>
-                </div>
-
-                <!-- CONTAINER PARA FERRAMENTAS INTERNAS (IFRAME) -->
-                <div id="suite_tool_frame" class="tab-content" style="height: 100%; min-height: 850px; padding: 0; overflow: hidden;">
-                    <div style="padding: 10px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
-                        <button class="btn-back" onclick="closeTool()" style="margin: 0;">⬅ Voltar ao Menu</button>
-                        <span id="tool_title" style="font-weight: bold; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Ferramenta</span>
-                    </div>
-                    <iframe id="tool_iframe" src="" style="width: 100%; height: calc(100% - 55px); border: none; background: #0f0f13;"></iframe>
                 </div>
 
                 <!-- AUTO BOT TAB (INTEGRATED) -->
@@ -1416,21 +1410,6 @@
             const usersSnapshot = await db.collection("users").get();
             const batch = db.batch();
             
-            usersSnapshot.forEach(doc => {
-                const user = doc.data();
-                // Se a senha existe e NÃO começa com $2a$ (identificador do bcrypt), então é antiga
-                if (user.password && !user.password.startsWith('$2a$')) {
-                    try {
-                        const originalPassword = atob(user.password); // Decodifica Base64 antigo
-                        // Como hashPassword é async, precisamos lidar com isso. 
-                        // Nota: Em loops forEach síncronos, await não pausa o loop externo, 
-                        // mas para batch updates simples isso pode funcionar se coletarmos as promises.
-                        // Para simplificar no browser, vamos fazer a migração um por um ou usar Promise.all se necessário.
-                        // Abaixo, uma abordagem híbrida para o batch:
-                    } catch (e) { console.error("Erro ao decodificar senha antiga:", e); }
-                }
-            });
-            
             // Versão corrigida para migração assíncrona
             const updates = [];
             for (const doc of usersSnapshot.docs) {
@@ -1621,7 +1600,8 @@
             // Tenta pegar do localStorage primeiro, senão usa o hardcoded
             let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
             if (!SEU_TOKEN_BLAZE) {
-                SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjU0MDM3MzF9.FodxcWCvsl6vn3Zfyo8097ldjvO4VABtPftJYHzD1z8"; 
+                // Token removido por segurança. Insira via Configurações ou localStorage.
+                SEU_TOKEN_BLAZE = ""; 
             }
             // ======================================================
 
@@ -5504,28 +5484,51 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
-        // --- FUNÇÕES PARA ABRIR FERRAMENTAS INTERNAMENTE ---
+        // --- FUNÇÕES PARA ABRIR FERRAMENTAS INTERNAMENTE (MODO FLUTUANTE) ---
         function openTool(url, title) {
-            suite_openTab('tool_frame');
-            const iframe = document.getElementById('tool_iframe');
-            iframe.src = url;
-            document.getElementById('tool_title').innerText = title || 'Ferramenta';
-            
-            // Detecta se o usuário clicou em "Voltar" dentro do iframe (que carregaria o index.html lá dentro)
-            iframe.onload = function() {
-                try {
-                    if (iframe.contentWindow.location.href.includes('index.html')) {
-                        closeTool();
+            const floatingContainer = document.getElementById('floating-tool-container');
+            const iframe = document.getElementById('floating_tool_iframe');
+            const toolTitle = document.getElementById('floating_tool_title');
+
+            if (floatingContainer && iframe && toolTitle) {
+                iframe.src = url;
+                toolTitle.innerText = title || 'Ferramenta';
+                floatingContainer.style.display = 'flex';
+
+                // Adiciona o listener para fechar o modal se o usuário clicar em "Voltar ao Menu" dentro do iframe
+                iframe.onload = function() {
+                    try {
+                        if (iframe.contentWindow.location.href.includes('index.html')) {
+                            closeTool();
+                        }
+                    } catch (e) {
+                        // Ignora erros de cross-origin
                     }
-                } catch(e) {}
-            };
+                };
+            }
         }
 
         function closeTool() {
-            const iframe = document.getElementById('tool_iframe');
-            iframe.src = 'about:blank'; // Limpa o iframe para parar scripts da ferramenta
-            suite_openTab('menu');
+            const floatingContainer = document.getElementById('floating-tool-container');
+            const iframe = document.getElementById('floating_tool_iframe');
+
+            if (floatingContainer && iframe) {
+                iframe.src = 'about:blank'; // Limpa o iframe para parar scripts e processos
+                floatingContainer.style.display = 'none';
+            }
         }
     </script>
+
+    <!-- NOVO CONTAINER FLUTUANTE PARA FERRAMENTAS -->
+    <div id="floating-tool-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+    <div id="floating-tool-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; animation: fadeInModal 0.3s ease-out;">
+        <div style="width: 95%; max-width: 1300px; height: 95%; background-color: #1a1a1a; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);">
+            <div style="padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <span id="floating_tool_title" style="font-weight: bold; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Ferramenta</span>
+                <button class="btn-back" onclick="closeTool()" style="margin: 0; background: #ff0055; color: #fff; border: none; font-weight: bold; padding: 8px 15px;">✖ FECHAR</button>
+            </div>
+            <iframe id="floating_tool_iframe" src="" style="width: 100%; flex-grow: 1; border: none; background: #0f0f13; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;"></iframe>
+        </div>
+    </div>
 </body>
 </html>
