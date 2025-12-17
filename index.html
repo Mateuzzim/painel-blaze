@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Análise Integrado</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -637,6 +638,102 @@
         #whatsapp-support-button:hover {
             transform: scale(1.1);
         }
+
+        /* --- RESPONSIVIDADE (MOBILE/TABLET) --- */
+        @media (max-width: 768px) {
+            /* Layout Principal - Empilha os painéis */
+            .main-container {
+                display: flex;
+                flex-direction: column;
+                padding: 5px;
+            }
+            .layout-panel {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            /* Login - Ajusta largura */
+            #login-container {
+                width: 95%;
+                margin-top: 20px;
+                padding: 15px;
+            }
+            
+            /* Botão Flutuante (WhatsApp) - Mover para baixo em mobile para facilitar o toque */
+            #whatsapp-support-button {
+                top: auto;
+                bottom: 20px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+            }
+
+            /* Controles e Inputs - Um por linha */
+            .inline-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .control-group {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            /* Header - Centraliza e ajusta */
+            .top-header-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            .header-controls-row {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            /* Placar - Permite quebra de linha */
+            .futuristic-scoreboard {
+                flex-wrap: wrap;
+            }
+
+            /* Tabelas e Listas - Scroll horizontal se necessário */
+            #user-list-container, #activity-log-container {
+                overflow-x: auto;
+            }
+            
+            /* Modal Flutuante - Tela cheia */
+            #floating-tool-container {
+                padding: 0;
+            }
+            #floating-tool-container > div {
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 0;
+            }
+
+            /* --- AJUSTES ESPECÍFICOS PARA O PAINEL ROBÔ BRANCO (MOBILE) --- */
+
+            /* Converte a seção de toggles em uma grade para melhor aproveitamento de espaço */
+            #suite_white_bot #whiteBotTogglesContainer {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* Duas colunas */
+                gap: 10px;
+            }
+
+            /* Ajusta cada item de toggle, seja na grade ou sozinho */
+            #suite_white_bot .toggle-switch-container {
+                justify-content: space-between; /* Alinha label à esquerda e switch à direita */
+                height: auto !important; /* Remove altura fixa para consistência */
+                width: 100%;
+                flex: 1 1 auto;
+                margin-bottom: 0 !important; /* Remove margem para consistência na grade */
+            }
+            
+            /* Adiciona borda e padding para os toggles que estão na grade, para ficarem parecidos com outros inputs */
+            #suite_white_bot #whiteBotTogglesContainer .toggle-switch-container {
+                border: 1px solid #444;
+                padding: 10px;
+                border-radius: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1045,7 +1142,7 @@
                         </div>
                         
                         <!-- TOGGLES -->
-                        <div class="inline-controls" style="margin-bottom: 20px; align-items: center;">
+                        <div class="inline-controls" id="whiteBotTogglesContainer" style="margin-bottom: 20px;">
                             <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
                                 <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
