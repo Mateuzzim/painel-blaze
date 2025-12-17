@@ -154,7 +154,7 @@
                     <div class="history-grid" id="dash_grid-real-time"></div>
                     
                     <button class="futuristic-collapse-btn" onclick="toggleNumericStats()" style="margin-top: 15px; font-size: 0.8rem; padding: 8px;">📊 ESTATÍSTICAS (0-14)</button>
-                    <div id="numeric-stats-container" style="display: none;">
+                    <div id="numeric-stats-container" style="display: block;">
                         <div id="numeric-stats-grid" class="numeric-stats-grid"></div>
                     </div>
                 </div>
@@ -866,6 +866,35 @@
             autoFetchToggle.checked = true;
             autoFetchToggle.dispatchEvent(new Event('change'));
         });
+
+        function toggleNumericStats() {
+            const el = document.getElementById('numeric-stats-container');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function updateNumericStats(results) {
+            const grid = document.getElementById('numeric-stats-grid');
+            if (!grid) return;
+            
+            const counts = Array(15).fill(0);
+            results.forEach(r => { 
+                const n = parseInt(r.roll);
+                if (!isNaN(n) && n >= 0 && n <= 14) counts[n]++; 
+            });
+            const total = results.length || 1;
+            
+            grid.innerHTML = counts.map((count, num) => {
+                const pct = ((count / total) * 100).toFixed(1);
+                const color = dash_identificarCor(num);
+                const colorHex = color === 'vermelho' ? '#ff0055' : (color === 'preto' ? '#888' : '#fff');
+                const textColor = color === 'vermelho' ? '#ff0055' : (color === 'preto' ? '#ccc' : '#fff');
+                return `<div class="num-stat-card" style="border-bottom: 2px solid ${colorHex};"><div class="num-stat-value" style="color:${textColor}; text-shadow: 0 0 5px ${colorHex}40;">${num}</div><div class="num-stat-count">${count}x</div><div class="num-stat-pct">${pct}%</div><div class="num-stat-bar" style="width:${pct}%; background:${colorHex};"></div></div>`;
+            }).join('');
+        }
     </script>
 </body>
 </html>

@@ -271,7 +271,7 @@
                             </label>
                         </div>
                         <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                            <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Alerta Prot.:</label>
+                            <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Telegram:</label>
                             <label class="switch" style="width: 40px; height: 20px;">
                                 <input type="checkbox" id="whiteBotProtectionTelegramAlert">
                                 <span class="slider" style="border-radius: 20px;"></span>
@@ -285,6 +285,7 @@
                             </label>
                         </div>
                     </div>
+                    <button onclick="testWhiteBotTelegram()" class="manual-btn" style="width: 100%; margin-bottom: 15px; background-color: #24A1DE; border-color: #24A1DE; color: #fff; font-weight: bold;">🧪 TESTAR ENVIO TELEGRAM</button>
                 </div>
 
                 <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
@@ -577,7 +578,6 @@
                             
                             if (whiteBotProtectionWhitesInPause >= resumeTrigger) {
                                 console.log(`Robô Branco: Pausa cancelada! ${whiteBotProtectionWhitesInPause} brancos detectados na pausa.`);
-                                sendWhiteBotTelegramAlert(`⚠️ *PROTEÇÃO CANCELADA*\n\nSaíram ${whiteBotProtectionWhitesInPause} brancos durante a pausa.\nVoltando a operar!`);
                                 whiteBotProtectionPauseRemaining = 0;
                                 whiteBotProtectionWhitesInPause = 0;
                                 whiteBotProtectionWhiteCount = 0; // Reseta contagem principal
@@ -598,7 +598,6 @@
                                 return;
                             } else {
                                 // Pausa finalizada naturalmente
-                                sendWhiteBotTelegramAlert(`✅ *PROTEÇÃO FINALIZADA*\n\nPausa concluída com segurança.\nVoltando a operar.`);
                                 updateWhiteBotProtectionDisplay('standby');
                                 clearWhiteBotPauseLog();
                                 document.getElementById('whiteBotSignalContent').innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO SINAL...</span>';
@@ -627,7 +626,6 @@
                             whiteBotProtectionWhitesInPause = 0; // Reseta contador da pausa
                             clearWhiteBotPauseLog();
                             console.log(`Robô Branco: PROTEÇÃO ATIVA! ${triggerCount}º Branco detectado. Pausa de ${pauseCount} pedras iniciada.`);
-                            sendWhiteBotTelegramAlert(`🛡️ *PROTEÇÃO ATIVADA*\n\nDetectado o ${triggerCount}º Branco.\nIniciando pausa de ${pauseCount} pedras.`);
                             updateWhiteBotProtectionDisplay('active', pauseCount);
                             return; // Interrompe análise imediata para não gerar sinal
                         }
@@ -755,6 +753,7 @@
             signalPanel.classList.add('panel-glow-active');
             signalPanel.style.display = 'block';
             playWhiteNotificationSound();
+            sendWhiteBotSignalTelegram(activeWhiteSignal);
         }
 
         function checkWhiteSignalResult(results) {
@@ -847,6 +846,7 @@
             document.getElementById('whiteBotWinCount').textContent = whiteBotWins;
             document.getElementById('whiteBotLossCount').textContent = whiteBotLosses;
             historyDiv.prepend(newEntry);
+            sendWhiteBotResultTelegram(message, strategyName);
             checkWhiteBotStopLimits();
         }
 
@@ -976,6 +976,73 @@
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
                 await fetch(url);
             } catch (e) { console.error('Erro ao enviar alerta Telegram:', e); }
+        }
+
+        async function sendWhiteBotSignalTelegram(signalData) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            const template = localStorage.getItem('telegram_whitebot_template');
+
+            if (!token || !chatId) return;
+
+            let message;
+            if (template && template.trim() !== '') {
+                message = template
+                    .replace(/\{horario\}/g, signalData.time)
+                    .replace(/\{entradas\}/g, signalData.entryCount)
+                    .replace(/\{estrategia\}/g, signalData.strategyName);
+            } else {
+                message = `🕒 ${signalData.time}\nENTRAR ▶⚪️\nEXECUTAR: ${signalData.entryCount} ENTRADAS`;
+            }
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
+        }
+
+        async function sendWhiteBotResultTelegram(resultMessage, strategyName) {
+            const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            if (!token || !chatId) return;
+
+            const strategy = strategyName || (activeWhiteSignal ? activeWhiteSignal.strategyName : 'Automática');
+            const formattedMessage = `*RESULTADO ROBÔ BRANCO*\n\n${resultMessage}\n\n📈 *Placar:* ✅ ${whiteBotWins} | ❌ ${whiteBotLosses}\n📊 *Estratégia:* ${strategy}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar resultado Telegram:', e); }
+        }
+
+        async function testWhiteBotTelegram() {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) {
+                alert('⚠️ Configure o Token e o Chat ID do Telegram primeiro (Menu > Telegram).');
+                return;
+            }
+
+            const message = "🧪 *TESTE ROBÔ BRANCO*\n\nEsta é uma mensagem de teste enviada diretamente do painel do Robô Branco.\n\n✅ *Conexão OK!*";
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+                alert('✅ Mensagem de teste enviada com sucesso!');
+            } catch (e) {
+                console.error('Erro ao enviar teste Telegram:', e);
+                alert('❌ Erro ao enviar mensagem. Verifique o console.');
+            }
         }
 
         function applyWhiteBotPreset(btn) {

@@ -37,6 +37,16 @@
         .futuristic-footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; position: relative; overflow: hidden; background: rgba(10, 10, 15, 0.8); }
         .futuristic-footer::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); animation: footer-scan 3s linear infinite; }
         @keyframes footer-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        /* Alerta Futurista */
+        .futuristic-alert { display: none; margin: 15px 0; padding: 15px; background: rgba(20, 20, 30, 0.9); border: 1px solid #ff0055; border-left: 5px solid #ff0055; color: #ff0055; font-family: 'Segoe UI', monospace; text-transform: uppercase; position: relative; overflow: hidden; box-shadow: 0 0 15px rgba(255, 0, 85, 0.2); font-weight: bold; letter-spacing: 1px; }
+        .futuristic-alert::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 0, 85, 0.2), transparent); animation: alert-scan 2s linear infinite; }
+        @keyframes alert-scan { 0% { left: -100%; } 100% { left: 100%; } }
+        .futuristic-alert strong { color: #fff; }
+        
+        /* Status Normal (Verde) */
+        .futuristic-alert.normal { border-color: #00ff88; border-left-color: #00ff88; color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .futuristic-alert.normal::before { background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent); }
     </style>
 </head>
 <body>
@@ -70,6 +80,7 @@
                         <option value="pitagoras">11. Teorema de Pitágoras</option>
                         <option value="jikan_tradicional">14. Hora Temporal (Jikan)</option>
                         <option value="ciclosMercado">12. Ciclos de Mercado</option>
+                        <option value="maximo">13. Máximo Intervalo (Max Brancos)</option>
                     </select>
                 </div>
                 <div class="control-group">
@@ -85,6 +96,10 @@
                     <label>Nº de Entradas (Tentativas/Gale):</label>
                     <input type="number" id="suite_entradasBranco" value="3" min="1">
                     <div class="hint">Quantas minutos cobrir após o sinal (Ex: 3).</div>
+                </div>
+                <div class="control-group">
+                    <label>Texto do Link (Telegram):</label>
+                    <input type="text" id="suite_textoLinkBranco" value="APOSTAR" placeholder="Ex: ENTRAR">
                 </div>
                 <div class="control-group" id="suite_customStrategyContainer" style="display:none;">
                     <label>Padrão Personalizado (minutos, separados por vírgula):</label>
@@ -108,6 +123,10 @@
                     <div class="hint">Cole a lista de horários (HH:MM) em que o branco saiu. Um por linha.</div>
                     <textarea id="suite_inputHistoricoBranco" oninput="suite_autoFormatBrancoInput(this)" placeholder="Exemplo: 13:00 BRANCO"></textarea>
                 </div>
+                
+                <!-- Alerta Visual Futurista -->
+                <div id="suite_futuristic_alert" class="futuristic-alert"></div>
+
                 <div class="inline-controls" style="align-items: center; margin-bottom: 20px;">
                     <button class="btn-action" style="background-color: #fff; color: #000; border: 1px solid #aaa; font-size: 0.8rem;" onclick="suite_analisarParaBranco()">⚪ LISTA BRANCO</button>
                     <button class="btn-action" onclick="suite_limparAnalisadorBranco()" style="margin-top: 10px; background-color: #555; font-size: 0.8rem;">LIMPAR</button>
@@ -116,6 +135,7 @@
                     Aguardando análise para o branco...
                 </div>
                 <button id="suite_copy-signals-button-branco" class="btn-copy" onclick="copiar('suite_resBranco', this)">📋 COPIAR SINAIS</button>
+                <button id="suite_telegram-button-branco" class="btn-copy" style="margin-top: 5px; background: #229ED9; border-color: #229ED9;" onclick="suite_formatarTelegramBranco()">✈️ FORMATAR TELEGRAM</button>
             </div>
         </div>
     </div>
@@ -144,6 +164,37 @@
                 btn.innerText = '✅ Copiado!';
                 setTimeout(() => btn.innerText = originalText, 2000);
             }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        function suite_formatarTelegramBranco() {
+            const resultsDiv = document.getElementById('suite_resBranco');
+            let text = resultsDiv.innerText;
+
+            if (!text.includes('🕒')) {
+                alert("Gere os sinais primeiro antes de formatar.");
+                return;
+            }
+
+            const platform = document.getElementById('suite_platformSelector').value;
+            let url = 'https://blaze.com/pt/games/double';
+            if (platform === 'jonbet') url = 'https://jon.bet/pt/games/double';
+
+            const linkText = document.getElementById('suite_textoLinkBranco').value || 'APOSTAR';
+
+            const lines = text.split('\n');
+            const formattedLines = lines.map(line => {
+                if (line.includes('🕒') && line.includes('➔') && !line.includes('](')) {
+                    return `${line} 🔗 ${linkText}`;
+                }
+                return line;
+            });
+
+            resultsDiv.innerText = formattedLines.join('\n');
+
+            const btn = document.getElementById('suite_telegram-button-branco');
+            const originalText = btn.innerText;
+            btn.innerText = '✅ Formatado!';
+            setTimeout(() => btn.innerText = originalText, 2000);
         }
 
         function suite_selectDate(tabPrefix, choice) {
@@ -176,6 +227,7 @@
         function suite_limparAnalisadorBranco() {
             document.getElementById('suite_inputHistoricoBranco').value = '';
             document.getElementById('suite_resBranco').innerText = 'Aguardando análise para o branco...';
+            document.getElementById('suite_futuristic_alert').style.display = 'none';
         }
 
         function calculateStandardDeviation(array) {
@@ -233,6 +285,7 @@
             const qtdSinais = parseInt(document.getElementById('suite_qtdSinaisBranco').value) || 15;
             const numEntradas = parseInt(document.getElementById('suite_entradasBranco').value) || 3;
             const resultsDiv = document.getElementById('suite_resBranco');
+            const alertBox = document.getElementById('suite_futuristic_alert');
 
             if (!input) {
                 alert("Por favor, cole a lista de horários dos brancos.");
@@ -266,14 +319,39 @@
             }
             const dataLista = targetDate.toLocaleDateString('pt-BR');
 
-            let out = `⚪ *LISTA DE SINAIS PARA BRANCO*\n`;
-            out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `📅 Data: *${dataLista}*\n`;
-            out += `🎯 Estratégia: *${strategyName}*\n`;
-            out += `🔄 Entradas: *${numEntradas}* (Cobrir até ${numEntradas} min)\n`;
-            if (intervaloMinimo > 0) {
-                out += `🔢 Sinais: *${qtdSinais}* | Intervalo Mín.: *${intervaloMinimo} min*\n`;
+            let statsIntervals = getIntervals(horarios);
+            let statsMedia = statsIntervals.length > 0 ? Math.round(statsIntervals.reduce((a, b) => a + b, 0) / statsIntervals.length) : 0;
+
+            // Correção automática: se a média for muito alta (> 10h), inverte a lista (provável ordem decrescente)
+            if (statsMedia > 600 && horarios.length > 1) {
+                horarios.reverse();
+                statsIntervals = getIntervals(horarios);
+                statsMedia = statsIntervals.length > 0 ? Math.round(statsIntervals.reduce((a, b) => a + b, 0) / statsIntervals.length) : 0;
             }
+            const statsMax = statsIntervals.length > 0 ? Math.max(...statsIntervals) : 0;
+
+            // Lógica do Alerta Visual
+            if (statsMax > statsMedia) {
+                alertBox.className = 'futuristic-alert';
+                alertBox.innerHTML = `⚠️ <strong>ALERTA DE VOLATILIDADE</strong><br>MÁXIMO (${statsMax}m) SUPERIOR À MÉDIA (${statsMedia}m)`;
+                alertBox.style.display = 'block';
+            } else if (statsMax > 0) {
+                alertBox.className = 'futuristic-alert normal';
+                alertBox.innerHTML = `✅ <strong>PADRÃO ESTÁVEL</strong><br>MÁXIMO DENTRO DA MÉDIA`;
+                alertBox.style.display = 'block';
+            } else {
+                alertBox.style.display = 'none';
+            }
+
+            let out = `⚪ *ANÁLISE ROBÔ BRANCO*\n`;
+            out += `📊 Estratégia: *${strategyName}*\n`;
+            out += `🚦 Plataforma: *${platformName}* | 📅 Data: *${dataLista}*\n`;
+            out += `📉 Histórico: *${horarios.length}* Brancos | Média: *${statsMedia} min* | Max: *${statsMax} min*\n`;
+            out += `🔄 Entradas: *${numEntradas}* (Cobrir até ${numEntradas} min)`;
+            if (intervaloMinimo > 0) {
+                out += ` | ⏳ Min: *${intervaloMinimo} min*`;
+            }
+            out += `\n`;
 
             let lastTime = new Date();
             let pattern = [];
@@ -341,6 +419,9 @@
                         ];
                         projectedSignals = projectSignals(lastTime, jikanPattern, qtdSinais, intervaloMinimo);
                     }
+                    break;
+                case 'maximo':
+                    if (statsMax > 0) projectedSignals = projectSignals(lastTime, [statsMax], qtdSinais, intervaloMinimo);
                     break;
             }
 

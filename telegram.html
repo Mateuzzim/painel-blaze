@@ -85,17 +85,6 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label for="telegram_whitebot_template">⚪ Mensagem do Robô Branco:</label>
-                    <textarea id="telegram_whitebot_template" rows="6" placeholder="⚪️ *SINAL ROBÔ BRANCO*&#10;&#10;🕒 *Horário:* {horario}&#10;🎯 *Entrada:* ⚪️ BRANCO&#10;🔄 *Entradas:* {entradas}&#10;📊 *Estratégia:* {estrategia}&#10;&#10;✅ *Gerencie sua banca!*"></textarea>
-                    <div class="hint">
-                        Deixe em branco para usar a mensagem padrão. Placeholders disponíveis: <br>
-                        `{horario}` - Horário do sinal (Ex: 14:30)<br>
-                        `{entradas}` - Quantidade de entradas (Ex: 6)<br>
-                        `{estrategia}` - Nome da estratégia usada
-                    </div>
-                </div>
-
                 <div class="inline-controls">
                     <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Tudo</button>
                     <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'cores')">🧪 Testar Robô Cores</button>
@@ -127,12 +116,10 @@
             const savedChatId = localStorage.getItem('telegram_chat_id');
             const savedChatIdWhite = localStorage.getItem('telegram_chat_id_white');
             const savedAutoBotTemplate = localStorage.getItem('telegram_autobot_template');
-            const savedWhiteBotTemplate = localStorage.getItem('telegram_whitebot_template');
             if (savedToken) document.getElementById('telegram_bot_token').value = savedToken;
             if (savedChatId) document.getElementById('telegram_chat_id').value = savedChatId;
             if (savedChatIdWhite) document.getElementById('telegram_chat_id_white').value = savedChatIdWhite;
             if (savedAutoBotTemplate) document.getElementById('telegram_autobot_template').value = savedAutoBotTemplate;
-            if (savedWhiteBotTemplate) document.getElementById('telegram_whitebot_template').value = savedWhiteBotTemplate;
         });
 
         function saveTelegramSettings(btn) {
@@ -141,7 +128,6 @@
             const chatIdWhite = document.getElementById('telegram_chat_id_white').value.trim();
             const resDiv = document.getElementById('resTelegramConfig');
             const autoBotTemplate = document.getElementById('telegram_autobot_template').value;
-            const whiteBotTemplate = document.getElementById('telegram_whitebot_template').value;
 
             if (!token || !chatId) {
                 resDiv.style.display = 'block';
@@ -154,7 +140,6 @@
             localStorage.setItem('telegram_chat_id', chatId);
             localStorage.setItem('telegram_chat_id_white', chatIdWhite);
             localStorage.setItem('telegram_autobot_template', autoBotTemplate);
-            localStorage.setItem('telegram_whitebot_template', whiteBotTemplate);
 
             resDiv.style.display = 'block';
             resDiv.style.color = '#00ff88';

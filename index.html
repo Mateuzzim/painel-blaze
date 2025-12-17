@@ -802,6 +802,7 @@
                             position: relative;
                             overflow: hidden;
                             backdrop-filter: blur(5px);
+                            cursor: pointer;
                         }
                         .nav-btn:hover {
                             transform: translateY(-5px) scale(1.03);
@@ -830,26 +831,35 @@
                     </style>
 
                     <div class="nav-grid">
-                        <a href="ia_cores.html" class="nav-btn"><div class="nav-icon">🤖</div><div class="nav-title">I.A Cores</div><div class="nav-desc">Gerador de Sinais</div></a>
-                        <a href="ia_branco.html" class="nav-btn"><div class="nav-icon">⚪</div><div class="nav-title">I.A Branco</div><div class="nav-desc">Estratégias Branco</div></a>
+                        <div class="nav-btn" onclick="openTool('ia_cores.html', 'I.A Cores')"><div class="nav-icon">🤖</div><div class="nav-title">I.A Cores</div><div class="nav-desc">Gerador de Sinais</div></div>
+                        <div class="nav-btn" onclick="openTool('ia_branco.html', 'I.A Branco')"><div class="nav-icon">⚪</div><div class="nav-title">I.A Branco</div><div class="nav-desc">Estratégias Branco</div></div>
                         
-                        <a href="analise_cores.html" class="nav-btn"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></a>
-                        <a href="analise_branco.html" class="nav-btn"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></a>
+                        <div class="nav-btn" onclick="openTool('analise_cores.html', 'Análise Cores')"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></div>
+                        <div class="nav-btn" onclick="openTool('analise_branco.html', 'Análise Branco')"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></div>
                         
-                        <a href="corretor_cores.html" class="nav-btn"><div class="nav-icon">✅</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></a>
-                        <a href="corretor_branco.html" class="nav-btn"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></a>
+                        <div class="nav-btn" onclick="openTool('corretor_cores.html', 'Corretor Cores')"><div class="nav-icon">✅</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></div>
+                        <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         
-                        <a href="gerador_manual.html" class="nav-btn"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></a>
+                        <div class="nav-btn" onclick="openTool('gerador_manual.html', 'Gerador Manual')"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></div>
                         
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
                         
-                        <a href="telegram.html" class="nav-btn" style="border-color: #24A1DE;"><div class="nav-icon">📡</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></a>
+                        <div class="nav-btn" onclick="openTool('telegram.html', 'Telegram')" style="border-color: #24A1DE;"><div class="nav-icon">📡</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></div>
                         
-                        <a href="sobre.html" class="nav-btn" style="border-color: #888;"><div class="nav-icon">ℹ️</div><div class="nav-title" style="color: #ccc;">Sobre</div><div class="nav-desc">Informações</div></a>
+                        <div class="nav-btn" onclick="openTool('sobre.html', 'Sobre')" style="border-color: #888;"><div class="nav-icon">ℹ️</div><div class="nav-title" style="color: #ccc;">Sobre</div><div class="nav-desc">Informações</div></div>
                         
-                        <a href="suporte.html" class="nav-btn" style="border-color: #28a745;"><div class="nav-icon">📞</div><div class="nav-title" style="color: #28a745;">Suporte</div><div class="nav-desc">Ajuda</div></a>
+                        <div class="nav-btn" onclick="openTool('suporte.html', 'Suporte')" style="border-color: #28a745;"><div class="nav-icon">📞</div><div class="nav-title" style="color: #28a745;">Suporte</div><div class="nav-desc">Ajuda</div></div>
                     </div>
+                </div>
+
+                <!-- CONTAINER PARA FERRAMENTAS INTERNAS (IFRAME) -->
+                <div id="suite_tool_frame" class="tab-content" style="height: 100%; min-height: 850px; padding: 0; overflow: hidden;">
+                    <div style="padding: 10px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn-back" onclick="closeTool()" style="margin: 0;">⬅ Voltar ao Menu</button>
+                        <span id="tool_title" style="font-weight: bold; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Ferramenta</span>
+                    </div>
+                    <iframe id="tool_iframe" src="" style="width: 100%; height: calc(100% - 55px); border: none; background: #0f0f13;"></iframe>
                 </div>
 
                 <!-- AUTO BOT TAB (INTEGRATED) -->
@@ -1084,6 +1094,7 @@
                                 <input type="number" id="whiteBotMinAssertiveness" value="20" min="1" max="100" style="padding: 5px; width: 60px;">
                             </div>
                         </div>
+                        <button onclick="testWhiteBotTelegram()" class="manual-btn" style="width: 100%; margin-top: 15px; background-color: #24A1DE; border-color: #24A1DE; color: #fff; font-weight: bold;">🧪 TESTAR ENVIO TELEGRAM</button>
                     </div>
 
                     <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
@@ -1381,7 +1392,7 @@
                     </div> 
                     
                     <button class="futuristic-collapse-btn" onclick="toggleNumericStats()" style="margin-top: 10px;">📊 ESTATÍSTICAS NUMÉRICAS (0-14)</button>
-                    <div id="numeric-stats-container" style="display: none;">
+                    <div id="numeric-stats-container" style="display: block;">
                         <div id="numeric-stats-grid" class="numeric-stats-grid"></div>
                     </div>
 
@@ -2180,14 +2191,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             checkManualLogin();
 
-            // Restaura estado do Robô Branco
-            const savedWhiteBotState = localStorage.getItem('whiteBotActive') === 'true';
-            const whiteBotToggle = document.getElementById('whiteBotToggle');
-            if (whiteBotToggle && savedWhiteBotState) {
-                whiteBotToggle.checked = true;
-                handleWhiteBotToggle({ target: whiteBotToggle });
-            }
-
             // Restaura estado do Robô Automático
             const savedAutoBotState = localStorage.getItem('autoBotActive') === 'true';
             const autoBotToggle = document.getElementById('autoBotToggle');
@@ -2584,6 +2587,32 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(`✅ *Estratégia Alterada!*\n\nNova: *${stratName}*`)}&parse_mode=Markdown`);
                 }
             }
+
+            // Comandos para Ligar/Desligar Robô Branco
+            if (command === '/branco' || command === '/white') {
+                const token = localStorage.getItem('telegram_bot_token');
+                const whiteBotToggle = document.getElementById('whiteBotToggle');
+                
+                if (!arg) {
+                     const msg = "⚪ *Comandos Robô Branco:*\n\n`/branco on` - Ligar\n`/branco off` - Desligar";
+                     await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+                     return;
+                }
+
+                if (arg.toLowerCase() === 'on' || arg.toLowerCase() === 'ligar') {
+                    if (whiteBotToggle && !whiteBotToggle.checked) {
+                        whiteBotToggle.checked = true;
+                        whiteBotToggle.dispatchEvent(new Event('change'));
+                        await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("✅ *Robô Branco LIGADO com sucesso!*")}&parse_mode=Markdown`);
+                    } else await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("⚠️ O Robô Branco já está ligado.")}&parse_mode=Markdown`);
+                } else if (arg.toLowerCase() === 'off' || arg.toLowerCase() === 'desligar') {
+                    if (whiteBotToggle && whiteBotToggle.checked) {
+                        whiteBotToggle.checked = false;
+                        whiteBotToggle.dispatchEvent(new Event('change'));
+                        await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("🛑 *Robô Branco DESLIGADO com sucesso!*")}&parse_mode=Markdown`);
+                    } else await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("⚠️ O Robô Branco já está desligado.")}&parse_mode=Markdown`);
+                }
+            }
         }
 
         function createAutoSignal(triggerResult, targetColor, strategyName) {
@@ -2672,6 +2701,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             if (isBotActive) {
                 whiteBotWins = 0; whiteBotWhiteWins = 0; whiteBotLosses = 0; whiteBotConsecutiveLosses = 0;
+                whiteBotConsecutiveWins = 0;
+                whiteBotMaxWinStreak = 0;
+                whiteBotMaxLossStreak = 0;
                 logWhiteBotAction('Robô Branco INICIADO.', 'success');
                 document.getElementById('whiteBotWinCount').textContent = '0';
                 document.getElementById('whiteBotLossCount').textContent = '0';
@@ -2687,10 +2719,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 updateWhiteBotProtectionDisplay(whiteBotProtectionUserEnabled ? 'standby' : 'user_disabled');
                 updateWhiteBotStrategyStatsDisplay();
 
+                sendWhiteBotStatusTelegram(`⚪️ *ROBÔ BRANCO INICIADO*`);
                 if (isAutoFetchActive) {
                     statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Branco Ativado. Monitorando...</span>';
                 } else {
-                    sendWhiteBotStatusTelegram(`⚪️ *ROBÔ BRANCO INICIADO*`);
                     statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
                     statusDiv.style.color = '#ffc107';
                 }
@@ -2805,7 +2837,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 return;
             }
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = localStorage.getItem('telegram_chat_id_white');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id'); // Fallback
             if (!token || !chatId) {
                 return;
             }
@@ -2818,12 +2851,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         }
 
         // NOVO: Funções de notificação para o Robô Branco
-        async function sendWhiteBotStatusTelegram(message) {
+        async function sendWhiteBotStatusTelegram(message, force = false) {
             const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
-            if (!toggle || !toggle.checked) return;
+            if (!force && (!toggle || !toggle.checked)) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = localStorage.getItem('telegram_chat_id_white');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id'); // Fallback
             if (!token || !chatId) return;
 
             try {
@@ -2837,13 +2871,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = localStorage.getItem('telegram_chat_id_white');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
             const template = localStorage.getItem('telegram_whitebot_template');
 
-            if (!token || !chatId) {
-                logWhiteBotAction('Telegram (Branco) não configurado.', 'warning');
-                return;
-            }
+            if (!token || !chatId) return;
 
             let message;
             if (template && template.trim() !== '') {
@@ -2852,29 +2884,37 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     .replace(/\{entradas\}/g, signalData.entryCount)
                     .replace(/\{estrategia\}/g, signalData.strategyName);
             } else {
-                message = `⚪️ *SINAL ROBÔ BRANCO*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ⚪️ BRANCO\n🔄 *Entradas:* ${signalData.entryCount}\n📊 *Estratégia:* ${signalData.strategyName}\n\n✅ *Gerencie sua banca!*`;
+                message = `🕒 ${signalData.time}\nENTRAR ▶⚪️\nEXECUTAR: ${signalData.entryCount} ENTRADAS`;
             }
 
             try {
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
                 await fetch(url);
-                logWhiteBotAction('Sinal (Branco) enviado para Telegram.', 'success');
-            } catch (e) {
-                console.error('Erro ao enviar sinal Telegram (Branco):', e);
-                logWhiteBotAction('Erro ao enviar Telegram (Branco).', 'danger');
-            }
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
         }
 
-        async function sendWhiteBotResultTelegram(resultMessage) {
+        async function sendWhiteBotResultTelegram(resultMessage, strategyName, force = false) {
             const toggle = document.getElementById('whiteBotProtectionTelegramAlert');
-            if (!toggle || !toggle.checked) return;
+            if (!force && (!toggle || !toggle.checked)) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = localStorage.getItem('telegram_chat_id_white');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id'); // Fallback
             if (!token || !chatId) return;
 
-            const strategy = activeWhiteSignal ? (activeWhiteSignal.strategyName || 'Automática') : 'N/A';
-            const formattedMessage = `*RESULTADO ROBÔ BRANCO*\n\n${resultMessage}\n📊 *Estratégia:* ${strategy}\n\n📈 *Placar:* ✅ ${whiteBotWins} | ❌ ${whiteBotLosses}`;
+            // Resolve o nome amigável da estratégia para exibir no Telegram
+            let strategyRaw = strategyName || (activeWhiteSignal ? activeWhiteSignal.strategyName : 'Automática');
+            let strategyFriendly = strategyRaw;
+            
+            const select = document.getElementById('whiteBotStrategy');
+            if (select) {
+                const option = Array.from(select.options).find(opt => opt.value === strategyRaw);
+                if (option) strategyFriendly = option.text.replace(/^\d+\.\s*/, ''); // Remove números como "1. "
+            }
+
+            const now = new Date();
+            const dateTimeStr = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+            const formattedMessage = `*RESULTADO ROBÔ BRANCO*\n\n📅 *Data:* ${dateTimeStr}\n\n${resultMessage}\n\n📈 *Placar:* ✅ ${whiteBotWins} | ❌ ${whiteBotLosses}\n📊 *Estratégia:* ${strategyFriendly}\n🔥 *Seq. Vitórias:* ${whiteBotMaxWinStreak}\n🥶 *Seq. Derrotas:* ${whiteBotMaxLossStreak}`;
 
             try {
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
@@ -2882,6 +2922,20 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             } catch (e) {
                 console.error('Erro ao enviar resultado Telegram (Branco):', e);
             }
+        }
+
+        async function testWhiteBotTelegram() {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) {
+                alert('⚠️ Configure o Token e o Chat ID do Telegram primeiro (Menu > Telegram).');
+                return;
+            }
+
+            await sendWhiteBotResultTelegram("🧪 *TESTE DE PLACAR* (Simulação)", "Teste Manual", true);
+            alert('✅ Teste de placar enviado! Verifique seu Telegram.');
         }
 
         // Configura o link do botão de suporte do Telegram
@@ -4106,6 +4160,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let whiteBotWhiteWins = 0;
         let whiteBotLosses = 0;
         let whiteBotConsecutiveLosses = 0;
+        let whiteBotConsecutiveWins = 0;
+        let whiteBotMaxWinStreak = 0;
+        let whiteBotMaxLossStreak = 0;
         let lastWhiteBotResult = null;
         let whiteBotPlayCount = 0;
         let whiteBotStrategyStats = {};
@@ -4248,7 +4305,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                                 const resumeTrigger = resumeTriggerInput ? (parseInt(resumeTriggerInput.value) || 2) : 2;
                                 if (whiteBotProtectionWhitesInPause >= resumeTrigger) {
                                     console.log(`Robô Branco: Pausa cancelada! ${whiteBotProtectionWhitesInPause} brancos detectados.`);
-                                    sendWhiteBotTelegramAlert(`⚠️ *PROTEÇÃO CANCELADA*\n\nSaíram ${whiteBotProtectionWhitesInPause} brancos durante a pausa. Robô reativado!`);
                                     logWhiteBotAction(`Pausa Cancelada: ${whiteBotProtectionWhitesInPause} brancos detectados.`, 'action');
                                     whiteBotProtectionPauseRemaining = 0; // Cancela a pausa
                                     whiteBotProtectionWhiteCount = 0;     // Reseta o contador principal
@@ -4271,7 +4327,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                                 whiteBotProtectionWhiteCount = 0; // Reseta para o próximo ciclo
                                 whiteBotProtectionWhitesInPause = 0;
                                 console.log(`Robô Branco: PROTEÇÃO ATIVA! Pausa de ${pauseCount} pedras iniciada.`);
-                                sendWhiteBotTelegramAlert(`🛡️ *PROTEÇÃO ATIVADA*\n\nDetectado o ${triggerCount}º Branco. Iniciando pausa de ${pauseCount} pedras.`);
                                 logWhiteBotAction(`Proteção Ativada: Pausa de ${pauseCount} pedras.`, 'warning');
                                 break; // Para de processar, a pausa está ativa.
                             }
@@ -4985,20 +5040,26 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             newEntry.style.borderBottom = '1px solid #333';
             newEntry.style.padding = '5px 0';
 
-            sendWhiteBotResultTelegram(message);
-
             if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
             
             if (isWin) {
                 whiteBotWins++;
                 if (message.includes('BRANCO')) whiteBotWhiteWins++;
                 whiteBotConsecutiveLosses = 0;
+                whiteBotConsecutiveWins++;
+                if (whiteBotConsecutiveWins > whiteBotMaxWinStreak) {
+                    whiteBotMaxWinStreak = whiteBotConsecutiveWins;
+                }
                 lastWhiteBotResult = 'win';
                 whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false; // Garante que não esteja esperando se ganhou
             } else {
                 whiteBotLosses++;
                 whiteBotConsecutiveLosses++;
+                whiteBotConsecutiveWins = 0;
+                if (whiteBotConsecutiveLosses > whiteBotMaxLossStreak) {
+                    whiteBotMaxLossStreak = whiteBotConsecutiveLosses;
+                }
                 lastWhiteBotResult = 'loss';
                 
                 // Ativa espera Pós-Branco se o toggle estiver ligado
@@ -5011,6 +5072,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             document.getElementById('whiteBotWinCount').textContent = whiteBotWins;
             document.getElementById('whiteBotLossCount').textContent = whiteBotLosses;
             historyDiv.prepend(newEntry);
+            sendWhiteBotResultTelegram(message, strategyName);
 
             // Verifica Meta de Wins
             const winGoalInput = document.getElementById('whiteBotWinGoal');
@@ -5440,6 +5502,29 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 btn.innerText = '✅';
                 setTimeout(() => btn.innerText = originalText, 1000);
             }
+        }
+
+        // --- FUNÇÕES PARA ABRIR FERRAMENTAS INTERNAMENTE ---
+        function openTool(url, title) {
+            suite_openTab('tool_frame');
+            const iframe = document.getElementById('tool_iframe');
+            iframe.src = url;
+            document.getElementById('tool_title').innerText = title || 'Ferramenta';
+            
+            // Detecta se o usuário clicou em "Voltar" dentro do iframe (que carregaria o index.html lá dentro)
+            iframe.onload = function() {
+                try {
+                    if (iframe.contentWindow.location.href.includes('index.html')) {
+                        closeTool();
+                    }
+                } catch(e) {}
+            };
+        }
+
+        function closeTool() {
+            const iframe = document.getElementById('tool_iframe');
+            iframe.src = 'about:blank'; // Limpa o iframe para parar scripts da ferramenta
+            suite_openTab('menu');
         }
     </script>
 </body>
