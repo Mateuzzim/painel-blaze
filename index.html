@@ -6555,7 +6555,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 sendPatternsBotResultTelegram(msg);
             } else {
                 const currentAttempt = relevantResults.length;
-                signalContent.querySelector('.cortex-text-anim').textContent = `⏳ AGUARDANDO GALE ${currentAttempt}...`;
+                const textAnim = signalContent.querySelector('.cortex-text-anim');
+                if (textAnim) {
+                    if (activePatternsSignal.gales === 0) {
+                        textAnim.textContent = `⏳ AGUARDANDO...`;
+                    } else {
+                        textAnim.textContent = `⏳ AGUARDANDO GALE ${currentAttempt}...`;
+                    }
+                }
                 return;
             }
 
