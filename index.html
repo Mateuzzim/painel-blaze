@@ -816,6 +816,29 @@
     .inversion-value.flash {
         animation: inversion-flash 0.6s ease-out;
     }
+.futuristic-info-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(10, 15, 25, 0.8);
+    border: 1px solid #333;
+    border-radius: 8px;
+    margin: 10px auto 20px auto;
+    max-width: 300px;
+    font-family: monospace;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.info-icon { font-size: 1.2rem; }
+.info-label { color: #aaa; font-size: 0.8rem; }
+.info-value { color: #ffc107; font-weight: bold; font-size: 1.2rem; }
+@keyframes value-flash-yellow {
+    0% { color: #ffc107; transform: scale(1); }
+    50% { color: #fff; transform: scale(1.2); text-shadow: 0 0 10px #ffc107; }
+    100% { color: #ffc107; transform: scale(1); }
+}
+.info-value.flash { animation: value-flash-yellow 0.7s ease-out; }
 </style>
 <body>
     <div id="welcome-message"></div>
@@ -1175,6 +1198,7 @@
                                     <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
                                     <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
                                     <option value="sum_minutes_3">7. Soma Minutos (Últimos 3)</option>
+                                <option value="repetition_cycle">8. Padrão Espelho (Repetição)</option>
                                 </select>
                             </div>
                             <div class="control-group" style="flex: 1;">
@@ -1230,39 +1254,46 @@
                         </div>
                         
                         <!-- TOGGLES -->
-                        <div class="inline-controls" id="whiteBotTogglesContainer" style="margin-bottom: 20px;">
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotStrategyStopLoss" style="font-size: 0.9em;">🛑 Pausa (2x Loss):</label>
+                        <div class="inline-controls" id="whiteBotTogglesContainer" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotStrategyStopLoss" style="font-size: 0.75em; font-weight: bold; margin-bottom: 0;">🛑 Pausa (2x):</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotStrategyStopLoss">
                                     <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotPostWhiteRecovery" style="font-size: 0.9em; white-space: nowrap;">⚪ Pós-Branco:</label>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotPostWhiteRecovery" style="font-size: 0.75em; font-weight: bold; white-space: nowrap; margin-bottom: 0;">⚪ Pós-Branco:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotPostWhiteRecovery">
                                     <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotBestMinuteFilter" style="font-size: 0.9em;">⭐ Filtro Min:</label>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotBestMinuteFilter" style="font-size: 0.75em; font-weight: bold; margin-bottom: 0;">⭐ Filtro Min:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotBestMinuteFilter">
                                     <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.9em;">📡 Telegram:</label>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotProtectionTelegramAlert" style="font-size: 0.75em; font-weight: bold; margin-bottom: 0;">📡 Telegram:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotProtectionTelegramAlert">
                                     <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
-                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: center; gap: 10px; flex: 1;">
-                                <label for="whiteBotSoundToggle" style="font-size: 0.9em;">🔊 Sons:</label>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotSoundToggle" style="font-size: 0.75em; font-weight: bold; margin-bottom: 0;">🔊 Sons:</label>
                                 <label class="switch" style="width: 50px; height: 26px;">
                                     <input type="checkbox" id="whiteBotSoundToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="display: flex; align-items: center; margin-bottom: 0; justify-content: space-between; gap: 5px; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="whiteBotRandomGenToggle" style="font-size: 0.75em; font-weight: bold; margin-bottom: 0;">🎲 Aleatório:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="whiteBotRandomGenToggle">
                                     <span class="slider" style="border-radius: 26px;"></span>
                                 </label>
                             </div>
@@ -1277,6 +1308,12 @@
                     </div>
 
                     <div id="whiteBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+
+                    <div id="lastWhiteIntervalDisplay" class="futuristic-info-display" style="display: none;">
+                        <span class="info-icon">⏱️</span>
+                        <span class="info-label">Último Intervalo:</span>
+                        <span id="lastWhiteIntervalValue" class="info-value">-- min</span>
+                    </div>
 
                     <div id="whiteBotActionLog" class="futuristic-log-container" style="display: none;">
                         <div class="futuristic-log-header"><span>LOG DE AÇÕES</span><span>LIVE</span></div>
@@ -3321,6 +3358,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false;
                 if (container) container.classList.remove('bot-active-pulse');
+                document.getElementById('lastWhiteIntervalDisplay').style.display = 'none';
                 if (navBtn) navBtn.classList.remove('bot-active-pulse');
             }
         }
@@ -4755,6 +4793,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let whiteBotProtectionPauseRemaining = 0; // Contagem regressiva de pedras para a pausa
         let lastProcessedGeneralTime = null; // Rastreia a última pedra geral para contar a pausa
         let lastProcessedWhiteTime = null;
+        let lastCalculatedInterval = null;
 
         function logWhiteBotAction(message, type = 'info') {
             const container = document.getElementById('whiteBotActionLog');
@@ -4797,6 +4836,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
 
             if (results.length === 0) return;
+
+            updateLastWhiteInterval(results);
 
             if (activeWhiteSignal) {
                 checkWhiteSignalResult(results);
@@ -4971,7 +5012,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             // Lógica de Rotação Inteligente (Smart Rotation)
             if (document.getElementById('whiteBotRandomRotation').checked) {
-                const strategiesToCheck = ['alternating_break', 'poisson_hunt', 'cacador_branco', 'exponential_renewal', 'low_entropy', 'fractal_break'];
+                const strategiesToCheck = ['alternating_break', 'poisson_hunt', 'cacador_branco', 'exponential_renewal', 'low_entropy', 'fractal_break', 'repetition_cycle'];
                 for (const strat of strategiesToCheck) {
                     let signalFound = false;
                     if (strat === 'alternating_break') {
@@ -5037,6 +5078,21 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         const lastWhiteIndex = results.findIndex(r => r.roll === 0);
                         if (lastWhiteIndex !== -1 && lastWhiteIndex >= 18 && lastWhiteIndex <= 35) {
                             signalFound = true;
+                        }
+                    } else if (strat === 'repetition_cycle') {
+                        const whitesMirror = results.filter(r => r.roll === 0);
+                        if (whitesMirror.length >= 2) {
+                            const [h1, m1] = whitesMirror[0].time.split(':').map(Number);
+                            const [h2, m2] = whitesMirror[1].time.split(':').map(Number);
+                            let prevInterval = (h1 * 60 + m1) - (h2 * 60 + m2);
+                            if (prevInterval < 0) prevInterval += 24 * 60;
+                            if (prevInterval >= 5 && prevInterval <= 60) {
+                                const [hNow, mNow] = results[0].time.split(':').map(Number);
+                                let currentGap = (hNow * 60 + mNow) - (h1 * 60 + m1);
+                                if (currentGap < 0) currentGap += 24 * 60;
+                                const offset = parseInt(document.getElementById('whiteBotEntryOffset').value) || 5;
+                                if (Math.abs((currentGap + offset) - prevInterval) <= 1) signalFound = true;
+                            }
                         }
                     }
 
@@ -5162,6 +5218,73 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         createWhiteSignal(results[0], 'BRANCO', strategy, offset);
                     }
                     break;
+                case 'repetition_cycle':
+                    // ESTRATÉGIA 8: Padrão Espelho (Repete o último intervalo)
+                    const whitesMirror = results.filter(r => r.roll === 0);
+                    if (whitesMirror.length >= 2) {
+                        const [h1, m1] = whitesMirror[0].time.split(':').map(Number);
+                        const [h2, m2] = whitesMirror[1].time.split(':').map(Number);
+                        let prevInterval = (h1 * 60 + m1) - (h2 * 60 + m2);
+                        if (prevInterval < 0) prevInterval += 24 * 60;
+                        if (prevInterval >= 5 && prevInterval <= 60) {
+                            const [hNow, mNow] = results[0].time.split(':').map(Number);
+                            let currentGap = (hNow * 60 + mNow) - (h1 * 60 + m1);
+                            if (currentGap < 0) currentGap += 24 * 60;
+                            const offset = parseInt(document.getElementById('whiteBotEntryOffset').value) || 5;
+                            if (Math.abs((currentGap + offset) - prevInterval) <= 1) {
+                                console.log(`Robô Branco (Espelho): Intervalo anterior ${prevInterval}m. Projetando repetição.`);
+                                createWhiteSignal(results[0], 'BRANCO', strategy);
+                            }
+                        }
+                    }
+                    break;
+            }
+
+            // --- LÓGICA DE GERAÇÃO ALEATÓRIA BASEADA EM ANÁLISE (NOVO BOTÃO) ---
+            const randomGenToggle = document.getElementById('whiteBotRandomGenToggle');
+            if (randomGenToggle && randomGenToggle.checked && !activeWhiteSignal) {
+                const lastWhite = results.find(r => r.roll === 0);
+                if (lastWhite) {
+                    // 1. Calcula a média dos últimos intervalos de branco
+                    const whites = results.filter(r => r.roll === 0);
+                    let avgInterval = 0;
+                    if (whites.length >= 2) {
+                        let sumDiff = 0;
+                        let count = 0;
+                        for(let i=0; i < Math.min(whites.length - 1, 10); i++) {
+                            const [h1, m1] = whites[i].time.split(':').map(Number);
+                            const [h2, m2] = whites[i+1].time.split(':').map(Number);
+                            let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                            if (diff < 0) diff += 24 * 60;
+                            if (diff > 0) { sumDiff += diff; count++; }
+                        }
+                        if (count > 0) avgInterval = sumDiff / count;
+                    }
+
+                    if (avgInterval > 0) {
+                        // 2. Adiciona variação aleatória (+/- 25% da média)
+                        const randomFactor = (Math.random() * 0.5) - 0.25; 
+                        const projectedInterval = avgInterval * (1 + randomFactor);
+                        
+                        const [hLast, mLast] = lastWhite.time.split(':').map(Number);
+                        const now = new Date();
+                        const lastWhiteDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hLast, mLast, 0, 0);
+                        
+                        // Ajuste para virada de dia (se o último branco parece ser no futuro em relação a agora, foi ontem)
+                        if (lastWhiteDate > now) lastWhiteDate.setDate(lastWhiteDate.getDate() - 1);
+                        
+                        const targetDate = new Date(lastWhiteDate.getTime() + projectedInterval * 60000);
+                        const diffToTarget = (targetDate - now) / 60000; // minutos restantes
+
+                        // 3. Se o horário projetado estiver próximo (entre 1 e 5 minutos), gera o sinal
+                        if (diffToTarget > 0.5 && diffToTarget <= 5) {
+                            const targetTimeStr = `${targetDate.getHours().toString().padStart(2,'0')}:${targetDate.getMinutes().toString().padStart(2,'0')}`;
+                            if (lastGeneratedWhiteSignalTime !== targetTimeStr) {
+                                createWhiteSignal(results[0], 'BRANCO', 'random_analysis', Math.round(diffToTarget));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -5226,6 +5349,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 gale: 0,
                 strategyName: strategyName
             };
+
+            // Nome amigável para estratégia aleatória
+            let displayStrategy = strategyName;
+            if (strategyName === 'random_analysis') displayStrategy = 'Análise Probabilística (Auto)';
 
             const signalPanel = document.getElementById('whiteBotSignalPanel');
             const signalContent = document.getElementById('whiteBotSignalContent');
