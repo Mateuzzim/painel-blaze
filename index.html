@@ -1446,42 +1446,60 @@
                                 <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
                             </div>
                         </div>
-                        <div class="inline-controls" style="margin-bottom: 20px;">
+                        <div class="inline-controls" style="margin-bottom: 20px; align-items: flex-end;">
                             <div class="control-group" style="flex: 1; margin-bottom: 0;">
                                 <label for="patternsBotEntryTime" style="font-size: 0.8em; margin-bottom: 0;">Tempo de Entrada (min):</label>
                                 <input type="number" id="patternsBotEntryTime" value="1" min="1" style="padding: 5px;">
-                            </div>
-                            <div class="control-group" style="flex: 1; margin-bottom: 0; display: none;">
-                                <label for="patternsBotGales" style="font-size: 0.8em; margin-bottom: 0;">Nº de Gales:</label>
-                                <input type="number" id="patternsBotGales" value="1" min="0" style="padding: 5px;">
                             </div>
                             <div class="control-group" style="flex: 1; margin-bottom: 0;">
                                 <label for="patternsBotMaxWhitesFilter" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #fff;">⚪ Max Brancos:</label>
                                 <input type="number" id="patternsBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
                             </div>
                         </div>
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px; flex-wrap: wrap;">
-                            <label for="patternsBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="patternsBotSoundToggle" checked>
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
-                            <label for="patternsBotSequentialToggle" style="font-size: 0.95em;">🔄 Sequencial:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="patternsBotSequentialToggle">
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
-                            <label for="patternsBotTelegramAlert" style="font-size: 0.95em;">📡 Telegram:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="patternsBotTelegramAlert">
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
-                            <label for="patternsBotInvertToggle" style="font-size: 0.95em;">🔀 Inverter:</label>
-                            <label class="switch" style="width: 50px; height: 26px;">
-                                <input type="checkbox" id="patternsBotInvertToggle">
-                                <span class="slider" style="border-radius: 26px;"></span>
-                            </label>
-                            <div id="patternsBotInversionCounter" class="inversion-counter">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotSoundToggle" style="font-size: 0.9em; margin-bottom: 0;">🔊 Sons:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotSoundToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotGaleToggle" style="font-size: 0.9em; margin-bottom: 0;">GALE 01 ON/OFF:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotGaleToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotSequentialToggle" style="font-size: 0.9em; margin-bottom: 0;">🔄 Sequencial:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotSequentialToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotTelegramAlert" style="font-size: 0.9em; margin-bottom: 0;">📡 Telegram:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotTelegramAlert">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotInvertToggle" style="font-size: 0.9em; margin-bottom: 0;">🔀 Inverter:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotInvertToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotAntiRepetitionToggle" style="font-size: 0.9em; margin-bottom: 0;">🚫 Anti-Repetição:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotAntiRepetitionToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div id="patternsBotInversionCounter" class="inversion-counter" style="padding: 8px; border: 1px solid #333; border-radius: 6px; justify-content: center;">
                                 <span class="inversion-label">Inversões:</span>
                                 <span id="inversionCountValue" class="inversion-value">0</span>
                             </div>
@@ -6367,6 +6385,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (whiteCount >= maxWhites) return;
             }
 
+            const antiRepetition = document.getElementById('patternsBotAntiRepetitionToggle') && document.getElementById('patternsBotAntiRepetitionToggle').checked;
+
             for (let i = 0; i < patterns.length; i++) {
                 if (isSequential && i !== patternsBotSequentialIndex) continue;
                 const pattern = patterns[i];
@@ -6398,6 +6418,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 }
 
                 if (match) {
+                    if (antiRepetition) {
+                        const lastColor = dash_identificarCor(results[0].roll).toUpperCase();
+                        if (lastColor === pattern.target) continue;
+                    }
                     createPatternsSignal(pattern.target, pattern.original, results[0]);
                     break; // Stop after first match
                 }
@@ -6417,7 +6441,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (lastPatternsSignalTime === signalTimeString) return;
             lastPatternsSignalTime = signalTimeString;
 
-            const gales = parseInt(document.getElementById('patternsBotGales').value) || 1;
+            const useGale = document.getElementById('patternsBotGaleToggle') && document.getElementById('patternsBotGaleToggle').checked;
+            const gales = useGale ? 1 : 0;
             
             activePatternsSignal = {
                 time: signalTimeString,
