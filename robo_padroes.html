@@ -140,6 +140,11 @@
                 <input type="checkbox" id="patternsBotSoundToggle" checked>
                 <span class="slider" style="border-radius: 26px;"></span>
             </label>
+            <label for="patternsBotTelegramAlert" style="font-size: 0.95em; margin-left: 10px;">📡 Telegram:</label>
+            <label class="switch" style="width: 50px; height: 26px;">
+                <input type="checkbox" id="patternsBotTelegramAlert">
+                <span class="slider" style="border-radius: 26px;"></span>
+            </label>
         </div>
     </div>
 
@@ -334,6 +339,7 @@
                 </div>
             `;
             if (document.getElementById('patternsBotSoundToggle').checked) playSound();
+            sendPatternsBotTelegramSignal(activePatternsSignal);
         }
 
         function checkPatternsSignalResult(results) {
@@ -372,12 +378,16 @@
             if (winFound) {
                 const winType = winIndex === 0 ? 'WIN' : `WIN G${winIndex}`;
                 const winColor = dash_identificarCor(winResult.roll).toUpperCase();
-                addResultToPatternsHistory(`✅ ${winType}! (${winResult.time} - ${winColor})`, true);
+                const msg = `✅ ${winType}! (${winResult.time} - ${winColor})`;
+                addResultToPatternsHistory(msg, true);
+                sendPatternsBotResultTelegram(msg);
                 signalPanel.classList.remove('panel-glow-active');
                 signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
                 activePatternsSignal = null;
             } else if (relevantResults.length >= attempts) {
-                addResultToPatternsHistory(`❌ LOSS! (${activePatternsSignal.time})`, false);
+                const msg = `❌ LOSS! (${activePatternsSignal.time})`;
+                addResultToPatternsHistory(msg, false);
+                sendPatternsBotResultTelegram(msg);
                 signalPanel.classList.remove('panel-glow-active');
                 signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
                 activePatternsSignal = null;
@@ -421,6 +431,41 @@
                 osc.start();
                 osc.stop(ctx.currentTime + 0.2);
             } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        async function sendPatternsBotTelegramSignal(signalData) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : (signalData.targetColor === 'PRETO' ? '⚫' : '⚪');
+            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n\n✅ *Gerencie sua banca!*`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
+        }
+
+        async function sendPatternsBotResultTelegram(resultMessage) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            const formattedMessage = `*RESULTADO ROBÔ PADRÕES*\n\n${resultMessage}\n\n📈 *Placar:* ✅ ${patternsBotWins} | ❌ ${patternsBotLosses}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar resultado Telegram:', e); }
         }
     </script>
 </body>

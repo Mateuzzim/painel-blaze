@@ -736,9 +736,51 @@
                 padding: 10px;
                 border-radius: 8px;
             }
+            
+            /* Ajuste Teclado Padrões Mobile */
+            .patterns-keyboard-row { flex-wrap: wrap; }
+            .key-btn { flex: 1 1 18% !important; min-width: 40px; }
         }
 
         /* Teclado Futurista Padrões */
+        .pattern-preview-box {
+            background: rgba(10, 15, 20, 0.95);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            border-bottom: 2px solid #00d2ff;
+        }
+        .preview-token {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+            font-size: 1.2rem;
+            animation: tokenPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes tokenPop {
+            0% { transform: scale(0) translateY(10px); opacity: 0; filter: blur(5px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+        }
+        .preview-arrow { color: #00d2ff; font-weight: bold; margin: 0 5px; text-shadow: 0 0 5px #00d2ff; font-size: 1rem; }
+        .preview-sep { color: #444; font-size: 0.8rem; margin: 0 2px; }
+        .preview-num {
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border: 1px solid;
+            background: rgba(255,255,255,0.05);
+        }
+
         .patterns-keyboard-container { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
         .patterns-keyboard-row { display: flex; gap: 4px; }
         .key-btn { background: rgba(20, 20, 25, 0.9); border: 1px solid #333; color: #fff; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold; font-size: 0.85rem; text-align: center; transition: all 0.2s; position: relative; overflow: hidden; flex: 1; min-width: 0; }
@@ -752,6 +794,29 @@
         .key-btn.action { border-color: #00d2ff; color: #00d2ff; font-weight: 900; }
     </style>
 </head>
+<style>
+    .inversion-counter {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto; /* Empurra o contador para a direita */
+        padding: 5px 10px;
+        background: rgba(0, 210, 255, 0.05);
+        border: 1px solid rgba(0, 210, 255, 0.2);
+        border-radius: 6px;
+        font-family: monospace;
+    }
+    .inversion-label { font-size: 0.8rem; color: #00d2ff; text-transform: uppercase; }
+    .inversion-value { font-size: 1.2rem; font-weight: bold; color: #fff; min-width: 20px; text-align: center; }
+    @keyframes inversion-flash {
+        0% { transform: scale(1); color: #fff; text-shadow: none; }
+        50% { transform: scale(1.5); color: #ff9800; text-shadow: 0 0 10px #ff9800; }
+        100% { transform: scale(1); color: #fff; text-shadow: none; }
+    }
+    .inversion-value.flash {
+        animation: inversion-flash 0.6s ease-out;
+    }
+</style>
 <body>
     <div id="welcome-message"></div>
     <div id="login-container">
@@ -1305,6 +1370,9 @@
                     <button id="patternsBotCollapseBtn" onclick="togglePatternsBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
                     <div id="patternsBotConfigContainer">
                         <div class="control-group" style="margin-bottom: 15px;">
+                            <div id="patternsBotPreview" class="pattern-preview-box">
+                                <span style="color: #444; font-style: italic; font-size: 0.8rem;">Visualização em tempo real...</span>
+                            </div>
                             <div class="patterns-keyboard-container">
                                 <div class="patterns-keyboard-row">
                                     <button onclick="addCharToPatterns('1')" class="key-btn red">1</button>
@@ -1329,12 +1397,14 @@
                                     <button onclick="addCharToPatterns('B')" class="key-btn white">B</button>
                                     <button onclick="addCharToPatterns('=')" class="key-btn action">=</button>
                                     <button onclick="addCharToPatterns(',')" class="key-btn action">,</button>
+                                    <button onclick="undoPatternsBotInput()" class="key-btn action" title="Desfazer">⌫</button>
+                                    <button onclick="addCharToPatterns('\n')" class="key-btn action" title="Nova Linha">↵</button>
                                 </div>
                             </div>
                             <label for="patternsBotInput">Lista de Padrões (Sequência=Alvo):</label>
                             <textarea id="patternsBotInput" rows="6" placeholder="Ex: 1,8,10,P=V&#10;V,V,P,P=V&#10;0,1,2=P" style="font-family: monospace; background: #111; color: #00ff88; border: 1px solid #333; width: 100%; padding: 10px; box-sizing: border-box;"></textarea>
                             <div class="hint">Use V (Vermelho), P (Preto), B (Branco) ou Números (0-14). Separe por vírgula.</div>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
                                 <button class="btn-cyber btn-save-neon" onclick="savePatternsBotInput(this)">💾 SALVAR PADRÕES</button>
                                 <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
                             </div>
@@ -1353,17 +1423,31 @@
                                 <input type="number" id="patternsBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
                             </div>
                         </div>
-                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px; flex-wrap: wrap;">
                             <label for="patternsBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="patternsBotSoundToggle" checked>
                                 <span class="slider" style="border-radius: 26px;"></span>
                             </label>
-                            <label for="patternsBotSequentialToggle" style="font-size: 0.95em; margin-left: 10px;">🔄 Sequencial:</label>
+                            <label for="patternsBotSequentialToggle" style="font-size: 0.95em;">🔄 Sequencial:</label>
                             <label class="switch" style="width: 50px; height: 26px;">
                                 <input type="checkbox" id="patternsBotSequentialToggle">
                                 <span class="slider" style="border-radius: 26px;"></span>
                             </label>
+                            <label for="patternsBotTelegramAlert" style="font-size: 0.95em;">📡 Telegram:</label>
+                            <label class="switch" style="width: 50px; height: 26px;">
+                                <input type="checkbox" id="patternsBotTelegramAlert">
+                                <span class="slider" style="border-radius: 26px;"></span>
+                            </label>
+                            <label for="patternsBotInvertToggle" style="font-size: 0.95em;">🔀 Inverter:</label>
+                            <label class="switch" style="width: 50px; height: 26px;">
+                                <input type="checkbox" id="patternsBotInvertToggle">
+                                <span class="slider" style="border-radius: 26px;"></span>
+                            </label>
+                            <div id="patternsBotInversionCounter" class="inversion-counter">
+                                <span class="inversion-label">Inversões:</span>
+                                <span id="inversionCountValue" class="inversion-value">0</span>
+                            </div>
                         </div>
                     </div>
 
@@ -1421,6 +1505,11 @@
                         <label for="config_telegram_chat_id_white">Seu Chat ID (Robô Branco):</label>
                         <input type="text" id="config_telegram_chat_id_white" placeholder="ID do seu chat/grupo para o Robô Branco">
                         <div class="hint">Pode ser o mesmo ID do Robô Cores. Deixe em branco para usar o ID do Robô Cores.</div>
+                    </div>
+                    <div class="control-group">
+                        <label for="config_telegram_chat_id_patterns">Seu Chat ID (Robô Padrões):</label>
+                        <input type="text" id="config_telegram_chat_id_patterns" placeholder="ID do seu chat/grupo para o Robô Padrões">
+                        <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
                     </div>
                     <div class="control-group">
                         <button onclick="testGeneralTelegramConnection(this)" class="manual-btn" style="width: 100%; background-color: #24A1DE; border-color: #24A1DE; color: #fff; font-weight: bold; margin-top: 5px;">🧪 TESTAR CONEXÃO TELEGRAM</button>
@@ -1826,6 +1915,19 @@
             if (telegramTokenInput) telegramTokenInput.value = localStorage.getItem('telegram_bot_token') || '';
 
             // Busca os dados completos do usuário no Firebase para preencher os campos restantes
+            // Se for admin, carrega as configurações do localStorage
+            if (accessLevel === 'admin') {
+                document.getElementById('config_expiresAt').textContent = 'Permanente';
+                document.getElementById('config_telegramId').textContent = 'Admin';
+                document.getElementById('config_telegram_chat_id').value = localStorage.getItem('telegram_chat_id') || '';
+                document.getElementById('config_telegram_chat_id_white').value = localStorage.getItem('telegram_chat_id_white') || '';
+                document.getElementById('config_telegram_chat_id_patterns').value = localStorage.getItem('telegram_chat_id_patterns') || '';
+                document.getElementById('config_telegram_autobot_template').value = localStorage.getItem('telegram_autobot_template') || '';
+                document.getElementById('config_telegram_whitebot_template').value = localStorage.getItem('telegram_whitebot_template') || '';
+                return; // Finaliza para o admin
+            }
+
+            // Se não for admin, busca os dados completos do usuário no Firebase para preencher os campos restantes
             try {
                 const querySnapshot = await db.collection("users").where("username", "==", username).get();
                 if (!querySnapshot.empty) {
@@ -1836,10 +1938,12 @@
 
                     document.getElementById('config_telegram_chat_id').value = userData.telegramChatId || '';
                     document.getElementById('config_telegram_chat_id_white').value = userData.telegramChatIdWhite || '';
+                    document.getElementById('config_telegram_chat_id_patterns').value = userData.telegramChatIdPatterns || '';
                     const autobotTemplate = userData.telegramAutobotTemplate || '';
                     const whitebotTemplate = userData.telegramWhitebotTemplate || '';
                     document.getElementById('config_telegram_autobot_template').value = autobotTemplate;
                     document.getElementById('config_telegram_whitebot_template').value = whitebotTemplate;
+                    sessionStorage.setItem('telegram_chat_id_patterns', userData.telegramChatIdPatterns || '');
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
                 }
@@ -1875,18 +1979,51 @@
             if (telegramTokenInput) localStorage.setItem('telegram_bot_token', telegramTokenInput.value);
 
             // --- LÓGICA PARA SALVAR CHAT IDs POR USUÁRIO NO FIREBASE ---
+            // --- LÓGICA PARA SALVAR CHAT IDs ---
             const username = sessionStorage.getItem('operatorName');
+            const accessLevel = sessionStorage.getItem('accessLevel');
+
             if (!username) {
                 alert('Erro: Usuário não logado. Não foi possível salvar os Chat IDs.');
                 if (btn) { btn.innerText = originalText; btn.disabled = false; }
                 return;
             }
-
+ 
             const chatIdCores = document.getElementById('config_telegram_chat_id').value;
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value;
+            const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value;
             const autobotTemplate = document.getElementById('config_telegram_autobot_template').value;
             const whitebotTemplate = document.getElementById('config_telegram_whitebot_template').value;
 
+            // Se for admin, salva no localStorage (para notificações globais)
+            if (accessLevel === 'admin') {
+                try {
+                    localStorage.setItem('telegram_chat_id', chatIdCores);
+                    localStorage.setItem('telegram_chat_id_white', chatIdWhite);
+                    localStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                    localStorage.setItem('telegram_autobot_template', autobotTemplate);
+                    localStorage.setItem('telegram_whitebot_template', whitebotTemplate);
+
+                    // Atualiza a sessão também para uso imediato
+                    sessionStorage.setItem('telegram_chat_id', chatIdCores);
+                    sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
+                    sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                    sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
+                    sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
+
+                    if (btn) btn.innerText = '✅ Salvo!';
+                    console.log(`Configurações de Telegram do Admin salvas no localStorage.`);
+                } catch (error) {
+                    console.error("Erro ao salvar configurações do Admin:", error);
+                    alert("Falha ao salvar as configurações do Admin: " + error.message);
+                    if (btn) btn.innerText = '❌ Erro!';
+                } finally {
+                    setTimeout(() => { if (btn) { btn.innerText = originalText; btn.disabled = false; } }, 2000);
+                }
+                return; // Finaliza a função para o admin
+            }
+
+            // Se não for admin, salva no Firebase
             try {
                 const querySnapshot = await db.collection("users").where("username", "==", username).get();
                 if (querySnapshot.empty) throw new Error("Usuário não encontrado no banco de dados.");
@@ -1895,6 +2032,7 @@
                 await db.collection("users").doc(userDoc.id).update({
                     telegramChatId: chatIdCores,
                     telegramChatIdWhite: chatIdWhite,
+                    telegramChatIdPatterns: chatIdPatterns,
                     telegramAutobotTemplate: autobotTemplate,
                     telegramWhitebotTemplate: whitebotTemplate
                 });
@@ -1902,6 +2040,7 @@
                 // Atualiza os valores na sessão atual para uso imediato
                 sessionStorage.setItem('telegram_chat_id', chatIdCores);
                 sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
+                sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                 sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                 sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -1921,13 +2060,14 @@
             const token = localStorage.getItem('telegram_bot_token');
             const chatIdCores = document.getElementById('config_telegram_chat_id').value.trim();
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value.trim();
+            const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value.trim();
 
             if (!token) {
                 alert('⚠️ Token do Bot não configurado (Admin).');
                 return;
             }
 
-            if (!chatIdCores && !chatIdWhite) {
+            if (!chatIdCores && !chatIdWhite && !chatIdPatterns) {
                 alert('⚠️ Digite pelo menos um Chat ID para testar.');
                 return;
             }
@@ -1950,7 +2090,8 @@
             };
 
             if (chatIdCores) await send(chatIdCores, 'Robô Cores');
-            if (chatIdWhite && chatIdWhite !== chatIdCores) await send(chatIdWhite, 'Robô Branco');
+            if (chatIdWhite) await send(chatIdWhite, 'Robô Branco');
+            if (chatIdPatterns) await send(chatIdPatterns, 'Robô Padrões');
 
             btn.innerText = originalText;
             btn.disabled = false;
@@ -2641,6 +2782,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (savedPatterns) {
                 const patternsInput = document.getElementById('patternsBotInput');
                 if (patternsInput) patternsInput.value = savedPatterns;
+            }
+            
+            const patternsInput = document.getElementById('patternsBotInput');
+            if (patternsInput) {
+                patternsInput.addEventListener('input', updatePatternsPreview);
+                patternsInput.addEventListener('keyup', updatePatternsPreview);
+                patternsInput.addEventListener('click', updatePatternsPreview);
             }
         });
 
@@ -5945,6 +6093,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let patternsBotWhiteWins = 0;
         let patternsBotLosses = 0;
         let patternsBotSequentialIndex = 0;
+        let patternsBotInversionCount = 0;
 
         function handlePatternsBotToggle(event) {
             const isBotActive = event.target.checked;
@@ -5966,6 +6115,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 // Reset stats
                 patternsBotWins = 0; patternsBotLosses = 0; patternsBotWhiteWins = 0; patternsBotSequentialIndex = 0;
                 document.getElementById('patternsBotWinCount').textContent = '0';
+                patternsBotInversionCount = 0;
+                updateInversionCounterDisplay();
                 document.getElementById('patternsBotWhiteWinCount').textContent = '0';
                 document.getElementById('patternsBotLossCount').textContent = '0';
                 document.getElementById('patternsBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
@@ -6178,6 +6329,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (document.getElementById('patternsBotSoundToggle').checked) {
                 playAutoBotNotificationSound(); // Reuse existing sound function
             }
+            sendPatternsBotTelegramSignal(activePatternsSignal);
         }
 
         function addResultToPatternsHistory(message, isWin) {
@@ -6242,9 +6394,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (winFound) {
                 const winType = winIndex === 0 ? 'WIN' : `WIN G${winIndex}`;
                 const winColor = dash_identificarCor(winResult.roll).toUpperCase();
-                addResultToPatternsHistory(`✅ ${winType}! (${winResult.time} - ${winColor})`, true);
+                const msg = `✅ ${winType}! (${winResult.time} - ${winColor})`;
+                addResultToPatternsHistory(msg, true);
+                sendPatternsBotResultTelegram(msg);
             } else if (relevantResults.length >= attempts) {
-                addResultToPatternsHistory(`❌ LOSS! (${activePatternsSignal.time})`, false);
+                const msg = `❌ LOSS! (${activePatternsSignal.time})`;
+                addResultToPatternsHistory(msg, false);
+                sendPatternsBotResultTelegram(msg);
             } else {
                 const currentAttempt = relevantResults.length;
                 signalContent.querySelector('.cortex-text-anim').textContent = `⏳ AGUARDANDO GALE ${currentAttempt}...`;
@@ -6261,8 +6417,86 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 patternsBotSequentialIndex++;
                 if (patternsBotSequentialIndex >= patterns.length) {
                     patternsBotSequentialIndex = 0;
+                    // Verifica se deve inverter os padrões ao completar o ciclo
+                    if (document.getElementById('patternsBotInvertToggle') && document.getElementById('patternsBotInvertToggle').checked) {
+                        invertPatternsBotInput();
+                    }
                 }
             }
+        }
+
+        async function sendPatternsBotTelegramSignal(signalData) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) {
+                chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            }
+            
+            if (!token || !chatId) return;
+
+            const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : (signalData.targetColor === 'PRETO' ? '⚫' : '⚪');
+            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n\n✅ *Gerencie sua banca!*`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
+        }
+
+        async function sendPatternsBotResultTelegram(resultMessage) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) {
+                chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            }
+            
+            if (!token || !chatId) return;
+
+            const formattedMessage = `*RESULTADO ROBÔ PADRÕES*\n\n${resultMessage}\n\n📈 *Placar:* ✅ ${patternsBotWins} | ❌ ${patternsBotLosses}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar resultado Telegram:', e); }
+        }
+
+        function invertPatternsBotInput() {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+
+            const lines = input.value.split('\n');
+            const newLines = lines.map(line => {
+                if (!line.includes('=')) return line;
+                const parts = line.split('=');
+                const target = parts[1].trim().toUpperCase();
+                let newTarget = target;
+
+                if (target === 'V' || target === 'VERMELHO') newTarget = 'P';
+                else if (target === 'P' || target === 'PRETO') newTarget = 'V';
+                
+                return `${parts[0]}=${newTarget}`;
+            });
+
+            input.value = newLines.join('\n');
+            savePatternsBotInput(null); // Salva a lista invertida no localStorage
+        }
+
+        function invertPatternsBotInput() {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+
+            // ... (lógica de inversão existente)
+
+            input.value = newLines.join('\n');
+            savePatternsBotInput(null);
+            patternsBotInversionCount++;
+            updateInversionCounterDisplay();
         }
 
         // --- FUNÇÕES PARA ABRIR FERRAMENTAS INTERNAMENTE (MODO FLUTUANTE) ---
@@ -6286,6 +6520,17 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         // Ignora erros de cross-origin
                     }
                 };
+            }
+        }
+
+        function updateInversionCounterDisplay() {
+            const countElement = document.getElementById('inversionCountValue');
+            if (countElement) {
+                countElement.textContent = patternsBotInversionCount;
+                // Ativa a animação de flash
+                countElement.classList.remove('flash');
+                void countElement.offsetWidth; // Força o navegador a refazer o layout
+                countElement.classList.add('flash');
             }
         }
 
@@ -6428,6 +6673,23 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 input.value = text.substring(0, start) + char + text.substring(end);
                 input.selectionStart = input.selectionEnd = start + char.length;
                 input.focus();
+                updatePatternsPreview();
+            }
+        }
+
+        function undoPatternsBotInput() {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const text = input.value;
+                if (start > 0 || start !== end) {
+                    const removeCount = (start === end) ? 1 : 0;
+                    input.value = text.substring(0, start - removeCount) + text.substring(end);
+                    input.selectionStart = input.selectionEnd = start - removeCount;
+                    input.focus();
+                    updatePatternsPreview();
+                }
             }
         }
 
@@ -6442,9 +6704,57 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         setTimeout(() => {
                             btn.innerHTML = originalText;
                         }, 2000);
+                        updatePatternsPreview();
                     }
                 }
             }
+        }
+
+        function updatePatternsPreview() {
+            const input = document.getElementById('patternsBotInput');
+            const preview = document.getElementById('patternsBotPreview');
+            if (!input || !preview) return;
+
+            const cursorPosition = input.selectionStart;
+            const text = input.value;
+            
+            let start = text.lastIndexOf('\n', cursorPosition - 1);
+            if (start === -1) start = 0; else start += 1;
+            
+            let end = text.indexOf('\n', cursorPosition);
+            if (end === -1) end = text.length;
+            
+            const currentLine = text.substring(start, end);
+            
+            if (!currentLine.trim()) {
+                preview.innerHTML = '<span style="color: #444; font-style: italic; font-size: 0.8rem;">Visualização em tempo real...</span>';
+                return;
+            }
+
+            let html = '';
+            const tokens = currentLine.split(/([,=])/);
+            
+            tokens.forEach(token => {
+                const t = token.trim().toUpperCase();
+                if (!t) return;
+                
+                if (t === ',') html += '<span class="preview-sep">›</span>';
+                else if (t === '=') html += '<span class="preview-arrow">➔</span>';
+                else if (t === 'V' || t === 'VERMELHO') html += '<span class="preview-token">🔴</span>';
+                else if (t === 'P' || t === 'PRETO') html += '<span class="preview-token">⚫</span>';
+                else if (t === 'B' || t === 'BRANCO') html += '<span class="preview-token">⚪</span>';
+                else if (!isNaN(parseInt(t))) {
+                    const n = parseInt(t);
+                    let color = '#888';
+                    if (n >= 1 && n <= 7) color = '#ff0055';
+                    else if (n === 0) color = '#fff';
+                    html += `<span class="preview-token preview-num" style="color: ${color}; border-color: ${color};">${n}</span>`;
+                } else {
+                    html += `<span style="color: #aaa; margin: 0 2px;">${t}</span>`;
+                }
+            });
+            
+            preview.innerHTML = html;
         }
     </script>
 
