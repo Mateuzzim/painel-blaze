@@ -289,6 +289,9 @@
         .btn-access-neon { border-color: #24A1DE; box-shadow: 0 0 5px rgba(36, 161, 222, 0.2); color: #24A1DE; }
         .btn-access-neon:hover { background: #24A1DE; color: #fff; box-shadow: 0 0 10px #24A1DE, 0 0 20px #24A1DE, 0 0 40px #24A1DE; }
 
+        .btn-clear-neon { border-color: #ff0055; box-shadow: 0 0 5px rgba(255, 0, 85, 0.2); color: #ff0055; }
+        .btn-clear-neon:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055, 0 0 40px #ff0055; }
+
         .btn-send-neon { border-color: #00ff88; box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); color: #00ff88; width: 100%; margin-top: 10px; }
         .btn-send-neon:hover { background: #00ff88; color: #000; box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 40px #00ff88; }
 
@@ -734,6 +737,19 @@
                 border-radius: 8px;
             }
         }
+
+        /* Teclado Futurista Padrões */
+        .patterns-keyboard-container { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .patterns-keyboard-row { display: flex; gap: 4px; }
+        .key-btn { background: rgba(20, 20, 25, 0.9); border: 1px solid #333; color: #fff; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold; font-size: 0.85rem; text-align: center; transition: all 0.2s; position: relative; overflow: hidden; flex: 1; min-width: 0; }
+        .key-btn:hover { transform: translateY(-2px); z-index: 2; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); border-color: #00d2ff; }
+        .key-btn.red { border-color: #ff0055; color: #ff0055; }
+        .key-btn.red:hover { background: rgba(255, 0, 85, 0.1); box-shadow: 0 0 10px rgba(255,0,85,0.4); }
+        .key-btn.black { border-color: #666; color: #aaa; }
+        .key-btn.black:hover { background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 10px rgba(255,255,255,0.2); color: #fff; }
+        .key-btn.white { border-color: #fff; color: #fff; }
+        .key-btn.white:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 10px rgba(255,255,255,0.6); }
+        .key-btn.action { border-color: #00d2ff; color: #00d2ff; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -938,7 +954,7 @@
 
                     <div class="nav-grid">
                         <div class="nav-btn" onclick="openTool('ia_cores.html', 'I.A Cores')"><div class="nav-icon">🤖</div><div class="nav-title">I.A Cores</div><div class="nav-desc">Gerador de Sinais</div></div>
-                        <div class="nav-btn" onclick="openTool('ia_branco.html', 'I.A Branco')"><div class="nav-icon">⚪</div><div class="nav-title">I.A Branco</div><div class="nav-desc">Estratégias Branco</div></div>
+                        <div class="nav-btn" onclick="suite_openTab('ia_branco')"><div class="nav-icon">⚪</div><div class="nav-title">I.A Branco</div><div class="nav-desc">Estratégias Branco</div></div>
                         
                         <div class="nav-btn" onclick="openTool('analise_cores.html', 'Análise Cores')"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></div>
                         <div class="nav-btn" onclick="openTool('analise_branco.html', 'Análise Branco')"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></div>
@@ -950,6 +966,7 @@
                         
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
+                        <div class="nav-btn" id="btn-nav-patterns-bot" onclick="suite_openTab('patterns_bot')" style="cursor: pointer; border-color: #a100ff;"><div class="nav-icon">🧩</div><div class="nav-title" style="color: #a100ff;">Robo Padrões</div><div class="nav-desc">Automação Padrões</div></div>
                         
                         <div class="nav-btn" onclick="suite_openTab('config')" style="border-color: #24A1DE;"><div class="nav-icon">📡</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></div>
                         
@@ -1096,7 +1113,7 @@
                                 </select>
                             </div>
                             <div class="control-group" style="flex: 1;">
-                                <label for="whiteBotEntryCount">Qtd. Entradas:</label>
+                                <label for="whiteBotEntryCount">Nº de Entradas:</label>
                                 <input type="number" id="whiteBotEntryCount" value="6" min="1">
                             </div>
                         </div>
@@ -1222,6 +1239,149 @@
                         </div>
                         <div id="whiteBotStrategyStatsDisplay" style="padding: 0 10px; margin-bottom: 10px;"></div>
                         <div id="whiteBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
+                    </div>
+                </div>
+
+                <!-- IA BRANCO TAB (NOVA ABA MANUAL) -->
+                <div id="suite_ia_branco" class="tab-content">
+                    <button class="btn-back" onclick="suite_openTab('menu')">⬅ Voltar ao Menu</button>
+                    <div class="main-header">
+                        <h1 class="cortex-text-anim">I.A BRANCO</h1>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="iaWhiteStrategy">Estratégia:</label>
+                        <select id="iaWhiteStrategy">
+                            <option value="alternating_break">1. Quebra de Alternância</option>
+                            <option value="poisson_hunt">2. Caça Poisson (8min+)</option>
+                            <option value="cacador_branco">3. Caçador de Branco (Média)</option>
+                            <option value="exponential_renewal">4. Modelo Exponencial (Renewal)</option>
+                            <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
+                            <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
+                            <option value="sum_minutes_3">7. Soma Minutos (Últimos 3)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="iaWhiteEntryCount">Nº de Entradas:</label>
+                        <input type="number" id="iaWhiteEntryCount" value="6" min="1">
+                    </div>
+
+                    <div class="inline-controls" style="margin-top: 15px;">
+                        <div class="control-group">
+                            <label for="iaWhiteQtdSinais">Quantidade de Sinais:</label>
+                            <input type="number" id="iaWhiteQtdSinais" value="5" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label for="iaWhiteIntervalo">Intervalo (Minutos):</label>
+                            <input type="text" id="iaWhiteIntervalo" value="5,10,8" placeholder="Ex: 5 ou 5,10,8">
+                            <div class="hint">Use vírgulas para ciclos.</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-cyber btn-access-neon" onclick="generateIAWhiteList()">⚡ GERAR LISTA</button>
+                        <button class="btn-cyber btn-save-neon" onclick="copiar('iaWhiteOutput', this)">📋 COPIAR LISTA</button>
+                    </div>
+
+                    <div id="iaWhiteOutput" class="output-area" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace; min-height: 100px;"></div>
+                </div>
+
+                <!-- PATTERNS BOT TAB (INTEGRATED) -->
+                <div id="suite_patterns_bot" class="tab-content">
+                    <button class="btn-back" onclick="suite_openTab('menu')">⬅ Voltar ao Menu</button>
+                    <div class="main-header">
+                        <h1 class="cortex-text-anim">ROBÔ PADRÕES</h1>
+                    </div>
+                    
+                    <div class="toggle-switch-container" id="patternsBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                        <label for="patternsBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ PADRÕES</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button id="patternsBotCollapseBtn" onclick="togglePatternsBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
+                    <div id="patternsBotConfigContainer">
+                        <div class="control-group" style="margin-bottom: 15px;">
+                            <div class="patterns-keyboard-container">
+                                <div class="patterns-keyboard-row">
+                                    <button onclick="addCharToPatterns('1')" class="key-btn red">1</button>
+                                    <button onclick="addCharToPatterns('2')" class="key-btn red">2</button>
+                                    <button onclick="addCharToPatterns('3')" class="key-btn red">3</button>
+                                    <button onclick="addCharToPatterns('4')" class="key-btn red">4</button>
+                                    <button onclick="addCharToPatterns('5')" class="key-btn red">5</button>
+                                    <button onclick="addCharToPatterns('6')" class="key-btn red">6</button>
+                                    <button onclick="addCharToPatterns('7')" class="key-btn red">7</button>
+                                    <button onclick="addCharToPatterns('8')" class="key-btn black">8</button>
+                                    <button onclick="addCharToPatterns('9')" class="key-btn black">9</button>
+                                    <button onclick="addCharToPatterns('10')" class="key-btn black">10</button>
+                                </div>
+                                <div class="patterns-keyboard-row">
+                                    <button onclick="addCharToPatterns('11')" class="key-btn black">11</button>
+                                    <button onclick="addCharToPatterns('12')" class="key-btn black">12</button>
+                                    <button onclick="addCharToPatterns('13')" class="key-btn black">13</button>
+                                    <button onclick="addCharToPatterns('14')" class="key-btn black">14</button>
+                                    <button onclick="addCharToPatterns('0')" class="key-btn white">0</button>
+                                    <button onclick="addCharToPatterns('P')" class="key-btn black">P</button>
+                                    <button onclick="addCharToPatterns('V')" class="key-btn red">V</button>
+                                    <button onclick="addCharToPatterns('B')" class="key-btn white">B</button>
+                                    <button onclick="addCharToPatterns('=')" class="key-btn action">=</button>
+                                    <button onclick="addCharToPatterns(',')" class="key-btn action">,</button>
+                                </div>
+                            </div>
+                            <label for="patternsBotInput">Lista de Padrões (Sequência=Alvo):</label>
+                            <textarea id="patternsBotInput" rows="6" placeholder="Ex: 1,8,10,P=V&#10;V,V,P,P=V&#10;0,1,2=P" style="font-family: monospace; background: #111; color: #00ff88; border: 1px solid #333; width: 100%; padding: 10px; box-sizing: border-box;"></textarea>
+                            <div class="hint">Use V (Vermelho), P (Preto), B (Branco) ou Números (0-14). Separe por vírgula.</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn-cyber btn-save-neon" onclick="savePatternsBotInput(this)">💾 SALVAR PADRÕES</button>
+                                <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
+                            </div>
+                        </div>
+                        <div class="inline-controls" style="margin-bottom: 20px;">
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="patternsBotEntryTime" style="font-size: 0.8em; margin-bottom: 0;">Tempo de Entrada (min):</label>
+                                <input type="number" id="patternsBotEntryTime" value="1" min="1" style="padding: 5px;">
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0; display: none;">
+                                <label for="patternsBotGales" style="font-size: 0.8em; margin-bottom: 0;">Nº de Gales:</label>
+                                <input type="number" id="patternsBotGales" value="1" min="0" style="padding: 5px;">
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="patternsBotMaxWhitesFilter" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #fff;">⚪ Max Brancos:</label>
+                                <input type="number" id="patternsBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
+                            </div>
+                        </div>
+                        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+                            <label for="patternsBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
+                            <label class="switch" style="width: 50px; height: 26px;">
+                                <input type="checkbox" id="patternsBotSoundToggle" checked>
+                                <span class="slider" style="border-radius: 26px;"></span>
+                            </label>
+                            <label for="patternsBotSequentialToggle" style="font-size: 0.95em; margin-left: 10px;">🔄 Sequencial:</label>
+                            <label class="switch" style="width: 50px; height: 26px;">
+                                <input type="checkbox" id="patternsBotSequentialToggle">
+                                <span class="slider" style="border-radius: 26px;"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="patternsBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+                    <div id="patternsBotCurrentPatternDisplay" style="text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: #00d2ff; display: none; background: rgba(0, 210, 255, 0.05); padding: 8px; border-radius: 6px; border: 1px dashed rgba(0, 210, 255, 0.3);"></div>
+
+                    <div id="patternsBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                        <div id="patternsBotSignalContent"></div>
+                    </div>
+
+                    <div id="patternsBotResultPanel" style="margin-top: 20px;">
+                        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar do Robô</h3>
+                        <div id="patternsBotScoreboard" class="futuristic-scoreboard">
+                            <div class="score-card win"><span class="score-label">WINS</span><span id="patternsBotWinCount" class="score-value win-text">0</span></div>
+                            <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="patternsBotWhiteWinCount" class="score-value white-win-text">0</span></div>
+                            <div class="score-card loss"><span class="score-label">LOSSES</span><span id="patternsBotLossCount" class="score-value loss-text">0</span></div>
+                        </div>
+                        <div id="patternsBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
                     </div>
                 </div>
 
@@ -2191,6 +2351,7 @@
             dash_updateNumericStats(resultados); // Atualiza o painel de estatísticas numéricas
             runWhiteBotLogic(); // Garante que o Robô Branco analise os novos dados
             runAutoBotLogic(); // Garante que o Robô Automático analise os novos dados
+            runPatternsBotLogic(); // Garante que o Robô Padrões analise os novos dados
         }
 
 function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
@@ -2425,6 +2586,9 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // Inicializa listener do Robô Automático
             if(document.getElementById('autoBotToggle')) document.getElementById('autoBotToggle').addEventListener('change', handleAutoBotToggle);
 
+            // Inicializa listener do Robô Padrões
+            if(document.getElementById('patternsBotToggle')) document.getElementById('patternsBotToggle').addEventListener('change', handlePatternsBotToggle);
+
             
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
@@ -2470,6 +2634,13 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         announcement.style.display = 'none';
                     }, 500); // Deve corresponder à duração da transição do CSS
                 }, 10000); // 10000 ms = 10 segundos
+            }
+
+            // Carrega padrões salvos do Robô Padrões
+            const savedPatterns = localStorage.getItem('patternsBot_saved_patterns');
+            if (savedPatterns) {
+                const patternsInput = document.getElementById('patternsBotInput');
+                if (patternsInput) patternsInput.value = savedPatterns;
             }
         });
 
@@ -3141,7 +3312,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     .replace(/\{entradas\}/g, signalData.entryCount)
                     .replace(/\{estrategia\}/g, signalData.strategyName);
             } else {
-                message = `🕒 ${signalData.time}\nENTRAR ▶⚪️\nEXECUTAR: ${signalData.entryCount} ENTRADAS`;
+                message = `🕒 ${signalData.time}\nENTRAR ▶⚪️\n🔄 Entradas: ${signalData.entryCount}...`;
             }
 
             try {
@@ -5765,6 +5936,335 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        // ==========================================
+        // INÍCIO: LÓGICA DO ROBÔ PADRÕES
+        // ==========================================
+        let activePatternsSignal = null;
+        let lastPatternsSignalTime = null;
+        let patternsBotWins = 0;
+        let patternsBotWhiteWins = 0;
+        let patternsBotLosses = 0;
+        let patternsBotSequentialIndex = 0;
+
+        function handlePatternsBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('patternsBotStatus');
+            const isAutoFetchActive = document.getElementById('dash_autoFetchToggle').checked;
+            const container = document.getElementById('patternsBotActivationContainer');
+            const navBtn = document.getElementById('btn-nav-patterns-bot');
+
+            if (isBotActive) {
+                if (isAutoFetchActive) {
+                    statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Padrões Ativado. Monitorando...</span>';
+                } else {
+                    statusDiv.textContent = '⚠️ ATENÇÃO: Ative a "Auto-Busca" para o robô funcionar.';
+                    statusDiv.style.color = '#ffc107';
+                }
+                if (container) container.classList.add('bot-active-pulse');
+                if (navBtn) navBtn.classList.add('bot-active-pulse');
+                
+                // Reset stats
+                patternsBotWins = 0; patternsBotLosses = 0; patternsBotWhiteWins = 0; patternsBotSequentialIndex = 0;
+                document.getElementById('patternsBotWinCount').textContent = '0';
+                document.getElementById('patternsBotWhiteWinCount').textContent = '0';
+                document.getElementById('patternsBotLossCount').textContent = '0';
+                document.getElementById('patternsBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+                
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activePatternsSignal = null;
+                lastPatternsSignalTime = null;
+                document.getElementById('patternsBotSignalPanel').style.display = 'none';
+                const display = document.getElementById('patternsBotCurrentPatternDisplay');
+                if(display) display.style.display = 'none';
+                if (container) container.classList.remove('bot-active-pulse');
+                if (navBtn) navBtn.classList.remove('bot-active-pulse');
+            }
+        }
+
+        function togglePatternsBotConfig() {
+            const container = document.getElementById('patternsBotConfigContainer');
+            const btn = document.getElementById('patternsBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function savePatternsBotInput(btn) {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+            localStorage.setItem('patternsBot_saved_patterns', input.value);
+            
+            const originalText = btn.innerHTML;
+            const originalStyle = btn.getAttribute('style');
+
+            btn.innerHTML = '✅ PADRÕES SALVOS!';
+            btn.style.background = 'linear-gradient(90deg, #00ff88, #00cc6a)';
+            btn.style.color = '#000';
+            btn.style.borderColor = '#00ff88';
+            btn.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.6)';
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.setAttribute('style', originalStyle);
+            }, 2000);
+        }
+
+        function parsePatternsBotInput() {
+            const input = document.getElementById('patternsBotInput').value.trim();
+            if (!input) return [];
+            
+            return input.split('\n').map(line => {
+                line = line.trim();
+                if (!line || !line.includes('=')) return null;
+                
+                const [seqStr, targetStr] = line.split('=').map(s => s.trim().toUpperCase());
+                const sequence = seqStr.split(',').map(s => s.trim());
+                
+                // Validate target
+                let target = null;
+                if (['V', 'VERMELHO'].includes(targetStr)) target = 'VERMELHO';
+                else if (['P', 'PRETO'].includes(targetStr)) target = 'PRETO';
+                else if (['B', 'BRANCO'].includes(targetStr)) target = 'BRANCO';
+                
+                if (!target || sequence.length === 0) return null;
+                
+                return { sequence, target, original: line };
+            }).filter(p => p !== null);
+        }
+
+        function runPatternsBotLogic() {
+            if (!document.getElementById('patternsBotToggle').checked) return;
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length === 0) return;
+
+            if (activePatternsSignal) {
+                const display = document.getElementById('patternsBotCurrentPatternDisplay');
+                if(display) display.style.display = 'none';
+                checkPatternsSignalResult(results);
+            } else {
+                checkPatterns(results);
+            }
+        }
+
+        function checkPatterns(results) {
+            const patterns = parsePatternsBotInput();
+            if (patterns.length === 0) return;
+
+            const display = document.getElementById('patternsBotCurrentPatternDisplay');
+            const isSequential = document.getElementById('patternsBotSequentialToggle') && document.getElementById('patternsBotSequentialToggle').checked;
+
+            if (display) {
+                display.style.display = 'block';
+                if (isSequential) {
+                    if (patternsBotSequentialIndex >= patterns.length) patternsBotSequentialIndex = 0;
+                    const currentPat = patterns[patternsBotSequentialIndex];
+                    display.innerHTML = `🔍 Buscando Padrão <b>${patternsBotSequentialIndex + 1}/${patterns.length}</b><br><span style="font-family: monospace; color: #ccc; font-size: 0.8em;">${currentPat.original}</span>`;
+                } else {
+                    display.innerHTML = `👀 Monitorando <b>${patterns.length}</b> Padrões simultaneamente`;
+                }
+            }
+
+            // --- FILTRO MAX BRANCOS ---
+            const maxWhitesInput = document.getElementById('patternsBotMaxWhitesFilter');
+            const maxWhites = maxWhitesInput ? (parseInt(maxWhitesInput.value) || 0) : 0;
+            if (maxWhites > 0) {
+                const recentForWhites = results.slice(0, 20);
+                const whiteCount = recentForWhites.filter(r => r.roll === 0).length;
+                if (whiteCount >= maxWhites) return;
+            }
+
+            for (let i = 0; i < patterns.length; i++) {
+                if (isSequential && i !== patternsBotSequentialIndex) continue;
+                const pattern = patterns[i];
+                // Check if history matches pattern sequence
+                // Pattern sequence is defined Oldest -> Newest (e.g., 1, 8, 10, P)
+                // Results array is Newest -> Oldest
+                // So results[0] should match sequence[last], results[1] match sequence[last-1], etc.
+                
+                if (results.length < pattern.sequence.length) continue;
+
+                let match = true;
+                for (let i = 0; i < pattern.sequence.length; i++) {
+                    const seqItem = pattern.sequence[pattern.sequence.length - 1 - i]; // Reverse iteration of sequence
+                    const resultItem = results[i];
+                    const resultColor = dash_identificarCor(resultItem.roll).toUpperCase();
+                    const resultNum = resultItem.roll;
+
+                    // Check match
+                    let itemMatch = false;
+                    if (['V', 'VERMELHO'].includes(seqItem) && resultColor === 'VERMELHO') itemMatch = true;
+                    else if (['P', 'PRETO'].includes(seqItem) && resultColor === 'PRETO') itemMatch = true;
+                    else if (['B', 'BRANCO'].includes(seqItem) && resultColor === 'BRANCO') itemMatch = true;
+                    else if (!isNaN(parseInt(seqItem)) && parseInt(seqItem) === resultNum) itemMatch = true;
+
+                    if (!itemMatch) {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match) {
+                    createPatternsSignal(pattern.target, pattern.original, results[0]);
+                    break; // Stop after first match
+                }
+            }
+        }
+
+        function createPatternsSignal(targetColor, patternString, triggerResult) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            
+            const entryTimeInput = document.getElementById('patternsBotEntryTime');
+            const entryTime = entryTimeInput ? (parseInt(entryTimeInput.value) || 1) : 1;
+            signalTime.setMinutes(signalTime.getMinutes() + entryTime);
+
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            if (lastPatternsSignalTime === signalTimeString) return;
+            lastPatternsSignalTime = signalTimeString;
+
+            const gales = parseInt(document.getElementById('patternsBotGales').value) || 1;
+            
+            activePatternsSignal = {
+                time: signalTimeString,
+                date: triggerResult.date, // Assuming same day
+                targetColor: targetColor,
+                gales: gales,
+                pattern: patternString
+            };
+
+            const emoji = targetColor === 'VERMELHO' ? '🔴' : (targetColor === 'PRETO' ? '⚫' : '⚪');
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+            
+            signalPanel.style.display = 'block';
+            signalPanel.classList.add('panel-glow-active');
+
+            signalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="text-align: left; flex: 1;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!</div>
+                        <div style="color: #aaa; font-size: 0.8rem; font-family: monospace; margin-bottom: 15px;">${patternString}</div>
+                        
+                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${targetColor}</div>
+                        <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString}</div>
+                    </div>
+                    <div class="signal-chart-container" style="transform: scale(1);">
+                        <div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${emoji}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Aguardando Resultado...</span>
+                </div>
+            `;
+            
+            // Play sound if enabled
+            if (document.getElementById('patternsBotSoundToggle').checked) {
+                playAutoBotNotificationSound(); // Reuse existing sound function
+            }
+        }
+
+        function addResultToPatternsHistory(message, isWin) {
+            const historyDiv = document.getElementById('patternsBotResultHistory');
+            const newEntry = document.createElement('div');
+            newEntry.innerHTML = message;
+            newEntry.style.color = isWin ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+
+            if (historyDiv.innerHTML.includes('Aguardando')) {
+                historyDiv.innerHTML = '';
+            }
+
+            if (isWin) {
+                patternsBotWins++;
+                if (message.includes('BRANCO')) patternsBotWhiteWins++;
+            } else {
+                patternsBotLosses++;
+            }
+            document.getElementById('patternsBotWinCount').textContent = patternsBotWins;
+            document.getElementById('patternsBotWhiteWinCount').textContent = patternsBotWhiteWins;
+            document.getElementById('patternsBotLossCount').textContent = patternsBotLosses;
+            historyDiv.prepend(newEntry);
+        }
+
+        function checkPatternsSignalResult(results) {
+            if (!activePatternsSignal) return;
+
+            const [sH, sM] = activePatternsSignal.time.split(':').map(Number);
+            const [day, month, year] = activePatternsSignal.date.split('/').map(Number);
+            const signalDate = new Date(year, month - 1, day, sH, sM, 0, 0);
+            const attempts = 1 + activePatternsSignal.gales;
+
+            const relevantResults = [];
+            for (const res of results) {
+                const [rH, rM] = res.time.split(':').map(Number);
+                let resDate = new Date(year, month - 1, day, rH, rM, 0, 0);
+                if (sH > 20 && rH < 4) resDate.setDate(resDate.getDate() + 1);
+                else if (sH < 4 && rH > 20) resDate.setDate(resDate.getDate() - 1);
+                if (resDate >= signalDate) relevantResults.push({ ...res, timestamp: resDate.getTime() });
+            }
+            relevantResults.reverse();
+
+            let winFound = false;
+            let winIndex = -1;
+            let winResult = null;
+            const stonesToCheck = Math.min(relevantResults.length, attempts);
+
+            for (let i = 0; i < stonesToCheck; i++) {
+                const res = relevantResults[i];
+                const color = dash_identificarCor(res.roll).toUpperCase();
+                if (color === activePatternsSignal.targetColor || color === 'BRANCO') {
+                    winFound = true; winIndex = i; winResult = res; break;
+                }
+            }
+
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+
+            if (winFound) {
+                const winType = winIndex === 0 ? 'WIN' : `WIN G${winIndex}`;
+                const winColor = dash_identificarCor(winResult.roll).toUpperCase();
+                addResultToPatternsHistory(`✅ ${winType}! (${winResult.time} - ${winColor})`, true);
+            } else if (relevantResults.length >= attempts) {
+                addResultToPatternsHistory(`❌ LOSS! (${activePatternsSignal.time})`, false);
+            } else {
+                const currentAttempt = relevantResults.length;
+                signalContent.querySelector('.cortex-text-anim').textContent = `⏳ AGUARDANDO GALE ${currentAttempt}...`;
+                return;
+            }
+
+            signalPanel.classList.remove('panel-glow-active');
+            signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
+            activePatternsSignal = null;
+
+            const isSequential = document.getElementById('patternsBotSequentialToggle') && document.getElementById('patternsBotSequentialToggle').checked;
+            if (isSequential) {
+                const patterns = parsePatternsBotInput();
+                patternsBotSequentialIndex++;
+                if (patternsBotSequentialIndex >= patterns.length) {
+                    patternsBotSequentialIndex = 0;
+                }
+            }
+        }
+
         // --- FUNÇÕES PARA ABRIR FERRAMENTAS INTERNAMENTE (MODO FLUTUANTE) ---
         function openTool(url, title) {
             const floatingContainer = document.getElementById('floating-tool-container');
@@ -5789,6 +6289,126 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        function generateIAWhiteList() {
+            const strategySelect = document.getElementById('iaWhiteStrategy');
+            const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
+            const strategyValue = strategySelect.value;
+            const entryCount = document.getElementById('iaWhiteEntryCount').value;
+            const output = document.getElementById('iaWhiteOutput');
+
+            const qtdSinais = parseInt(document.getElementById('iaWhiteQtdSinais').value) || 5;
+            
+            // 1. Tenta calcular intervalos automaticamente pelo histórico (Auto-Busca)
+            let intervalos = [];
+            let sourceInfo = "(Manual)";
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+
+            if (rawData) {
+                const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+                const whiteTimes = [];
+                
+                // Parseia o histórico (Date, Roll, Time) para encontrar brancos
+                for (let i = 0; i < tokens.length; i++) {
+                    if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                        const roll = parseInt(tokens[i + 1]);
+                        const time = tokens[i + 2];
+                        if (roll === 0) whiteTimes.push(time);
+                        i += 2;
+                    }
+                }
+
+                // Se houver brancos suficientes, calcula a média dos intervalos recentes
+                if (whiteTimes.length >= 2) {
+                    const diffs = [];
+                    // whiteTimes[0] é o mais recente
+                    for (let i = 0; i < whiteTimes.length - 1; i++) {
+                        const [h1, m1] = whiteTimes[i].split(':').map(Number);
+                        const [h2, m2] = whiteTimes[i+1].split(':').map(Number);
+                        let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                        if (diff < 0) diff += 24 * 60; // Ajuste para virada de dia
+                        if (diff > 0) diffs.push(diff);
+                    }
+
+                    if (diffs.length > 0) {
+                        let calculatedInterval = 0;
+
+                        if (strategyValue === 'poisson_hunt') {
+                            const longDiffs = diffs.filter(d => d >= 8);
+                            if (longDiffs.length > 0) {
+                                calculatedInterval = Math.round(longDiffs.reduce((a, b) => a + b, 0) / longDiffs.length);
+                                sourceInfo = `(Auto: Poisson >8m)`;
+                            } else {
+                                calculatedInterval = Math.round(diffs.reduce((a, b) => a + b, 0) / diffs.length) + 5;
+                                sourceInfo = `(Auto: Média + Bias)`;
+                            }
+                        } else if (strategyValue === 'low_entropy') {
+                            const sortedDiffs = [...diffs].sort((a, b) => a - b);
+                            const mid = Math.floor(sortedDiffs.length / 2);
+                            calculatedInterval = sortedDiffs.length % 2 !== 0 ? sortedDiffs[mid] : Math.round((sortedDiffs[mid - 1] + sortedDiffs[mid]) / 2);
+                            sourceInfo = `(Auto: Mediana)`;
+                        } else if (strategyValue === 'sum_minutes_3') {
+                            const last3 = diffs.slice(0, 3);
+                            if (last3.length > 0) {
+                                calculatedInterval = Math.round(last3.reduce((a, b) => a + b, 0) / last3.length);
+                                sourceInfo = `(Auto: Média Últimos 3)`;
+                            }
+                        } else if (strategyValue === 'exponential_renewal') {
+                            const chronologicalDiffs = [...diffs].reverse();
+                            const alpha = 0.3;
+                            let ema = chronologicalDiffs[0];
+                            for (let i = 1; i < chronologicalDiffs.length; i++) {
+                                ema = alpha * chronologicalDiffs[i] + (1 - alpha) * ema;
+                            }
+                            calculatedInterval = Math.round(ema);
+                            sourceInfo = `(Auto: EMA)`;
+                        } else {
+                            const recentDiffs = diffs.slice(0, 10);
+                            calculatedInterval = Math.round(recentDiffs.reduce((a, b) => a + b, 0) / recentDiffs.length);
+                            sourceInfo = `(Auto: Média ${calculatedInterval}m)`;
+                        }
+
+                        if (calculatedInterval > 0) {
+                            intervalos = [calculatedInterval];
+                        }
+                    }
+                }
+            }
+
+            // 2. Se não encontrou no histórico, usa o input manual
+            if (intervalos.length === 0) {
+                const intervaloInput = document.getElementById('iaWhiteIntervalo').value;
+                intervalos = intervaloInput.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i > 0);
+            }
+
+            if (intervalos.length === 0) {
+                output.innerText = "⚠️ Insira um intervalo válido em minutos ou carregue o histórico (Auto-Busca).";
+                return;
+            }
+
+            const now = new Date();
+            let list = `📋 LISTA I.A BRANCO - ${now.toLocaleDateString('pt-BR')}\n`;
+            list += `🔥 Estratégia: ${strategyName} ${sourceInfo}\n`;
+            list += `🔄 Entradas: ${entryCount}\n\n`; // Linha solicitada
+            
+            let currentTime = new Date();
+            currentTime.setSeconds(0, 0);
+            currentTime.setMinutes(currentTime.getMinutes() + 1);
+            let signals = [];
+            let intervalIndex = 0;
+
+            for(let i = 0; i < qtdSinais; i++) {
+                const minutesToAdd = intervalos[intervalIndex % intervalos.length];
+                intervalIndex++;
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                const timeStr = `${currentTime.getHours().toString().padStart(2,'0')}:${currentTime.getMinutes().toString().padStart(2,'0')}`;
+                signals.push(`🕒 ${timeStr} -> ⚪ BRANCO`);
+            }
+            
+            list += signals.join('\n');
+            list += `\n\n⚠️ Gerencie sua banca!`;
+            output.innerText = list;
+        }
+
         function closeTool() {
             const floatingContainer = document.getElementById('floating-tool-container');
             const iframe = document.getElementById('floating_tool_iframe');
@@ -5796,6 +6416,34 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (floatingContainer && iframe) {
                 iframe.src = 'about:blank'; // Limpa o iframe para parar scripts e processos
                 floatingContainer.style.display = 'none';
+            }
+        }
+
+        function addCharToPatterns(char) {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const text = input.value;
+                input.value = text.substring(0, start) + char + text.substring(end);
+                input.selectionStart = input.selectionEnd = start + char.length;
+                input.focus();
+            }
+        }
+
+        function clearPatternsBotInput(btn) {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                if (confirm('Tem certeza que deseja limpar todos os padrões? Esta ação não pode ser desfeita.')) {
+                    input.value = '';
+                    if (btn) {
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '✅ LIMPO!';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                        }, 2000);
+                    }
+                }
             }
         }
     </script>
