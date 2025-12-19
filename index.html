@@ -3498,8 +3498,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!force && (!toggle || !toggle.checked)) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = sessionStorage.getItem('telegram_chat_id_white');
-            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id'); // Fallback
+            let chatId = sessionStorage.getItem('telegram_chat_id_white') || localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id'); // Fallback
             if (!token || !chatId) return;
 
             try {
@@ -3513,8 +3513,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = sessionStorage.getItem('telegram_chat_id_white');
-            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id');
+            let chatId = sessionStorage.getItem('telegram_chat_id_white') || localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
             const template = sessionStorage.getItem('telegram_whitebot_template');
 
             if (!token || !chatId) return;
@@ -3540,8 +3540,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!force && (!toggle || !toggle.checked)) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = sessionStorage.getItem('telegram_chat_id_white');
-            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id'); // Fallback
+            let chatId = sessionStorage.getItem('telegram_chat_id_white') || localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id'); // Fallback
             if (!token || !chatId) return;
 
             // Resolve o nome amigável da estratégia para exibir no Telegram
@@ -3552,7 +3552,18 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (select) {
                 const option = Array.from(select.options).find(opt => opt.value === strategyRaw);
                 if (option) strategyFriendly = option.text.replace(/^\d+\.\s*/, ''); // Remove números como "1. "
+            if (strategyRaw === 'random_analysis') {
+                strategyFriendly = 'Análise Probabilística (Auto)';
+            } else {
+                const select = document.getElementById('whiteBotStrategy');
+                if (select) {
+                    const option = Array.from(select.options).find(opt => opt.value === strategyRaw);
+                    if (option) strategyFriendly = option.text.replace(/^\d+\.\s*/, ''); // Remove números como "1. "
+                }
             }
+            
+            // Escapa caracteres especiais do Markdown para evitar erros de envio
+            if (strategyFriendly) strategyFriendly = strategyFriendly.replace(/_/g, '\\_').replace(/\*/g, '\\*');
 
             const now = new Date();
             const dateTimeStr = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
