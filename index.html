@@ -3548,10 +3548,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             let strategyRaw = strategyName || (activeWhiteSignal ? activeWhiteSignal.strategyName : 'Automática');
             let strategyFriendly = strategyRaw;
             
-            const select = document.getElementById('whiteBotStrategy');
-            if (select) {
-                const option = Array.from(select.options).find(opt => opt.value === strategyRaw);
-                if (option) strategyFriendly = option.text.replace(/^\d+\.\s*/, ''); // Remove números como "1. "
             if (strategyRaw === 'random_analysis') {
                 strategyFriendly = 'Análise Probabilística (Auto)';
             } else {
