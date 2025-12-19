@@ -6432,19 +6432,95 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         const lastColor = dash_identificarCor(results[0].roll).toUpperCase();
                         if (lastColor === pattern.target) continue;
                     }
-                    createPatternsSignal(pattern.target, pattern.original, results[0]);
+                    createPatternsSignal(pattern.target, pattern.original, results[0], results);
                     break; // Stop after first match
                 }
             }
         }
 
-        function createPatternsSignal(targetColor, patternString, triggerResult) {
+        function createPatternsSignal(targetColor, patternString, triggerResult, allResults) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
             signalTime.setHours(h, m, 0, 0);
             
-            const entryTimeInput = document.getElementById('patternsBotEntryTime');
-            const entryTime = entryTimeInput ? (parseInt(entryTimeInput.value) || 1) : 1;
+            const autoAnalyzeToggle = document.getElementById('patternsBotAutoAnalyzeMinuteToggle');
+            let entryTime = 1;
+
+            if (autoAnalyzeToggle && autoAnalyzeToggle.checked && allResults && allResults.length > 0) {
+                // "Analisar Melhor Minuto" está ON. Ignora o input manual e calcula o melhor minuto.
+                const line = patternString.trim();
+                const [seqStr] = line.split('=').map(s => s.trim().toUpperCase());
+                const sequence = seqStr.split(',').map(s => s.trim());
+                
+                let bestMinute = -1;
+                let maxAssertiveness = -1;
+                let analysisData = {};
+
+                // Analisa os minutos de 2 a 6
+                for (let minuteOffset = 2; minuteOffset <= 6; minuteOffset++) {
+                    let wins = 0;
+                    let losses = 0;
+
+                    // Itera pelo histórico para encontrar TODAS as ocorrências do padrão
+                    for (let i = 0; i <= allResults.length - sequence.length; i++) {
+                        let isMatch = true;
+                        for (let j = 0; j < sequence.length; j++) {
+                            const seqItem = sequence[sequence.length - 1 - j];
+                            const resultItem = allResults[i + j];
+                            const resultColor = dash_identificarCor(resultItem.roll).toUpperCase();
+                            const resultNum = resultItem.roll;
+
+                            let itemMatch = false;
+                            if (['V', 'VERMELHO'].includes(seqItem) && resultColor === 'VERMELHO') itemMatch = true;
+                            else if (['P', 'PRETO'].includes(seqItem) && resultColor === 'PRETO') itemMatch = true;
+                            else if (['B', 'BRANCO'].includes(seqItem) && resultColor === 'BRANCO') itemMatch = true;
+                            else if (!isNaN(parseInt(seqItem)) && parseInt(seqItem) === resultNum) itemMatch = true;
+                            
+                            if (!itemMatch) {
+                                isMatch = false;
+                                break;
+                            }
+                        }
+
+                        if (isMatch) {
+                            const matchTriggerTime = allResults[i].time;
+                            const [triggerH, triggerM] = matchTriggerTime.split(':').map(Number);
+                            
+                            const targetDate = new Date();
+                            targetDate.setHours(triggerH, triggerM, 0, 0);
+                            targetDate.setMinutes(targetDate.getMinutes() + minuteOffset);
+                            const targetTimeStr = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
+
+                            const outcomeResult = allResults.find(r => r.time === targetTimeStr);
+                            
+                            if (outcomeResult) {
+                                const outcomeColor = dash_identificarCor(outcomeResult.roll).toUpperCase();
+                                if (outcomeColor === targetColor || outcomeColor === 'BRANCO') wins++;
+                                else losses++;
+                            }
+                        }
+                    }
+                    
+                    const total = wins + losses;
+                    const assertiveness = total > 0 ? ((wins / total) * 100) : 0;
+                    analysisData[minuteOffset] = { wins, losses, assertiveness };
+
+                    if (assertiveness > maxAssertiveness) {
+                        maxAssertiveness = assertiveness;
+                        bestMinute = minuteOffset;
+                    } else if (assertiveness === maxAssertiveness && wins > (analysisData[bestMinute]?.wins || 0)) {
+                        bestMinute = minuteOffset;
+                    }
+                }
+
+                entryTime = (bestMinute !== -1) ? bestMinute : 2; // Usa o melhor minuto ou fallback para 2
+
+            } else {
+                // "Analisar Melhor Minuto" está OFF. Usa o input manual.
+                const entryTimeInput = document.getElementById('patternsBotEntryTime');
+                entryTime = entryTimeInput ? (parseInt(entryTimeInput.value) || 1) : 1;
+            }
+
             signalTime.setMinutes(signalTime.getMinutes() + entryTime);
 
             const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
@@ -6452,34 +6528,17 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             lastPatternsSignalTime = signalTimeString;
 
             const useGale = document.getElementById('patternsBotGaleToggle') && document.getElementById('patternsBotGaleToggle').checked;
-            const gales = useGale ? 1 : 0;
+            const gales = useGale ? 1 : 0;            
             
-            // CORREÇÃO: Lógica de inversão do sinal
-            let finalTargetColor = targetColor;
-            const isInvertActive = document.getElementById('patternsBotInvertToggle') && document.getElementById('patternsBotInvertToggle').checked;
-            if (isInvertActive) {
-                if (finalTargetColor === 'VERMELHO') {
-                    finalTargetColor = 'PRETO';
-                } else if (finalTargetColor === 'PRETO') {
-                    finalTargetColor = 'VERMELHO';
-                }
-                // Nota: A cor BRANCO não é invertida.
-            }
-            
-            let inversionBadge = '';
-            if (isInvertActive) {
-                inversionBadge = '<span style="background: rgba(255, 193, 7, 0.2); color: #ffc107; font-size: 0.6rem; border: 1px solid #ffc107; padding: 2px 5px; border-radius: 4px; margin-left: 8px; vertical-align: middle; letter-spacing: 1px;">INVERTIDO</span>';
-            }
-
             activePatternsSignal = {
                 time: signalTimeString,
                 date: triggerResult.date, // Assuming same day
-                targetColor: finalTargetColor, // USA A COR FINAL
+                targetColor: targetColor,
                 gales: gales,
                 pattern: patternString
             };
 
-            const emoji = finalTargetColor === 'VERMELHO' ? '🔴' : (finalTargetColor === 'PRETO' ? '⚫' : '⚪'); // USA A COR FINAL
+            const emoji = targetColor === 'VERMELHO' ? '🔴' : (targetColor === 'PRETO' ? '⚫' : '⚪');
             const signalPanel = document.getElementById('patternsBotSignalPanel');
             const signalContent = document.getElementById('patternsBotSignalContent');
             
@@ -6489,11 +6548,11 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             signalContent.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div style="text-align: left; flex: 1;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!${inversionBadge}</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!</div>
                         <div style="color: #aaa; font-size: 0.8rem; font-family: monospace; margin-bottom: 15px;">${patternString}</div>
                         
-                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${finalTargetColor}</div>
-                        <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString}</div>
+                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${targetColor}</div>
+                        <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString} (+${entryTime} min)</div>
                     </div>
                     <div class="signal-chart-container" style="transform: scale(1);">
                         <div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${emoji}</div>
@@ -6509,6 +6568,72 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 playAutoBotNotificationSound(); // Reuse existing sound function
             }
             sendPatternsBotTelegramSignal(activePatternsSignal);
+        }
+
+        function analyzeBestMinuteForPatterns(btn) {
+            const patterns = parsePatternsBotInput();
+            if (patterns.length === 0) {
+                alert("Nenhum padrão inserido para análise.");
+                return;
+            }
+
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) {
+                alert("Nenhum dado de histórico encontrado. Clique em 'BUSCAR DADOS' primeiro.");
+                return;
+            }
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const allResults = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    allResults.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+
+            let analysisResults = {};
+            for (let minuteOffset = 2; minuteOffset <= 6; minuteOffset++) {
+                analysisResults[minuteOffset] = { wins: 0, losses: 0 };
+                for (const pattern of patterns) {
+                    for (let i = 0; i <= allResults.length - pattern.sequence.length; i++) {
+                        let isMatch = true;
+                        for (let j = 0; j < pattern.sequence.length; j++) {
+                            const seqItem = pattern.sequence[pattern.sequence.length - 1 - j];
+                            const resultItem = allResults[i + j];
+                            const resultColor = dash_identificarCor(resultItem.roll).toUpperCase();
+                            const resultNum = resultItem.roll;
+                            let itemMatch = false;
+                            if (['V', 'VERMELHO'].includes(seqItem) && resultColor === 'VERMELHO') itemMatch = true;
+                            else if (['P', 'PRETO'].includes(seqItem) && resultColor === 'PRETO') itemMatch = true;
+                            else if (['B', 'BRANCO'].includes(seqItem) && resultColor === 'BRANCO') itemMatch = true;
+                            else if (!isNaN(parseInt(seqItem)) && parseInt(seqItem) === resultNum) itemMatch = true;
+                            if (!itemMatch) { isMatch = false; break; }
+                        }
+                        if (isMatch) {
+                            const [triggerH, triggerM] = allResults[i].time.split(':').map(Number);
+                            const targetDate = new Date();
+                            targetDate.setHours(triggerH, triggerM, 0, 0);
+                            targetDate.setMinutes(targetDate.getMinutes() + minuteOffset);
+                            const targetTimeStr = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
+                            const outcomeResult = allResults.find(r => r.time === targetTimeStr);
+                            if (outcomeResult) {
+                                const outcomeColor = dash_identificarCor(outcomeResult.roll).toUpperCase();
+                                if (outcomeColor === pattern.target || outcomeColor === 'BRANCO') analysisResults[minuteOffset].wins++;
+                                else analysisResults[minuteOffset].losses++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            let resultText = "📊 Análise de Minutos para os Padrões:\n\n";
+            for (let minuteOffset = 2; minuteOffset <= 6; minuteOffset++) {
+                const { wins, losses } = analysisResults[minuteOffset];
+                const total = wins + losses;
+                const assertiveness = total > 0 ? ((wins / total) * 100) : 0;
+                resultText += `Minuto +${minuteOffset}: ${wins} W / ${losses} L (${assertiveness.toFixed(1)}%)\n`;
+            }
+            alert(resultText);
         }
 
         function addResultToPatternsHistory(message, isWin) {
@@ -6672,16 +6797,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
 
             input.value = newLines.join('\n');
             savePatternsBotInput(null); // Salva a lista invertida no localStorage
-        }
-
-        function invertPatternsBotInput() {
-            const input = document.getElementById('patternsBotInput');
-            if (!input) return;
-
-            // ... (lógica de inversão existente)
-
-            input.value = newLines.join('\n');
-            savePatternsBotInput(null);
             patternsBotInversionCount++;
             updateInversionCounterDisplay();
         }
