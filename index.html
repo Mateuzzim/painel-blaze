@@ -1444,6 +1444,16 @@
                             <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
                                 <button class="btn-cyber btn-save-neon" onclick="savePatternsBotInput(this)">💾 SALVAR PADRÕES</button>
                                 <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
+                                <div style="flex-basis: 100%; display: flex; gap: 10px; margin-top: 5px;">
+                                    <button onclick="analyzeBestMinuteForPatterns(this)" class="btn-cyber btn-access-neon" style="flex: 1;">🔍 Analisar Melhor Minuto (2-6)</button>
+                                    <div class="toggle-switch-container" style="margin-bottom: 0; padding: 5px 10px; border: 1px solid #24A1DE; border-radius: 4px; display: flex; align-items: center; gap: 8px; background: rgba(36, 161, 222, 0.1);">
+                                        <label for="patternsBotAutoAnalyzeMinuteToggle" style="font-size: 0.8em; margin-bottom: 0; color: #24A1DE; font-weight: bold;">AUTO</label>
+                                        <label class="switch" style="width: 40px; height: 20px;">
+                                            <input type="checkbox" id="patternsBotAutoAnalyzeMinuteToggle">
+                                            <span class="slider" style="border-radius: 20px;"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="inline-controls" style="margin-bottom: 20px; align-items: flex-end;">
@@ -6444,15 +6454,32 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const useGale = document.getElementById('patternsBotGaleToggle') && document.getElementById('patternsBotGaleToggle').checked;
             const gales = useGale ? 1 : 0;
             
+            // CORREÇÃO: Lógica de inversão do sinal
+            let finalTargetColor = targetColor;
+            const isInvertActive = document.getElementById('patternsBotInvertToggle') && document.getElementById('patternsBotInvertToggle').checked;
+            if (isInvertActive) {
+                if (finalTargetColor === 'VERMELHO') {
+                    finalTargetColor = 'PRETO';
+                } else if (finalTargetColor === 'PRETO') {
+                    finalTargetColor = 'VERMELHO';
+                }
+                // Nota: A cor BRANCO não é invertida.
+            }
+            
+            let inversionBadge = '';
+            if (isInvertActive) {
+                inversionBadge = '<span style="background: rgba(255, 193, 7, 0.2); color: #ffc107; font-size: 0.6rem; border: 1px solid #ffc107; padding: 2px 5px; border-radius: 4px; margin-left: 8px; vertical-align: middle; letter-spacing: 1px;">INVERTIDO</span>';
+            }
+
             activePatternsSignal = {
                 time: signalTimeString,
                 date: triggerResult.date, // Assuming same day
-                targetColor: targetColor,
+                targetColor: finalTargetColor, // USA A COR FINAL
                 gales: gales,
                 pattern: patternString
             };
 
-            const emoji = targetColor === 'VERMELHO' ? '🔴' : (targetColor === 'PRETO' ? '⚫' : '⚪');
+            const emoji = finalTargetColor === 'VERMELHO' ? '🔴' : (finalTargetColor === 'PRETO' ? '⚫' : '⚪'); // USA A COR FINAL
             const signalPanel = document.getElementById('patternsBotSignalPanel');
             const signalContent = document.getElementById('patternsBotSignalContent');
             
@@ -6462,10 +6489,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             signalContent.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div style="text-align: left; flex: 1;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!${inversionBadge}</div>
                         <div style="color: #aaa; font-size: 0.8rem; font-family: monospace; margin-bottom: 15px;">${patternString}</div>
                         
-                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${targetColor}</div>
+                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${finalTargetColor}</div>
                         <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString}</div>
                     </div>
                     <div class="signal-chart-container" style="transform: scale(1);">
@@ -6597,7 +6624,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!token || !chatId) return;
 
             const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : (signalData.targetColor === 'PRETO' ? '⚫' : '⚪');
-            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n\n✅ *Gerencie sua banca!*`;
+            const galeStatus = signalData.gales > 0 ? 'GALE 1 (G1)' : 'SEM GALE (SG)';
+            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n🔄 *Modo:* ${galeStatus}\n\n✅ *Gerencie sua banca!*`;
 
             try {
                 const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
