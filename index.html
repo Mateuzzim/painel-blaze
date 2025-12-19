@@ -4823,6 +4823,33 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         let lastProcessedWhiteTime = null;
         let lastCalculatedInterval = null;
 
+        function updateLastWhiteInterval(results) {
+            const whites = results.filter(r => r.roll === 0);
+            const display = document.getElementById('lastWhiteIntervalDisplay');
+            const valueSpan = document.getElementById('lastWhiteIntervalValue');
+            
+            if (whites.length >= 2) {
+                const [h1, m1] = whites[0].time.split(':').map(Number);
+                const [h2, m2] = whites[1].time.split(':').map(Number);
+                
+                let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                if (diff < 0) diff += 24 * 60; // Ajuste para virada de dia
+                
+                if (display) display.style.display = 'flex';
+                if (valueSpan) {
+                    valueSpan.textContent = `${diff} min`;
+                    if (lastCalculatedInterval !== diff) {
+                        valueSpan.classList.remove('flash');
+                        void valueSpan.offsetWidth; // Força reflow para reiniciar animação
+                        valueSpan.classList.add('flash');
+                        lastCalculatedInterval = diff;
+                    }
+                }
+            } else {
+                if (display) display.style.display = 'none';
+            }
+        }
+
         function logWhiteBotAction(message, type = 'info') {
             const container = document.getElementById('whiteBotActionLog');
             const list = document.getElementById('whiteBotActionList');
