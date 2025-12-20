@@ -176,11 +176,6 @@
                         <div class="analysis-icon">🔥</div>
                         <div class="analysis-label">Mapa de Calor</div>
                     </div>
-                    <!-- Botão 4 -->
-                    <div class="analysis-btn" onclick="sec_showAIPrediction()">
-                        <div class="analysis-icon">🧠</div>
-                        <div class="analysis-label">Previsão I.A.</div>
-                    </div>
                     <!-- Botão 5 -->
                     <div class="analysis-btn" onclick="sec_showProfitSimulation()">
                         <div class="analysis-icon">💰</div>
@@ -290,14 +285,6 @@
         </div>
     </div>
 
-    <div id="sec_prediction_modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('sec_prediction_modal').style.display='none'">&times;</button>
-            <h2 style="color: #ff45d4; margin: 0 0 15px 0;">🧠 Previsão I.A. (Beta)</h2>
-            <div id="sec_prediction_content"></div>
-        </div>
-    </div>
-
     <!-- Modal Simulação de Lucro -->
     <div id="sec_simulation_modal" class="modal-overlay">
         <div class="modal-content">
@@ -342,12 +329,6 @@
         // --- Variáveis Globais das Ferramentas ---
         let sec_interval = null;
         let sec_last_processed_signature = '';
-        let sec_ai_wins = 0;
-        let sec_ai_losses = 0;
-        let sec_ai_current_prediction = null;
-        let sec_ai_balance_history = [0];
-        let sec_ai_use_virtual_gale = false;
-        let sec_ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
 
         function sec_selectPlatform(platform) {
             document.getElementById('sec_platformSelector').value = platform;
@@ -375,77 +356,17 @@
         async function sec_fetchData() {
             const loader = document.getElementById('sec_loading_indicator');
             if (loader) loader.style.display = 'block';
-            
-            const platform = document.getElementById('sec_platformSelector').value;
-            
-            if (platform === 'blaze') {
-                try {
-                    let token = localStorage.getItem('blaze_token');
-                    const agora = new Date();
-                    const ontem = new Date();
-                    ontem.setHours(ontem.getHours() - 24);
-                    const endDate = agora.toISOString();
-                    const startDate = ontem.toISOString();
-                    
-                    const headers = {};
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                        headers['x-access-token'] = token;
-                    }
 
-                    // Busca páginas 1 a 4 simultaneamente para garantir ~100 resultados
-                    const pages = [1, 2, 3, 4];
-                    const promises = pages.map(page => {
-                        const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
-                        const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
-                        const targetUrl = `${baseUrl}${params}`;
-                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-                        return fetch(proxyUrl, { method: 'GET', headers: headers })
-                            .then(r => r.ok ? r.json() : null)
-                            .catch(err => null);
-                    });
+            const rawData = sessionStorage.getItem('raw_blaze_data');
 
-                    const responses = await Promise.all(promises);
-                    let allGames = [];
-                    
-                    responses.forEach(data => {
-                        if (data) {
-                            const records = Array.isArray(data) ? data : (data.records || []);
-                            allGames = allGames.concat(records);
-                        }
-                    });
-
-                    // Remove duplicatas por ID e ordena
-                    const seenIds = new Set();
-                    const uniqueGames = allGames.filter(game => {
-                        if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
-                        return false;
-                    }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-                    if (uniqueGames.length > 0) {
-                            let formattedText = "";
-                            uniqueGames.forEach(game => {
-                                if (game.created_at && game.roll !== undefined) {
-                                    const d = new Date(game.created_at);
-                                    const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
-                                    const dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-                                    formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`; 
-                                }
-                            });
-                            sessionStorage.setItem('raw_blaze_data', formattedText);
-                            sec_processData(formattedText);
-                    } else {
-                        const cached = sessionStorage.getItem('raw_blaze_data');
-                        if (cached) sec_processData(cached);
-                    }
-                } catch (e) {
-                    console.error("Erro fetch:", e);
-                    const cached = sessionStorage.getItem('raw_blaze_data');
-                    if (cached) sec_processData(cached);
+            if (rawData) {
+                // Verifica se os dados mudaram para evitar reprocessamento desnecessário
+                const signature = rawData.substring(0, 50);
+                if (signature !== sec_last_processed_signature) {
+                    sec_processData(rawData);
                 }
             } else {
-                const cached = sessionStorage.getItem('raw_blaze_data');
-                if (cached) sec_processData(cached);
+                console.warn("Análise Avançada: Nenhum dado encontrado no sessionStorage. Aguardando painel principal.");
             }
             
             if (loader) loader.style.display = 'none';
@@ -494,50 +415,9 @@
                 const latest = results[0];
                 const signature = latest.date + latest.time + latest.roll;
                 if (signature !== sec_last_processed_signature) {
-                    if (sec_ai_current_prediction && sec_last_processed_signature !== '') {
-                        const resultColor = sec_identificarCor(latest.roll);
-                        const isWin = (resultColor === sec_ai_current_prediction || resultColor === 'branco');
-
-                        if (sec_ai_use_virtual_gale) {
-                            if (sec_ai_virtual_stage === 0) {
-                                // Estágio Virtual: Apenas monitora
-                                if (!isWin) {
-                                    sec_ai_virtual_stage = 1; // Loss Virtual -> Ativa Entrada Real
-                                } else {
-                                    sec_ai_virtual_stage = 0; // Win Virtual -> Continua simulando
-                                }
-                            } else {
-                                // Estágio Real: Contabiliza
-                                if (isWin) {
-                                    sec_ai_wins++;
-                                    sec_playWinSound();
-                                    sec_ai_balance_history.push(sec_ai_balance_history[sec_ai_balance_history.length-1] + 1);
-                                } else {
-                                    sec_ai_losses++;
-                                    sec_ai_balance_history.push(sec_ai_balance_history[sec_ai_balance_history.length-1] - 1);
-                                }
-                                sec_ai_virtual_stage = 0; // Reseta para virtual após a aposta real
-                            }
-                        } else {
-                            // Modo Normal
-                            if (isWin) {
-                                sec_ai_wins++;
-                                sec_playWinSound();
-                                sec_ai_balance_history.push(sec_ai_balance_history[sec_ai_balance_history.length-1] + 1);
-                            } else {
-                                sec_ai_losses++;
-                                sec_ai_balance_history.push(sec_ai_balance_history[sec_ai_balance_history.length-1] - 1);
-                            }
-                        }
-                        sec_ai_current_prediction = null;
-                        if (document.getElementById('sec_prediction_modal').style.display === 'flex') sec_showAIPrediction();
-                    }
                     sec_last_processed_signature = signature;
                 }
             }
-            
-            // Garante que a IA gere uma previsão para a próxima rodada (mesmo com modal fechado)
-            sec_showAIPrediction(true);
         }
 
         function sec_identificarCor(numero) {
@@ -831,323 +711,6 @@
             document.getElementById('sec_patterns_modal').style.display = 'flex';
         }
 
-        // --- Lógica da Previsão I.A. ---
-        function sec_showAIPrediction(backgroundMode = false) {
-            const rawData = sessionStorage.getItem('raw_blaze_data');
-            if (!rawData || rawData.split(/[\s\n]+/).filter(n => n.trim() !== '').length < 20) {
-                if (!backgroundMode) alert("⚠️ Dados insuficientes para uma previsão confiável (mínimo 20).");
-                return;
-            }
-            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
-            const fullHistory = [];
-            for (let i = 0; i < tokens.length; i++) {
-                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
-                    fullHistory.push({ color: sec_identificarCor(parseInt(tokens[i + 1])), roll: parseInt(tokens[i + 1]) });
-                    i += 2;
-                }
-            }
-            const history = fullHistory.filter(item => item.color !== 'branco').map(item => item.color);
-            let redScore = 0, blackScore = 0, reasoning = [];
-            
-            // 1. Tendência de Sequência (Surf)
-            if (history.length >= 3 && history[0] === history[1] && history[1] === history[2]) {
-                if (history[0] === 'vermelho') redScore += 2; else blackScore += 2;
-                reasoning.push("<strong>Tendência Forte:</strong> Sequência de 3 cores iguais.");
-            }
-            if (history.length >= 5 && history[0] === history[1] && history[1] === history[2] && history[2] === history[3] && history[3] === history[4]) {
-                if (history[0] === 'vermelho') redScore += 2; else blackScore += 2;
-                reasoning.push("<strong>Surf de Tendência:</strong> Sequência longa (5+), alta probabilidade de continuar.");
-            }
-
-            // 2. Quebra de Alternância (Xadrez)
-            if (history.length >= 4 && history[0] !== history[1] && history[1] !== history[2] && history[2] !== history[3]) {
-                if (history[0] === 'vermelho') blackScore += 2.5; else redScore += 2.5;
-                reasoning.push("<strong>Quebra de Alternância:</strong> Padrão alternado sugere uma quebra.");
-            }
-
-            // 3. Padrão de Duplas (XX YY -> X)
-            if (history.length >= 4 && history[0] === history[1] && history[2] === history[3] && history[0] !== history[2]) {
-                // Ex: [P, P, V, V] -> Sugere P
-                if (history[0] === 'vermelho') blackScore += 2; else redScore += 2;
-                reasoning.push("<strong>Padrão de Duplas:</strong> Alternância de pares identificada (XX YY).");
-            }
-
-            // 4. Padrão Sanduíche/Espelho (X YY -> X)
-            if (history.length >= 3 && history[0] === history[1] && history[1] !== history[2]) {
-                // Ex: [P, P, V] -> Sugere V para fechar V P P V
-                if (history[2] === 'vermelho') redScore += 1.5; else blackScore += 1.5;
-                reasoning.push("<strong>Padrão Sanduíche:</strong> Possível fechamento de simetria (X YY X).");
-            }
-
-            // 5. Análise de Frequência Recente
-            const recentHistory = history.slice(0, 20);
-            const redCount = recentHistory.filter(c => c === 'vermelho').length;
-            const blackCount = recentHistory.filter(c => c === 'preto').length;
-            if (redCount > blackCount * 1.5) { redScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de vermelhos recentes."); }
-            else if (blackCount > redCount * 1.5) { blackScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de pretos recentes."); }
-            
-            // 6. Regressão à Média (Balanceamento 50 rodadas)
-            if (history.length >= 50) {
-                const last50 = history.slice(0, 50);
-                const r50 = last50.filter(c => c === 'vermelho').length;
-                const b50 = last50.filter(c => c === 'preto').length;
-                if (r50 > b50 + 12) {
-                    blackScore += 1.5;
-                    reasoning.push(`<strong>Desequilíbrio:</strong> Excesso de Vermelhos (${r50} vs ${b50}) nas últimas 50.`);
-                } else if (b50 > r50 + 12) {
-                    redScore += 1.5;
-                    reasoning.push(`<strong>Desequilíbrio:</strong> Excesso de Pretos (${b50} vs ${r50}) nas últimas 50.`);
-                }
-            }
-
-            // 7. Padrão Recorrente (Memória)
-            if (history.length >= 10) {
-                const lastPattern = history.slice(0, 3).reverse().join(',');
-                let afterRed = 0, afterBlack = 0;
-                for (let i = 3; i < history.length - 3; i++) {
-                    if (history.slice(i, i + 3).reverse().join(',') === lastPattern) {
-                        if (history[i - 1] === 'vermelho') afterRed++; else if (history[i - 1] === 'preto') afterBlack++;
-                    }
-                }
-                if (afterRed > afterBlack) { redScore += 2; reasoning.push(`<strong>Padrão Recorrente:</strong> A sequência [${lastPattern}] foi seguida por VERMELHO ${afterRed}x.`); }
-                else if (afterBlack > afterRed) { blackScore += 2; reasoning.push(`<strong>Padrão Recorrente:</strong> A sequência [${lastPattern}] foi seguida por PRETO ${afterBlack}x.`); }
-            }
-            
-            // Lógica Avançada de Identificação de Branco
-            let whiteScore = 0;
-            const lastWhiteIndex = fullHistory.findIndex(x => x.color === 'branco');
-            const roundsSinceWhite = lastWhiteIndex === -1 ? fullHistory.length : lastWhiteIndex;
-            
-            // 1. Atraso (Delay)
-            if (roundsSinceWhite >= 25) { whiteScore += 1; reasoning.push(`<strong>Alerta Branco:</strong> ${roundsSinceWhite} rodadas sem branco.`); }
-            if (roundsSinceWhite >= 50) { whiteScore += 2; reasoning.push(`<strong>Branco Crítico:</strong> Acúmulo muito alto (${roundsSinceWhite}).`); }
-
-            // 2. Análise de Ciclos (Média de Intervalos)
-            const whiteIndices = fullHistory.map((x, i) => x.color === 'branco' ? i : -1).filter(i => i !== -1);
-            if (whiteIndices.length >= 2) {
-                let intervals = [];
-                for(let i=0; i<whiteIndices.length-1; i++) {
-                    intervals.push(whiteIndices[i+1] - whiteIndices[i]);
-                }
-                const avgInterval = intervals.reduce((a,b)=>a+b,0) / intervals.length;
-                // Se o atraso atual estiver dentro de uma janela de 15% da média
-                if (Math.abs(roundsSinceWhite - avgInterval) < (avgInterval * 0.15)) {
-                    whiteScore += 2;
-                    reasoning.push(`<strong>Ciclo de Branco:</strong> Momento estatístico provável (Média: ${avgInterval.toFixed(0)}).`);
-                }
-            }
-
-            const totalScore = redScore + blackScore;
-            let prediction = 'Indefinido', confidence = 0, predictionClass = '';
-            
-            if (whiteScore >= 3.5) {
-                prediction = 'POSSÍVEL BRANCO';
-                predictionClass = 'white';
-                confidence = Math.min(98, 50 + (whiteScore * 10));
-                reasoning.unshift("<strong>ALTA PROBABILIDADE:</strong> Indicadores de Branco convergindo (Ciclo + Atraso).");
-            } else if (totalScore > 0) {
-                if (redScore > blackScore) { prediction = 'VERMELHO'; predictionClass = 'red'; confidence = (redScore / totalScore) * 100; } 
-                else if (blackScore > redScore) { prediction = 'PRETO'; predictionClass = 'black'; confidence = (blackScore / totalScore) * 100; }
-            }
-            
-            // Armazena previsão para conferência futura
-            if (prediction === 'VERMELHO') sec_ai_current_prediction = 'vermelho';
-            else if (prediction === 'PRETO') sec_ai_current_prediction = 'preto';
-            else if (prediction === 'POSSÍVEL BRANCO') sec_ai_current_prediction = 'branco';
-            else sec_ai_current_prediction = null;
-
-            if (backgroundMode) return;
-
-            // Lógica de Exibição do Gale Virtual
-            let predictionDisplayText = prediction;
-            let virtualStatusHtml = "";
-            let boxStyle = "";
-
-            if (sec_ai_use_virtual_gale) {
-                if (sec_ai_virtual_stage === 0) {
-                    predictionDisplayText += " (VIRTUAL)";
-                    virtualStatusHtml = `<div style="color: #aaa; font-size: 0.8rem; margin-top: 5px; border-top: 1px solid #444; padding-top: 5px;">🤖 Simulando... Aguardando Loss para entrar.</div>`;
-                    boxStyle = "opacity: 0.7; border-style: dashed;";
-                } else {
-                    predictionDisplayText += " (REAL)";
-                    virtualStatusHtml = `<div style="color: #00ff88; font-size: 0.9rem; margin-top: 5px; font-weight: bold; border-top: 1px solid #444; padding-top: 5px;">🔥 LOSS VIRTUAL DETECTADO! ENTRADA LIBERADA!</div>`;
-                    boxStyle = "box-shadow: 0 0 25px " + (predictionClass === 'red' ? 'rgba(255, 0, 85, 0.6)' : 'rgba(255, 255, 255, 0.4)') + "; transform: scale(1.05); border-width: 3px;";
-                    if (confidence > 80) sec_playNotificationSound();
-                }
-            } else {
-                if (confidence > 80) sec_playNotificationSound();
-            }
-
-            if (confidence < 55) { prediction = 'Sinal Fraco'; reasoning = ["A I.A. não encontrou um padrão claro ou os modelos apresentaram previsões conflitantes."]; }
-            let whiteHtml = '';
-            if (whiteScore >= 1 && predictionClass !== 'white') whiteHtml = `<div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px; border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2);">⚪ SUGESTÃO: COBRIR O BRANCO</div>`;
-            
-            // Lógica de Cores Dinâmicas do Visual AI
-            let outerStyle = '';
-            let innerStyle = '';
-            let coreStyle = '';
-
-            if (predictionClass === 'red') {
-                outerStyle = 'border-top-color: #ff0055; border-bottom-color: #ff9800; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);';
-                innerStyle = 'border-left-color: #ff45d4; border-right-color: #ff0000;';
-                coreStyle = 'background-color: #ff0055; box-shadow: 0 0 15px 5px rgba(255, 0, 85, 0.6);';
-            } else if (predictionClass === 'black') {
-                outerStyle = 'border-top-color: #fff; border-bottom-color: #444; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);';
-                innerStyle = 'border-left-color: #888; border-right-color: #ccc;';
-                coreStyle = 'background-color: #fff; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.6);';
-            } else if (predictionClass === 'white') {
-                outerStyle = 'border-top-color: #fff; border-bottom-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); animation-duration: 1s;';
-                innerStyle = 'border-left-color: #ccc; border-right-color: #eee; animation-duration: 0.5s;';
-                coreStyle = 'background-color: #fff; box-shadow: 0 0 25px 10px rgba(255, 255, 255, 0.9); animation: pulse-ai 0.2s ease-in-out infinite alternate;';
-            }
-
-            // Toggle do Gale Virtual
-            const galeToggleHtml = `
-                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 20px; border: 1px solid #333;">
-                    <label class="switch" style="transform: scale(0.8);">
-                        <input type="checkbox" ${sec_ai_use_virtual_gale ? 'checked' : ''} onchange="sec_toggleVirtualGale(this)">
-                        <span class="slider"></span>
-                    </label>
-                    <span style="font-size: 0.85rem; color: #ccc;">Modo Gale Virtual (Entrar após Loss)</span>
-                </div>
-            `;
-
-            // HTML do Visual AI Futurista
-            const aiVisualHtml = `
-                <div class="ai-visual-container">
-                    <div class="ai-circle-outer" style="${outerStyle}">
-                        <div class="ai-circle-inner" style="${innerStyle}"></div>
-                        <div class="ai-core-dot" style="${coreStyle}"></div>
-                    </div>
-                </div>
-            `;
-
-            // Gráfico de Linha Futurista (SVG)
-            const chartData = sec_ai_balance_history.slice(-30); // Últimos 30 pontos
-            const cw = 400, ch = 60, cpad = 5;
-            let minVal = Math.min(...chartData);
-            let maxVal = Math.max(...chartData);
-            if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
-            const cRange = maxVal - minVal;
-            
-            let points = "";
-            chartData.forEach((val, i) => {
-                const x = (i / (chartData.length - 1 || 1)) * (cw - 2*cpad) + cpad;
-                const y = (ch - cpad) - ((val - minVal) / cRange * (ch - 2*cpad));
-                points += `${x},${y} `;
-            });
-
-            const lastBal = sec_ai_balance_history[sec_ai_balance_history.length-1];
-            const balColor = lastBal >= 0 ? '#00ff88' : '#ff0055';
-            const chartHtml = `
-                <div style="margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 8px; padding: 10px; position: relative; overflow: hidden;">
-                    <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px;"><span>Evolução do Saldo</span><span style="color: ${balColor}; font-weight: bold;">${lastBal > 0 ? '+' : ''}${lastBal}</span></div>
-                    <svg viewBox="0 0 ${cw} ${ch}" style="width: 100%; height: 50px; overflow: visible;"><defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00d2ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#a100ff;stop-opacity:1" /></linearGradient></defs>${(minVal <= 0 && maxVal >= 0) ? `<line x1="0" y1="${(ch-cpad) - ((0-minVal)/cRange*(ch-2*cpad))}" x2="${cw}" y2="${(ch-cpad) - ((0-minVal)/cRange*(ch-2*cpad))}" stroke="#444" stroke-dasharray="3" stroke-width="1" />` : ''}<polyline points="${points}" fill="none" stroke="url(#gradChart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="${(cw-cpad)}" cy="${(ch-cpad) - ((chartData[chartData.length-1]-minVal)/cRange*(ch-2*cpad))}" r="4" fill="#fff" class="chart-dot" /></svg>
-                </div>
-            `;
-
-            // Cálculo de Força da Tendência (Trend Strength)
-            let trendScore = 0;
-            const recentTotal = redCount + blackCount;
-            if (recentTotal > 0) {
-                const dominance = Math.max(redCount, blackCount) / recentTotal;
-                // Mapeia 50% -> 0 e 100% -> 100
-                trendScore = (dominance - 0.5) * 200;
-            }
-            
-            // Bônus por Streak Atual
-            let currentStreak = 0;
-            if (history.length > 0) {
-                currentStreak = 1;
-                for(let i=1; i<history.length; i++) {
-                    if(history[i] === history[0]) currentStreak++; else break;
-                }
-            }
-            if (currentStreak >= 3) trendScore += (currentStreak * 8);
-            trendScore = Math.min(100, Math.max(0, trendScore));
-            
-            let trendLabel = "Lateralizado (Neutro)";
-            let trendColor = "#00d2ff"; // Azul Cyan
-            if (trendScore >= 75) { trendLabel = "🔥 TENDÊNCIA FORTE"; trendColor = "#ff0055"; }
-            else if (trendScore >= 40) { trendLabel = "⚡ Tendência Moderada"; trendColor = "#ff9800"; }
-
-            const trendHtml = `
-                <div class="trend-meter-container">
-                    <div class="trend-header"><span>Força do Mercado</span><span style="color: ${trendColor}; text-shadow: 0 0 5px ${trendColor};">${trendLabel}</span></div>
-                    <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: ${trendScore.toFixed(0)}%; background: linear-gradient(90deg, #00d2ff, ${trendColor}); box-shadow: 0 0 10px ${trendColor};"></div></div>
-                </div>
-            `;
-
-            // HTML dos Contadores
-            const totalPreds = sec_ai_wins + sec_ai_losses;
-            const winRate = totalPreds > 0 ? ((sec_ai_wins / totalPreds) * 100).toFixed(0) : 0;
-            const statsHtml = `
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                    <div style="display: flex; justify-content: center; gap: 15px; width: 100%;">
-                        <div style="text-align: center; min-width: 60px;"><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Wins</div><div style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">${sec_ai_wins}</div></div>
-                        <div style="text-align: center; min-width: 60px;"><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Losses</div><div style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">${sec_ai_losses}</div></div>
-                        <div style="width: 1px; background: #444;"></div>
-                        <div style="text-align: center; min-width: 80px;"><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Assertividade</div><div style="font-size: 1.2rem; font-weight: bold; color: #fff;">${winRate}%</div></div>
-                    </div>
-                    <button onclick="sec_resetAIStats()" style="padding: 4px 10px; background: rgba(255,255,255,0.1); border: 1px solid #444; color: #aaa; border-radius: 4px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;">Resetar Placar</button>
-                </div>
-            `;
-
-            const content = document.getElementById('sec_prediction_content');
-            content.innerHTML = aiVisualHtml + galeToggleHtml + statsHtml + chartHtml + trendHtml + `<div class="prediction-display"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div><p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
-            document.getElementById('sec_prediction_modal').style.display = 'flex';
-        }
-
-        function sec_toggleVirtualGale(el) {
-            sec_ai_use_virtual_gale = el.checked;
-            sec_ai_virtual_stage = 0; // Reseta para estágio virtual ao alternar
-            sec_showAIPrediction();
-        }
-
-        function sec_resetAIStats() {
-            sec_ai_wins = 0;
-            sec_ai_losses = 0;
-            sec_ai_balance_history = [0];
-            sec_ai_current_prediction = null;
-            sec_ai_virtual_stage = 0;
-            sec_showAIPrediction();
-        }
-
-        function sec_playNotificationSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.type = 'sine'; osc.frequency.setValueAtTime(500, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                osc.start(); osc.stop(ctx.currentTime + 0.3);
-            } catch (e) { console.error("Erro ao tocar som:", e); }
-        }
-
-        function sec_playWinSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const t = ctx.currentTime;
-                // Simula som de caixa registradora (Cha-Ching)
-                const osc1 = ctx.createOscillator();
-                const g1 = ctx.createGain();
-                osc1.connect(g1); g1.connect(ctx.destination);
-                osc1.type = 'sine'; osc1.frequency.setValueAtTime(1000, t);
-                g1.gain.setValueAtTime(0.1, t); g1.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-                osc1.start(t); osc1.stop(t + 0.3);
-
-                const osc2 = ctx.createOscillator();
-                const g2 = ctx.createGain();
-                osc2.connect(g2); g2.connect(ctx.destination);
-                osc2.type = 'sine'; osc2.frequency.setValueAtTime(1500, t + 0.1);
-                g2.gain.setValueAtTime(0.1, t + 0.1); g2.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
-                osc2.start(t + 0.1); osc2.stop(t + 0.4);
-            } catch (e) { console.error("Erro som win:", e); }
-        }
-
         // --- Lógica de Simulação de Lucro (Backtest) ---
         function sec_showProfitSimulation() {
             document.getElementById('sec_simulation_modal').style.display = 'flex';
@@ -1272,13 +835,8 @@
                 if (e.target.checked) { sec_fetchData(); sec_interval = setInterval(sec_fetchData, 10000); } 
                 else { clearInterval(sec_interval); }
             });
-            // Inicia a busca automaticamente ao carregar
-            sec_fetchData().then(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('open') === 'ai') {
-                    sec_showAIPrediction();
-                }
-            });
+            // Inicia a busca automaticamente ao carregar (sem abrir a IA)
+            sec_fetchData();
             sec_interval = setInterval(sec_fetchData, 10000);
         }
     </script>

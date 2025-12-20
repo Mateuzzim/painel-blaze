@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão I.A. - Cortex Virtual</title>
+    <style>
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; font-size: 1.5rem; }
+        
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; cursor: pointer; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+        .platform-switcher { display: flex; gap: 10px; }
+        .platform-btn { padding: 6px 12px; border: 1px solid #444; background: #222; color: var(--text-muted); cursor: pointer; border-radius: 4px; transition: all 0.3s; font-size: 0.8rem; }
+        .platform-btn.active { background: var(--accent); color: #000; font-weight: bold; border-color: var(--accent); }
+        .platform-jonbet .platform-btn.active { background: var(--accent-jonbet); border-color: var(--accent-jonbet); }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Loading Spinner */
+        .spinner { border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 3px solid #ff9800; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* AI Visual Elements */
+        .prediction-display { text-align: center; margin: 20px 0; }
+        .prediction-color-box { padding: 20px; border-radius: 12px; font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border: 2px solid; box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: all 0.3s; }
+        .prediction-color-box.red { border-color: #ff0055; color: #ff0055; text-shadow: 0 0 10px #ff0055; }
+        .prediction-color-box.black { border-color: #fff; color: #fff; background: #222; }
+        .prediction-color-box.white { border-color: #fff; color: #fff; text-shadow: 0 0 15px #fff; background: rgba(255,255,255,0.15); animation: pulse-white 1s infinite alternate; }
+        
+        .confidence-bar-container { width: 100%; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px; border: 1px solid #444; margin-bottom: 15px; box-sizing: border-box; }
+        .confidence-bar { height: 12px; border-radius: 4px; background: linear-gradient(90deg, #a100ff, #ff45d4); transition: width 0.5s ease-out; box-shadow: 0 0 10px #ff45d4; }
+        .confidence-label { font-size: 0.9rem; color: #ccc; margin-bottom: 5px; display: block; }
+        
+        .prediction-reasoning { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #aaa; line-height: 1.5; text-align: left; }
+        .prediction-reasoning strong { color: #ff45d4; }
+        .prediction-reasoning ul { padding-left: 20px; margin: 0; }
+
+        /* AI Circle Animation */
+        .ai-visual-container { display: flex; justify-content: center; margin-bottom: 25px; animation: glitch-anim 5s infinite; }
+        .ai-circle-outer { width: 120px; height: 120px; border-radius: 50%; border: 2px solid transparent; border-top-color: #00d2ff; border-bottom-color: #ff0055; animation: spin-ai 3s linear infinite; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); transition: all 0.5s; }
+        .ai-circle-inner { width: 80px; height: 80px; border-radius: 50%; border: 2px solid transparent; border-left-color: #a100ff; border-right-color: #ff9800; animation: spin-ai 2s linear infinite reverse; position: absolute; transition: all 0.5s; }
+        .ai-core-dot { width: 15px; height: 15px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8); animation: pulse-ai 1s ease-in-out infinite alternate; transition: all 0.5s; }
+        
+        @keyframes spin-ai { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse-ai { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 1; } }
+        @keyframes glitch-anim { 0% { transform: translate(0); opacity: 1; } 92% { transform: translate(0); opacity: 1; } 92.5% { transform: translate(-3px, 2px) skew(10deg); opacity: 0.8; } 93% { transform: translate(3px, -2px) skew(-10deg); opacity: 1; } 93.5% { transform: translate(0); opacity: 1; } 98% { transform: translate(1px, -1px) skew(5deg); } 98.5% { transform: translate(-1px, 1px) skew(-5deg); } 100% { transform: translate(0); } }
+        @keyframes pulse-white { 0% { box-shadow: 0 0 15px rgba(255,255,255,0.3); } 100% { box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
+        .chart-dot { animation: pulse-chart 1s infinite; } 
+        @keyframes pulse-chart { 0% { r: 3; opacity: 0.6; } 50% { r: 5; opacity: 1; box-shadow: 0 0 5px #fff; } 100% { r: 3; opacity: 0.6; } }
+
+        /* Trend Meter */
+        .trend-meter-container { margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px solid #333; position: relative; overflow: hidden; }
+        .trend-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .trend-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; position: relative; }
+        .trend-bar-fill { height: 100%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 3px; }
+
+        /* Futuristic Range Slider */
+        .volume-control-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #333; /* Cor da parte não preenchida */
+            border-radius: 3px;
+            outline: none;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.7);
+            cursor: pointer;
+            margin-top: -6px; /* Centraliza o polegar na barra */
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            -webkit-appearance: none;
+            background: none;
+            border: none;
+        }
+
+        /* 24h Winrate Circle */
+        .winrate-circle-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 4; }
+        .winrate-circle-progress {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .winrate-text {
+            font-size: 1.4rem;
+            font-weight: 900;
+            font-family: 'Courier New', monospace;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            animation: fadeInText 1s ease-in-out;
+        }
+        .winrate-subtext { font-size: 0.7rem; fill: #888; text-anchor: middle; dominant-baseline: middle; }
+        @keyframes fadeInText { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Connection Status Indicator */
+        .connection-status { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #555; transition: all 0.3s; }
+        .status-text { font-size: 0.8rem; color: #888; font-weight: bold; }
+        .connection-status.online .status-dot { background-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .connection-status.online .status-text { color: #00ff88; }
+        .connection-status.connecting .status-dot { background-color: #ff9800; animation: pulse-connecting 1s infinite alternate; }
+        .connection-status.connecting .status-text { color: #ff9800; }
+        .connection-status.fair .status-dot { background-color: #ffc107; box-shadow: 0 0 8px #ffc107; }
+        .connection-status.fair .status-text { color: #ffc107; }
+        .connection-status.slow .status-dot { background-color: #ff5722; box-shadow: 0 0 8px #ff5722; }
+        .connection-status.slow .status-text { color: #ff5722; }
+        @keyframes pulse-connecting { from { transform: scale(0.8); opacity: 0.7; } to { transform: scale(1.2); opacity: 1; } }
+        .connection-status.error .status-dot { background-color: #ff0055; }
+        .connection-status.error .status-text { color: #ff0055; }
+
+        /* Sidebar Styles */
+        .sidebar {
+            flex: 0 0 260px; /* Sidebar with fixed width */
+            background: rgba(10, 15, 25, 0.5);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            animation: slideInLeft 0.5s ease-out;
+            align-self: flex-start; /* Aligns to top */
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+            animation: sidebar-scan 4s linear infinite;
+        }
+        @keyframes sidebar-scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .sidebar-section {
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+        }
+
+        .sidebar-title {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar .platform-switcher { flex-direction: column; }
+        .sidebar .platform-btn { width: 100%; text-align: center; }
+        .sidebar .volume-control-container { padding: 0; background: none; border: none; margin: 0; }
+        .sidebar .sidebar-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .sidebar .sidebar-control:last-child { margin-bottom: 0; }
+        .sidebar .sidebar-control span { font-size: 0.9rem; color: #ccc; }
+        .layout-panel.suite { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <button class="btn-back" onclick="parent.closeTool()" style="display: none;">⬅ Voltar ao Menu</button>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Plataforma</h3>
+                <div class="platform-switcher">
+                    <input type="hidden" id="ai_platformSelector" value="blaze">
+                    <button class="platform-btn active" id="ai_btn-blaze" onclick="ai_selectPlatform('blaze')">Blaze</button>
+                    <button class="platform-btn" id="ai_btn-jonbet" onclick="ai_selectPlatform('jonbet')" style="display: none;">Jonbet</button>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Controles</h3>
+                <div class="sidebar-control">
+                    <span>Conexão</span>
+                    <div id="ai_connection_status" class="connection-status">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Offline</span>
+                    </div>
+                </div>
+                <div class="sidebar-control">
+                    <span>Auto-Busca</span>
+                    <label class="switch"><input type="checkbox" id="ai_autoFetchToggle" checked><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-control">
+                    <span>Gale Virtual</span>
+                    <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()" checked><span class="slider"></span></label>
+                </div>
+                <div class="volume-control-container">
+                    <span style="font-size: 1.2rem;">🔊</span>
+                    <input type="range" id="ai_volumeSlider" min="0" max="100" value="50" oninput="ai_updateVolume(this.value)">
+                    <span id="ai_volumeLabel" style="font-size: 0.9rem; color: #fff; font-weight: bold; min-width: 40px; text-align: right;">50%</span>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Placar</h3>
+                <div id="ai_stats_container" style="margin-bottom: 15px;"></div>
+                <button onclick="ai_resetAIStats()" style="width:100%; padding: 8px; background: rgba(255,0,85,0.2); border: 1px solid #ff0055; color: #ff0055; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">Resetar Placar</button>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Assertividade (24h)</h3>
+                <div id="ai_winrate_24h_container" style="display: flex; justify-content: center; align-items: center; position: relative;">
+                    <!-- SVG for the circular progress bar will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-panel suite">
+            <div class="main-header">
+                <h1 class="cortex-text-anim">PREVISÃO I.A.</h1>
+                <div id="ai_loading_indicator" class="spinner"></div>
+            </div>
+
+            <div class="content-section">
+                <!-- Main Prediction Content -->
+                <div id="ai_prediction_content">
+                    <div style="text-align: center; padding: 20px; color: #888;">
+                        <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
+                        <br>Inicializando I.A...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let ai_interval = null;
+        let ai_last_processed_signature = '';
+        let ai_wins = 0;
+        let ai_losses = 0;
+        let ai_current_prediction = null;
+        let ai_balance_history = [0];
+        let ai_use_virtual_gale = true;
+        let ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
+        let ai_results_history = []; // Para o placar de 24h
+        let ai_volume = 0.5;
+        let ai_isMuted = false;
+        let ai_lastVolume = 0.5; // Armazena o último volume antes de mutar
+
+        function updateConnectionStatus(status, text) {
+            const statusContainer = document.getElementById('ai_connection_status');
+            if (!statusContainer) return;
+            const statusText = statusContainer.querySelector('.status-text');
+
+            if (statusText) {
+                statusContainer.className = 'connection-status ' + status;
+                statusText.textContent = text;
+            }
+        }
+
+        function ai_updateVolume(val) {
+            ai_volume = val / 100;
+            const slider = document.getElementById('ai_volumeSlider');
+            const label = document.getElementById('ai_volumeLabel');
+            if(label) label.innerText = val + '%';
+
+            // Define a cor com base no nível do volume
+            let color = 'var(--accent)'; // Azul padrão para 0-40%
+            if (val > 75) {
+                color = '#ff0055'; // Vermelho para 76-100%
+            } else if (val > 40) {
+                color = '#ffc107'; // Amarelo para 41-75%
+            }
+
+            // Aplica o gradiente dinâmico ao fundo do slider
+            if(slider) {
+                slider.style.background = `linear-gradient(to right, ${color} ${val}%, #333 ${val}%)`;
+            }
+
+            // Salva no localStorage
+            localStorage.setItem('ai_saved_volume', val);
+
+            if (ai_isMuted && parseInt(val) > 0) { // Se estava mutado e o slider foi movido para > 0
+                ai_isMuted = false;
+                const muteIcon = document.getElementById('ai_muteIcon');
+                if(muteIcon) muteIcon.innerText = '🔊';
+            } else if (parseInt(val) === 0) { // Se o slider foi para 0
+                ai_isMuted = true;
+                const muteIcon = document.getElementById('ai_muteIcon');
+                if(muteIcon) muteIcon.innerText = '🔇';
+            }
+            ai_lastVolume = ai_volume; // Atualiza o último volume não-mutado
+            localStorage.setItem('ai_is_muted', ai_isMuted);
+        }
+
+        function ai_toggleMute() {
+            const slider = document.getElementById('ai_volumeSlider');
+            if (ai_isMuted) {
+                slider.value = ai_lastVolume * 100 > 0 ? ai_lastVolume * 100 : 50;
+                const muteIcon = document.getElementById('ai_muteIcon');
+                if(muteIcon) muteIcon.innerText = '🔊';
+            } else {
+                ai_lastVolume = ai_volume; // Salva o volume atual antes de mutar
+                slider.value = 0;
+                const muteIcon = document.getElementById('ai_muteIcon');
+                if(muteIcon) muteIcon.innerText = '🔇';
+            }
+            ai_isMuted = !ai_isMuted;
+            ai_updateVolume(slider.value); // Atualiza o volume e o label
+        }
+
+        function ai_toggleVirtualGale() {
+            const el = document.getElementById('ai_virtualGaleToggle');
+            ai_use_virtual_gale = el.checked;
+            ai_virtual_stage = 0;
+            ai_showAIPrediction();
+        }
+
+        function ai_selectPlatform(platform) {
+            document.getElementById('ai_platformSelector').value = platform;
+            document.getElementById('ai_btn-blaze').classList.remove('active');
+            document.getElementById('ai_btn-jonbet').classList.remove('active');
+            document.getElementById(`ai_btn-${platform}`).classList.add('active');
+            
+            ai_fetchData();
+        }
+
+        async function ai_fetchData() {
+            updateConnectionStatus('connecting', 'Buscando...');
+            const loader = document.getElementById('ai_loading_indicator');
+            if (loader) loader.style.display = 'block';
+            
+            const startTime = Date.now();
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+
+            if (rawData) {
+                ai_processData(rawData);
+                const latency = Date.now() - startTime;
+                let status = 'online';
+                if (latency > 100) status = 'slow';
+                else if (latency > 50) status = 'fair';
+                updateConnectionStatus(status, `Online (${latency}ms)`);
+            } else {
+                updateConnectionStatus('offline', 'Aguardando Dados');
+                const content = document.getElementById('ai_prediction_content');
+                if (content) {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #888;">
+                            <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
+                            <br>Aguardando dados do painel principal...<br>Certifique-se de que a "Auto-Busca" está ativa.
+                        </div>`;
+                }
+            }
+            
+            if (loader) loader.style.display = 'none';
+        }
+
+        function ai_processData(rawData) {
+            if (!rawData) return;
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            
+            if (results.length > 0) {
+                const latest = results[0];
+                const signature = latest.date + latest.time + latest.roll;
+                if (signature !== ai_last_processed_signature) {
+                    if (ai_current_prediction && ai_last_processed_signature !== '') {
+                        const resultColor = ai_identificarCor(latest.roll);
+                        const isWin = (resultColor === ai_current_prediction || resultColor === 'branco');
+
+                        if (ai_use_virtual_gale) {
+                            if (ai_virtual_stage === 0) {
+                                // Estágio Virtual: Apenas monitora
+                                if (!isWin) {
+                                    ai_virtual_stage = 1; // Loss Virtual -> Ativa Entrada Real
+                                } else {
+                                    ai_virtual_stage = 0; // Win Virtual -> Continua simulando
+                                }
+                            } else {
+                                // Estágio Real: Contabiliza
+                                if (isWin) {
+                                    ai_wins++;
+                                    ai_playWinSound();
+                                    ai_results_history.push({ timestamp: Date.now(), result: 'win' });
+                                    ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
+                                } else {
+                                    ai_losses++;
+                                    ai_playLossSound();
+                                    ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
+                                    ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
+                                }
+                                ai_virtual_stage = 0; // Reseta para virtual após a aposta real
+                            }
+                        } else {
+                            // Modo Normal
+                            if (isWin) {
+                                ai_wins++;
+                                ai_playWinSound();
+                                ai_results_history.push({ timestamp: Date.now(), result: 'win' });
+                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
+                            } else {
+                                ai_losses++;
+                                ai_playLossSound();
+                                ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
+                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
+                            }
+                        }
+                        ai_current_prediction = null;
+                    }
+                    ai_last_processed_signature = signature;
+
+                    // Limpa histórico antigo e salva
+                    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+                    ai_results_history = ai_results_history.filter(r => r.timestamp > twentyFourHoursAgo);
+                    localStorage.setItem('ai_results_history', JSON.stringify(ai_results_history));
+                }
+            }
+            
+            ai_showAIPrediction();
+        }
+
+        function ai_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function ai_showAIPrediction() {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            
+            // Inicializa variáveis com valores padrão
+            let redScore = 0, blackScore = 0, reasoning = [];
+            let whiteScore = 0;
+            let prediction = 'Aguardando Dados...', confidence = 0, predictionClass = '';
+            let history = [];
+            let redCount = 0, blackCount = 0;
+
+            // Executa a lógica de previsão apenas se houver dados suficientes
+            if (rawData && rawData.split(/[\s\n]+/).filter(n => n.trim() !== '').length >= 20) {
+                const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+                const fullHistory = [];
+                for (let i = 0; i < tokens.length; i++) {
+                    if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                        fullHistory.push({ color: ai_identificarCor(parseInt(tokens[i + 1])), roll: parseInt(tokens[i + 1]) });
+                        i += 2;
+                    }
+                }
+                history = fullHistory.filter(item => item.color !== 'branco').map(item => item.color);
+                
+                // Lógica de Previsão
+                // 1. Surf (Sequência Longa 5+)
+                if (history.length >= 5 && history[0] === history[1] && history[1] === history[2] && history[2] === history[3] && history[3] === history[4]) {
+                    if (history[0] === 'vermelho') redScore += 3; else blackScore += 3;
+                    reasoning.push("<strong>🌊 Surf de Tendência:</strong> Sequência longa (5+), alta chance de continuar.");
+                }
+                // 2. Tendência Simples (3+)
+                else if (history.length >= 3 && history[0] === history[1] && history[1] === history[2]) {
+                    if (history[0] === 'vermelho') redScore += 2; else blackScore += 2;
+                    reasoning.push("<strong>Tendência Forte:</strong> Sequência de 3 cores iguais.");
+                }
+                
+                // 3. Padrão Xadrez (Alternância)
+                if (history.length >= 4 && history[0] !== history[1] && history[1] !== history[2] && history[2] !== history[3]) {
+                    if (history[0] === 'vermelho') blackScore += 2.5; else redScore += 2.5;
+                    reasoning.push("<strong>♟️ Padrão Xadrez:</strong> Alternância detectada, seguindo o padrão.");
+                }
+                
+                // 4. Padrão de Duplas (XX YY)
+                if (history.length >= 4 && history[0] === history[1] && history[2] === history[3] && history[0] !== history[2]) {
+                    if (history[0] === 'vermelho') blackScore += 2; else redScore += 2;
+                    reasoning.push("<strong>Padrão de Duplas:</strong> Alternância de pares identificada (XX YY).");
+                }
+
+                // 5. Padrão Espelho/Sanduíche (X YY -> X)
+                if (history.length >= 3 && history[0] !== history[1] && history[1] === history[2]) {
+                    // Ex: V P P -> Sugere V
+                    if (history[0] === 'vermelho') redScore += 1.5; else blackScore += 1.5;
+                    reasoning.push("<strong>🥪 Padrão Espelho:</strong> Possível fechamento de simetria (X YY X).");
+                }
+                
+                const recentHistory = history.slice(0, 20);
+                redCount = recentHistory.filter(c => c === 'vermelho').length;
+                blackCount = recentHistory.filter(c => c === 'preto').length;
+                if (redCount > blackCount * 1.5) { redScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de vermelhos recentes."); }
+                else if (blackCount > redCount * 1.5) { blackScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de pretos recentes."); }
+                
+                const lastWhiteIndex = fullHistory.findIndex(x => x.color === 'branco');
+                const roundsSinceWhite = lastWhiteIndex === -1 ? fullHistory.length : lastWhiteIndex;
+                
+                if (roundsSinceWhite >= 25) { whiteScore += 1; reasoning.push(`<strong>Alerta Branco:</strong> ${roundsSinceWhite} rodadas sem branco.`); }
+                if (roundsSinceWhite >= 50) { whiteScore += 2; reasoning.push(`<strong>Branco Crítico:</strong> Acúmulo muito alto (${roundsSinceWhite}).`); }
+
+                const totalScore = redScore + blackScore;
+                
+                if (whiteScore >= 3.5) {
+                    prediction = 'POSSÍVEL BRANCO';
+                    predictionClass = 'white';
+                    confidence = Math.min(98, 50 + (whiteScore * 10));
+                    reasoning.unshift("<strong>ALTA PROBABILIDADE:</strong> Indicadores de Branco convergindo.");
+                } else if (totalScore > 0) {
+                    if (redScore > blackScore) { prediction = 'VERMELHO'; predictionClass = 'red'; confidence = (redScore / totalScore) * 100; } 
+                    else if (blackScore > redScore) { prediction = 'PRETO'; predictionClass = 'black'; confidence = (blackScore / totalScore) * 100; }
+                } else {
+                    prediction = 'Analisando...';
+                }
+                
+                if (prediction === 'VERMELHO') ai_current_prediction = 'vermelho';
+                else if (prediction === 'PRETO') ai_current_prediction = 'preto';
+                else if (prediction === 'POSSÍVEL BRANCO') ai_current_prediction = 'branco';
+                else ai_current_prediction = null;
+
+            } else {
+                reasoning.push("Aguardando dados suficientes para análise...");
+            }
+
+            let predictionDisplayText = prediction;
+            let virtualStatusHtml = "";
+            let boxStyle = "";
+
+            // O restante da função continua, usando os valores padrão ou os calculados
+            if (ai_use_virtual_gale) {
+                if (ai_virtual_stage === 0) {
+                    predictionDisplayText += " (VIRTUAL)";
+                    virtualStatusHtml = `<div style="color: #aaa; font-size: 0.8rem; margin-top: 5px; border-top: 1px solid #444; padding-top: 5px;">🤖 Simulando... Aguardando Loss para entrar.</div>`;
+                    boxStyle = "opacity: 0.7; border-style: dashed;";
+                } else {
+                    predictionDisplayText += " (REAL)";
+                    virtualStatusHtml = `<div style="color: #00ff88; font-size: 0.9rem; margin-top: 5px; font-weight: bold; border-top: 1px solid #444; padding-top: 5px;">🔥 LOSS VIRTUAL DETECTADO! ENTRADA LIBERADA!</div>`;
+                    boxStyle = "box-shadow: 0 0 25px " + (predictionClass === 'red' ? 'rgba(255, 0, 85, 0.6)' : 'rgba(255, 255, 255, 0.4)') + "; transform: scale(1.05); border-width: 3px;";
+                    if (confidence > 80) ai_playNotificationSound();
+                }
+            } else {
+                if (confidence > 80) ai_playNotificationSound();
+            }
+
+            if (confidence < 55) { prediction = 'Sinal Fraco'; reasoning = ["A I.A. não encontrou um padrão claro."]; }
+            let whiteHtml = '';
+            if (whiteScore >= 1 && predictionClass !== 'white') whiteHtml = `<div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px; border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2);">⚪ SUGESTÃO: COBRIR O BRANCO</div>`;
+            
+            let outerStyle = '', innerStyle = '', coreStyle = '';
+            if (predictionClass === 'red') {
+                outerStyle = 'border-top-color: #ff0055; border-bottom-color: #ff9800; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);';
+                innerStyle = 'border-left-color: #ff45d4; border-right-color: #ff0000;';
+                coreStyle = 'background-color: #ff0055; box-shadow: 0 0 15px 5px rgba(255, 0, 85, 0.6);';
+            } else if (predictionClass === 'black') {
+                outerStyle = 'border-top-color: #fff; border-bottom-color: #444; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);';
+                innerStyle = 'border-left-color: #888; border-right-color: #ccc;';
+                coreStyle = 'background-color: #fff; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.6);';
+            } else if (predictionClass === 'white') {
+                outerStyle = 'border-top-color: #fff; border-bottom-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); animation-duration: 1s;';
+                innerStyle = 'border-left-color: #ccc; border-right-color: #eee; animation-duration: 0.5s;';
+                coreStyle = 'background-color: #fff; box-shadow: 0 0 25px 10px rgba(255, 255, 255, 0.9); animation: pulse-ai 0.2s ease-in-out infinite alternate;';
+            }
+
+            const aiVisualHtml = `
+                <div class="ai-visual-container">
+                    <div class="ai-circle-outer" style="${outerStyle}">
+                        <div class="ai-circle-inner" style="${innerStyle}"></div>
+                        <div class="ai-core-dot" style="${coreStyle}"></div>
+                    </div>
+                </div>
+            `;
+
+            // Chart
+            const chartData = ai_balance_history.slice(-30);
+            const cw = 400, ch = 60, cpad = 5;
+            let minVal = Math.min(...chartData);
+            let maxVal = Math.max(...chartData);
+            if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
+            const cRange = maxVal - minVal;
+            
+            let points = "";
+            chartData.forEach((val, i) => {
+                const x = (i / (chartData.length - 1 || 1)) * (cw - 2*cpad) + cpad;
+                const y = (ch - cpad) - ((val - minVal) / cRange * (ch - 2*cpad));
+                points += `${x},${y} `;
+            });
+
+            const lastBal = ai_balance_history[ai_balance_history.length-1];
+            const balColor = lastBal >= 0 ? '#00ff88' : '#ff0055';
+            const chartHtml = `
+                <div style="margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 8px; padding: 10px; position: relative; overflow: hidden;">
+                    <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px;"><span>Evolução do Saldo</span><span style="color: ${balColor}; font-weight: bold;">${lastBal > 0 ? '+' : ''}${lastBal}</span></div>
+                    <svg viewBox="0 0 ${cw} ${ch}" style="width: 100%; height: 50px; overflow: visible;"><defs><linearGradient id="gradChart" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00d2ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#a100ff;stop-opacity:1" /></linearGradient></defs>${(minVal <= 0 && maxVal >= 0) ? `<line x1="0" y1="${(ch-cpad) - ((0-minVal)/cRange*(ch-2*cpad))}" x2="${cw}" y2="${(ch-cpad) - ((0-minVal)/cRange*(ch-2*cpad))}" stroke="#444" stroke-dasharray="3" stroke-width="1" />` : ''}<polyline points="${points}" fill="none" stroke="url(#gradChart)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /><circle cx="${(cw-cpad)}" cy="${(ch-cpad) - ((chartData[chartData.length-1]-minVal)/cRange*(ch-2*cpad))}" r="4" fill="#fff" class="chart-dot" /></svg>
+                </div>
+            `;
+
+            // Trend Meter
+            let trendScore = 0;
+            const recentTotal = redCount + blackCount;
+            if (recentTotal > 0) {
+                const dominance = Math.max(redCount, blackCount) / recentTotal;
+                trendScore = (dominance - 0.5) * 200;
+            }
+            let currentStreak = 0;
+            if (history.length > 0) {
+                currentStreak = 1;
+                for(let i=1; i<history.length; i++) { if(history[i] === history[0]) currentStreak++; else break; }
+            }
+            if (currentStreak >= 3) trendScore += (currentStreak * 8);
+            trendScore = Math.min(100, Math.max(0, trendScore));
+            
+            let trendLabel = "Lateralizado (Neutro)";
+            let trendColor = "#00d2ff";
+            if (trendScore >= 75) { trendLabel = "🔥 TENDÊNCIA FORTE"; trendColor = "#ff0055"; }
+            else if (trendScore >= 40) { trendLabel = "⚡ Tendência Moderada"; trendColor = "#ff9800"; }
+
+            const trendHtml = `
+                <div class="trend-meter-container">
+                    <div class="trend-header"><span>Força do Mercado</span><span style="color: ${trendColor}; text-shadow: 0 0 5px ${trendColor};">${trendLabel}</span></div>
+                    <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: ${trendScore.toFixed(0)}%; background: linear-gradient(90deg, #00d2ff, ${trendColor}); box-shadow: 0 0 10px ${trendColor};"></div></div>
+                </div>
+            `;
+
+            const totalPreds = ai_wins + ai_losses;
+            const winRate = totalPreds > 0 ? ((ai_wins / totalPreds) * 100).toFixed(0) : 0;
+            const statsContainer = document.getElementById('ai_stats_container');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Wins</div><div style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">${ai_wins}</div></div>
+                        <div><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Losses</div><div style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">${ai_losses}</div></div>
+                        <div><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Assert.</div><div style="font-size: 1.2rem; font-weight: bold; color: #fff;">${winRate}%</div></div>
+                    </div>`;
+            }
+
+            // Renderiza o placar de 24h
+            const winrateContainer = document.getElementById('ai_winrate_24h_container');
+            if (winrateContainer) {
+                const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+                const recentResults = ai_results_history.filter(r => r.timestamp > twentyFourHoursAgo);
+
+                const wins24h = recentResults.filter(r => r.result === 'win').length;
+                const total24h = recentResults.length;
+                const winRate24h = total24h > 0 ? (wins24h / total24h) * 100 : 0;
+
+                const radius = 38;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (winRate24h / 100) * circumference;
+
+                let progressColor = '#00d2ff'; // default
+                if (winRate24h >= 75) progressColor = '#00ff88'; // green
+                else if (winRate24h < 50) progressColor = '#ff0055'; // red
+
+                winrateContainer.innerHTML = `
+                    <svg width="120" height="120" viewBox="0 0 100 100">
+                        <circle class="winrate-circle-bg" cx="50" cy="50" r="${radius}"></circle>
+                        <circle class="winrate-circle-progress" cx="50" cy="50" r="${radius}"
+                            stroke-dasharray="${circumference}"
+                            stroke-dashoffset="${offset}"
+                            style="stroke: ${progressColor}; filter: drop-shadow(0 0 5px ${progressColor});">
+                        </circle>
+                        <text x="50" y="48" class="winrate-text" style="fill: ${progressColor};">${winRate24h.toFixed(0)}%</text>
+                        <text x="50" y="65" class="winrate-subtext">${wins24h}W / ${total24h - wins24h}L</text>
+                    </svg>
+                `;
+            }
+
+            const content = document.getElementById('ai_prediction_content');
+            content.innerHTML = aiVisualHtml + chartHtml + trendHtml + `<div class="prediction-display"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div><p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
+        }
+
+        function ai_resetAIStats() {
+            if (confirm("Você tem certeza que deseja resetar o placar da sessão E o histórico de 24 horas?")) {
+                ai_wins = 0;
+                ai_losses = 0;
+                ai_balance_history = [0];
+                ai_current_prediction = null;
+                ai_virtual_stage = 0;
+                
+                // Reset 24h history
+                ai_results_history = [];
+                localStorage.removeItem('ai_results_history');
+
+                ai_showAIPrediction();
+            }
+        }
+
+        function ai_playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                
+                // Som de Alerta: "Ping" tecnológico (distinto do Win)
+                osc.type = 'sine'; 
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.08 * ai_volume, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                
+                osc.start(); osc.stop(ctx.currentTime + 0.15);
+            } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        function ai_playWinSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const t = ctx.currentTime;
+                
+                // Som de Vitória: Tríade Maior (C-E-G) - Mais musical e distinto
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'triangle'; // Timbre mais rico que sine
+                    
+                    const startTime = t + (i * 0.08);
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    
+                    gain.gain.setValueAtTime(0.05 * ai_volume, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+                    
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.4);
+                });
+            } catch (e) { console.error("Erro som win:", e); }
+        }
+
+        function ai_playLossSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                
+                osc.type = 'sawtooth'; 
+                osc.frequency.setValueAtTime(150, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.3);
+                
+                gain.gain.setValueAtTime(0.1 * ai_volume, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                
+                osc.start(); osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { console.error("Erro som loss:", e); }
+        }
+
+        // Inicialização
+        const autoFetch = document.getElementById('ai_autoFetchToggle');
+        if (autoFetch) {
+            autoFetch.addEventListener('change', (e) => {
+                if (e.target.checked) { ai_fetchData(); ai_interval = setInterval(ai_fetchData, 15000); } 
+                else { 
+                    clearInterval(ai_interval); 
+                    updateConnectionStatus('offline', 'Offline');
+                }
+            });
+            // Carrega o volume salvo
+            const savedVolume = localStorage.getItem('ai_saved_volume');
+            if (savedVolume) {
+                document.getElementById('ai_volumeSlider').value = savedVolume;
+                ai_updateVolume(savedVolume);
+            }
+
+            // Carrega o histórico de 24h
+            const savedResults = localStorage.getItem('ai_results_history');
+            if (savedResults) {
+                try {
+                    ai_results_history = JSON.parse(savedResults);
+                } catch(e) { console.error("Erro ao carregar histórico de resultados."); }
+            }
+
+            // Renderiza o layout da página imediatamente com valores padrão
+            ai_showAIPrediction();
+            // Inicia a busca de dados
+            ai_fetchData();
+            ai_interval = setInterval(ai_fetchData, 15000);
+        }
+    </script>
+</body>
+</html>

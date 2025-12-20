@@ -1052,7 +1052,7 @@
                         
                         <div class="nav-btn" onclick="openTool('gerador_manual.html', 'Gerador Manual')"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('analise_avancada.html', 'Análise Avançada')" style="border-color: #ff9800;"><div class="nav-icon">📈</div><div class="nav-title" style="color: #ff9800;">Análise Avançada</div><div class="nav-desc">Novas Ferramentas</div></div>
-                        <div class="nav-btn" onclick="openTool('analise_avancada.html?open=ai', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🧠</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
+                        <div class="nav-btn" onclick="openTool('previsao_ia.html', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🧠</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
                         <div class="nav-btn" onclick="openTool('opcoes_double.html', 'Opções Double')" style="border-color: #00ff88;"><div class="nav-icon">🕯️</div><div class="nav-title" style="color: #00ff88;">Opções Double</div><div class="nav-desc">Gráfico de Velas</div></div>
                         
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
@@ -2250,21 +2250,15 @@
             const originalText = statusBtn.innerText;
             const autoTextarea = document.getElementById('dash_autoInput');
             
-            // ======================================================
-            // 🚨 SEU TOKEN JÁ ESTÁ AQUI 🚨
-            // Tenta pegar do localStorage primeiro, senão usa o hardcoded
             let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
             if (!SEU_TOKEN_BLAZE) {
-                // Token removido por segurança. Insira via Configurações ou localStorage.
                 SEU_TOKEN_BLAZE = ""; 
             }
-            // ======================================================
 
             try {
-                statusBtn.innerText = "⏳ Buscando com Token...";
+                statusBtn.innerText = "⏳ Buscando...";
                 statusBtn.disabled = true;
         
-                // Configura datas para pegar as últimas 24 horas
                 const agora = new Date();
                 const ontem = new Date();
                 ontem.setHours(ontem.getHours() - 24);
@@ -2272,48 +2266,57 @@
                 const endDate = agora.toISOString();
                 const startDate = ontem.toISOString();
         
-                // Link Oficial do Histórico
-                const baseUrl = 'https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1';
-                const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1`;
-                const targetUrl = `${baseUrl}${params}`;
-                
-                // Usando o Proxy
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-        
-                console.log("Enviando requisição autenticada...");
-        
-                const response = await fetch(proxyUrl, {
-                    method: 'GET',
-                    headers: {
-                        // Enviando o seu Token no cabeçalho
-                        'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`,
-                        'x-access-token': SEU_TOKEN_BLAZE
+                const headers = {};
+                if (SEU_TOKEN_BLAZE) {
+                    headers['Authorization'] = `Bearer ${SEU_TOKEN_BLAZE}`;
+                    headers['x-access-token'] = SEU_TOKEN_BLAZE;
+                }
+
+                // Busca páginas 1 a 4 sequencialmente para evitar sobrecarregar o proxy
+                const pages = [1, 2, 3, 4];
+                let allGames = [];
+                for (const page of pages) {
+                    try {
+                        const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                        const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                        const targetUrl = `${baseUrl}${params}`;
+                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                        
+                        const response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data) {
+                                const records = Array.isArray(data) ? data : (data.records || []);
+                                allGames = allGames.concat(records);
+                                if (records.length === 0) break; // Para se a página vier vazia
+                            }
+                        } else {
+                            console.warn(`Falha ao buscar página ${page}: Status ${response.status}`);
+                            if (response.status === 429) {
+                                throw new Error("Limite de requisições atingido (429). Tente novamente mais tarde.");
+                            }
+                        }
+                    } catch (err) {
+                        console.warn(`Erro de rede ao buscar página ${page}:`, err);
+                        if (err.message.includes("429")) throw err;
                     }
-                });
-        
-                if (!response.ok) {
-                    if (response.status === 401) throw new Error("Token Expirado (401). Esse token parou de funcionar, pegue um novo no F12.");
-                    if (response.status === 403) throw new Error("Bloqueio de Segurança (403).");
-                    throw new Error(`Erro HTTP: ${response.status}`);
+                    await new Promise(resolve => setTimeout(resolve, 250)); // Pequeno delay
                 }
-        
-                const blazeData = await response.json();
-        
-                // Processamento dos dados
-                let gamesArray = [];
-                if (Array.isArray(blazeData)) {
-                    gamesArray = blazeData;
-                } else if (blazeData.records) {
-                    gamesArray = blazeData.records;
-                }
-        
-                if (gamesArray.length === 0) {
+
+                // Remove duplicatas por ID e ordena
+                const seenIds = new Set();
+                const uniqueGames = allGames.filter(game => {
+                    if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
+                    return false;
+                }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (uniqueGames.length === 0) {
                     throw new Error("A lista veio vazia. Verifique se a conta tem histórico recente.");
                 }
         
                 // Formatação para o painel
                 let formattedText = "";
-                gamesArray.forEach(game => {
+                uniqueGames.forEach(game => {
                     if (game.created_at && game.roll !== undefined) {
                         const dateObj = new Date(game.created_at);
                         const hours = dateObj.getHours().toString().padStart(2, '0');
@@ -2331,7 +2334,7 @@
 
                 // Preenche a caixa oculta e salva
                 autoTextarea.value = formattedText;
-                statusBtn.innerText = `✅ Sucesso: ${gamesArray.length} Jogos!`;
+                statusBtn.innerText = `✅ Sucesso: ${uniqueGames.length} Jogos!`;
                 sessionStorage.setItem('raw_blaze_data', formattedText);
 
                 // Atualiza o painel de histórico em tempo real (Últimos Resultados Coletados)
@@ -2340,7 +2343,7 @@
                 
                 if (realTimeGrid) {
                     realTimeGrid.innerHTML = ''; // Limpa o grid
-                    gamesArray.forEach(game => {
+                    uniqueGames.forEach(game => {
                         if (game.roll !== undefined) {
                             const cor = dash_identificarCor(game.roll);
                             const div = document.createElement('div');
@@ -2359,7 +2362,7 @@
                             realTimeGrid.appendChild(div);
                         }
                     });
-                    if (realTimeCount) realTimeCount.innerText = `(${gamesArray.length})`;
+                    if (realTimeCount) realTimeCount.innerText = `(${uniqueGames.length})`;
                 }
 
                 // Dispara a análise automática
@@ -6861,20 +6864,22 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const toolTitle = document.getElementById('floating_tool_title');
 
             if (floatingContainer && iframe && toolTitle) {
-                iframe.src = url;
+                if (iframe.getAttribute('src') !== url) {
+                    iframe.src = url;
+
+                    // Adiciona o listener para fechar o modal se o usuário clicar em "Voltar ao Menu" dentro do iframe
+                    iframe.onload = function() {
+                        try {
+                            if (iframe.contentWindow.location.href.includes('index.html')) {
+                                closeTool();
+                            }
+                        } catch (e) {
+                            // Ignora erros de cross-origin
+                        }
+                    };
+                }
                 toolTitle.innerText = title || 'Ferramenta';
                 floatingContainer.style.display = 'flex';
-
-                // Adiciona o listener para fechar o modal se o usuário clicar em "Voltar ao Menu" dentro do iframe
-                iframe.onload = function() {
-                    try {
-                        if (iframe.contentWindow.location.href.includes('index.html')) {
-                            closeTool();
-                        }
-                    } catch (e) {
-                        // Ignora erros de cross-origin
-                    }
-                };
             }
         }
 
@@ -7014,7 +7019,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             const iframe = document.getElementById('floating_tool_iframe');
 
             if (floatingContainer && iframe) {
-                iframe.src = 'about:blank'; // Limpa o iframe para parar scripts e processos
+                // iframe.src = 'about:blank'; // Mantém o iframe ativo em segundo plano
                 floatingContainer.style.display = 'none';
             }
         }
