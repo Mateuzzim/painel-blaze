@@ -1051,6 +1051,8 @@
                         <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         
                         <div class="nav-btn" onclick="openTool('gerador_manual.html', 'Gerador Manual')"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></div>
+                        <div class="nav-btn" onclick="openTool('analise_avancada.html', 'Análise Avançada')" style="border-color: #ff9800;"><div class="nav-icon">📈</div><div class="nav-title" style="color: #ff9800;">Análise Avançada</div><div class="nav-desc">Novas Ferramentas</div></div>
+                        <div class="nav-btn" onclick="openTool('analise_avancada.html?open=ai', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🧠</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
                         
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
@@ -3353,7 +3355,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 whiteBotProtectionPauseRemaining = 0;
                 whiteBotPostWhiteStartTime = null;
                 whiteBotWaitingForPostWhite = false;
-                lastProcessedGeneralTime = null;
+                lastProcessedSignature = null;
                 lastProcessedWhiteTime = null;
                 whiteBotProtectionWhitesInPause = 0;
                 whiteBotProtectionWhiteCount = 0;
@@ -4826,7 +4828,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // Variáveis para Recuperação Pós-Branco
         let whiteBotRecoveryEndTime = 0;
         let whiteBotProtectionPauseRemaining = 0; // Contagem regressiva de pedras para a pausa
-        let lastProcessedGeneralTime = null; // Rastreia a última pedra geral para contar a pausa
+        let lastProcessedSignature = null; // Rastreia a última pedra processada (Date|Time|Roll)
         let lastProcessedWhiteTime = null;
         let lastCalculatedInterval = null;
 
@@ -4959,13 +4961,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 if (!latestResult) return; // Não há resultados para processar
 
                 // Na primeira execução, apenas define a base de tempo e não analisa o histórico
-                if (!lastProcessedGeneralTime) {
-                    lastProcessedGeneralTime = latestResult.time;
+                if (!lastProcessedSignature) {
+                    lastProcessedSignature = `${latestResult.date}|${latestResult.time}|${latestResult.roll}`;
                     updateWhiteBotProtectionDisplay('standby');
                     return;
                 }
 
-                const lastProcessedIndex = results.findIndex(r => r.time === lastProcessedGeneralTime);
+                // Busca pelo índice usando a assinatura única (Data|Hora|Número) para evitar pular pedras do mesmo minuto
+                const lastProcessedIndex = results.findIndex(r => `${r.date}|${r.time}|${r.roll}` === lastProcessedSignature);
 
                 // Apenas processa se houver novos resultados
                 if (lastProcessedIndex > 0) {
@@ -5017,10 +5020,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                     }
 
                     // Após processar todos os novos resultados, atualiza o tempo do último processado
-                    lastProcessedGeneralTime = latestResult.time;
+                    lastProcessedSignature = `${latestResult.date}|${latestResult.time}|${latestResult.roll}`;
                 } else if (lastProcessedIndex === -1) {
                     // Se o último resultado processado não está mais na lista (muito antigo), reseta a base
-                    lastProcessedGeneralTime = latestResult.time;
+                    lastProcessedSignature = `${latestResult.date}|${latestResult.time}|${latestResult.roll}`;
                 }
 
                 // Após o processamento, atualiza o display e decide se pode gerar um sinal
