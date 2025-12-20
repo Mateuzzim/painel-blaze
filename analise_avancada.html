@@ -176,6 +176,11 @@
                         <div class="analysis-icon">🔥</div>
                         <div class="analysis-label">Mapa de Calor</div>
                     </div>
+                    <!-- Botão 4 -->
+                    <div class="analysis-btn" onclick="sec_showPrediction()">
+                        <div class="analysis-icon">🔮</div>
+                        <div class="analysis-label">Previsão IA</div>
+                    </div>
                     <!-- Botão 5 -->
                     <div class="analysis-btn" onclick="sec_showProfitSimulation()">
                         <div class="analysis-icon">💰</div>
@@ -285,6 +290,15 @@
         </div>
     </div>
 
+    <div id="sec_prediction_modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('sec_prediction_modal').style.display='none'">&times;</button>
+            <h2 style="color: #ff45d4; margin: 0 0 15px 0;">🔮 Previsão IA (Cortex)</h2>
+            <div id="sec_prediction_content">
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Simulação de Lucro -->
     <div id="sec_simulation_modal" class="modal-overlay">
         <div class="modal-content">
@@ -360,11 +374,7 @@
             const rawData = sessionStorage.getItem('raw_blaze_data');
 
             if (rawData) {
-                // Verifica se os dados mudaram para evitar reprocessamento desnecessário
-                const signature = rawData.substring(0, 50);
-                if (signature !== sec_last_processed_signature) {
-                    sec_processData(rawData);
-                }
+                sec_processData(rawData);
             } else {
                 console.warn("Análise Avançada: Nenhum dado encontrado no sessionStorage. Aguardando painel principal.");
             }
@@ -373,7 +383,6 @@
         }
 
         function sec_processData(rawData) {
-            if (!rawData) return;
             const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
             const results = [];
             for (let i = 0; i < tokens.length; i++) {
@@ -416,6 +425,11 @@
                 const signature = latest.date + latest.time + latest.roll;
                 if (signature !== sec_last_processed_signature) {
                     sec_last_processed_signature = signature;
+
+                    // Atualiza a Previsão IA se o modal estiver aberto
+                    if (document.getElementById('sec_prediction_modal').style.display === 'flex') {
+                        sec_showPrediction();
+                    }
                 }
             }
         }
@@ -709,6 +723,69 @@
             tableHTML += '</tbody></table>';
             container.innerHTML = tableHTML;
             document.getElementById('sec_patterns_modal').style.display = 'flex';
+        }
+
+        // --- Lógica de Previsão IA ---
+        function sec_showPrediction() {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) { alert("⚠️ Sem dados para analisar."); return; }
+            
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const history = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    history.push({ roll: parseInt(tokens[i + 1]), color: sec_identificarCor(parseInt(tokens[i + 1])), time: tokens[i+2] });
+                    i += 2;
+                }
+            }
+            
+            if (history.length < 5) { alert("⚠️ Dados insuficientes para previsão."); return; }
+
+            const last = history[0];
+            
+            // Lógica Simples de Previsão
+            let predictionColor = 'vermelho';
+            let confidence = 50;
+            let reasoning = [];
+
+            // Analisar Sequência Atual
+            let streak = 1;
+            for(let i=1; i<history.length; i++) {
+                if(history[i].color === last.color) streak++;
+                else break;
+            }
+
+            if (last.color === 'branco') {
+                predictionColor = 'vermelho'; // Padrão comum pós-branco
+                confidence = 60;
+                reasoning.push("Pós-branco: Retorno à cor de maior frequência.");
+            } else if (streak >= 4) {
+                predictionColor = last.color === 'vermelho' ? 'preto' : 'vermelho';
+                confidence = 70 + (streak * 2);
+                reasoning.push(`Quebra de sequência longa (${streak}x ${last.color}).`);
+            } else {
+                predictionColor = last.color === 'vermelho' ? 'preto' : 'vermelho';
+                confidence = 55;
+                reasoning.push("Alternância de padrão de curto prazo.");
+            }
+            
+            if (confidence > 95) confidence = 95;
+
+            const colorMap = { 'vermelho': 'red', 'preto': 'black', 'branco': 'white' };
+            const predClass = colorMap[predictionColor];
+            const predLabel = predictionColor === 'vermelho' ? '🔴 VERMELHO' : (predictionColor === 'preto' ? '⚫ PRETO' : '⚪ BRANCO');
+
+            const html = `
+                <div class="prediction-display">
+                    <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;">Último: <span style="color:#fff; font-weight:bold;">${last.roll}</span> (${last.time})</div>
+                    <div class="prediction-color-box ${predClass}">${predLabel}</div>
+                    <div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence}%"></div></div>
+                    <div class="confidence-label">Confiança: ${confidence.toFixed(1)}%</div>
+                </div>
+                <div class="prediction-reasoning"><strong>🧠 Análise:</strong><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div>
+            `;
+            document.getElementById('sec_prediction_content').innerHTML = html;
+            document.getElementById('sec_prediction_modal').style.display = 'flex';
         }
 
         // --- Lógica de Simulação de Lucro (Backtest) ---

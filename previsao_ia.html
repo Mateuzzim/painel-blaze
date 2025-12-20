@@ -198,6 +198,22 @@
         .sidebar .sidebar-control:last-child { margin-bottom: 0; }
         .sidebar .sidebar-control span { font-size: 0.9rem; color: #ccc; }
         .layout-panel.suite { flex: 1; }
+
+        /* Grid de Widgets para alinhar funções */
+        .widgets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .widget-full { grid-column: span 2; }
+
+        /* Responsividade */
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .sidebar { width: 100%; flex: none; margin-bottom: 20px; }
+            .widgets-grid { grid-template-columns: 1fr; }
+            .widget-full { grid-column: span 1; }
+            .sidebar .platform-switcher { flex-direction: row; }
+            .sidebar .platform-btn { flex: 1; }
+            .ai-visual-container { margin-top: 20px; }
+            .prediction-color-box { font-size: 1.5rem; padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -227,7 +243,7 @@
                 </div>
                 <div class="sidebar-control">
                     <span>Gale Virtual</span>
-                    <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()" checked><span class="slider"></span></label>
+                    <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()"><span class="slider"></span></label>
                 </div>
                 <div class="volume-control-container">
                     <span style="font-size: 1.2rem;">🔊</span>
@@ -274,7 +290,7 @@
         let ai_losses = 0;
         let ai_current_prediction = null;
         let ai_balance_history = [0];
-        let ai_use_virtual_gale = true;
+        let ai_use_virtual_gale = false;
         let ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
         let ai_results_history = []; // Para o placar de 24h
         let ai_volume = 0.5;
@@ -363,30 +379,99 @@
             updateConnectionStatus('connecting', 'Buscando...');
             const loader = document.getElementById('ai_loading_indicator');
             if (loader) loader.style.display = 'block';
-            
             const startTime = Date.now();
-            const rawData = sessionStorage.getItem('raw_blaze_data');
 
-            if (rawData) {
-                ai_processData(rawData);
+            let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
+            if (!SEU_TOKEN_BLAZE) {
+                try {
+                    if (window.parent && window.parent.localStorage) {
+                        SEU_TOKEN_BLAZE = window.parent.localStorage.getItem('blaze_token');
+                    }
+                } catch (e) { /* cross-origin error */ }
+                if (!SEU_TOKEN_BLAZE) SEU_TOKEN_BLAZE = "";
+            }
+
+            try {
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+        
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+        
+                const headers = {};
+                if (SEU_TOKEN_BLAZE) {
+                    headers['Authorization'] = `Bearer ${SEU_TOKEN_BLAZE}`;
+                    headers['x-access-token'] = SEU_TOKEN_BLAZE;
+                }
+
+                const pages = [1, 2, 3, 4];
+                let allGames = [];
+                for (const page of pages) {
+                    try {
+                        const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                        const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                        const targetUrl = `${baseUrl}${params}`;
+                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                        
+                        const response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data) {
+                                const records = Array.isArray(data) ? data : (data.records || []);
+                                allGames = allGames.concat(records);
+                                if (records.length === 0) break;
+                            }
+                        } else {
+                            if (response.status === 401) throw new Error("Token inválido (401).");
+                            console.warn(`Falha ao buscar página ${page}: Status ${response.status}`);
+                        }
+                    } catch (err) {
+                        console.warn(`Erro de rede ao buscar página ${page}:`, err);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                }
+
+                const seenIds = new Set();
+                const uniqueGames = allGames.filter(game => {
+                    if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
+                    return false;
+                }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (uniqueGames.length === 0) {
+                    throw new Error("A API não retornou jogos.");
+                }
+        
+                let formattedText = "";
+                uniqueGames.forEach(game => {
+                    if (game.created_at && game.roll !== undefined) {
+                        const dateObj = new Date(game.created_at);
+                        const hours = dateObj.getHours().toString().padStart(2, '0');
+                        const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+                        const timeStr = `${hours}:${minutes}`;
+                        const day = dateObj.getDate().toString().padStart(2, '0');
+                        const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        const dateStr = `${day}/${month}/${year}`;
+                        formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`; 
+                    }
+                });
+
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+                ai_processData(formattedText);
+
                 const latency = Date.now() - startTime;
                 let status = 'online';
-                if (latency > 100) status = 'slow';
-                else if (latency > 50) status = 'fair';
+                if (latency > 1000) status = 'slow';
+                else if (latency > 500) status = 'fair';
                 updateConnectionStatus(status, `Online (${latency}ms)`);
-            } else {
-                updateConnectionStatus('offline', 'Aguardando Dados');
-                const content = document.getElementById('ai_prediction_content');
-                if (content) {
-                    content.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: #888;">
-                            <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
-                            <br>Aguardando dados do painel principal...<br>Certifique-se de que a "Auto-Busca" está ativa.
-                        </div>`;
-                }
+
+            } catch (error) {
+                console.error("Erro no Auto-Fetch da Previsão IA:", error);
+                updateConnectionStatus('error', `Erro: ${error.message}`);
+            } finally {
+                if (loader) loader.style.display = 'none';
             }
-            
-            if (loader) loader.style.display = 'none';
         }
 
         function ai_processData(rawData) {
@@ -408,6 +493,20 @@
                         const resultColor = ai_identificarCor(latest.roll);
                         const isWin = (resultColor === ai_current_prediction || resultColor === 'branco');
 
+                        // Atualiza o placar e histórico independentemente do Gale Virtual
+                        if (isWin) {
+                            ai_wins++;
+                            ai_playWinSound();
+                            ai_results_history.push({ timestamp: Date.now(), result: 'win' });
+                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
+                        } else {
+                            ai_losses++;
+                            ai_playLossSound();
+                            ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
+                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
+                        }
+
+                        // Lógica do Gale Virtual (Apenas para controle de estado visual)
                         if (ai_use_virtual_gale) {
                             if (ai_virtual_stage === 0) {
                                 // Estágio Virtual: Apenas monitora
@@ -417,32 +516,7 @@
                                     ai_virtual_stage = 0; // Win Virtual -> Continua simulando
                                 }
                             } else {
-                                // Estágio Real: Contabiliza
-                                if (isWin) {
-                                    ai_wins++;
-                                    ai_playWinSound();
-                                    ai_results_history.push({ timestamp: Date.now(), result: 'win' });
-                                    ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
-                                } else {
-                                    ai_losses++;
-                                    ai_playLossSound();
-                                    ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
-                                    ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
-                                }
                                 ai_virtual_stage = 0; // Reseta para virtual após a aposta real
-                            }
-                        } else {
-                            // Modo Normal
-                            if (isWin) {
-                                ai_wins++;
-                                ai_playWinSound();
-                                ai_results_history.push({ timestamp: Date.now(), result: 'win' });
-                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
-                            } else {
-                                ai_losses++;
-                                ai_playLossSound();
-                                ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
-                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
                             }
                         }
                         ai_current_prediction = null;
@@ -474,13 +548,13 @@
             let redScore = 0, blackScore = 0, reasoning = [];
             let whiteScore = 0;
             let prediction = 'Aguardando Dados...', confidence = 0, predictionClass = '';
-            let history = [];
+            let history = [], fullHistory = [];
             let redCount = 0, blackCount = 0;
 
             // Executa a lógica de previsão apenas se houver dados suficientes
             if (rawData && rawData.split(/[\s\n]+/).filter(n => n.trim() !== '').length >= 20) {
                 const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
-                const fullHistory = [];
+                fullHistory = [];
                 for (let i = 0; i < tokens.length; i++) {
                     if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
                         fullHistory.push({ color: ai_identificarCor(parseInt(tokens[i + 1])), roll: parseInt(tokens[i + 1]) });
@@ -545,7 +619,41 @@
                 } else {
                     prediction = 'Analisando...';
                 }
+
+                // --- Lógica de Gale Virtual Retroativo (Correção) ---
+                // Verifica se a estratégia teria errado nas rodadas anteriores (Loss Virtual)
+                let galeLevel = 0;
+                if (history.length >= 2) {
+                    const last = history[0];
+                    // Simulação: Se vinha de sequência (2+), aposta a favor. Se não, aposta contra (xadrez).
+                    let predictedForLast = null;
+                    if (history.length >= 3 && history[1] === history[2]) {
+                        predictedForLast = history[1]; // Surf
+                    } else {
+                        predictedForLast = history[1] === 'vermelho' ? 'preto' : 'vermelho'; // Alternância
+                    }
+                    
+                    if (last !== predictedForLast && last !== 'branco') {
+                        galeLevel = 1;
+                        // Verifica Gale 2
+                        if (history.length >= 4) {
+                             let predictedForPrev = null;
+                             if (history[2] === history[3]) predictedForPrev = history[2];
+                             else predictedForPrev = history[2] === 'vermelho' ? 'preto' : 'vermelho';
+                             if (history[1] !== predictedForPrev && history[1] !== 'branco') galeLevel = 2;
+                        }
+                    }
+                }
+
+                if (galeLevel > 0) {
+                    confidence += (galeLevel * 15); // Aumenta confiança no Gale
+                    reasoning.push(`<strong>🔥 GALE ${galeLevel} VIRTUAL:</strong> Recuperação de perda anterior detectada.`);
+                    if (ai_use_virtual_gale) ai_virtual_stage = 1; // Força entrada Real
+                }
                 
+                // Garante que a confiança não ultrapasse 100%
+                if (confidence > 100) confidence = 100;
+
                 if (prediction === 'VERMELHO') ai_current_prediction = 'vermelho';
                 else if (prediction === 'PRETO') ai_current_prediction = 'preto';
                 else if (prediction === 'POSSÍVEL BRANCO') ai_current_prediction = 'branco';
@@ -553,6 +661,12 @@
 
             } else {
                 reasoning.push("Aguardando dados suficientes para análise...");
+            }
+
+            if (confidence < 55) { 
+                prediction = 'Sinal Fraco'; 
+                reasoning = ["A I.A. não encontrou um padrão claro."];
+                ai_current_prediction = null; 
             }
 
             let predictionDisplayText = prediction;
@@ -575,7 +689,6 @@
                 if (confidence > 80) ai_playNotificationSound();
             }
 
-            if (confidence < 55) { prediction = 'Sinal Fraco'; reasoning = ["A I.A. não encontrou um padrão claro."]; }
             let whiteHtml = '';
             if (whiteScore >= 1 && predictionClass !== 'white') whiteHtml = `<div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px; border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2);">⚪ SUGESTÃO: COBRIR O BRANCO</div>`;
             
@@ -585,9 +698,9 @@
                 innerStyle = 'border-left-color: #ff45d4; border-right-color: #ff0000;';
                 coreStyle = 'background-color: #ff0055; box-shadow: 0 0 15px 5px rgba(255, 0, 85, 0.6);';
             } else if (predictionClass === 'black') {
-                outerStyle = 'border-top-color: #fff; border-bottom-color: #444; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);';
-                innerStyle = 'border-left-color: #888; border-right-color: #ccc;';
-                coreStyle = 'background-color: #fff; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.6);';
+                outerStyle = 'border-top-color: #666; border-bottom-color: #999; box-shadow: 0 0 20px rgba(150, 150, 150, 0.3);';
+                innerStyle = 'border-left-color: #555; border-right-color: #888;';
+                coreStyle = 'background-color: #777; box-shadow: 0 0 15px 5px rgba(150, 150, 150, 0.5);';
             } else if (predictionClass === 'white') {
                 outerStyle = 'border-top-color: #fff; border-bottom-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); animation-duration: 1s;';
                 innerStyle = 'border-left-color: #ccc; border-right-color: #eee; animation-duration: 0.5s;';
@@ -654,6 +767,49 @@
                 </div>
             `;
 
+            // Gráfico de Pizza (Distribuição 100 Rodadas)
+            let pieChartHtml = '';
+            if (fullHistory.length > 0) {
+                const last100 = fullHistory.slice(0, 100);
+                const counts = { vermelho: 0, preto: 0, branco: 0 };
+                last100.forEach(item => { if(counts[item.color] !== undefined) counts[item.color]++; });
+                const total100 = last100.length;
+
+                let slices = '';
+                if (total100 > 0) {
+                    let startAngle = 0;
+                    const radius = 40; const cx = 50, cy = 50;
+                    const colors = [{ id: 'vermelho', fill: '#ff0055' }, { id: 'preto', fill: '#333' }, { id: 'branco', fill: '#fff' }];
+                    
+                    const dominant = colors.find(c => counts[c.id] === total100);
+                    if (dominant) {
+                        slices = `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${dominant.fill}" stroke="#1a1a1a" stroke-width="1"/>`;
+                    } else {
+                        colors.forEach(color => {
+                            const count = counts[color.id];
+                            if (count > 0) {
+                                const angle = (count / total100) * 360;
+                                const endAngle = startAngle + angle;
+                                const r1 = (startAngle - 90) * Math.PI / 180;
+                                const r2 = (endAngle - 90) * Math.PI / 180;
+                                const x1 = cx + radius * Math.cos(r1);
+                                const y1 = cy + radius * Math.sin(r1);
+                                const x2 = cx + radius * Math.cos(r2);
+                                const y2 = cy + radius * Math.sin(r2);
+                                const largeArc = angle > 180 ? 1 : 0;
+                                slices += `<path d="M ${cx},${cy} L ${x1},${y1} A ${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z" fill="${color.fill}" stroke="#1a1a1a" stroke-width="1" />`;
+                                startAngle += angle;
+                            }
+                        });
+                    }
+                }
+                pieChartHtml = `<div style="margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 8px; padding: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="width: 80px; height: 80px; flex-shrink: 0;"><svg viewBox="0 0 100 100">${slices}</svg></div>
+                    <div style="flex: 1; padding-left: 15px; display: flex; flex-direction: column; justify-content: center;"><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Distribuição (Últimas ${total100})</div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 0.8rem; text-align: center;">
+                        <div style="color: #ff0055; background: rgba(255,0,85,0.1); border-radius: 4px; padding: 2px;">${counts.vermelho}</div><div style="color: #ccc; background: rgba(255,255,255,0.1); border-radius: 4px; padding: 2px;">${counts.preto}</div><div style="color: #fff; background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px; text-shadow: 0 0 5px #fff;">${counts.branco}</div>
+                    </div></div></div>`;
+            }
+
             const totalPreds = ai_wins + ai_losses;
             const winRate = totalPreds > 0 ? ((ai_wins / totalPreds) * 100).toFixed(0) : 0;
             const statsContainer = document.getElementById('ai_stats_container');
@@ -699,7 +855,17 @@
             }
 
             const content = document.getElementById('ai_prediction_content');
-            content.innerHTML = aiVisualHtml + chartHtml + trendHtml + `<div class="prediction-display"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div><p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
+            
+            // Organização em Grid para melhor alinhamento
+            const widgetsHtml = `
+                <div class="widgets-grid">
+                    <div class="widget-full">${chartHtml}</div>
+                    <div>${trendHtml}</div>
+                    <div>${pieChartHtml}</div>
+                </div>
+            `;
+
+            content.innerHTML = aiVisualHtml + widgetsHtml + `<div class="prediction-display"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div><p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
         }
 
         function ai_resetAIStats() {
@@ -809,8 +975,10 @@
             // Renderiza o layout da página imediatamente com valores padrão
             ai_showAIPrediction();
             // Inicia a busca de dados
-            ai_fetchData();
-            ai_interval = setInterval(ai_fetchData, 15000);
+            if (autoFetch.checked) {
+                ai_fetchData();
+                ai_interval = setInterval(ai_fetchData, 15000);
+            }
         }
     </script>
 </body>
