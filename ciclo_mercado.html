@@ -218,9 +218,13 @@
             
             whiteTimes.sort((a, b) => a - b);
             const intervals = [];
+            const intervalDates = [];
             for (let i = 1; i < whiteTimes.length; i++) {
                 const diffMins = Math.floor((whiteTimes[i] - whiteTimes[i - 1]) / 60000);
-                if (diffMins > 0) intervals.push(diffMins);
+                if (diffMins > 0) {
+                    intervals.push(diffMins);
+                    intervalDates.push(whiteTimes[i]);
+                }
             }
             if (intervals.length === 0) { content.innerHTML = '<p style="text-align: center; color: #ff9800;">⚠️ Não foi possível calcular intervalos válidos.</p>'; return; }
             
@@ -624,6 +628,9 @@
                 const originalIdx = sliceStart + idx;
                 const isPatternPoint = patternIndices.includes(originalIdx);
                 
+                const iDate = intervalDates[originalIdx];
+                const dateTooltip = iDate ? `${iDate.getDate().toString().padStart(2, '0')}/${(iDate.getMonth() + 1).toString().padStart(2, '0')} ${iDate.getHours().toString().padStart(2, '0')}:${iDate.getMinutes().toString().padStart(2, '0')}` : '';
+                
                 const x = (idx / (chartData.length - 1 || 1)) * (viewBoxW - 2 * padding) + padding;
                 const y = (viewBoxH - padding) - ((val / maxValChart) * (viewBoxH - 2 * padding));
                 
@@ -645,7 +652,7 @@
                     circles += `<circle cx="${x}" cy="${y}" r="${radius}" fill="none" stroke="${color}" stroke-width="2" opacity="0.6"><animate attributeName="r" values="${radius};${radius+6};${radius}" dur="2s" repeatCount="indefinite" /><animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite" /></circle>`;
                 }
                 
-                circles += `<circle cx="${x}" cy="${y}" r="${radius}" fill="${color}" stroke="${isPatternPoint ? '#fff' : 'none'}" stroke-width="${isPatternPoint ? 1 : 0}" class="chart-dot"><title>${val} min ${isPatternPoint ? '(Padrão)' : ''}</title></circle>`;
+                circles += `<circle cx="${x}" cy="${y}" r="${radius}" fill="${color}" stroke="${isPatternPoint ? '#fff' : 'none'}" stroke-width="${isPatternPoint ? 1 : 0}" class="chart-dot"><title>📅 ${dateTooltip}&#10;⏱️ Intervalo: ${val} min ${isPatternPoint ? ' (Padrão)' : ''}</title></circle>`;
                 prevX = x; prevY = y;
             });
             
@@ -675,7 +682,13 @@
                 historyBarHtml = `<div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;">${historyItemsHtml}</div>`;
             }
 
-            content.innerHTML = `${dailyStatsHtml}${historyBarHtml}${countdownHtml}${probChartHtml}${scoreboardHtml}${hourlyChartHtml}<div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; border: 1px solid #333;"><h4 style="margin: 0 0 10px 0; color: #ccc; font-size: 0.8rem;">Variação (Últimos 100)</h4><div style="overflow-x: auto; padding-bottom: 5px;"><svg viewBox="0 0 ${viewBoxW} 100" style="width: ${viewBoxW}px; height: 100px; overflow: visible;">${areaSvg}${avgLine}${svgLines}${circles}</svg></div></div><div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;"><h4 style="margin-top: 0; color: #ccc;">Últimos 10 Intervalos:</h4><div style="font-family: monospace; color: #00d2ff; word-break: break-all;">${intervals.slice(-10).join('m ➔ ')}m</div></div>${rastreioHtml}`;
+            content.innerHTML = `${dailyStatsHtml}${historyBarHtml}${countdownHtml}${probChartHtml}${scoreboardHtml}${hourlyChartHtml}<div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; border: 1px solid #333;"><h4 style="margin: 0 0 10px 0; color: #ccc; font-size: 0.8rem;">Variação (Últimos 100)</h4><div id="chartScrollContainer" style="overflow-x: auto; padding-bottom: 5px;"><svg viewBox="0 0 ${viewBoxW} 100" style="width: ${viewBoxW}px; height: 100px; overflow: visible;">${areaSvg}${avgLine}${svgLines}${circles}</svg></div></div><div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;"><h4 style="margin-top: 0; color: #ccc;">Últimos 10 Intervalos:</h4><div style="font-family: monospace; color: #00d2ff; word-break: break-all;">${intervals.slice(-10).join('m ➔ ')}m</div></div>${rastreioHtml}`;
+            
+            // Scroll automático para o final do gráfico (lado direito)
+            const scrollContainer = document.getElementById('chartScrollContainer');
+            if (scrollContainer) {
+                scrollContainer.scrollLeft = scrollContainer.scrollWidth;
+            }
         }
 
         function playWinAlertSound() {
