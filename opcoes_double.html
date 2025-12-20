@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opções Double - Gráfico</title>
+    <style>
+        /* Basic styles from other pages */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 1200px; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        @keyframes futuristic-grid-pan {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Chart specific styles */
+        #chart-container, #adx-container, #volume-container, #macd-container, #rsi-container {
+            width: 100%;
+            background-color: #0c1014; /* Darker blueish background */
+            background-image: 
+                linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
+            background-size: 25px 25px;
+            animation: futuristic-grid-pan 4s linear infinite;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.7);
+            border-radius: 8px;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        #chart-container { height: 500px; }
+        #adx-container { height: 150px; margin-top: 10px; display: none; }
+        #volume-container {
+            height: 100px;
+            margin-top: 10px;
+            display: none;
+        }
+        #macd-container { height: 150px; margin-top: 10px; display: none; }
+        #rsi-container { height: 150px; margin-top: 10px; display: none; }
+
+        #chart-container svg, #rsi-container svg, #macd-container svg, #volume-container svg, #adx-container svg {
+            background-color: transparent; /* Make SVG background transparent to see the container's grid */
+        }
+        .loading-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 1.2rem;
+        }
+        .controls-panel {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .draw-mode-btn {
+            padding: 5px 10px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .draw-mode-btn.active {
+            background: #00d2ff; color: #000; border-color: #00d2ff;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+        }
+        .current-price-line {
+            animation: pulse-line 1.5s infinite alternate;
+        }
+        .indicator-line {
+            filter: url(#glow);
+        }
+        .candle-wick {
+            stroke-linecap: round;
+        }
+
+        @keyframes pulse-line { from { opacity: 0.4; } to { opacity: 0.9; } }
+        .bb-alert-marker { animation: pulse-alert 1s infinite; }
+        @keyframes pulse-alert {
+            0% { r: 2.5; opacity: 1; stroke-width: 0.5; }
+            50% { r: 5; opacity: 0.8; stroke-width: 2; }
+            100% { r: 2.5; opacity: 1; stroke-width: 0.5; }
+        }
+
+        .chart-tooltip {
+            position: fixed;
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .main-container { width: 100%; padding: 0; }
+            .layout-panel { padding: 10px; border-radius: 8px; }
+            #chart-container { height: 350px; }
+            #adx-container, #macd-container, #rsi-container { height: 120px; }
+            #volume-container { height: 80px; }
+            .controls-panel { padding: 10px; gap: 5px; justify-content: space-between; }
+            .controls-panel > * { flex: 1 1 auto; text-align: center; justify-content: center; font-size: 0.75rem; }
+            .draw-mode-btn { padding: 8px; }
+            h1 { font-size: 1.5rem; }
+            .btn-back { width: 100%; justify-content: center; box-sizing: border-box; }
+            .chart-tooltip { font-size: 0.7rem; padding: 5px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel">
+            <a href="index.html" class="btn-back" style="display: none;">⬅ Voltar ao Menu</a>
+            <div class="main-header">
+                <h1 class="cortex-text-anim">OPÇÕES DOUBLE</h1>
+            </div>
+            <div id="chart-container">
+                <div class="loading-text">Carregando dados do gráfico...</div>
+            </div>
+            <div id="adx-container"></div>
+            <div id="volume-container"></div>
+            <div id="macd-container"></div>
+            <div id="rsi-container"></div>
+            <div class="controls-panel">
+                <select id="timeframeSelect" onchange="updateChart()" style="padding: 8px 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    <option value="tick">Tick</option>
+                    <option value="1">1 Min</option>
+                    <option value="5">5 Min</option>
+                </select>
+                <button id="drawModeBtn" class="draw-mode-btn" onclick="toggleDrawMode(this)">✏️ Desenhar</button>
+                <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()" style="background: #0088cc;">📸 Capturar</button>
+                <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)" style="background: #229ED9;">✈️ Telegram</button>
+                <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()" style="background: #6c757d;">🔄 Resetar Posição</button>
+                <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()" style="background: #333;">🖼️ Tela Cheia</button>
+                <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()" style="background: #555;">🗑️ Limpar</button>
+                <input type="color" id="drawingColorPicker" value="#00d2ff" title="Cor do Desenho" style="background: #222; border: 1px solid #444; border-radius: 4px; cursor: pointer; height: 35px; padding: 2px;">
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="autoFetchToggle" checked title="Atualização Automática">
+                    <span style="font-size: 0.8rem; color: #fff;">Auto</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="smaToggle" onchange="updateChart()" title="Ativar SMA">
+                    <span style="font-size: 0.8rem; color: #fff;">SMA</span>
+                    <input type="number" id="smaPeriodInput" value="14" min="2" max="200" onchange="updateChart()" style="width: 50px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="bbToggle" onchange="updateChart()" title="Ativar Bandas de Bollinger">
+                    <span style="font-size: 0.8rem; color: #fff;">BB</span>
+                    <input type="number" id="bbPeriodInput" value="20" min="2" max="50" onchange="updateChart()" style="width: 40px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Período">
+                    <input type="number" id="bbStdDevInput" value="2" min="1" max="5" step="0.1" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Desvio Padrão">
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="volumeToggle" onchange="updateChart()" title="Ativar Volume">
+                    <span style="font-size: 0.8rem; color: #fff;">VOL</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="adxToggle" onchange="updateChart()" title="Ativar ADX">
+                    <span style="font-size: 0.8rem; color: #fff;">ADX</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="soundToggle" checked title="Ativar Alertas Sonoros">
+                    <span style="font-size: 0.8rem; color: #fff;">🔊</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="rsiToggle" onchange="updateChart()" title="Ativar RSI (Índice de Força Relativa)">
+                    <span style="font-size: 0.8rem; color: #fff;">RSI</span>
+                    <input type="number" id="rsiPeriodInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 40px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Período">
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                    <input type="checkbox" id="macdToggle" onchange="updateChart()" title="Ativar MACD">
+                    <span style="font-size: 0.8rem; color: #fff;">MACD</span>
+                    <input type="number" id="macdFastInput" value="12" min="2" max="50" onchange="updateChart()" style="width: 35px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Rápida">
+                    <input type="number" id="macdSlowInput" value="26" min="2" max="100" onchange="updateChart()" style="width: 35px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Lenta">
+                    <input type="number" id="macdSignalInput" value="9" min="2" max="50" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Sinal">
+                </div>
+            </div>
+            <div id="chart-tooltip" class="chart-tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        let globalGamesData = [];
+        let isDrawMode = false;
+        let isDrawing = false;
+        let startPoint = null;
+        let currentLine = null;
+        let drawnLines = [];
+        let allCandles = [];
+        let isPanning = false;
+        let panStartX = 0;
+        let viewStartIndex = 0;
+        let panStartViewIndex = 0;
+        let autoFetchInterval = null;
+        let lastDataSignature = '';
+
+        // Helper function to identify color
+        function identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function calculateSMA(data, period) {
+            const smaData = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) {
+                    smaData.push(null);
+                    continue;
+                }
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += data[i - j].close;
+                }
+                smaData.push(sum / period);
+            }
+            return smaData;
+        }
+
+        function calculateBollingerBands(data, period = 20, multiplier = 2) {
+            const upper = [];
+            const lower = [];
+            const middle = [];
+
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) {
+                    upper.push(null); lower.push(null); middle.push(null);
+                    continue;
+                }
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += data[i - j].close;
+                }
+                const sma = sum / period;
+                middle.push(sma);
+                let sumSqDiff = 0;
+                for (let j = 0; j < period; j++) {
+                    sumSqDiff += Math.pow(data[i - j].close - sma, 2);
+                }
+                const stdDev = Math.sqrt(sumSqDiff / period);
+                upper.push(sma + (stdDev * multiplier));
+                lower.push(sma - (stdDev * multiplier));
+            }
+            return { upper, middle, lower };
+        }
+
+        function calculateADX(data, period = 14) {
+            const tr = new Array(data.length).fill(null);
+            const plusDM = new Array(data.length).fill(null);
+            const minusDM = new Array(data.length).fill(null);
+
+            for (let i = 1; i < data.length; i++) {
+                const current = data[i];
+                const prev = data[i - 1];
+                tr[i] = Math.max(current.high - current.low, Math.abs(current.high - prev.close), Math.abs(current.low - prev.close));
+                const upMove = current.high - prev.high;
+                const downMove = prev.low - current.low;
+                plusDM[i] = (upMove > downMove && upMove > 0) ? upMove : 0;
+                minusDM[i] = (downMove > upMove && downMove > 0) ? downMove : 0;
+            }
+
+            const wilderSmooth = (arr, period) => {
+                const smoothed = new Array(arr.length).fill(null);
+                if (arr.length < period) return smoothed;
+                let firstValidIndex = -1;
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] !== null) { firstValidIndex = i; break; }
+                }
+                if (firstValidIndex === -1 || firstValidIndex + period > arr.length) return smoothed;
+                let sum = 0;
+                for (let i = firstValidIndex; i < firstValidIndex + period; i++) {
+                    sum += arr[i];
+                }
+                smoothed[firstValidIndex + period - 1] = sum / period;
+                for (let i = firstValidIndex + period; i < arr.length; i++) {
+                    if (arr[i] !== null && smoothed[i-1] !== null) {
+                        smoothed[i] = (smoothed[i - 1] * (period - 1) + arr[i]) / period;
+                    }
+                }
+                return smoothed;
+            };
+
+            const smoothedTR = wilderSmooth(tr, period);
+            const smoothedPlusDM = wilderSmooth(plusDM, period);
+            const smoothedMinusDM = wilderSmooth(minusDM, period);
+
+            const plusDI = new Array(data.length).fill(null);
+            const minusDI = new Array(data.length).fill(null);
+            const dx = new Array(data.length).fill(null);
+
+            for (let i = period; i < data.length; i++) {
+                if (smoothedTR[i] > 0) {
+                    plusDI[i] = 100 * (smoothedPlusDM[i] / smoothedTR[i]);
+                    minusDI[i] = 100 * (smoothedMinusDM[i] / smoothedTR[i]);
+                    const diSum = plusDI[i] + minusDI[i];
+                    if (diSum > 0) {
+                        dx[i] = 100 * (Math.abs(plusDI[i] - minusDI[i]) / diSum);
+                    }
+                }
+            }
+
+            const adx = wilderSmooth(dx, period);
+
+            return { adx, plusDI, minusDI };
+        }
+
+
+        function calculateEMA(data, period) {
+            const emaArray = new Array(data.length).fill(null);
+            if (data.length < period) return emaArray;
+
+            const k = 2 / (period + 1);
+            let sum = 0;
+            for (let i = 0; i < period; i++) {
+                sum += data[i].close;
+            }
+            emaArray[period - 1] = sum / period;
+
+            for (let i = period; i < data.length; i++) {
+                emaArray[i] = (data[i].close * k) + (emaArray[i - 1] * (1 - k));
+            }
+            return emaArray;
+        }
+
+        function calculateMACD(data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+            const emaFast = calculateEMA(data, fastPeriod);
+            const emaSlow = calculateEMA(data, slowPeriod);
+            const macdLine = [];
+            const signalLine = [];
+            const histogram = [];
+
+            // Calculate MACD line
+            for (let i = 0; i < data.length; i++) {
+                if (emaFast[i] !== null && emaSlow[i] !== null) {
+                    macdLine.push(emaFast[i] - emaSlow[i]);
+                } else {
+                    macdLine.push(null);
+                }
+            }
+
+            // Calculate Signal line (EMA of MACD line)
+            const macdValuesOnly = macdLine.map(v => ({ close: v })); // Adapt for EMA function
+            const signalLineRaw = calculateEMA(macdValuesOnly, signalPeriod);
+            for(let i=0; i<signalLineRaw.length; i++) {
+                signalLine.push(signalLineRaw[i]);
+            }
+
+            // Calculate Histogram
+            for (let i = 0; i < data.length; i++) {
+                if (macdLine[i] !== null && signalLine[i] !== null) {
+                    histogram.push(macdLine[i] - signalLine[i]);
+                } else {
+                    histogram.push(null);
+                }
+            }
+
+            return { macdLine, signalLine, histogram };
+        }
+
+        function calculateEMA(data, period) {
+            const emaArray = new Array(data.length).fill(null);
+            if (data.length < period) return emaArray;
+
+            const k = 2 / (period + 1);
+            let sum = 0;
+            for (let i = 0; i < period; i++) {
+                sum += data[i].close;
+            }
+            emaArray[period - 1] = sum / period;
+
+            for (let i = period; i < data.length; i++) {
+                emaArray[i] = (data[i].close * k) + (emaArray[i - 1] * (1 - k));
+            }
+            return emaArray;
+        }
+
+        function calculateMACD(data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+            const emaFast = calculateEMA(data, fastPeriod);
+            const emaSlow = calculateEMA(data, slowPeriod);
+            const macdLine = [];
+            const signalLine = [];
+            const histogram = [];
+
+            // Calculate MACD line
+            for (let i = 0; i < data.length; i++) {
+                if (emaFast[i] !== null && emaSlow[i] !== null) {
+                    macdLine.push(emaFast[i] - emaSlow[i]);
+                } else {
+                    macdLine.push(null);
+                }
+            }
+
+            // Calculate Signal line (EMA of MACD line)
+            const macdValuesOnly = macdLine.map(v => ({ close: v })); // Adapt for EMA function
+            const signalLineRaw = calculateEMA(macdValuesOnly, signalPeriod);
+            for(let i=0; i<signalLineRaw.length; i++) {
+                signalLine.push(signalLineRaw[i]);
+            }
+
+            // Calculate Histogram
+            for (let i = 0; i < data.length; i++) {
+                if (macdLine[i] !== null && signalLine[i] !== null) {
+                    histogram.push(macdLine[i] - signalLine[i]);
+                } else {
+                    histogram.push(null);
+                }
+            }
+
+            return { macdLine, signalLine, histogram };
+        }
+
+        function renderVisibleCharts(shouldPlaySound = false) {
+            if (!allCandles || allCandles.length === 0) return;
+            const candleCount = 100;
+            // Garante que o índice de início não saia dos limites do array
+            viewStartIndex = Math.max(0, Math.min(allCandles.length - candleCount, viewStartIndex));
+            const visibleData = allCandles.slice(viewStartIndex, viewStartIndex + candleCount);
+            
+            drawChart(visibleData, shouldPlaySound);
+            drawRSIChart(visibleData);
+            drawMACDChart(visibleData);
+            drawVolumeChart(visibleData);
+            drawADXChart(visibleData);
+        }
+
+        function resetView() {
+            // Define o índice para mostrar as últimas 100 velas
+            viewStartIndex = Math.max(0, allCandles.length - 100);
+            renderVisibleCharts();
+        }
+
+        function toggleFullscreen() {
+            const elem = document.querySelector('.layout-panel');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Não foi possível entrar em tela cheia: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (btn) {
+                btn.innerHTML = document.fullscreenElement ? '🖼️ Sair' : '🖼️ Tela Cheia';
+            }
+            setTimeout(() => renderVisibleCharts(), 200); // Redesenha ao mudar de tela
+        });
+
+        function calculateRSI(data, period = 14) {
+            const rsi = new Array(data.length).fill(null);
+            if (data.length <= period) return rsi;
+
+            let avgGain = 0;
+            let avgLoss = 0;
+
+            // First period
+            for (let i = 1; i <= period; i++) {
+                const change = data[i].close - data[i - 1].close;
+                if (change > 0) avgGain += change;
+                else avgLoss += Math.abs(change);
+            }
+            avgGain /= period;
+            avgLoss /= period;
+
+            rsi[period] = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
+
+            // Subsequent
+            for (let i = period + 1; i < data.length; i++) {
+                const change = data[i].close - data[i - 1].close;
+                const gain = change > 0 ? change : 0;
+                const loss = change < 0 ? Math.abs(change) : 0;
+
+                avgGain = ((avgGain * (period - 1)) + gain) / period;
+                avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+
+                rsi[i] = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
+            }
+            return rsi;
+        }
+
+        function toggleDrawMode(btn) {
+            isDrawMode = !isDrawMode;
+            btn.classList.toggle('active', isDrawMode);
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.style.cursor = isDrawMode ? 'crosshair' : 'default';
+
+            // Disable tooltips when drawing mode is active
+            const hitAreas = document.querySelectorAll('#chart-container svg rect[fill="transparent"]');
+            hitAreas.forEach(area => {
+                area.style.pointerEvents = isDrawMode ? 'none' : 'all';
+            });
+        }
+
+        function clearDrawings() {
+            if (drawnLines.length > 0 && confirm('Limpar todos os desenhos?')) {
+                drawnLines = [];
+                updateChart(); // Redraw chart without the lines
+            }
+        }
+
+        function updateChart(shouldPlaySound = false) {
+            if (!globalGamesData || globalGamesData.length === 0) return;
+            const timeframe = document.getElementById('timeframeSelect').value;
+            allCandles = generateCandles(globalGamesData, timeframe);
+            
+            // Ao atualizar os dados, sempre volta para as velas mais recentes
+            resetView();
+        }
+
+        function generateCandles(data, timeframe) {
+            let priceData = [];
+            let lastClose = 100;
+            
+            // Ordena do mais antigo para o mais novo para processamento sequencial
+            const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            if (timeframe === 'tick') {
+                sortedData.forEach(game => {
+                    const open = lastClose;
+                    let high, low, close;
+                    const color = identificarCor(game.roll);
+
+                    if (color === 'vermelho') { // Up
+                        close = open + 10; high = close; low = open;
+                    } else if (color === 'preto') { // Down
+                        close = open - 10; high = open; low = close;
+                    } else { // Branco (Doji)
+                        close = open; high = open + 5; low = open - 5;
+                    }
+                    const timeStr = new Date(game.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    priceData.push({ open, high, low, close, color, roll: game.roll, time: timeStr, volume: 1 });
+                    lastClose = close;
+                });
+                return priceData;
+            } else {
+                // Agregação por Tempo (1m, 5m)
+                const tfMs = parseInt(timeframe) * 60 * 1000;
+                let currentBucketStart = null;
+                let bucketCandle = null;
+
+                sortedData.forEach(game => {
+                    const gameTime = new Date(game.created_at).getTime();
+                    const bucketStart = Math.floor(gameTime / tfMs) * tfMs;
+
+                    const open = lastClose;
+                    let close;
+                    const color = identificarCor(game.roll);
+                    
+                    if (color === 'vermelho') close = open + 10;
+                    else if (color === 'preto') close = open - 10;
+                    else close = open;
+                    
+                    lastClose = close;
+
+                    if (currentBucketStart === null || bucketStart !== currentBucketStart) {
+                        if (bucketCandle) priceData.push(bucketCandle);
+                        currentBucketStart = bucketStart;
+                        bucketCandle = {
+                            open: open,
+                            high: Math.max(open, close),
+                            low: Math.min(open, close),
+                            close: close,
+                            time: new Date(bucketStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                            timestamp: bucketStart,
+                            roll: game.roll,
+                            volume: 1
+                        };
+                    } else {
+                        bucketCandle.high = Math.max(bucketCandle.high, close);
+                        bucketCandle.low = Math.min(bucketCandle.low, close);
+                        bucketCandle.close = close;
+                        bucketCandle.roll = game.roll;
+                        bucketCandle.volume++;
+                    }
+                });
+                if (bucketCandle) priceData.push(bucketCandle);
+
+                // Define cor da vela agregada
+                priceData.forEach(c => {
+                    if (c.close > c.open) c.color = 'vermelho';
+                    else if (c.close < c.open) c.color = 'preto';
+                    else c.color = 'branco';
+                });
+                return priceData;
+            }
+        }
+
+        // Function to render the candlestick chart
+        function drawChart(priceData, shouldPlaySound = false) {
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.innerHTML = ''; // Clear previous chart or loading text
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            
+            const containerWidth = chartContainer.clientWidth;
+            const containerHeight = chartContainer.clientHeight;
+            const margin = { top: 20, right: 50, bottom: 30, left: 50 };
+            const width = containerWidth - margin.left - margin.right;
+            const height = containerHeight - margin.top - margin.bottom;
+
+            svg.setAttribute('width', containerWidth);
+            svg.setAttribute('height', containerHeight);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            // Add SVG filter for glow effect
+            const defs = document.createElementNS(svgNS, 'defs');
+            defs.innerHTML = `
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur"></feGaussianBlur>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"></feMergeNode>
+                        <feMergeNode in="SourceGraphic"></feMergeNode>
+                    </feMerge>
+                </filter>`;
+            svg.appendChild(defs);
+
+            // priceData is already prepared by generateCandles
+
+            // 2. Find min/max price for scaling
+            const minPrice = Math.min(...priceData.map(p => p.low));
+            const maxPrice = Math.max(...priceData.map(p => p.high));
+            const priceRange = maxPrice - minPrice;
+
+            const y = (price) => height - ((price - minPrice) / priceRange) * height;
+
+            // 2.1 Draw Y-Axis Grid and Labels
+            const tickCount = 7; // Number of grid lines/labels
+            const tickValues = [];
+            const tickSize = priceRange / (tickCount - 1);
+
+            for (let i = 0; i < tickCount; i++) {
+                const tickValue = minPrice + (i * tickSize);
+                const tickY = y(tickValue);
+
+                // Grid line
+                const gridLine = document.createElementNS(svgNS, 'line');
+                gridLine.setAttribute('x1', 0);
+                gridLine.setAttribute('y1', tickY);
+                gridLine.setAttribute('x2', width);
+                gridLine.setAttribute('y2', tickY);
+                gridLine.setAttribute('stroke', '#2a2a2a'); // Darker grid line
+                gridLine.setAttribute('stroke-dasharray', '2,3');
+                g.appendChild(gridLine);
+
+                // Axis label
+                const axisLabel = document.createElementNS(svgNS, 'text');
+                axisLabel.setAttribute('x', width + 5);
+                axisLabel.setAttribute('y', tickY + 4);
+                axisLabel.setAttribute('fill', '#888');
+                axisLabel.setAttribute('font-size', '10px');
+                axisLabel.textContent = tickValue.toFixed(0);
+                g.appendChild(axisLabel);
+            }
+
+            // Define dimensions for candles and indicators
+            const candleWidth = Math.max(1, width / priceData.length * 0.7); 
+            const candleSpacing = width / priceData.length;
+
+            // Draw Bollinger Bands if enabled (Before candles to be in background)
+            const showBB = document.getElementById('bbToggle') && document.getElementById('bbToggle').checked;
+
+            if (showBB && priceData.length > 0) {
+                const bbPeriodInput = document.getElementById('bbPeriodInput');
+                const bbPeriod = bbPeriodInput ? parseInt(bbPeriodInput.value) : 20;
+                const bbStdDevInput = document.getElementById('bbStdDevInput');
+                const bbStdDev = bbStdDevInput ? parseFloat(bbStdDevInput.value) : 2;
+
+                const bbData = calculateBollingerBands(priceData, bbPeriod, bbStdDev);
+                
+                // Draw Area
+                let areaPath = "";
+                let firstPoint = true;
+                for(let i=0; i<bbData.upper.length; i++) {
+                    if(bbData.upper[i] !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const yVal = y(bbData.upper[i]);
+                        if(firstPoint) { areaPath = `M ${x} ${yVal}`; firstPoint = false; }
+                        else areaPath += ` L ${x} ${yVal}`;
+                    }
+                }
+                for(let i=bbData.lower.length-1; i>=0; i--) {
+                    if(bbData.lower[i] !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const yVal = y(bbData.lower[i]);
+                        areaPath += ` L ${x} ${yVal}`;
+                    }
+                }
+                areaPath += " Z";
+                if (areaPath !== "") {
+                    const area = document.createElementNS(svgNS, 'path');
+                    area.setAttribute('d', areaPath);
+                    area.setAttribute('fill', 'rgba(0, 210, 255, 0.15)');
+                    area.setAttribute('stroke', 'none');
+                    g.appendChild(area);
+                }
+
+                // Helper to draw line
+                const drawLine = (data, color, dash) => {
+                    let path = "";
+                    data.forEach((val, i) => {
+                        if (val !== null) {
+                            const x = i * candleSpacing + candleWidth / 2;
+                            const yVal = y(val);
+                            if (path === "") path = `M ${x} ${yVal}`;
+                            else path += ` L ${x} ${yVal}`;
+                        }
+                    });
+                    if (path !== "") {
+                        const line = document.createElementNS(svgNS, 'path');
+                        line.setAttribute('d', path);
+                        line.setAttribute('stroke', color);
+                        line.setAttribute('stroke-width', '1.5');
+                        line.setAttribute('fill', 'none');
+                        if(dash) line.setAttribute('stroke-dasharray', dash);
+                        g.appendChild(line);
+                    }
+                };
+                drawLine(bbData.upper, '#00d2ff');
+                drawLine(bbData.lower, '#00d2ff');
+                drawLine(bbData.middle, '#00d2ff', '4,4');
+
+                // Draw Alerts for BB Touches
+                let alertTriggered = false;
+
+                priceData.forEach((d, i) => {
+                    if (bbData.upper[i] !== null && bbData.lower[i] !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const isLast = i === priceData.length - 1;
+                        
+                        // Touch Upper Band
+                        if (d.high >= bbData.upper[i]) {
+                            const yVal = y(d.high) - 10; 
+                            const marker = document.createElementNS(svgNS, 'circle');
+                            marker.setAttribute('cx', x); marker.setAttribute('cy', yVal); marker.setAttribute('r', 3);
+                            marker.setAttribute('fill', '#ff0055'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', '1');
+                            if (isLast) {
+                                marker.classList.add('bb-alert-marker');
+                                alertTriggered = true;
+                            }
+                            g.appendChild(marker);
+                        }
+                        // Touch Lower Band
+                        if (d.low <= bbData.lower[i]) {
+                            const yVal = y(d.low) + 10; 
+                            const marker = document.createElementNS(svgNS, 'circle');
+                            marker.setAttribute('cx', x); marker.setAttribute('cy', yVal); marker.setAttribute('r', 3);
+                            marker.setAttribute('fill', '#00ff88'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', '1');
+                            if (isLast) {
+                                marker.classList.add('bb-alert-marker');
+                                alertTriggered = true;
+                            }
+                            g.appendChild(marker);
+                        }
+                    }
+                });
+
+                if (alertTriggered && shouldPlaySound) playAlertSound();
+            }
+
+            // 3. Draw candles
+            priceData.forEach((d, i) => {
+                const x = i * candleSpacing;
+                
+                // Wick
+                const wick = document.createElementNS(svgNS, 'line');
+                wick.setAttribute('x1', x + candleWidth / 2);
+                wick.setAttribute('y1', y(d.high));
+                wick.setAttribute('x2', x + candleWidth / 2);
+                wick.setAttribute('y2', y(d.low));
+                
+                wick.classList.add('candle-wick');
+                // Body
+                const body = document.createElementNS(svgNS, 'rect');
+                body.setAttribute('x', x);
+                body.setAttribute('y', y(Math.max(d.open, d.close)));
+                body.setAttribute('width', candleWidth);
+                body.setAttribute('height', Math.max(1, Math.abs(y(d.open) - y(d.close)))); // Min height of 1 for dojis
+
+                let candleColor;
+                if (d.color === 'vermelho') {
+                    candleColor = '#ff0055'; // Red for up
+                } else if (d.color === 'preto') {
+                    candleColor = '#343a40'; // Dark gray for black/down
+                } else { // branco
+                    candleColor = '#ffffff'; // White for doji
+                }
+                
+                wick.setAttribute('stroke', candleColor);
+                wick.setAttribute('stroke-width', '1.5');
+                body.setAttribute('fill', candleColor);
+                
+                g.appendChild(wick);
+                g.appendChild(body);
+
+                // Hit area for tooltip
+                const hitArea = document.createElementNS(svgNS, 'rect');
+                hitArea.setAttribute('x', x);
+                hitArea.setAttribute('y', 0);
+                hitArea.setAttribute('width', candleSpacing);
+                hitArea.setAttribute('height', height);
+                hitArea.setAttribute('fill', 'transparent');
+                // Store data for touch interaction
+                hitArea.dataset.time = d.time;
+                hitArea.dataset.roll = d.roll;
+                hitArea.style.cursor = 'crosshair';
+
+                hitArea.addEventListener('mousemove', (e) => {
+                    const tooltip = document.getElementById('chart-tooltip');
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                    const stoneColor = identificarCor(d.roll);
+                    const colorHex = stoneColor === 'vermelho' ? '#ff0055' : (stoneColor === 'preto' ? '#aaa' : '#fff');
+                    tooltip.innerHTML = `<div style="margin-bottom:4px; border-bottom:1px solid #444; padding-bottom:2px;"><strong>${d.time}</strong></div><div>Pedra: <span style="color:${colorHex}; font-weight:bold; font-size:1.1rem;">${d.roll}</span></div><div>Cor: ${stoneColor.toUpperCase()}</div>`;
+                });
+                hitArea.addEventListener('mouseleave', () => { document.getElementById('chart-tooltip').style.display = 'none'; });
+                g.appendChild(hitArea);
+            });
+
+            // Draw SMA if enabled
+            const showSMA = document.getElementById('smaToggle') && document.getElementById('smaToggle').checked;
+            if (showSMA && priceData.length > 0) {
+                const smaPeriodInput = document.getElementById('smaPeriodInput');
+                const smaPeriod = smaPeriodInput ? parseInt(smaPeriodInput.value) : 14;
+                const smaValues = calculateSMA(priceData, smaPeriod);
+                
+                let smaPath = "";
+                smaValues.forEach((val, i) => {
+                    if (val !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const yVal = y(val);
+                        if (smaPath === "") smaPath = `M ${x} ${yVal}`;
+                        else smaPath += ` L ${x} ${yVal}`;
+                    }
+                });
+
+                if (smaPath !== "") {
+                    const smaLine = document.createElementNS(svgNS, 'path');
+                    smaLine.setAttribute('d', smaPath);
+                    smaLine.setAttribute('stroke', '#ff9800');
+                    smaLine.setAttribute('stroke-width', '1.5');
+                    smaLine.setAttribute('fill', 'none');
+                    smaLine.style.pointerEvents = 'none';
+                    g.appendChild(smaLine);
+                }
+            }
+
+            // Redraw persistent lines
+            const drawingsGroup = document.createElementNS(svgNS, 'g');
+            g.appendChild(drawingsGroup);
+            drawnLines.forEach(lineData => {
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', lineData.x1);
+                line.setAttribute('y1', lineData.y1);
+                line.setAttribute('x2', lineData.x2);
+                line.setAttribute('y2', lineData.y2);
+                line.setAttribute('stroke', lineData.color || '#00d2ff');
+                line.setAttribute('stroke-width', '1.5');
+                drawingsGroup.appendChild(line);
+            });
+
+            // 4. Draw current price line and label
+            if (priceData.length > 0) {
+                const lastCandle = priceData[priceData.length - 1];
+                const lastClosePrice = lastCandle.close;
+                const lastY = y(lastClosePrice);
+
+                // Dashed line across the chart
+                const currentPriceLine = document.createElementNS(svgNS, 'line');
+                currentPriceLine.setAttribute('x1', 0);
+                currentPriceLine.setAttribute('y1', lastY);
+                currentPriceLine.setAttribute('x2', width);
+                currentPriceLine.setAttribute('y2', lastY);
+                currentPriceLine.setAttribute('stroke', '#ffc107');
+                currentPriceLine.setAttribute('stroke-width', '1.5');
+                currentPriceLine.setAttribute('stroke-dasharray', '4, 4');
+                currentPriceLine.classList.add('current-price-line');
+                g.appendChild(currentPriceLine);
+
+                // Price label background on the right axis
+                const priceLabelBg = document.createElementNS(svgNS, 'rect');
+                priceLabelBg.setAttribute('x', width);
+                priceLabelBg.setAttribute('y', lastY - 10);
+                priceLabelBg.setAttribute('width', margin.right);
+                priceLabelBg.setAttribute('height', 20);
+                priceLabelBg.setAttribute('fill', '#ffc107');
+                g.appendChild(priceLabelBg);
+
+                // Price label text
+                const priceLabel = document.createElementNS(svgNS, 'text');
+                priceLabel.setAttribute('x', width + 5);
+                priceLabel.setAttribute('y', lastY + 4);
+                priceLabel.setAttribute('fill', '#000');
+                priceLabel.setAttribute('font-size', '12px');
+                priceLabel.setAttribute('font-weight', 'bold');
+                priceLabel.textContent = lastClosePrice.toFixed(0);
+                g.appendChild(priceLabel);
+            }
+
+            // Add drawing overlay and listeners
+            const overlay = document.createElementNS(svgNS, 'rect');
+            overlay.setAttribute('width', width);
+            overlay.setAttribute('height', height);
+            overlay.setAttribute('fill', 'transparent');
+            g.appendChild(overlay);
+
+            overlay.addEventListener('mousedown', (e) => {
+                if (!isDrawMode) return;
+                isDrawing = true;
+                const rect = overlay.getBoundingClientRect();
+                startPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+                const drawingColor = document.getElementById('drawingColorPicker').value;
+                currentLine = document.createElementNS(svgNS, 'line');
+                currentLine.setAttribute('x1', startPoint.x);
+                currentLine.setAttribute('y1', startPoint.y);
+                currentLine.setAttribute('x2', startPoint.x);
+                currentLine.setAttribute('y2', startPoint.y);
+                currentLine.setAttribute('stroke', drawingColor);
+                currentLine.setAttribute('stroke-width', '1.5');
+                currentLine.setAttribute('stroke-dasharray', '4,4');
+                drawingsGroup.appendChild(currentLine);
+            });
+            
+            // Touch support for drawing
+            overlay.addEventListener('touchstart', (e) => {
+                if (!isDrawMode) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                overlay.dispatchEvent(new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY }));
+            }, { passive: false });
+            overlay.addEventListener('touchmove', (e) => {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                overlay.dispatchEvent(new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY }));
+            }, { passive: false });
+            overlay.addEventListener('touchend', (e) => {
+                if (isDrawing) overlay.dispatchEvent(new MouseEvent('mouseup', {}));
+            });
+
+            overlay.addEventListener('mousemove', (e) => {
+                if (!isDrawing || !currentLine) return;
+                const rect = overlay.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                currentLine.setAttribute('x2', currentX);
+                currentLine.setAttribute('y2', currentY);
+            });
+
+            overlay.addEventListener('mouseup', () => {
+                if (!isDrawing) return;
+                
+                const drawingColor = document.getElementById('drawingColorPicker').value;
+                
+                isDrawing = false;
+                drawnLines.push({ 
+                    x1: parseFloat(currentLine.getAttribute('x1')), 
+                    y1: parseFloat(currentLine.getAttribute('y1')), 
+                    x2: parseFloat(currentLine.getAttribute('x2')), 
+                    y2: parseFloat(currentLine.getAttribute('y2')),
+                    color: drawingColor
+                });
+                currentLine = null;
+                updateChart(); // Redraw to make the line permanent
+            });
+
+            chartContainer.appendChild(svg);
+
+            // Touch support for tooltips (Chart Pan/Scan)
+            svg.addEventListener('touchmove', (e) => {
+                if (isDrawMode) return; // Let drawing handle it if in draw mode
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target && target.tagName === 'rect' && target.getAttribute('fill') === 'transparent' && target.dataset.roll) {
+                    e.preventDefault();
+                    const tooltip = document.getElementById('chart-tooltip');
+                    tooltip.style.display = 'block';
+                    
+                    // Position logic
+                    let left = touch.clientX + 15;
+                    if (left + 120 > window.innerWidth) left = touch.clientX - 135;
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = (touch.clientY + 15) + 'px';
+
+                    const stoneColor = identificarCor(target.dataset.roll);
+                    const colorHex = stoneColor === 'vermelho' ? '#ff0055' : (stoneColor === 'preto' ? '#aaa' : '#fff');
+                    tooltip.innerHTML = `<div style="margin-bottom:4px; border-bottom:1px solid #444; padding-bottom:2px;"><strong>${target.dataset.time}</strong></div><div>Pedra: <span style="color:${colorHex}; font-weight:bold; font-size:1.1rem;">${target.dataset.roll}</span></div><div>Cor: ${stoneColor.toUpperCase()}</div>`;
+                }
+            }, { passive: false });
+            
+            svg.addEventListener('touchend', () => {
+                document.getElementById('chart-tooltip').style.display = 'none';
+            });
+        }
+
+        function drawRSIChart(priceData) {
+            const rsiContainer = document.getElementById('rsi-container');
+            const showRSI = document.getElementById('rsiToggle').checked;
+            
+            if (!showRSI) {
+                rsiContainer.style.display = 'none';
+                return;
+            }
+            rsiContainer.style.display = 'block';
+            rsiContainer.innerHTML = '';
+
+            const rsiPeriodInput = document.getElementById('rsiPeriodInput');
+            const rsiPeriod = rsiPeriodInput ? parseInt(rsiPeriodInput.value) : 14;
+
+            const rsiValues = calculateRSI(priceData, rsiPeriod);
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = rsiContainer.clientWidth;
+            const height = rsiContainer.clientHeight;
+            const margin = { top: 10, right: 50, bottom: 20, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            // Background lines for 30 and 70
+            const y70 = plotHeight * (1 - 0.7);
+            const y30 = plotHeight * (1 - 0.3);
+            
+            const line70 = document.createElementNS(svgNS, 'line');
+            line70.setAttribute('x1', 0); line70.setAttribute('y1', y70);
+            line70.setAttribute('x2', plotWidth); line70.setAttribute('y2', y70);
+            line70.setAttribute('stroke', '#ff0055'); line70.setAttribute('stroke-dasharray', '4,4');
+            g.appendChild(line70);
+
+            const line30 = document.createElementNS(svgNS, 'line');
+            line30.setAttribute('x1', 0); line30.setAttribute('y1', y30);
+            line30.setAttribute('x2', plotWidth); line30.setAttribute('y2', y30);
+            line30.setAttribute('stroke', '#00ff88'); line30.setAttribute('stroke-dasharray', '4,4');
+            g.appendChild(line30);
+
+            // Draw RSI Line
+            const candleSpacing = plotWidth / priceData.length;
+            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.7);
+            
+            let pathD = "";
+            rsiValues.forEach((val, i) => {
+                if (val !== null) {
+                    const x = i * candleSpacing + candleWidth / 2;
+                    const y = plotHeight * (1 - (val / 100));
+                    if (pathD === "") pathD = `M ${x} ${y}`;
+                    else pathD += ` L ${x} ${y}`;
+                }
+            });
+
+            if (pathD !== "") {
+                const path = document.createElementNS(svgNS, 'path');
+                path.setAttribute('d', pathD);
+                path.setAttribute('stroke', '#a100ff'); path.classList.add('indicator-line');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                g.appendChild(path);
+            }
+            
+            // Add label
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', 5); label.setAttribute('y', 15);
+            label.setAttribute('fill', '#a100ff'); label.setAttribute('font-size', '10px');
+            label.textContent = `RSI (${rsiPeriod})`;
+            svg.appendChild(label);
+
+            rsiContainer.appendChild(svg);
+        }
+
+        function drawMACDChart(priceData) {
+            const macdContainer = document.getElementById('macd-container');
+            const showMACD = document.getElementById('macdToggle').checked;
+            
+            if (!showMACD) {
+                macdContainer.style.display = 'none';
+                return;
+            }
+            macdContainer.style.display = 'block';
+            macdContainer.innerHTML = '';
+
+            const fastInput = document.getElementById('macdFastInput');
+            const slowInput = document.getElementById('macdSlowInput');
+            const signalInput = document.getElementById('macdSignalInput');
+            
+            const fastPeriod = fastInput ? parseInt(fastInput.value) : 12;
+            const slowPeriod = slowInput ? parseInt(slowInput.value) : 26;
+            const signalPeriod = signalInput ? parseInt(signalInput.value) : 9;
+
+            const macdData = calculateMACD(priceData, fastPeriod, slowPeriod, signalPeriod);
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = macdContainer.clientWidth;
+            const height = macdContainer.clientHeight;
+            const margin = { top: 10, right: 50, bottom: 20, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            const allValues = [].concat(macdData.macdLine, macdData.signalLine, macdData.histogram).filter(v => v !== null);
+            const minVal = Math.min(...allValues);
+            const maxVal = Math.max(...allValues);
+            const range = maxVal - minVal;
+
+            const y = (val) => plotHeight - ((val - minVal) / range) * plotHeight;
+
+            // Draw zero line
+            const zeroY = y(0);
+            const zeroLine = document.createElementNS(svgNS, 'line');
+            zeroLine.setAttribute('x1', 0); zeroLine.setAttribute('y1', zeroY);
+            zeroLine.setAttribute('x2', plotWidth); zeroLine.setAttribute('y2', zeroY);
+            zeroLine.setAttribute('stroke', '#555'); zeroLine.setAttribute('stroke-dasharray', '2,2');
+            g.appendChild(zeroLine);
+
+            const candleSpacing = plotWidth / priceData.length;
+            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.7);
+
+            // Draw Histogram
+            macdData.histogram.forEach((val, i) => {
+                if (val !== null) {
+                    const x = i * candleSpacing;
+                    const barHeight = Math.abs(y(val) - zeroY);
+                    const barY = val > 0 ? y(val) : zeroY;
+                    
+                    const bar = document.createElementNS(svgNS, 'rect');
+                    bar.setAttribute('x', x); bar.setAttribute('y', barY);
+                    bar.setAttribute('width', candleWidth); bar.setAttribute('height', barHeight);
+                    bar.setAttribute('fill', val > 0 ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)');
+                    g.appendChild(bar);
+                }
+            });
+
+            // Helper to draw line
+            const drawLine = (data, color) => {
+                let pathD = "";
+                data.forEach((val, i) => { if (val !== null) { const x = i * candleSpacing + candleWidth / 2; const yVal = y(val); if (pathD === "") pathD = `M ${x} ${yVal}`; else pathD += ` L ${x} ${yVal}`; } });
+                if (pathD !== "") { const path = document.createElementNS(svgNS, 'path'); path.setAttribute('d', pathD); path.setAttribute('stroke', color); path.setAttribute('stroke-width', '2'); path.setAttribute('fill', 'none'); path.classList.add('indicator-line'); g.appendChild(path); }
+            };
+
+            drawLine(macdData.macdLine, '#00d2ff');
+            drawLine(macdData.signalLine, '#ff9800');
+
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', 5); label.setAttribute('y', 15);
+            label.setAttribute('fill', '#ccc'); label.setAttribute('font-size', '10px');
+            label.innerHTML = `<tspan fill="#00d2ff">MACD(${fastPeriod},${slowPeriod})</tspan> <tspan fill="#ff9800">Signal(${signalPeriod})</tspan>`;
+            svg.appendChild(label);
+
+            macdContainer.appendChild(svg);
+        }
+
+        function drawMACDChart(priceData) {
+            const macdContainer = document.getElementById('macd-container');
+            const showMACD = document.getElementById('macdToggle').checked;
+            
+            if (!showMACD) {
+                macdContainer.style.display = 'none';
+                return;
+            }
+            macdContainer.style.display = 'block';
+            macdContainer.innerHTML = '';
+
+            const fastInput = document.getElementById('macdFastInput');
+            const slowInput = document.getElementById('macdSlowInput');
+            const signalInput = document.getElementById('macdSignalInput');
+            
+            const fastPeriod = fastInput ? parseInt(fastInput.value) : 12;
+            const slowPeriod = slowInput ? parseInt(slowInput.value) : 26;
+            const signalPeriod = signalInput ? parseInt(signalInput.value) : 9;
+
+            const macdData = calculateMACD(priceData, fastPeriod, slowPeriod, signalPeriod);
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = macdContainer.clientWidth;
+            const height = macdContainer.clientHeight;
+            const margin = { top: 10, right: 50, bottom: 20, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            const allValues = [].concat(macdData.macdLine, macdData.signalLine, macdData.histogram).filter(v => v !== null);
+            const minVal = Math.min(...allValues);
+            const maxVal = Math.max(...allValues);
+            const range = maxVal - minVal;
+
+            const y = (val) => plotHeight - ((val - minVal) / range) * plotHeight;
+
+            // Draw zero line
+            const zeroY = y(0);
+            const zeroLine = document.createElementNS(svgNS, 'line');
+            zeroLine.setAttribute('x1', 0); zeroLine.setAttribute('y1', zeroY);
+            zeroLine.setAttribute('x2', plotWidth); zeroLine.setAttribute('y2', zeroY);
+            zeroLine.setAttribute('stroke', '#555'); zeroLine.setAttribute('stroke-dasharray', '2,2');
+            g.appendChild(zeroLine);
+
+            const candleSpacing = plotWidth / priceData.length;
+            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.7);
+
+            // Draw Histogram
+            macdData.histogram.forEach((val, i) => {
+                if (val !== null) {
+                    const x = i * candleSpacing;
+                    const barHeight = Math.abs(y(val) - zeroY);
+                    const barY = val > 0 ? y(val) : zeroY;
+                    
+                    const bar = document.createElementNS(svgNS, 'rect');
+                    bar.setAttribute('x', x); bar.setAttribute('y', barY);
+                    bar.setAttribute('width', candleWidth); bar.setAttribute('height', barHeight);
+                    bar.setAttribute('fill', val > 0 ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)');
+                    g.appendChild(bar);
+                }
+            });
+
+            // Helper to draw line
+            const drawLine = (data, color) => {
+                let pathD = "";
+                data.forEach((val, i) => { if (val !== null) { const x = i * candleSpacing + candleWidth / 2; const yVal = y(val); if (pathD === "") pathD = `M ${x} ${yVal}`; else pathD += ` L ${x} ${yVal}`; } });
+                if (pathD !== "") { const path = document.createElementNS(svgNS, 'path'); path.setAttribute('d', pathD); path.setAttribute('stroke', color); path.setAttribute('stroke-width', '2'); path.setAttribute('fill', 'none'); g.appendChild(path); }
+            };
+
+            drawLine(macdData.macdLine, '#00d2ff'); // MACD line in blue
+            drawLine(macdData.signalLine, '#ff9800'); // Signal line in orange
+
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', 5); label.setAttribute('y', 15);
+            label.setAttribute('fill', '#ccc'); label.setAttribute('font-size', '10px');
+            label.innerHTML = `<tspan fill="#00d2ff">MACD(${fastPeriod},${slowPeriod})</tspan> <tspan fill="#ff9800">Signal(${signalPeriod})</tspan>`;
+            svg.appendChild(label);
+
+            macdContainer.appendChild(svg);
+        }
+
+        function drawVolumeChart(priceData) {
+            const volumeContainer = document.getElementById('volume-container');
+            const showVolume = document.getElementById('volumeToggle').checked;
+            
+            if (!showVolume) {
+                volumeContainer.style.display = 'none';
+                return;
+            }
+            volumeContainer.style.display = 'block';
+            volumeContainer.innerHTML = '';
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = volumeContainer.clientWidth;
+            const height = volumeContainer.clientHeight;
+            const margin = { top: 10, right: 50, bottom: 5, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            const maxVol = Math.max(...priceData.map(d => d.volume));
+            const candleSpacing = plotWidth / priceData.length;
+            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.7);
+
+            priceData.forEach((d, i) => {
+                const x = i * candleSpacing;
+                const barHeight = (d.volume / maxVol) * plotHeight;
+                const y = plotHeight - barHeight;
+                
+                const bar = document.createElementNS(svgNS, 'rect');
+                bar.setAttribute('x', x); bar.setAttribute('y', y);
+                bar.setAttribute('width', candleWidth); bar.setAttribute('height', barHeight);
+                bar.setAttribute('fill', d.color === 'vermelho' ? 'rgba(255, 0, 85, 0.5)' : (d.color === 'preto' ? 'rgba(100, 100, 100, 0.5)' : 'rgba(255, 193, 7, 0.5)'));
+                g.appendChild(bar);
+            });
+            
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', 5); label.setAttribute('y', 15);
+            label.setAttribute('fill', '#ccc'); label.setAttribute('font-size', '10px');
+            label.textContent = `Volume (Max: ${maxVol})`;
+            svg.appendChild(label);
+            volumeContainer.appendChild(svg);
+        }
+
+        function drawADXChart(priceData) {
+            const adxContainer = document.getElementById('adx-container');
+            const showADX = document.getElementById('adxToggle').checked;
+            
+            if (!showADX) {
+                adxContainer.style.display = 'none';
+                return;
+            }
+            adxContainer.style.display = 'block';
+            adxContainer.innerHTML = '';
+
+            const adxData = calculateADX(priceData, 14);
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = adxContainer.clientWidth;
+            const height = adxContainer.clientHeight;
+            const margin = { top: 10, right: 50, bottom: 20, left: 50 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            const allValues = [].concat(adxData.adx, adxData.plusDI, adxData.minusDI).filter(v => v !== null && v >= 0 && v <= 100);
+            const y = (val) => plotHeight - (val / 100) * plotHeight;
+
+            // Draw reference line at 25
+            const line25 = document.createElementNS(svgNS, 'line');
+            line25.setAttribute('x1', 0); line25.setAttribute('y1', y(25));
+            line25.setAttribute('x2', plotWidth); line25.setAttribute('y2', y(25));
+            line25.setAttribute('stroke', '#555'); line25.setAttribute('stroke-dasharray', '2,2');
+            g.appendChild(line25);
+
+            const candleSpacing = plotWidth / priceData.length;
+            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.7);
+
+            // Helper to draw line
+            const drawLine = (data, color) => {
+                let pathD = "";
+                data.forEach((val, i) => {
+                    if (val !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const yVal = y(val);
+                        if (pathD === "") pathD = `M ${x} ${yVal}`;
+                        else pathD += ` L ${x} ${yVal}`;
+                    }
+                });
+                if (pathD !== "") {
+                    const path = document.createElementNS(svgNS, 'path');
+                    path.setAttribute('d', pathD); path.classList.add('indicator-line');
+                    path.setAttribute('stroke', color);
+                    path.setAttribute('stroke-width', '2');
+                    path.setAttribute('fill', 'none');
+                    g.appendChild(path);
+                }
+            };
+
+            drawLine(adxData.plusDI, '#00ff88');
+            drawLine(adxData.minusDI, '#ff0055');
+            drawLine(adxData.adx, '#ffc107');
+
+            const label = document.createElementNS(svgNS, 'text');
+            label.setAttribute('x', 5); label.setAttribute('y', 15);
+            label.setAttribute('fill', '#ccc'); label.setAttribute('font-size', '10px');
+            label.innerHTML = `<tspan fill="#ffc107">ADX(14)</tspan> <tspan fill="#00ff88">+DI</tspan> <tspan fill="#ff0055">-DI</tspan>`;
+            svg.appendChild(label);
+
+            adxContainer.appendChild(svg);
+        }
+
+        async function generateChartCanvas() {
+            const mainChartContainer = document.getElementById('chart-container');
+            const rsiContainer = document.getElementById('rsi-container');
+            const macdContainer = document.getElementById('macd-container');
+            const volumeContainer = document.getElementById('volume-container');
+            const adxContainer = document.getElementById('adx-container');
+
+            const mainChartSVG = mainChartContainer.querySelector('svg');
+            const rsiSVG = rsiContainer.querySelector('svg');
+            const macdSVG = macdContainer.querySelector('svg');
+            const volumeSVG = volumeContainer.querySelector('svg');
+            const adxSVG = adxContainer.querySelector('svg');
+
+            if (!mainChartSVG) {
+                return null;
+            }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            let totalHeight = mainChartContainer.offsetHeight;
+            if (adxSVG && adxContainer.style.display !== 'none') totalHeight += adxContainer.offsetHeight + 10;
+            if (rsiSVG && rsiContainer.style.display !== 'none') totalHeight += rsiContainer.offsetHeight + 10;
+            if (macdSVG && macdContainer.style.display !== 'none') totalHeight += macdContainer.offsetHeight + 10;
+            if (volumeSVG && volumeContainer.style.display !== 'none') totalHeight += volumeContainer.offsetHeight + 10;
+
+            canvas.width = mainChartContainer.offsetWidth;
+            canvas.height = totalHeight;
+
+            // Preenche o fundo
+            ctx.fillStyle = '#0c1014'; // Cor de fundo do painel
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const drawSVGToCanvas = (svgElement, yOffset) => {
+                return new Promise((resolve) => {
+                    const svgString = new XMLSerializer().serializeToString(svgElement);
+                    const img = new Image();
+                    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(svgBlob);
+
+                    img.onload = function () {
+                        ctx.drawImage(img, 0, yOffset);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.src = url;
+                });
+            };
+
+            await drawSVGToCanvas(mainChartSVG, 0);
+            let currentYOffset = mainChartContainer.offsetHeight + 10;
+            if (volumeSVG && volumeContainer.style.display !== 'none') { await drawSVGToCanvas(volumeSVG, currentYOffset); currentYOffset += volumeContainer.offsetHeight + 10; }
+            if (adxSVG && adxContainer.style.display !== 'none') { await drawSVGToCanvas(adxSVG, currentYOffset); currentYOffset += adxContainer.offsetHeight + 10; }
+            if (rsiSVG && rsiContainer.style.display !== 'none') { await drawSVGToCanvas(rsiSVG, currentYOffset); currentYOffset += rsiContainer.offsetHeight + 10; }
+            if (macdSVG && macdContainer.style.display !== 'none') { await drawSVGToCanvas(macdSVG, currentYOffset); }
+
+            return canvas;
+        }
+
+        async function takeScreenshot() {
+            const canvas = await generateChartCanvas();
+            if (!canvas) {
+                alert('Gráfico principal não encontrado para capturar.');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `grafico_opcoes_double_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        async function sendScreenshotToTelegram(btn) {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id'); 
+            
+            if (!token || !chatId) {
+                alert('⚠️ Configure o Token e o Chat ID do Telegram primeiro (Menu > Telegram).');
+                return;
+            }
+
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ Gerando...';
+            btn.disabled = true;
+
+            try {
+                const canvas = await generateChartCanvas();
+                if (!canvas) throw new Error("Falha ao gerar imagem do gráfico.");
+
+                btn.innerText = '📤 Enviando...';
+
+                canvas.toBlob(async function(blob) {
+                    const formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', blob, 'grafico.png');
+                    formData.append('caption', '📊 *Análise Gráfica - Opções Double*\n\nGerado pelo Cortex Virtual');
+                    formData.append('parse_mode', 'Markdown');
+
+                    const response = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (data.ok) {
+                        alert('✅ Gráfico enviado para o Telegram com sucesso!');
+                    } else {
+                        throw new Error(data.description || 'Erro desconhecido no Telegram');
+                    }
+                    
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }, 'image/png');
+
+            } catch (e) {
+                console.error(e);
+                alert('❌ Erro ao enviar: ' + e.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function playAlertSound() {
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+                osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15); // Drop
+                
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) {
+                console.error("Audio error:", e);
+            }
+        }
+
+        // Data fetching logic (adapted from analise_avancada.html)
+        async function fetchData() {
+            try {
+                let token = localStorage.getItem('blaze_token');
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    headers['x-access-token'] = token;
+                }
+
+                const pages = [1, 2, 3, 4, 5, 6]; // Fetch more pages for more candles
+                const promises = pages.map(page => {
+                    const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                    const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                    const targetUrl = `${baseUrl}${params}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                    return fetch(proxyUrl, { method: 'GET', headers: headers })
+                        .then(r => r.ok ? r.json() : null)
+                        .catch(() => null);
+                });
+
+                const responses = await Promise.all(promises);
+                let allGames = [];
+                
+                responses.forEach(data => {
+                    if (data) {
+                        const records = Array.isArray(data) ? data : (data.records || []);
+                        allGames = allGames.concat(records);
+                    }
+                });
+
+                const seenIds = new Set();
+                const uniqueGames = allGames.filter(game => {
+                    if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
+                    return false;
+                }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (uniqueGames.length > 0) {
+                    globalGamesData = uniqueGames;
+                    updateChart(true); // Pass true to enable sound on new data
+                } else {
+                    document.getElementById('chart-container').innerHTML = '<div class="loading-text">Falha ao carregar dados. Verifique o token de acesso ou tente mais tarde.</div>';
+                }
+            } catch (e) {
+                console.error("Erro ao buscar dados para o gráfico:", e);
+                document.getElementById('chart-container').innerHTML = `<div class="loading-text">Erro: ${e.message}</div>`;
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            const autoFetchToggle = document.getElementById('autoFetchToggle');
+            if (autoFetchToggle) {
+                autoFetchToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        fetchData(); // Fetch immediately
+                        if (autoFetchInterval) clearInterval(autoFetchInterval);
+                        autoFetchInterval = setInterval(fetchData, 15000);
+                    } else {
+                        clearInterval(autoFetchInterval);
+                    }
+                });
+                autoFetchToggle.checked = true;
+                autoFetchToggle.dispatchEvent(new Event('change'));
+            } else {
+                fetchData(); setInterval(fetchData, 15000);
+            }
+
+            // Panning functionality (Mouse and Touch)
+            const chartContainer = document.getElementById('chart-container');
+
+            const startPan = (clientX) => {
+                if (isDrawMode) return;
+                isPanning = true;
+                panStartX = clientX;
+                panStartViewIndex = viewStartIndex;
+                chartContainer.style.cursor = 'grabbing';
+            };
+
+            const movePan = (clientX) => {
+                if (!isPanning) return;
+                const dx = clientX - panStartX;
+                const candlePixelWidth = chartContainer.clientWidth / 100; // Based on fixed candle count
+                const candleShift = Math.round(dx / candlePixelWidth);
+                
+                const newIndex = panStartViewIndex - candleShift;
+                if (newIndex !== viewStartIndex) {
+                    viewStartIndex = newIndex;
+                    renderVisibleCharts();
+                }
+            };
+
+            const stopPan = () => {
+                if (!isPanning) return;
+                isPanning = false;
+                chartContainer.style.cursor = isDrawMode ? 'crosshair' : 'default';
+            };
+
+            chartContainer.addEventListener('mousedown', (e) => { e.preventDefault(); startPan(e.clientX); });
+            chartContainer.addEventListener('mousemove', (e) => { e.preventDefault(); movePan(e.clientX); });
+            chartContainer.addEventListener('mouseup', stopPan);
+            chartContainer.addEventListener('mouseleave', stopPan);
+            chartContainer.addEventListener('touchstart', (e) => { e.preventDefault(); startPan(e.touches[0].clientX); }, { passive: false });
+            chartContainer.addEventListener('touchmove', (e) => { e.preventDefault(); movePan(e.touches[0].clientX); }, { passive: false });
+            chartContainer.addEventListener('touchend', stopPan);
+        });
+    </script>
+</body>
+</html>

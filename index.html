@@ -1053,6 +1053,7 @@
                         <div class="nav-btn" onclick="openTool('gerador_manual.html', 'Gerador Manual')"><div class="nav-icon">✍️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('analise_avancada.html', 'Análise Avançada')" style="border-color: #ff9800;"><div class="nav-icon">📈</div><div class="nav-title" style="color: #ff9800;">Análise Avançada</div><div class="nav-desc">Novas Ferramentas</div></div>
                         <div class="nav-btn" onclick="openTool('analise_avancada.html?open=ai', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🧠</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
+                        <div class="nav-btn" onclick="openTool('opcoes_double.html', 'Opções Double')" style="border-color: #00ff88;"><div class="nav-icon">🕯️</div><div class="nav-title" style="color: #00ff88;">Opções Double</div><div class="nav-desc">Gráfico de Velas</div></div>
                         
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">🤖</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">⚪</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
@@ -1579,6 +1580,11 @@
                         <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
                     </div>
                     <div class="control-group">
+                        <label for="config_telegram_chat_id_double">Seu Chat ID (Opções Double):</label>
+                        <input type="text" id="config_telegram_chat_id_double" placeholder="ID do seu chat/grupo para Opções Double">
+                        <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
+                    </div>
+                    <div class="control-group">
                         <button onclick="testGeneralTelegramConnection(this)" class="manual-btn" style="width: 100%; background-color: #24A1DE; border-color: #24A1DE; color: #fff; font-weight: bold; margin-top: 5px;">🧪 TESTAR CONEXÃO TELEGRAM</button>
                     </div>
 
@@ -1989,6 +1995,7 @@
                 document.getElementById('config_telegram_chat_id').value = localStorage.getItem('telegram_chat_id') || '';
                 document.getElementById('config_telegram_chat_id_white').value = localStorage.getItem('telegram_chat_id_white') || '';
                 document.getElementById('config_telegram_chat_id_patterns').value = localStorage.getItem('telegram_chat_id_patterns') || '';
+                document.getElementById('config_telegram_chat_id_double').value = localStorage.getItem('telegram_chat_id_double') || '';
                 document.getElementById('config_telegram_autobot_template').value = localStorage.getItem('telegram_autobot_template') || '';
                 document.getElementById('config_telegram_whitebot_template').value = localStorage.getItem('telegram_whitebot_template') || '';
                 return; // Finaliza para o admin
@@ -2006,11 +2013,13 @@
                     document.getElementById('config_telegram_chat_id').value = userData.telegramChatId || '';
                     document.getElementById('config_telegram_chat_id_white').value = userData.telegramChatIdWhite || '';
                     document.getElementById('config_telegram_chat_id_patterns').value = userData.telegramChatIdPatterns || '';
+                    document.getElementById('config_telegram_chat_id_double').value = userData.telegramChatIdDouble || '';
                     const autobotTemplate = userData.telegramAutobotTemplate || '';
                     const whitebotTemplate = userData.telegramWhitebotTemplate || '';
                     document.getElementById('config_telegram_autobot_template').value = autobotTemplate;
                     document.getElementById('config_telegram_whitebot_template').value = whitebotTemplate;
                     sessionStorage.setItem('telegram_chat_id_patterns', userData.telegramChatIdPatterns || '');
+                    sessionStorage.setItem('telegram_chat_id_double', userData.telegramChatIdDouble || '');
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
                 }
@@ -2059,6 +2068,7 @@
             const chatIdCores = document.getElementById('config_telegram_chat_id').value;
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value;
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value;
+            const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value;
             const autobotTemplate = document.getElementById('config_telegram_autobot_template').value;
             const whitebotTemplate = document.getElementById('config_telegram_whitebot_template').value;
 
@@ -2068,6 +2078,7 @@
                     localStorage.setItem('telegram_chat_id', chatIdCores);
                     localStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     localStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                    localStorage.setItem('telegram_chat_id_double', chatIdDouble);
                     localStorage.setItem('telegram_autobot_template', autobotTemplate);
                     localStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2075,6 +2086,7 @@
                     sessionStorage.setItem('telegram_chat_id', chatIdCores);
                     sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                    sessionStorage.setItem('telegram_chat_id_double', chatIdDouble);
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2100,6 +2112,7 @@
                     telegramChatId: chatIdCores,
                     telegramChatIdWhite: chatIdWhite,
                     telegramChatIdPatterns: chatIdPatterns,
+                    telegramChatIdDouble: chatIdDouble,
                     telegramAutobotTemplate: autobotTemplate,
                     telegramWhitebotTemplate: whitebotTemplate
                 });
@@ -2108,6 +2121,7 @@
                 sessionStorage.setItem('telegram_chat_id', chatIdCores);
                 sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                 sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                sessionStorage.setItem('telegram_chat_id_double', chatIdDouble);
                 sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                 sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2128,13 +2142,14 @@
             const chatIdCores = document.getElementById('config_telegram_chat_id').value.trim();
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value.trim();
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value.trim();
+            const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value.trim();
 
             if (!token) {
                 alert('⚠️ Token do Bot não configurado (Admin).');
                 return;
             }
 
-            if (!chatIdCores && !chatIdWhite && !chatIdPatterns) {
+            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble) {
                 alert('⚠️ Digite pelo menos um Chat ID para testar.');
                 return;
             }
@@ -2159,6 +2174,7 @@
             if (chatIdCores) await send(chatIdCores, 'Robô Cores');
             if (chatIdWhite) await send(chatIdWhite, 'Robô Branco');
             if (chatIdPatterns) await send(chatIdPatterns, 'Robô Padrões');
+            if (chatIdDouble) await send(chatIdDouble, 'Opções Double');
 
             btn.innerText = originalText;
             btn.disabled = false;
