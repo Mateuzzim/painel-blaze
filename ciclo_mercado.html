@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo de Mercado</title>
+    <style>
+        /* Basic styles from other pages */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 98%; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        /* Styles for the market cycle tool will go here */
+        .chart-dot { animation: pulse-chart 1s infinite; } 
+        @keyframes pulse-chart { 0% { r: 3; opacity: 0.6; } 50% { r: 5; opacity: 1; box-shadow: 0 0 5px #fff; } 100% { r: 3; opacity: 0.6; } }
+        /* Futuristic Scoreboard */
+        .futuristic-scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(10, 10, 15, 0.6);
+            border: 1px solid #333;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .futuristic-scoreboard::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, #ffeb3b, transparent);
+            animation: scan-line 3s linear infinite;
+        }
+        .score-card {
+            flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px;
+            background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+        .score-card:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.05); }
+        .score-card.avg { border-bottom: 2px solid #00d2ff; }
+        .score-card.min { border-bottom: 2px solid #00ff88; }
+        .score-card.max { border-bottom: 2px solid #ff0055; }
+        .score-card.last { border-bottom: 2px solid #a100ff; }
+        .score-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 2px; }
+        .score-value { font-size: 1.8rem; font-weight: 800; font-family: monospace; }
+        .avg-text { color: #00d2ff; text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
+        .min-text { color: #00ff88; text-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
+        .max-text { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.4); }
+        .last-text { color: #a100ff; text-shadow: 0 0 8px rgba(161, 0, 255, 0.4); }
+        @keyframes scan-line { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .progress-ring-circle { transition: stroke-dashoffset 0.35s; transform-origin: 50% 50%; transform: rotate(-90deg); }
+        
+        /* Estilos do Botão Switch */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel">
+            <div class="main-header">
+                <h1 class="cortex-text-anim">CICLO DE MERCADO</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 0.8rem; color: #aaa;">Filtro Assert.:</span>
+                        <label class="switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="assertivenessFilterToggle" onchange="analyzeAndDisplayCycles()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <span style="font-size: 0.8rem; color: #aaa;">Auto-Atualizar:</span>
+                    <label class="switch" style="transform: scale(0.8);">
+                        <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdate()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="cycles_content" style="color: #fff;">Aguardando dados para análise...</div>
+
+        </div>
+    </div>
+    <script>
+        let updateInterval;
+        let cycleMonitorHistory = []; // Histórico para o monitor de ciclo
+        let currentCycleStartTime = 0; // Para controlar a limpeza do histórico no novo ciclo
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Página Ciclo de Mercado carregada.");
+            analyzeAndDisplayCycles();
+            if(document.getElementById('autoUpdateToggle').checked) toggleAutoUpdate();
+        });
+
+        function toggleAutoUpdate() {
+            const toggle = document.getElementById('autoUpdateToggle');
+            if (toggle && toggle.checked) {
+                if (updateInterval) clearInterval(updateInterval);
+                fetchBlazeData(); // Busca imediatamente ao ativar
+                updateInterval = setInterval(fetchBlazeData, 10000); // Busca e atualiza a cada 10 segundos
+            } else {
+                if (updateInterval) clearInterval(updateInterval);
+            }
+        }
+
+        async function fetchBlazeData() {
+            try {
+                const response = await fetch('https://blaze.com/api/roulette_games/recent');
+                if (!response.ok) throw new Error('Falha na conexão com a API');
+                
+                const data = await response.json();
+                // Formata os dados para o padrão esperado pelo script (DD/MM/YYYY ROLL HH:MM)
+                // A API retorna do mais novo para o mais antigo, que é o que o parser espera no início (tokens[0])
+                const formattedData = data.map(game => {
+                    const date = new Date(game.created_at);
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const y = date.getFullYear();
+                    const h = String(date.getHours()).padStart(2, '0');
+                    const min = String(date.getMinutes()).padStart(2, '0');
+                    return `${d}/${m}/${y} ${game.roll} ${h}:${min}`;
+                }).join(' ');
+
+                sessionStorage.setItem('raw_blaze_data', formattedData);
+                analyzeAndDisplayCycles(); // Atualiza a tela após salvar
+            } catch (error) {
+                console.error("Erro no Auto-Busca:", error);
+                // Opcional: Mostrar erro na tela se desejar
+            }
+        }
+
+        function analyzeAndDisplayCycles() {
+            const content = document.getElementById('cycles_content');
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) {
+                content.innerHTML = '<p style="text-align: center; color: #ff9800;">⚠️ Nenhum dado de histórico encontrado. Por favor, vá ao painel principal e clique em "BUSCAR DADOS" primeiro.</p>';
+                return;
+            }
+            
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            
+            // --- Análise de Assertividade por Minuto (0-59) ---
+            const minuteTotals = new Array(60).fill(0);
+            const minuteWhites = new Array(60).fill(0);
+            
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    const roll = parseInt(tokens[i + 1]);
+                    const time = tokens[i + 2];
+                    const minute = parseInt(time.split(':')[1]);
+                    if (!isNaN(minute)) {
+                        minuteTotals[minute]++;
+                        if (roll === 0) minuteWhites[minute]++;
+                    }
+                    i += 2;
+                }
+            }
+            // --- Filtro Dinâmico de Assertividade ---
+            const totalW = minuteWhites.reduce((a,b)=>a+b,0);
+            const totalM = minuteTotals.reduce((a,b)=>a+b,0);
+            const globalRate = totalM > 0 ? totalW / totalM : 0.07;
+            const dynamicThreshold = Math.max(0.10, globalRate * 1.25); // Exige 25% acima da média global ou min 10%
+            const bestMinutes = [];
+            for(let m=0; m<60; m++) { if(minuteTotals[m] > 0 && (minuteWhites[m]/minuteTotals[m]) >= dynamicThreshold) bestMinutes.push(m); }
+
+            // --- Lógica de Rastreio (Análise completa do histórico) ---
+            const fullResults = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    fullResults.push({
+                        date: tokens[i],
+                        roll: parseInt(tokens[i + 1]),
+                        time: tokens[i + 2]
+                    });
+                    i += 2;
+                }
+            }
+            // Inverte para ordem cronológica (mais antigo para mais novo)
+            fullResults.reverse();
+            // --- Fim da análise de histórico ---
+
+
+            let latestGameTime = null;
+            if (tokens.length >= 3 && tokens[0].includes('/') && tokens[2].includes(':')) {
+                 const [d, m, y] = tokens[0].split('/').map(Number);
+                 const timeParts = tokens[2].split(':').map(Number);
+                 latestGameTime = new Date(y, m - 1, d, timeParts[0], timeParts[1], timeParts[2] || 0);
+            }
+
+            const whiteTimes = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    if (parseInt(tokens[i + 1]) === 0) {
+                        const [day, month, year] = tokens[i].split('/').map(Number);
+                        const timeParts = tokens[i + 2].split(':').map(Number);
+                        whiteTimes.push(new Date(year, month - 1, day, timeParts[0], timeParts[1], timeParts[2] || 0));
+                    }
+                    i += 2;
+                }
+            }
+            if (whiteTimes.length < 2) { content.innerHTML = '<p style="text-align: center; color: #ff9800;">⚠️ Mínimo 2 brancos no histórico para calcular ciclos.</p>'; return; }
+            
+            whiteTimes.sort((a, b) => a - b);
+            const intervals = [];
+            for (let i = 1; i < whiteTimes.length; i++) {
+                const diffMins = Math.floor((whiteTimes[i] - whiteTimes[i - 1]) / 60000);
+                if (diffMins > 0) intervals.push(diffMins);
+            }
+            if (intervals.length === 0) { content.innerHTML = '<p style="text-align: center; color: #ff9800;">⚠️ Não foi possível calcular intervalos válidos.</p>'; return; }
+            
+            // --- Análise Avançada de Precisão (Smart Analysis) ---
+            const recentIntervals = intervals.slice(-20);
+            const lastIntervalVal = intervals[intervals.length - 1];
+            let smartAvg = 0;
+            let analysisLabel = "MÉDIA (20)";
+
+            // 1. Tenta encontrar Padrão de Repetição (O que acontece após um intervalo X?)
+            const similarPatterns = [];
+            const patternIndices = []; // Índices dos resultados do padrão
+            const tolerance = Math.max(2, Math.round(lastIntervalVal * 0.15)); // Tolerância de 15% ou min 2m
+            
+            for (let i = 0; i < intervals.length - 1; i++) {
+                if (Math.abs(intervals[i] - lastIntervalVal) <= tolerance) {
+                    similarPatterns.push(intervals[i + 1]); // Pega o próximo intervalo da sequência
+                    patternIndices.push(i + 1);
+                }
+            }
+
+            if (similarPatterns.length >= 3) {
+                smartAvg = Math.round(similarPatterns.reduce((a, b) => a + b, 0) / similarPatterns.length);
+                
+                // Calcula a força do padrão baseada na consistência (Desvio Padrão)
+                const variance = similarPatterns.reduce((sum, val) => sum + Math.pow(val - smartAvg, 2), 0) / similarPatterns.length;
+                const stdDev = Math.sqrt(variance);
+                const cv = stdDev / (smartAvg || 1); // Coeficiente de Variação
+
+                let strength = "BAIXA", sColor = "#ff0055";
+                if (cv <= 0.25) { strength = "ALTA"; sColor = "#00ff88"; }
+                else if (cv <= 0.50) { strength = "MÉDIA"; sColor = "#ff9800"; }
+                
+                const pList = similarPatterns.join(', ');
+                const pPreview = similarPatterns.length > 4 ? similarPatterns.slice(0, 4).join(',') + '...' : pList;
+                analysisLabel = `PADRÃO <span style="color:${sColor}">${strength}</span><br><span style="font-size:0.5rem; color:#888; cursor:help;" title="Histórico: ${pList}">[${pPreview}]</span>`;
+            } else {
+                // 2. Média Ponderada (Peso maior para os mais recentes)
+                const weightedSlice = intervals.slice(-15);
+                let weightedSum = 0, weightTotal = 0;
+                weightedSlice.forEach((val, idx) => {
+                    weightedSum += val * (idx + 1);
+                    weightTotal += (idx + 1);
+                });
+                smartAvg = Math.round(weightedSum / weightTotal);
+                analysisLabel = "MÉDIA PONDERADA";
+            }
+
+            const avg = smartAvg > 0 ? smartAvg : Math.round(recentIntervals.reduce((a, b) => a + b, 0) / recentIntervals.length);
+            const min = Math.min(...recentIntervals);
+            const max = Math.max(...recentIntervals);
+            const lastInterval = intervals[intervals.length - 1];
+            
+            // --- Cálculo de WIN/LOSS do Dia (Simulação baseada na Média Atual) ---
+            let dailyWins = 0;
+            let dailyLosses = 0;
+            const dailyHistory = []; // Armazena o histórico calculado do dia
+            const todayDate = new Date().getDate();
+            
+            // Itera sobre os intervalos para calcular assertividade do dia
+            for (let i = 1; i < whiteTimes.length; i++) {
+                // Considera apenas se o branco ocorreu hoje
+                if (whiteTimes[i].getDate() === todayDate) {
+                    const diff = Math.floor((whiteTimes[i] - whiteTimes[i - 1]) / 60000);
+                    let mult = 1;
+                    // Verifica ciclos até encontrar o acerto ou desistir (limite arbitrário de 50x)
+                    while (mult <= 50) {
+                        const targetMin = mult * avg;
+                        const tTime = new Date(whiteTimes[i-1].getTime() + targetMin * 60000);
+                        const tTimeStr = `${tTime.getHours().toString().padStart(2, '0')}:${tTime.getMinutes().toString().padStart(2, '0')}`;
+
+                        // Janela de acerto: do tempo alvo até +3 minutos (6 pedras / 2 por min)
+                        if (diff >= targetMin && diff <= targetMin + 3) {
+                            dailyWins++;
+                            dailyHistory.push({ time: tTimeStr, result: 'WIN' });
+                            break; // Acertou neste ciclo, para de contar loss para este intervalo
+                        } else if (diff > targetMin + 3) {
+                            dailyLosses++; // Passou do tempo alvo + margem, conta como LOSS
+                            dailyHistory.push({ time: tTimeStr, result: 'LOSS' });
+                        }
+                        mult++;
+                        // Se o multiplicador passar muito do diff, paramos (evita loop infinito se lógica falhar)
+                        if (targetMin > diff + 20) break;
+                    }
+                }
+            }
+            const dailyTotal = dailyWins + dailyLosses;
+            const dailyAssertiveness = dailyTotal > 0 ? Math.round((dailyWins / dailyTotal) * 100) : 0;
+            
+            const dailyStatsHtml = `<div style="display: flex; justify-content: center; align-items: center; gap: 20px; background: linear-gradient(90deg, rgba(0, 40, 60, 0.6), rgba(0, 0, 0, 0.8), rgba(60, 0, 20, 0.6)); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); margin-bottom: 25px; position: relative; overflow: hidden;"><div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent);"></div><span style="color: #ccc; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">Placar do Dia</span><span style="color: #00ff88; font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);">WIN: ${dailyWins}</span><span style="color: #ff0055; font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);">LOSS: ${dailyLosses}</span><span style="color: #00d2ff; font-weight: bold; font-size: 1.2rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);">${dailyAssertiveness}%</span></div>`;
+
+            const hourlyCounts = Array(24).fill(0);
+            whiteTimes.forEach(date => hourlyCounts[date.getHours()]++);
+
+            const maxHourlyCount = Math.max(...hourlyCounts, 1);
+            const chartW_hourly = 500, chartH_hourly = 100, barWidth_hourly = chartW_hourly / 24;
+            let bars_hourly = '';
+            hourlyCounts.forEach((count, hour) => {
+                const barHeight = (count / maxHourlyCount) * (chartH_hourly - 20);
+                const x = hour * barWidth_hourly;
+                const y = chartH_hourly - barHeight;
+                const isHot = count > 0 && count >= maxHourlyCount * 0.8;
+                const barColor = isHot ? '#ff9800' : '#00d2ff';
+                bars_hourly += `<g transform="translate(${x}, 0)"><rect x="2" y="${y}" width="${barWidth_hourly - 4}" height="${barHeight}" fill="${barColor}" opacity="0.7" rx="2"><title>Hora ${hour}: ${count} branco(s)</title></rect><text x="${barWidth_hourly / 2}" y="${chartH_hourly - 5}" font-size="10" fill="#888" text-anchor="middle">${hour}</text></g>`;
+            });
+            const hourlyChartHtml = `<div style="margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 15px; border: 1px solid #333;"><h4 style="margin: 0 0 10px 0; color: #ccc; font-size: 0.8rem; text-transform: uppercase;">Frequência de Brancos por Hora</h4><svg viewBox="0 0 ${chartW_hourly} ${chartH_hourly}" style="width: 100%; height: 100px;">${bars_hourly}</svg></div>`;
+
+            let countdownHtml = '', minutesSinceLast = 0;
+            if (latestGameTime && whiteTimes.length > 0) {
+                const lastWhiteTime = whiteTimes[whiteTimes.length - 1];
+                minutesSinceLast = Math.floor((latestGameTime - lastWhiteTime) / 60000);
+                
+                // Reseta o histórico se mudou o ciclo (saiu um novo branco)
+                if (lastWhiteTime.getTime() !== currentCycleStartTime) {
+                    cycleMonitorHistory = [];
+                    currentCycleStartTime = lastWhiteTime.getTime();
+                }
+                
+                // --- Lógica para encontrar o próximo alvo válido (pulando LOSS e filtros) ---
+                let activeMultiplier = 1;
+                const useFilter = document.getElementById('assertivenessFilterToggle').checked;
+                
+                while (activeMultiplier <= 50) {
+                    const tTime = new Date(lastWhiteTime.getTime() + (avg * activeMultiplier) * 60000);
+                    
+                    // Verifica Filtro
+                    if (useFilter && !bestMinutes.includes(tTime.getMinutes())) {
+                        activeMultiplier++;
+                        continue;
+                    }
+
+                    // Verifica se já é LOSS (passou do tempo e deu 6 entradas sem branco)
+                    let isLoss = false;
+                    if (latestGameTime >= tTime) {
+                        let eCount = 0;
+                        let fWhite = false;
+                        for (const res of fullResults) {
+                            const [d, m, y] = res.date.split('/').map(Number);
+                            const [h, min] = res.time.split(':').map(Number);
+                            const rDate = new Date(y, m - 1, d, h, min);
+                            if (rDate >= tTime) {
+                                eCount++;
+                                if (res.roll === 0) { fWhite = true; break; }
+                                if (eCount >= 6) break; 
+                            }
+                        }
+                        if (!fWhite && eCount >= 6) isLoss = true;
+                    }
+
+                    if (isLoss) {
+                        // Registra o LOSS no histórico antes de pular para o próximo
+                        const alreadyExists = cycleMonitorHistory.some(item => item.targetTime.getTime() === tTime.getTime());
+                        if (!alreadyExists) {
+                            cycleMonitorHistory.push({ targetTime: tTime, result: 'LOSS' });
+                        }
+                        activeMultiplier++;
+                    }
+                    else break;
+                }
+
+                const remaining = (avg * activeMultiplier) - minutesSinceLast;
+
+                // Calcula o horário futuro estimado
+                const estimatedTime = new Date(new Date().getTime() + remaining * 60000);
+                const estimatedTimeStr = `${estimatedTime.getHours().toString().padStart(2, '0')}:${estimatedTime.getMinutes().toString().padStart(2, '0')}`;
+
+                let statusColor = '#00ff88'; // Verde padrão
+                let statusText = `~ ${estimatedTimeStr} (em ${remaining} min)`;
+                if (remaining <= 0) {
+                    statusColor = '#ff0055'; // Vermelho para atrasado
+                    statusText = `ATRASADO HÁ ${Math.abs(remaining)} MIN`;
+                } else if (remaining < 5) {
+                    statusColor = '#ff9800'; // Amarelo para próximo
+                }
+
+                let progressPercent = Math.min(100, (minutesSinceLast / (avg * activeMultiplier)) * 100);
+                countdownHtml = `<div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 8px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                        <span style="color: #aaa; font-size: 0.9rem;">Próximo Branco Estimado:</span>
+                        <span style="color: ${statusColor}; font-weight: bold; font-size: 1.1rem; animation: pulse-text 1.5s infinite alternate;">${statusText}</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden;"><div style="width: ${progressPercent}%; height: 100%; background: ${statusColor}; transition: width 0.5s;"></div></div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.75rem; color: #666;"><span>Último: ${minutesSinceLast}m atrás</span><span>Média: ${avg}m</span></div>
+                </div>
+                <style>@keyframes pulse-text { 0% { opacity: 0.8; } 100% { opacity: 1; text-shadow: 0 0 8px; } }</style>`;
+
+                // --- Monitoramento de Entrada (6 Alvos Futuros) ---
+                let targetsHtml = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
+                let targetsFound = 0;
+                let cycleMultiplier = activeMultiplier; // Começa do alvo ativo
+                
+                // Busca até 6 alvos
+                while (targetsFound < 6 && cycleMultiplier <= activeMultiplier + 30) {
+                    const targetTime = new Date(lastWhiteTime.getTime() + (avg * cycleMultiplier) * 60000);
+                    const targetMinute = targetTime.getMinutes();
+                    
+                    // Se filtro ativo e minuto não é bom, pula para o próximo ciclo
+                    if (useFilter && !bestMinutes.includes(targetMinute)) {
+                        cycleMultiplier++;
+                        continue;
+                    }
+
+                    targetsFound++;
+                    
+                    const targetTimeStr = `${targetTime.getHours().toString().padStart(2, '0')}:${targetTime.getMinutes().toString().padStart(2, '0')}`;
+
+                    let foundWhite = false;
+                    let status = 'AGUARDANDO';
+                    let resultText = 'PENDENTE';
+                    let resultClass = 'pending';
+                    let borderColor = '#333';
+                    let statusColor = '#aaa';
+                    
+                    let entriesCount = 0;
+                    const maxEntries = 6; // Limite de 6 entradas (pedras)
+
+                    if (latestGameTime >= targetTime) {
+                        for (const res of fullResults) {
+                            const [d, m, y] = res.date.split('/').map(Number);
+                            const [h, min] = res.time.split(':').map(Number);
+                            const resDate = new Date(y, m - 1, d, h, min);
+                            
+                            if (resDate >= targetTime) {
+                                entriesCount++;
+                                if (res.roll === 0) { foundWhite = true; break; }
+                                if (entriesCount >= maxEntries) break;
+                            }
+                        }
+
+                        if (foundWhite) { 
+                            status = 'FINALIZADO'; resultText = 'WIN 🤑'; resultClass = 'win'; borderColor = 'rgba(0, 255, 136, 0.3)'; statusColor = '#00ff88';
+                        } else if (entriesCount >= maxEntries) { 
+                            status = 'FINALIZADO'; resultText = 'LOSS ❌'; resultClass = 'loss'; borderColor = 'rgba(255, 0, 85, 0.3)'; statusColor = '#ff0055';
+                        } else { 
+                            status = 'ANALISANDO'; resultText = `... (${entriesCount}/${maxEntries})`; borderColor = 'rgba(0, 210, 255, 0.3)'; statusColor = '#00d2ff';
+                        }
+                    }
+                    
+                    // Adiciona ao histórico se o ciclo foi finalizado e toca som de WIN
+                    if (status === 'FINALIZADO') {
+                        const alreadyExists = cycleMonitorHistory.some(item => item.targetTime.getTime() === targetTime.getTime());
+                        if (!alreadyExists) {
+                            cycleMonitorHistory.push({
+                                targetTime: targetTime,
+                                result: foundWhite ? 'WIN' : 'LOSS'
+                            });
+                            if (cycleMonitorHistory.length > 5) cycleMonitorHistory.shift(); // Mantém apenas os últimos 5
+
+                            // Toca o som se for um novo WIN
+                            if (foundWhite) {
+                                playWinAlertSound();
+                            }
+                        }
+                    }
+
+                    const assertivenessBadge = bestMinutes.includes(targetMinute) 
+                        ? '<span style="font-size:0.6rem; color:#00ff88; border:1px solid #00ff88; padding:1px 3px; border-radius:3px; margin-left:5px;">★</span>' 
+                        : '';
+
+                    // Cálculo do progresso circular
+                    const totalInterval = avg * cycleMultiplier;
+                    let percent = Math.min(100, Math.max(0, (minutesSinceLast / totalInterval) * 100));
+                    let ringColor = '#00d2ff';
+                    if (status === 'FINALIZADO') { percent = 100; ringColor = foundWhite ? '#00ff88' : '#ff0055'; }
+                    else if (percent > 90) ringColor = '#ff9800';
+
+                    const radius = 10;
+                    const circumference = 2 * Math.PI * radius;
+                    const offset = circumference - (percent / 100) * circumference;
+                    const progressSvg = `<div style="position: absolute; top: 5px; right: 5px; width: 26px; height: 26px;">
+                        <svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="${radius}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2.5" /><circle cx="13" cy="13" r="${radius}" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" class="progress-ring-circle" /></svg>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.45rem; color: #aaa;">${Math.round(percent)}%</div>
+                    </div>`;
+
+                    targetsHtml += `
+                        <div style="background: rgba(0,0,0,0.4); padding: 10px 5px; border-radius: 8px; border: 1px solid ${borderColor}; text-align: center; display: flex; flex-direction: column; justify-content: center; position: relative;">
+                            ${progressSvg}
+                            <div style="font-size: 0.65rem; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; text-align: left; padding-left: 5px;">ALVO ${targetsFound} (${cycleMultiplier}x)</div>
+                            <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 4px; display:flex; align-items:center; justify-content:center;">${targetTimeStr}${assertivenessBadge}</div>
+                            <div style="font-size: 0.65rem; color: ${statusColor}; font-weight: bold; margin-bottom: 2px;">${status}</div>
+                            <div class="${resultClass}" style="font-weight: bold; font-size: 0.9rem;">${resultText}</div>
+                        </div>
+                    `;
+                    cycleMultiplier++;
+                }
+                
+                targetsHtml += '</div><style>.win { color: #00ff88; text-shadow: 0 0 8px rgba(0,255,136,0.4); } .loss { color: #ff0055; text-shadow: 0 0 8px rgba(255,0,85,0.4); } .pending { color: #666; }</style>';
+                
+                countdownHtml += targetsHtml;
+            }
+
+            // --- Gráfico de Distribuição de Probabilidade ---
+            const maxIntervalAxis = Math.max(max, minutesSinceLast) + 15;
+            const distMap = new Array(maxIntervalAxis).fill(0);
+            intervals.forEach(i => { if(i < distMap.length) distMap[i]++; });
+            
+            // Suavização (Média Móvel)
+            const smoothed = distMap.map((v, i, arr) => {
+                const prev = arr[i-1] || 0;
+                const next = arr[i+1] || 0;
+                return (prev + v + next) / 3;
+            });
+            const distMaxVal = Math.max(...smoothed, 1);
+
+            // Cálculo de Probabilidade (Próximos 5 min)
+            let probNext5 = 0, sumRemaining = 0, sumNext5 = 0;
+            for (let i = minutesSinceLast; i < smoothed.length; i++) {
+                sumRemaining += smoothed[i];
+                if (i < minutesSinceLast + 5) sumNext5 += smoothed[i];
+            }
+            if (sumRemaining > 0) probNext5 = (sumNext5 / sumRemaining) * 100;
+            
+            const distW = 500, distH = 100;
+            const distXScale = distW / (distMap.length - 1 || 1);
+            
+            let distPath = `M 0 ${distH}`;
+            smoothed.forEach((val, i) => {
+                const x = i * distXScale;
+                const y = distH - ((val / distMaxVal) * (distH - 10)); 
+                distPath += ` L ${x} ${y}`;
+            });
+            distPath += ` L ${distW} ${distH} Z`;
+            
+            const markerX = Math.min(minutesSinceLast * distXScale, distW);
+            const avgX = Math.min(avg * distXScale, distW);
+            
+            const probChartHtml = `
+                <div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 8px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; align-items: flex-end;"><div><h4 style="margin: 0; color: #ccc; font-size: 0.8rem; text-transform: uppercase;">Distribuição de Probabilidade</h4><span style="font-size: 0.7rem; color: #ff9800; font-weight: bold;">VOCÊ ESTÁ AQUI: ${minutesSinceLast}m</span></div><div style="text-align: right;"><div style="font-size: 0.65rem; color: #aaa; text-transform: uppercase;">Chance (Próx. 5 min)</div><div style="font-size: 1.1rem; font-weight: bold; color: ${probNext5 > 40 ? '#00ff88' : '#fff'}; text-shadow: 0 0 10px ${probNext5 > 40 ? 'rgba(0,255,136,0.3)' : 'rgba(255,255,255,0.1)'};">${probNext5.toFixed(1)}%</div></div></div>
+                    <svg viewBox="0 0 ${distW} ${distH}" style="width: 100%; height: 100px; overflow: visible;"><defs><linearGradient id="gradDist" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#00d2ff;stop-opacity:0.4" /><stop offset="100%" style="stop-color:#00d2ff;stop-opacity:0" /></linearGradient><filter id="glowDist"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="${distPath}" fill="url(#gradDist)" stroke="#00d2ff" stroke-width="2" filter="url(#glowDist)" /><line x1="${avgX}" y1="0" x2="${avgX}" y2="${distH}" stroke="#a100ff" stroke-width="2" stroke-dasharray="3,3" opacity="0.8" /><text x="${avgX}" y="-5" fill="#a100ff" font-size="10" text-anchor="middle" font-weight="bold">MÉDIA</text><line x1="${markerX}" y1="0" x2="${markerX}" y2="${distH}" stroke="#ff9800" stroke-width="2" stroke-dasharray="5,5" /><circle cx="${markerX}" cy="${distH}" r="4" fill="#ff9800" class="chart-dot" /></svg>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #666; margin-top: 5px;"><span>0m</span><span>${Math.round(maxIntervalAxis/2)}m</span><span>${maxIntervalAxis}m</span></div>
+                </div>`;
+
+            // --- Lógica e HTML do Rastreio de Branco ---
+            const rastreioSums = [];
+            for (let i = 0; i < fullResults.length; i++) {
+                if (fullResults[i].roll === 0) {
+                    if (i > 0 && i < fullResults.length - 1) {
+                        const prevRoll = fullResults[i - 1].roll;
+                        const nextRoll = fullResults[i + 1].roll;
+                        const whiteMinute = parseInt(fullResults[i].time.split(':')[1]);
+                        const minuteLastDigit = whiteMinute % 10;
+                        const sum = prevRoll + nextRoll + minuteLastDigit;
+                        rastreioSums.push({ sum: sum, time: fullResults[i].time });
+                    }
+                }
+            }
+
+            let rastreioHtml = '';
+            if (rastreioSums.length > 0) {
+                const lastSum = rastreioSums[rastreioSums.length - 1];
+                const allSums = rastreioSums.map(s => s.sum);
+                const avgSum = Math.round(allSums.reduce((a, b) => a + b, 0) / allSums.length);
+                const sumCounts = {};
+                allSums.forEach(s => { sumCounts[s] = (sumCounts[s] || 0) + 1; });
+                const hotSums = Object.entries(sumCounts).sort(([, a], [, b]) => b - a).slice(0, 5).map(([sum, count]) => ({ sum, count }));
+
+                const historyHtml = rastreioSums.slice(-5).reverse().map(s => 
+                    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="font-size: 1.1rem; font-weight: bold; color: #fff;">${s.sum}</span>
+                        <span style="font-size: 0.75rem; color: #888;">(${s.time})</span>
+                    </div>`
+                ).join('');
+
+                rastreioHtml = `
+                    <div style="margin-top: 20px; background: rgba(161, 0, 255, 0.1); border-radius: 8px; padding: 15px; border: 1px solid #a100ff;">
+                        <h4 style="margin: 0 0 15px 0; color: #a100ff; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🔎 Rastreio de Branco</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;"><div style="font-size: 0.7rem; color: #aaa;">ÚLTIMA SOMA</div><div style="font-size: 2rem; font-weight: bold; color: #fff;">${lastSum.sum}</div><div style="font-size: 0.7rem; color: #666;">(${lastSum.time})</div></div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;"><div style="font-size: 0.7rem; color: #aaa;">MÉDIA DAS SOMAS</div><div style="font-size: 2rem; font-weight: bold; color: #00d2ff;">${avgSum}</div></div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;"><div style="font-size: 0.7rem; color: #aaa; text-align: center; margin-bottom: 5px;">SOMAS QUENTES</div><div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">${hotSums.map(s => `<span style="background: #a100ff; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.9rem; font-weight: bold;" title="${s.count}x">${s.sum}</span>`).join('')}</div></div>
+                        </div>
+                        <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 6px;">
+                            <h5 style="margin: 0 0 8px 0; font-size: 0.7rem; color: #aaa; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px;">Histórico de Somas</h5>
+                            <div>
+                                ${historyHtml}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            const scoreboardHtml = `<div class="futuristic-scoreboard"><div class="score-card last"><span class="score-label">ÚLTIMO</span><span class="score-value last-text">${lastInterval}m</span></div><div class="score-card avg"><span class="score-label">${analysisLabel}</span><span class="score-value avg-text">${avg}m</span></div><div class="score-card min"><span class="score-label">MÍNIMO</span><span class="score-value min-text">${min}m</span></div><div class="score-card max"><span class="score-label">MÁXIMO</span><span class="score-value max-text">${max}m</span></div></div>`;
+
+            const chartData = intervals.slice(-100);
+            const sliceStart = Math.max(0, intervals.length - 100);
+            const pointSpacing = 20; // Pixels por ponto para garantir rolagem
+            const viewBoxW = Math.max(500, chartData.length * pointSpacing);
+            const viewBoxH = 100, padding = 10;
+            const maxValChart = Math.max(...chartData, avg, 1); // Garante que a média caiba no gráfico
+            
+            // Linha da Média
+            let avgLine = "";
+            if (!isNaN(avg) && maxValChart > 0) {
+                const avgY = (viewBoxH - padding) - ((avg / maxValChart) * (viewBoxH - 2 * padding));
+                avgLine = `<line x1="${padding}" y1="${avgY}" x2="${viewBoxW - padding}" y2="${avgY}" stroke="#fff" stroke-width="1" stroke-dasharray="4,4" opacity="0.3"><title>Média: ${avg}m</title></line><text x="${viewBoxW - padding}" y="${avgY - 4}" fill="#fff" font-size="9" text-anchor="end" opacity="0.5">Média</text>`;
+            }
+
+            let svgLines = "", circles = "", prevX = 0, prevY = 0;
+            let areaPathD = "";
+            chartData.forEach((val, idx) => {
+                const originalIdx = sliceStart + idx;
+                const isPatternPoint = patternIndices.includes(originalIdx);
+                
+                const x = (idx / (chartData.length - 1 || 1)) * (viewBoxW - 2 * padding) + padding;
+                const y = (viewBoxH - padding) - ((val / maxValChart) * (viewBoxH - 2 * padding));
+                
+                if (idx === 0) areaPathD += `M ${x} ${y}`;
+                else areaPathD += ` L ${x} ${y}`;
+
+                let color = val > avg ? '#ff0055' : '#00d2ff';
+                let radius = 3;
+                
+                if (isPatternPoint) {
+                    color = '#ffeb3b'; // Amarelo para destaque do padrão
+                    radius = 5;
+                }
+
+                if (idx > 0) svgLines += `<line x1="${prevX}" y1="${prevY}" x2="${x}" y2="${y}" stroke="${color}" stroke-width="2" />`;
+                
+                if (isPatternPoint) {
+                    // Adiciona efeito de halo pulsante para os pontos do padrão
+                    circles += `<circle cx="${x}" cy="${y}" r="${radius}" fill="none" stroke="${color}" stroke-width="2" opacity="0.6"><animate attributeName="r" values="${radius};${radius+6};${radius}" dur="2s" repeatCount="indefinite" /><animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite" /></circle>`;
+                }
+                
+                circles += `<circle cx="${x}" cy="${y}" r="${radius}" fill="${color}" stroke="${isPatternPoint ? '#fff' : 'none'}" stroke-width="${isPatternPoint ? 1 : 0}" class="chart-dot"><title>${val} min ${isPatternPoint ? '(Padrão)' : ''}</title></circle>`;
+                prevX = x; prevY = y;
+            });
+            
+            // Fecha o caminho da área (vai até o fundo do gráfico)
+            if (chartData.length > 0) areaPathD += ` L ${prevX} ${viewBoxH - padding} L ${padding} ${viewBoxH - padding} Z`;
+            const areaSvg = chartData.length > 0 ? `<defs><linearGradient id="chartAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#00d2ff" stop-opacity="0.2"/><stop offset="100%" stop-color="#00d2ff" stop-opacity="0"/></linearGradient></defs><path d="${areaPathD}" fill="url(#chartAreaGrad)" />` : '';
+            
+            // --- Geração da Barra de Histórico (Resultados Anteriores + Ao Vivo) ---
+            let historyBarHtml = '';
+            // Combina histórico calculado (passado) com histórico monitorado (atual/recente)
+            const liveHistory = cycleMonitorHistory.map(item => ({
+                time: `${item.targetTime.getHours().toString().padStart(2, '0')}:${item.targetTime.getMinutes().toString().padStart(2, '0')}`,
+                result: item.result
+            }));
+            const fullHistory = [...dailyHistory, ...liveHistory];
+            
+            if (fullHistory.length > 0) {
+                // Pega os últimos 15 resultados para exibir
+                const recentHistory = fullHistory.slice(-15);
+                const historyItemsHtml = recentHistory.map(item => {
+                    const isWin = item.result === 'WIN';
+                    const color = isWin ? '#00ff88' : '#ff0055';
+                    const bg = isWin ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 0, 85, 0.1)';
+                    const border = isWin ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 0, 85, 0.3)';
+                    return `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: ${bg}; border: 1px solid ${border}; padding: 5px 10px; border-radius: 6px; min-width: 50px;"><span style="color: ${color}; font-weight: bold; font-size: 0.9rem;">${item.time}</span></div>`;
+                }).join('');
+                historyBarHtml = `<div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;">${historyItemsHtml}</div>`;
+            }
+
+            content.innerHTML = `${dailyStatsHtml}${historyBarHtml}${countdownHtml}${probChartHtml}${scoreboardHtml}${hourlyChartHtml}<div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; border: 1px solid #333;"><h4 style="margin: 0 0 10px 0; color: #ccc; font-size: 0.8rem;">Variação (Últimos 100)</h4><div style="overflow-x: auto; padding-bottom: 5px;"><svg viewBox="0 0 ${viewBoxW} 100" style="width: ${viewBoxW}px; height: 100px; overflow: visible;">${areaSvg}${avgLine}${svgLines}${circles}</svg></div></div><div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;"><h4 style="margin-top: 0; color: #ccc;">Últimos 10 Intervalos:</h4><div style="font-family: monospace; color: #00d2ff; word-break: break-all;">${intervals.slice(-10).join('m ➔ ')}m</div></div>${rastreioHtml}`;
+        }
+
+        function playWinAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!ctx) return; // AudioContext not supported
+
+                const t = ctx.currentTime;
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(659.25, t); // E5
+                gain1.gain.setValueAtTime(0.1, t);
+                gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+                osc1.start(t);
+                osc1.stop(t + 0.2);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880.00, t + 0.1); // A5
+                gain2.gain.setValueAtTime(0.1, t + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+                osc2.start(t + 0.1);
+                osc2.stop(t + 0.3);
+            } catch (e) {
+                console.error("Erro ao tocar som de WIN:", e);
+            }
+        }
+    </script>
+</body>
+</html>

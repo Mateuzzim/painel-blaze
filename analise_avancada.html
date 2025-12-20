@@ -84,10 +84,6 @@
         .heatmap-cell:hover { transform: translateY(-3px); z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-color: #fff; }
         .hm-min { font-size: 0.7rem; color: #888; margin-bottom: 5px; font-family: monospace; }
         .hm-count { font-size: 1.2rem; font-weight: bold; color: #fff; }
-        @media (max-width: 700px) { .heatmap-grid { grid-template-columns: repeat(5, 1fr); } }
-
-        /* Cycles Styles */
-        #sec_cycles_modal .modal-content { border-top-color: #00d2ff; }
 
         /* Patterns Styles */
         #sec_patterns_modal .modal-content { border-top-color: #a100ff; }
@@ -137,9 +133,6 @@
         .ai-circle-inner { width: 80px; height: 80px; border-radius: 50%; border: 2px solid transparent; border-left-color: #a100ff; border-right-color: #ff9800; animation: spin-ai 2s linear infinite reverse; position: absolute; }
         .ai-core-dot { width: 15px; height: 15px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8); animation: pulse-ai 1s ease-in-out infinite alternate; }
         @keyframes spin-ai { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse-ai { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 1; } }
-        @keyframes glitch-anim { 0% { transform: translate(0); opacity: 1; } 92% { transform: translate(0); opacity: 1; } 92.5% { transform: translate(-3px, 2px) skew(10deg); opacity: 0.8; } 93% { transform: translate(3px, -2px) skew(-10deg); opacity: 1; } 93.5% { transform: translate(0); opacity: 1; } 98% { transform: translate(1px, -1px) skew(5deg); } 98.5% { transform: translate(-1px, 1px) skew(-5deg); } 100% { transform: translate(0); } }
-        .chart-dot { animation: pulse-chart 1s infinite; } @keyframes pulse-chart { 0% { r: 3; opacity: 0.6; } 50% { r: 5; opacity: 1; box-shadow: 0 0 5px #fff; } 100% { r: 3; opacity: 0.6; } }
         @keyframes pulse-white { 0% { box-shadow: 0 0 15px rgba(255,255,255,0.3); } 100% { box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
 
         /* Trend Meter Styles */
@@ -161,11 +154,6 @@
             <div class="content-section">
                 <h3 style="color: #00d2ff; margin-bottom: 15px; border-left: 3px solid #00d2ff; padding-left: 10px;">🛠️ Ferramentas Experimentais</h3>
                 <div class="analysis-buttons-grid">
-                    <!-- Botão 1 -->
-                    <div class="analysis-btn" onclick="sec_showCycles()">
-                        <div class="analysis-icon">🔄</div>
-                        <div class="analysis-label">Ciclos de Mercado</div>
-                    </div>
                     <!-- Botão 2 -->
                     <div class="analysis-btn" onclick="sec_showRepeatingPatterns()">
                         <div class="analysis-icon">🔁</div>
@@ -250,14 +238,6 @@
             <h2 style="color: #ff0055; margin: 0 0 5px 0;">🔥 Mapa de Calor (Brancos)</h2>
             <p style="color: #ccc; font-size: 0.9rem; margin: 0;">Frequência de brancos por minuto (0-59). Total analisado: <span id="sec_heatmap_total" style="color: #fff; font-weight: bold;">0</span></p>
             <div id="sec_heatmap_content" class="heatmap-grid"></div>
-        </div>
-    </div>
-
-    <div id="sec_cycles_modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('sec_cycles_modal').style.display='none'">&times;</button>
-            <h2 style="color: #00d2ff; margin: 0 0 15px 0;">🔄 Ciclos de Mercado (Brancos)</h2>
-            <div id="sec_cycles_content" style="color: #fff;"></div>
         </div>
     </div>
 
