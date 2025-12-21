@@ -69,7 +69,21 @@
             gap: 15px;
             justify-content: center;
             animation: card-pulse 4s infinite;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            padding: 0 !important;
+            gap: 0 !important;
         }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .control-row:last-child { border-bottom: none; }
         
         @keyframes card-pulse {
             0% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
@@ -489,6 +503,35 @@
         ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.1); }
         ::-webkit-scrollbar-thumb:hover { background: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8); }
         ::-webkit-scrollbar-corner { background: #050505; }
+
+        /* News Panel Styles */
+        .news-panel {
+            background: linear-gradient(90deg, rgba(20,20,25,0.95) 0%, rgba(30,30,35,0.95) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .news-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent); box-shadow: 0 0 10px var(--accent);
+        }
+        .news-label {
+            font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: bold;
+            color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
+            white-space: nowrap; animation: blink-label 2s infinite;
+        }
+        @keyframes blink-label { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .news-text {
+            font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; color: #ddd;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -507,6 +550,13 @@
                     <ul id="history-list" class="history-list">
                         <li style="text-align: center; color: #555; padding: 10px; font-size: 0.7rem;">Aguardando sinais...</li>
                     </ul>
+                </div>
+                <!-- Painel OHLC -->
+                <div id="ohlc-display" style="position: absolute; top: 10px; left: 60px; z-index: 15; font-family: 'Orbitron', sans-serif; font-size: 0.7rem; color: #888; pointer-events: none; display: none; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(2px);">
+                    O: <span id="ohlc-open" style="color: #fff; margin-right: 8px;">-</span>
+                    H: <span id="ohlc-high" style="color: #fff; margin-right: 8px;">-</span>
+                    L: <span id="ohlc-low" style="color: #fff; margin-right: 8px;">-</span>
+                    C: <span id="ohlc-close" style="color: #fff;">-</span>
                 </div>
             </div>
             <!-- Nova Aba de Análise (Força, Tendência, Volatilidade) -->
@@ -560,7 +610,7 @@
                     <div id="wl-counter-black" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0</div>
                 </div>
                 <div class="analysis-card" id="panel-surf-card">
-                    <div class="analysis-title">PROBABILIDADE (SURF)</div>
+                    <div class="analysis-title">PROBABILIDADE</div>
                     <div style="display: flex; flex-direction: column; align-items: center;">
                         <span id="panel-surf-val" class="analysis-value" style="margin-bottom: 5px;">--</span>
                         <div style="display: flex; align-items: center; gap: 5px;">
@@ -572,114 +622,140 @@
                     <div id="wl-counter-surf" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0 <span style="color: #fff; margin-left: 4px;">⚪: 0</span></div>
                 </div>
             </div>
+            <div class="news-panel" id="double-news-panel">
+                <div class="news-label">NOTÍCIAS DOUBLE</div>
+                <div class="news-text" id="double-news-text">Carregando análise de mercado...</div>
+            </div>
             <div id="adx-container"></div>
             <div id="volume-container"></div>
             <div id="macd-container"></div>
             <div id="rsi-container"></div>
             <div id="stoch-container"></div>
             <div class="controls-panel">
-                <select id="timeframeSelect" onchange="updateChart()">
-                    <option value="tick">Tick</option>
-                    <option value="1">1 Min</option>
-                    <option value="5">5 Min</option>
-                </select>
-                <button id="themeToggleBtn" class="draw-mode-btn" onclick="toggleTheme()">☀️ Tema</button>
-                <button id="drawModeBtn" class="draw-mode-btn" onclick="toggleDrawMode(this)">✏️ Desenhar</button>
-                <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()">📸 Capturar</button>
-                <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)">✈️ Telegram</button>
-                <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()">🔄 Resetar Posição</button>
-                <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()">🖼️ Tela Cheia</button>
-                <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()">🗑️ Limpar</button>
-                <button class="draw-mode-btn" onclick="resetAllConfigs()">⚙️ Resetar Configs</button>
-                <div class="tool-group">
-                    <span style="font-size: 0.8rem; color: #fff;">🔍 Zoom</span>
-                    <button onclick="zoomIn()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Aumentar Zoom">+</button>
-                    <button onclick="resetZoom()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Resetar Zoom">R</button>
-                    <button onclick="zoomOut()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Diminuir Zoom">-</button>
+                <div class="control-row">
+                    <select id="timeframeSelect" onchange="updateChart()">
+                        <option value="tick">Tick</option>
+                        <option value="1">1 Min</option>
+                        <option value="5">5 Min</option>
+                    </select>
+                    <button id="haToggleBtn" class="draw-mode-btn" onclick="toggleHeikinAshi()" title="Suavizar Tendência">🕯️ Heikin Ashi</button>
+                    <button id="themeToggleBtn" class="draw-mode-btn" onclick="toggleTheme()">☀️ Tema</button>
+                    <button id="autoTgBtn" class="draw-mode-btn" onclick="toggleAutoTg()" style="border-color: #555; color: #888; background: rgba(255,255,255,0.05);">🤖 Auto TG: OFF</button>
+                    <div class="tool-group" style="border-color: #00d2ff;" title="Configuração Auto TG">
+                        <span style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">Prob:</span>
+                        <input type="number" id="autoTelegramProbability" value="75" min="50" max="99" step="1" onchange="saveAutoTgConfig()" style="width: 40px;" title="Probabilidade Mínima para Envio Automático (%)">
+                        <span style="font-size: 0.7rem; color: #00d2ff;">%</span>
+                    </div>
+                    <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)">✈️ Telegram</button>
+                    <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()">📸 Capturar</button>
+                    <button id="resetTgBtn" class="draw-mode-btn" onclick="resetTelegramScores()">🔄 Zerar Placar</button>
                 </div>
-                <input type="color" id="drawingColorPicker" value="#00d2ff" title="Cor do Desenho" style="background: #222; border: 1px solid #444; border-radius: 4px; cursor: pointer; height: 35px; padding: 2px;">
-                <div class="tool-group">
-                    <span style="font-size: 0.8rem; color: #fff;">Velas:</span>
-                    <input type="color" id="candleUpColor" value="#ff0055" title="Cor de Alta" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
-                    <input type="color" id="candleDownColor" value="#343a40" title="Cor de Baixa" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+
+                <div class="control-row">
+                    <button id="drawModeBtn" class="draw-mode-btn" onclick="toggleDrawMode(this)">✏️ Desenhar</button>
+                    <input type="color" id="drawingColorPicker" value="#00d2ff" title="Cor do Desenho" style="background: #222; border: 1px solid #444; border-radius: 4px; cursor: pointer; height: 35px; padding: 2px;">
+                    <div class="tool-group">
+                        <span style="font-size: 0.8rem; color: #fff;">🔍 Zoom</span>
+                        <button onclick="zoomIn()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Aumentar Zoom">+</button>
+                        <button onclick="resetZoom()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Resetar Zoom">R</button>
+                        <button onclick="zoomOut()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Diminuir Zoom">-</button>
+                    </div>
+                    <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()">🔄 Resetar Posição</button>
+                    <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()">🖼️ Tela Cheia</button>
+                    <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()">🗑️ Limpar</button>
+                    <button class="draw-mode-btn" onclick="resetAllConfigs()">⚙️ Resetar Configs</button>
                 </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="autoFetchToggle" checked title="Atualização Automática">
-                    <span style="font-size: 0.8rem; color: #fff;">Auto</span>
+
+                <div class="control-row">
+                    <div class="tool-group">
+                        <input type="checkbox" id="autoFetchToggle" checked title="Atualização Automática">
+                        <span style="font-size: 0.8rem; color: #fff;">Auto</span>
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="soundToggle" checked title="Ativar Alertas Sonoros">
+                        <span style="font-size: 0.8rem; color: #fff;">🔊</span>
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="historyToggle" onchange="toggleHistory()" title="Mostrar/Ocultar Histórico">
+                        <span style="font-size: 0.8rem; color: #fff;">Histórico</span>
+                    </div>
+                    <div class="tool-group">
+                        <span style="font-size: 0.8rem; color: #fff;">Calibração (s)</span>
+                        <input type="number" id="warmupInput" value="30" min="0" max="600" step="30" onchange="saveWarmupConfig(); updateChart()" style="width: 45px;" title="Tempo de Aquecimento (0 para desativar)">
+                    </div>
+                    <div class="tool-group">
+                        <span style="font-size: 0.8rem; color: #fff;">Velas:</span>
+                        <input type="color" id="candleUpColor" value="#ff0055" title="Cor de Alta" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                        <input type="color" id="candleDownColor" value="#343a40" title="Cor de Baixa" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                    </div>
+                    <div class="tool-group">
+                        <input type="number" id="volatilityLookback" value="50" min="10" max="200" step="10" onchange="updateChart()" style="width: 40px;" title="Sensibilidade (Período de Análise)">
+                        <input type="number" id="volatilityWhiteThreshold" value="80" min="50" max="99" step="1" onchange="updateChart()" style="width: 35px;" title="Limiar Alerta Branco (%)">
+                        <input type="number" id="whiteGaleAttempts" value="6" min="1" max="15" step="1" onchange="saveWhiteGaleConfig(); updateChart()" style="width: 35px;" title="Tentativas Gale Branco">
+                    </div>
                 </div>
-                <div class="tool-group">
-                    <input type="number" id="volatilityLookback" value="50" min="10" max="200" step="10" onchange="updateChart()" style="width: 40px;" title="Sensibilidade (Período de Análise)">
-                    <input type="number" id="volatilityWhiteThreshold" value="80" min="50" max="99" step="1" onchange="updateChart()" style="width: 35px;" title="Limiar Alerta Branco (%)">
-                    <input type="number" id="whiteGaleAttempts" value="6" min="1" max="15" step="1" onchange="saveWhiteGaleConfig(); updateChart()" style="width: 35px;" title="Tentativas Gale Branco">
+
+                <div class="control-row">
+                    <div class="tool-group">
+                        <input type="checkbox" id="smaToggle" checked onchange="updateChart()" title="Ativar SMA">
+                        <span style="font-size: 0.8rem; color: #fff;">SMA</span>
+                        <input type="number" id="smaPeriodInput" value="14" min="2" max="200" onchange="updateChart()" style="width: 50px;">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="emaToggle" onchange="updateChart()" title="Ativar EMA">
+                        <span style="font-size: 0.8rem; color: #fff;">EMA</span>
+                        <input type="number" id="emaPeriodInput" value="9" min="2" max="200" onchange="updateChart()" style="width: 50px;">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="bbToggle" onchange="updateChart()" title="Ativar Bandas de Bollinger">
+                        <span style="font-size: 0.8rem; color: #fff;">BB</span>
+                        <input type="number" id="bbPeriodInput" value="20" min="2" max="50" onchange="updateChart()" style="width: 40px;" title="Período">
+                        <input type="number" id="bbStdDevInput" value="2" min="1" max="5" step="0.1" onchange="updateChart()" style="width: 30px;" title="Desvio Padrão">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="srToggle" checked onchange="updateChart()" title="Ativar Suporte e Resistência">
+                        <span style="font-size: 0.8rem; color: #fff;">Sup/Res</span>
+                        <input type="number" id="srLookbackInput" value="200" min="50" max="500" step="10" onchange="updateChart()" style="width: 45px;" title="Período de Análise">
+                        <input type="number" id="srLinesInput" value="3" min="1" max="10" onchange="updateChart()" style="width: 30px;" title="Máximo de Linhas">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="trendLineToggle" checked onchange="updateChart()" title="Ativar Linhas de Tendência">
+                        <span style="font-size: 0.8rem; color: #fff;">L. Tend.</span>
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="fractalsToggle" checked onchange="updateChart()" title="Ativar Fractais">
+                        <span style="font-size: 0.8rem; color: #fff;">Fractais</span>
+                    </div>
                 </div>
-                <div class="tool-group">
-                    <span style="font-size: 0.8rem; color: #fff;">Calibração (s)</span>
-                    <input type="number" id="warmupInput" value="30" min="0" max="600" step="30" onchange="saveWarmupConfig(); updateChart()" style="width: 45px;" title="Tempo de Aquecimento (0 para desativar)">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="historyToggle" onchange="toggleHistory()" title="Mostrar/Ocultar Histórico">
-                    <span style="font-size: 0.8rem; color: #fff;">Histórico</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="smaToggle" checked onchange="updateChart()" title="Ativar SMA">
-                    <span style="font-size: 0.8rem; color: #fff;">SMA</span>
-                    <input type="number" id="smaPeriodInput" value="14" min="2" max="200" onchange="updateChart()" style="width: 50px;">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="bbToggle" onchange="updateChart()" title="Ativar Bandas de Bollinger">
-                    <span style="font-size: 0.8rem; color: #fff;">BB</span>
-                    <input type="number" id="bbPeriodInput" value="20" min="2" max="50" onchange="updateChart()" style="width: 40px;" title="Período">
-                    <input type="number" id="bbStdDevInput" value="2" min="1" max="5" step="0.1" onchange="updateChart()" style="width: 30px;" title="Desvio Padrão">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="volumeToggle" onchange="updateChart()" title="Ativar Volume">
-                    <span style="font-size: 0.8rem; color: #fff;">VOL</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="fractalsToggle" checked onchange="updateChart()" title="Ativar Fractais">
-                    <span style="font-size: 0.8rem; color: #fff;">Fractais</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="trendLineToggle" checked onchange="updateChart()" title="Ativar Linhas de Tendência">
-                    <span style="font-size: 0.8rem; color: #fff;">L. Tend.</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="srToggle" checked onchange="updateChart()" title="Ativar Suporte e Resistência">
-                    <span style="font-size: 0.8rem; color: #fff;">Sup/Res</span>
-                    <input type="number" id="srLookbackInput" value="200" min="50" max="500" step="10" onchange="updateChart()" style="width: 45px;" title="Período de Análise">
-                    <input type="number" id="srLinesInput" value="3" min="1" max="10" onchange="updateChart()" style="width: 30px;" title="Máximo de Linhas">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="emaToggle" onchange="updateChart()" title="Ativar EMA">
-                    <span style="font-size: 0.8rem; color: #fff;">EMA</span>
-                    <input type="number" id="emaPeriodInput" value="9" min="2" max="200" onchange="updateChart()" style="width: 50px;">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="adxToggle" onchange="updateChart()" title="Ativar ADX">
-                    <span style="font-size: 0.8rem; color: #fff;">ADX</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="soundToggle" checked title="Ativar Alertas Sonoros">
-                    <span style="font-size: 0.8rem; color: #fff;">🔊</span>
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="rsiToggle" onchange="updateChart()" title="Ativar RSI (Índice de Força Relativa)">
-                    <span style="font-size: 0.8rem; color: #fff;">RSI</span>
-                    <input type="number" id="rsiPeriodInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 40px;" title="Período">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="macdToggle" onchange="updateChart()" title="Ativar MACD">
-                    <span style="font-size: 0.8rem; color: #fff;">MACD</span>
-                    <input type="number" id="macdFastInput" value="12" min="2" max="50" onchange="updateChart()" style="width: 35px;" title="Rápida">
-                    <input type="number" id="macdSlowInput" value="26" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="Lenta">
-                    <input type="number" id="macdSignalInput" value="9" min="2" max="50" onchange="updateChart()" style="width: 30px;" title="Sinal">
-                </div>
-                <div class="tool-group">
-                    <input type="checkbox" id="stochToggle" onchange="updateChart()" title="Ativar Estocástico">
-                    <span style="font-size: 0.8rem; color: #fff;">Stoch</span>
-                    <input type="number" id="stochKInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="%K">
-                    <input type="number" id="stochDInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="%D">
-                    <input type="number" id="stochSmoothInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="Smooth">
+
+                <div class="control-row">
+                    <div class="tool-group">
+                        <input type="checkbox" id="volumeToggle" onchange="updateChart()" title="Ativar Volume">
+                        <span style="font-size: 0.8rem; color: #fff;">VOL</span>
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="adxToggle" onchange="updateChart()" title="Ativar ADX">
+                        <span style="font-size: 0.8rem; color: #fff;">ADX</span>
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="rsiToggle" onchange="updateChart()" title="Ativar RSI (Índice de Força Relativa)">
+                        <span style="font-size: 0.8rem; color: #fff;">RSI</span>
+                        <input type="number" id="rsiPeriodInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 40px;" title="Período">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="macdToggle" onchange="updateChart()" title="Ativar MACD">
+                        <span style="font-size: 0.8rem; color: #fff;">MACD</span>
+                        <input type="number" id="macdFastInput" value="12" min="2" max="50" onchange="updateChart()" style="width: 35px;" title="Rápida">
+                        <input type="number" id="macdSlowInput" value="26" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="Lenta">
+                        <input type="number" id="macdSignalInput" value="9" min="2" max="50" onchange="updateChart()" style="width: 30px;" title="Sinal">
+                    </div>
+                    <div class="tool-group">
+                        <input type="checkbox" id="stochToggle" onchange="updateChart()" title="Ativar Estocástico">
+                        <span style="font-size: 0.8rem; color: #fff;">Stoch</span>
+                        <input type="number" id="stochKInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="%K">
+                        <input type="number" id="stochDInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="%D">
+                        <input type="number" id="stochSmoothInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="Smooth">
+                    </div>
                 </div>
             </div>
             <div id="chart-tooltip" class="chart-tooltip"></div>
@@ -694,6 +770,7 @@
         let currentLine = null;
         let drawnLines = [];
         let allCandles = [];
+        let isHeikinAshi = false;
         let isPanning = false;
         let panStartX = 0;
         let viewStartIndex = 0;
@@ -704,7 +781,18 @@
         let whiteAlertConsecutiveCount = 0;
         let lastCandleTimestampForWhiteAlert = 0;
         let visibleCandleCount = 100;
+        let lastSentSignalTimestamp = 0;
         let pageLoadTime = Date.now();
+        let telegramState = {
+            active: false,
+            predictedColor: null,
+            triggerTimestamp: 0,
+            originalTriggerTimestamp: 0,
+            galeLevel: 0,
+            maxGales: 1,
+            analysisMsg: ""
+        };
+        let telegramScores = { wins: 0, losses: 0 };
 
         let scores = {
             white: { wins: 0, losses: 0 },
@@ -1016,8 +1104,14 @@
 
             if (!allCandles || allCandles.length === 0) return;
             // Garante que o índice de início não saia dos limites do array
-            viewStartIndex = Math.max(0, Math.min(allCandles.length - visibleCandleCount, viewStartIndex));
-            const visibleData = allCandles.slice(viewStartIndex, viewStartIndex + visibleCandleCount);
+            
+            let displayData = allCandles;
+            if (isHeikinAshi) {
+                displayData = calculateHeikinAshi(allCandles);
+            }
+
+            viewStartIndex = Math.max(0, Math.min(displayData.length - visibleCandleCount, viewStartIndex));
+            const visibleData = displayData.slice(viewStartIndex, viewStartIndex + visibleCandleCount);
             
             drawChart(visibleData, shouldPlaySound);
             drawRSIChart(visibleData);
@@ -1149,9 +1243,13 @@
             
             // Ao atualizar os dados, sempre volta para as velas mais recentes
             resetView();
+            updateDoubleNews();
         }
 
+        let isFetching = false;
         async function fetchData(shouldPlaySound = false) {
+            if (isFetching) return;
+            isFetching = true;
             const loadingText = document.querySelector('#chart-container .loading-text');
             try {
                 if(loadingText) loadingText.innerText = 'Buscando dados da API...';
@@ -1194,9 +1292,13 @@
                         }
                     } else {
                         if (response.status === 401) throw new Error("Token inválido (401).");
+                        if (response.status === 429) {
+                            console.warn(`Limite de requisições (429) na página ${page}. Interrompendo busca de histórico antigo para evitar bloqueio.`);
+                            break; // Sai do loop mas mantém os dados já coletados
+                        }
                         console.warn(`Falha ao buscar página ${page}: Status ${response.status}`);
                     }
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
 
                 const seenIds = new Set();
@@ -1217,6 +1319,8 @@
             } catch (e) {
                 console.error("Erro ao buscar dados para o gráfico:", e);
                 if(loadingText) loadingText.innerText = `Erro: ${e.message}`;
+            } finally {
+                isFetching = false;
             }
         }
 
@@ -1258,14 +1362,12 @@
 
                     const open = lastClose;
                     let close;
-                    const color = identificarCor(game.roll);
+                    const gameColor = identificarCor(game.roll);
                     
-                    if (color === 'vermelho') close = open + 10;
-                    else if (color === 'preto') close = open - 10;
+                    if (gameColor === 'vermelho') close = open + 10;
+                    else if (gameColor === 'preto') close = open - 10;
                     else close = open;
                     
-                    lastClose = close;
-
                     if (currentBucketStart === null || bucketStart !== currentBucketStart) {
                         if (bucketCandle) priceData.push(bucketCandle);
                         currentBucketStart = bucketStart;
@@ -1276,25 +1378,21 @@
                             close: close,
                             time: new Date(bucketStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                             timestamp: bucketStart,
-                            roll: game.roll,
+                            roll: game.roll, // Salva o roll da PRIMEIRA pedra do minuto
+                            color: gameColor, // Salva a cor da PRIMEIRA pedra para a lógica
                             volume: 1
                         };
                     } else {
                         bucketCandle.high = Math.max(bucketCandle.high, close);
                         bucketCandle.low = Math.min(bucketCandle.low, close);
-                        bucketCandle.close = close;
-                        bucketCandle.roll = game.roll;
+                        bucketCandle.close = close; // Atualiza o 'close' para o da última pedra, para o visual do candle
+                        // Não atualiza o 'roll' nem a 'color', para manter os da primeira pedra
                         bucketCandle.volume++;
                     }
+                    lastClose = close; // O 'open' da próxima vela será o 'close' da última pedra processada
                 });
                 if (bucketCandle) priceData.push(bucketCandle);
 
-                // Define cor da vela agregada
-                priceData.forEach(c => {
-                    if (c.close > c.open) c.color = 'vermelho';
-                    else if (c.close < c.open) c.color = 'preto';
-                    else c.color = 'branco';
-                });
                 return priceData;
             }
         }
@@ -1307,10 +1405,48 @@
             updateChart();
         }
 
+        function toggleHeikinAshi() {
+            isHeikinAshi = !isHeikinAshi;
+            const btn = document.getElementById('haToggleBtn');
+            if (btn) {
+                btn.classList.toggle('active', isHeikinAshi);
+                if (isHeikinAshi) {
+                    btn.style.borderColor = '#00d2ff';
+                    btn.style.color = '#00d2ff';
+                    btn.style.background = 'rgba(0, 210, 255, 0.1)';
+                } else {
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                    btn.style.background = '';
+                }
+            }
+            renderVisibleCharts();
+        }
+
+        function calculateHeikinAshi(data) {
+            if (!data || data.length === 0) return [];
+            const haData = [];
+            let prevOpen = data[0].open;
+            let prevClose = data[0].close;
+
+            for (let i = 0; i < data.length; i++) {
+                const curr = data[i];
+                const haClose = (curr.open + curr.high + curr.low + curr.close) / 4;
+                const haOpen = i === 0 ? (curr.open + curr.close) / 2 : (prevOpen + prevClose) / 2;
+                const haHigh = Math.max(curr.high, haOpen, haClose);
+                const haLow = Math.min(curr.low, haOpen, haClose);
+
+                haData.push({ ...curr, open: haOpen, high: haHigh, low: haLow, close: haClose });
+                prevOpen = haOpen; prevClose = haClose;
+            }
+            return haData;
+        }
+
         // Function to render the candlestick chart
         function drawChart(priceData, shouldPlaySound = false) {
             const chartContainer = document.getElementById('chart-container');
             const historyPanel = document.getElementById('trend-history-panel'); // Preserve history panel
+            const ohlcPanel = document.getElementById('ohlc-display'); // Preserve OHLC panel
             chartContainer.innerHTML = ''; // Clear previous chart or loading text
 
             const isLight = document.body.classList.contains('light-mode');
@@ -1323,7 +1459,7 @@
             
             const containerWidth = chartContainer.clientWidth;
             const containerHeight = chartContainer.clientHeight;
-            const margin = { top: 20, right: 50, bottom: 30, left: 50 };
+            const margin = { top: 20, right: 50, bottom: 60, left: 50 };
             const width = containerWidth - margin.left - margin.right;
             const height = containerHeight - margin.top - margin.bottom;
 
@@ -1519,12 +1655,13 @@
                 body.setAttribute('height', Math.max(1, Math.abs(y(d.open) - y(d.close)))); // Min height of 1 for dojis
 
                 let candleColor;
-                if (d.color === 'vermelho') {
-                    candleColor = upColor; // Custom Up Color
-                } else if (d.color === 'preto') {
-                    candleColor = downColor; // Custom Down Color
-                } else { // branco
-                    candleColor = isLight ? '#cccccc' : '#ffffff'; // White/Gray for doji
+                // A cor VISUAL da vela é baseada na abertura/fechamento, que reflete a última pedra do minuto.
+                if (d.close > d.open) {
+                    candleColor = upColor;
+                } else if (d.close < d.open) {
+                    candleColor = downColor;
+                } else { // doji
+                    candleColor = isLight ? '#cccccc' : '#ffffff';
                 }
                 
                 wick.setAttribute('stroke', candleColor);
@@ -1534,7 +1671,7 @@
                 g.appendChild(wick);
                 g.appendChild(body);
 
-                // Highlight White (Branco) results
+                // O destaque do branco usa a cor LÓGICA (d.color), que vem da primeira pedra.
                 if (d.color === 'branco') {
                     const markerX = x + candleWidth / 2;
                     const markerY = y(d.high) - 12;
@@ -1579,6 +1716,16 @@
                     const stoneColor = identificarCor(d.roll);
                     const colorHex = stoneColor === 'vermelho' ? '#ff0055' : (stoneColor === 'preto' ? '#aaa' : '#fff');
                     tooltip.innerHTML = `<div style="margin-bottom:4px; border-bottom:1px solid #444; padding-bottom:2px;"><strong>${d.time}</strong></div><div>Pedra: <span style="color:${colorHex}; font-weight:bold; font-size:1.1rem;">${d.roll}</span></div><div>Cor: ${stoneColor.toUpperCase()}</div>`;
+
+                    // Update OHLC Panel
+                    if (ohlcPanel) {
+                        ohlcPanel.style.display = 'block';
+                        const valColor = isLight ? '#333' : '#fff';
+                        const openEl = document.getElementById('ohlc-open'); if(openEl) { openEl.innerText = d.open; openEl.style.color = valColor; }
+                        const highEl = document.getElementById('ohlc-high'); if(highEl) { highEl.innerText = d.high; highEl.style.color = valColor; }
+                        const lowEl = document.getElementById('ohlc-low'); if(lowEl) { lowEl.innerText = d.low; lowEl.style.color = valColor; }
+                        const closeEl = document.getElementById('ohlc-close'); if(closeEl) { closeEl.innerText = d.close; closeEl.style.color = valColor; }
+                    }
                 });
                 hitArea.addEventListener('mouseleave', () => { document.getElementById('chart-tooltip').style.display = 'none'; });
                 g.appendChild(hitArea);
@@ -2122,6 +2269,42 @@
                 }
             }
 
+            // --- HISTÓRICO NO RODAPÉ (COR + HORA:MINUTO) ---
+            priceData.forEach((d, i) => {
+                const x = i * candleSpacing + candleWidth / 2;
+                
+                // Indicador de Cor (Quadrado)
+                let stripColor;
+                if (d.color === 'vermelho') stripColor = '#ff0055';
+                else if (d.color === 'branco') stripColor = '#ffffff';
+                else stripColor = isLight ? '#1a1a1a' : '#666'; // Preto
+
+                const boxSize = 6;
+                const rect = document.createElementNS(svgNS, 'rect');
+                rect.setAttribute('x', x - boxSize/2);
+                rect.setAttribute('y', height + 8);
+                rect.setAttribute('width', boxSize);
+                rect.setAttribute('height', boxSize);
+                rect.setAttribute('fill', stripColor);
+                rect.setAttribute('rx', 1);
+                g.appendChild(rect);
+
+                // Texto de Hora:Minuto (Espaçado)
+                const textStep = Math.ceil(45 / candleSpacing); // Evita sobreposição (~45px por label)
+                if (i % textStep === 0) {
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', x);
+                    text.setAttribute('y', height + 22);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', isLight ? '#666' : '#888');
+                    text.setAttribute('font-size', '9px');
+                    text.setAttribute('font-family', digitalFont);
+                    // Mostra apenas HH:MM para economizar espaço e atender ao pedido "horario e minuto"
+                    text.textContent = d.time.substring(0, 5);
+                    g.appendChild(text);
+                }
+            });
+
             // Contagem na Linha Amarela (Preço Atual)
             let countRed = 0, countWhite = 0, countBlack = 0;
             if (priceData.length > 0) {
@@ -2142,7 +2325,7 @@
 
             const statsText = document.createElementNS(svgNS, 'text');
             statsText.setAttribute('x', width / 2);
-            statsText.setAttribute('y', height + 25);
+            statsText.setAttribute('y', height + 45);
             statsText.setAttribute('text-anchor', 'middle');
             statsText.setAttribute('font-size', '12px');
             statsText.setAttribute('font-weight', 'bold');
@@ -2223,6 +2406,7 @@
             
             // Re-append widgets wrapper
             if(historyPanel) chartContainer.appendChild(historyPanel);
+            if(ohlcPanel) chartContainer.appendChild(ohlcPanel);
             
             updateMarketStrength(allCandles);
             updateMarketVolatility(allCandles);
@@ -2818,35 +3002,260 @@
             }
         }
 
+        async function sendTelegramStatusMessage(isActive) {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_double');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) {
+                console.warn('Token/Chat ID do Telegram não configurado para notificação de status.');
+                return;
+            }
+
+            let message;
+            if (isActive) {
+                message = `✅ *ROBÔ ATIVADO - OPÇÕES DOUBLE* ✅\n\nO envio automático de sinais foi iniciado.\n\nFique atento às próximas análises!`;
+            } else {
+                message = `🛑 *ROBÔ DESATIVADO - OPÇÕES DOUBLE* 🛑\n\nO envio automático de sinais foi pausado.`;
+            }
+
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            
+            try {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('text', message);
+                formData.append('parse_mode', 'Markdown');
+
+                const response = await fetch(url, { method: 'POST', body: formData });
+                const data = await response.json();
+                if (!data.ok) {
+                    console.error('Erro ao enviar mensagem de status:', data.description);
+                }
+            } catch (e) { console.error("Erro de rede ao enviar mensagem de status:", e); }
+        }
+
+        function toggleAutoTg() {
+            const btn = document.getElementById('autoTgBtn');
+            if (!btn) return;
+            const isActive = btn.getAttribute('data-active') === 'true';
+            
+            if (isActive) {
+                btn.setAttribute('data-active', 'false');
+                btn.innerText = '🤖 Auto TG: OFF';
+                btn.style.borderColor = '#555';
+                btn.style.color = '#888';
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.classList.remove('active');
+                localStorage.setItem('auto_tg_state', 'false');
+                sendTelegramStatusMessage(false);
+            } else {
+                btn.setAttribute('data-active', 'true');
+                btn.innerText = '🤖 Auto TG: ON';
+                btn.style.borderColor = '#00ff88';
+                btn.style.color = '#00ff88';
+                btn.style.background = 'rgba(0, 255, 136, 0.2)';
+                btn.classList.add('active');
+                sendTelegramStatusMessage(true);
+                localStorage.setItem('auto_tg_state', 'true');
+            }
+        }
+
+        async function sendTelegramResult(resultType) {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_double');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            let text;
+            if (resultType.startsWith('WIN')) {
+                telegramScores.wins++;
+                scores.surf.wins++;
+                flashWL('wl-counter-surf', 'win');
+
+                if (resultType === 'WIN') text = "✅✅✅ GREEN! ✅✅✅";
+                else if (resultType === 'WIN_G1') text = "✅✅✅ GREEN NO G1! ✅✅✅";
+                else if (resultType === 'WIN_G2') text = "✅✅✅ GREEN NO G2! ✅✅✅";
+                else if (resultType === 'WIN_WHITE') {
+                    text = "⚪⚪⚪ GREEN NO BRANCO! ⚪⚪⚪";
+                    scores.surf.whiteWins++;
+                } else if (resultType === 'WIN_WHITE_G1') {
+                    text = "⚪⚪⚪ GREEN NO BRANCO (G1)! ⚪⚪⚪";
+                    scores.surf.whiteWins++;
+                } else if (resultType === 'WIN_WHITE_G2') {
+                    text = "⚪⚪⚪ GREEN NO BRANCO (G2)! ⚪⚪⚪";
+                    scores.surf.whiteWins++;
+                }
+            } else if (resultType === 'LOSS') {
+                telegramScores.losses++;
+                scores.surf.losses++;
+                flashWL('wl-counter-surf', 'loss');
+                text = "❌❌❌ LOSS ❌❌❌";
+            }
+
+            localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
+
+            const entryTime = new Date(telegramState.originalTriggerTimestamp);
+            const timeStr = entryTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            text += `\n\n*Placar do Robô:* ${telegramScores.wins} ✅ | ${telegramScores.losses} ❌`;
+            text += `\n*Horário da Entrada:* ${timeStr}`;
+
+            if (telegramState.analysisMsg) {
+                text += `\nℹ️ *Análise:* ${telegramState.analysisMsg}`;
+            }
+
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('text', text);
+            formData.append('parse_mode', 'Markdown');
+            try { await fetch(url, { method: 'POST', body: formData }); } catch (e) { console.error("Erro ao enviar resultado:", e); }
+        }
+
+        function checkDailyReset() {
+            const now = new Date();
+            const today = now.toLocaleDateString('pt-BR');
+            const lastResetDate = localStorage.getItem('last_reset_date');
+
+            if (lastResetDate !== today) {
+                telegramScores = { wins: 0, losses: 0 };
+                localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
+                localStorage.setItem('last_reset_date', today);
+                console.log('Placar do Telegram resetado automaticamente (Novo dia).');
+            }
+        }
+
+        function resetTelegramScores() {
+            if (confirm('Tem certeza que deseja zerar o placar do Telegram?')) {
+                telegramScores = { wins: 0, losses: 0 };
+                localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
+                alert('Placar do Telegram zerado com sucesso!');
+            }
+        }
+
+        async function sendAutoTelegramSignal(prediction, probability, colorHex, analysisMsg, customTriggerTime) {
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_double');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            try {
+                const canvas = await generateChartCanvas();
+                if (!canvas) return;
+
+                let targetTime;
+                if (customTriggerTime) {
+                    targetTime = new Date(customTriggerTime);
+                } else {
+                    // Baseia a hora do sinal no timestamp da vela de análise para sincronia com a apuração do resultado.
+                    const analysisTimestamp = allCandles[allCandles.length - 1].timestamp;
+                    targetTime = new Date(analysisTimestamp + 2 * 60000); // Sinal para 2 velas (minutos) à frente da análise.
+                }
+                const timeStr = targetTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                
+                let direction = prediction;
+                if (prediction.includes('VERMELHO')) direction = "VERMELHO 🔴";
+                else if (prediction.includes('PRETO')) direction = "PRETO ⚫";
+                else if (prediction.includes('⚪')) direction = "BRANCO ⚪";
+
+                const galesSelect = document.getElementById('autoTelegramGales');
+                const gales = galesSelect ? galesSelect.value : '1';
+                const gestaoText = `Até G${gales} (Gale ${gales})`;
+
+                const caption = `
+🚨 *SINAL DETECTADO - OPÇÕES DOUBLE* 🚨
+
+📊 *Estratégia:* Probabilidade
+🕒 *Hora:* ${timeStr}
+
+🎯 *Entrada:* ${direction}
+🛡️ *Proteção:* Branco ⚪
+📉 *Probabilidade:* ${Math.round(probability)}%
+🔄 *Gestão:* ${gestaoText}
+
+📝 *Análise:* ${analysisMsg}
+
+⚠️ _Gerencie sua banca com responsabilidade._`.trim();
+
+                canvas.toBlob(async function(blob) {
+                    const formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', blob, 'sinal_double.png');
+                    formData.append('caption', caption);
+                    formData.append('parse_mode', 'Markdown');
+                    await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: formData });
+                }, 'image/png');
+            } catch (e) { console.error("Erro ao enviar sinal auto:", e); }
+        }
+
         function updateSurfProbability(data) {
             if (!data || data.length < 5) return;
 
             const lastCandle = data[data.length - 1];
             const currentTimestamp = lastCandle.timestamp;
 
-            // --- LÓGICA DE PLACAR ---
-            if (predictionState.surf.wasTriggered) {
-                // Só processa se for uma NOVA vela (timestamp maior que o da previsão)
-                if (currentTimestamp > predictionState.surf.triggerTimestamp) {
-                    const newCandle = lastCandle;
-                    if (newCandle.color === predictionState.surf.predictedColor) {
-                        scores.surf.wins++;
-                        if (newCandle.color === 'branco') scores.surf.whiteWins++;
-                        predictionState.surf.consecutiveLosses = 0; // Reseta no Win
-                        flashWL('wl-counter-surf', 'win');
-                    } else if (newCandle.color !== 'branco') { // Não conta branco como derrota
-                        scores.surf.losses++;
-                        predictionState.surf.consecutiveLosses++; // Incrementa no Loss
-                        flashWL('wl-counter-surf', 'loss');
-                        if (predictionState.surf.consecutiveLosses >= 2) {
-                            predictionState.surf.pauseUntil = Date.now() + 180000; // Pausa de 3 minutos (180s)
-                            predictionState.surf.consecutiveLosses = 0; // Reseta contador para reiniciar ciclo após pausa
+            // --- LÓGICA DE RESULTADO TELEGRAM ---
+            if (telegramState.active && globalGamesData.length > 0) {
+                const latestGameTime = new Date(globalGamesData[0].created_at).getTime();
+
+                if (latestGameTime >= telegramState.triggerTimestamp) {
+                    // Busca os jogos do minuto alvo na lista global (independente do timeframe do gráfico)
+                    const gamesInMinute = globalGamesData.filter(g => {
+                        const t = new Date(g.created_at).getTime();
+                        return t >= telegramState.triggerTimestamp && t < telegramState.triggerTimestamp + 60000;
+                    });
+
+                    if (gamesInMinute.length > 0) {
+                        // Pega o jogo mais antigo do minuto (o primeiro que aconteceu), pois define a cor da vela
+                        const resultGame = gamesInMinute[gamesInMinute.length - 1];
+                        const resultColor = identificarCor(resultGame.roll);
+                        
+                        let isWin = false;
+                        let isWhite = resultColor === 'branco';
+                        
+                        if (resultColor === telegramState.predictedColor) {
+                            isWin = true;
+                        }
+
+                        if (isWin || isWhite) {
+                            let type = 'WIN';
+                            if (isWhite) type = 'WIN_WHITE';
+                            if (telegramState.galeLevel > 0) type += `_G${telegramState.galeLevel}`;
+                            sendTelegramResult(type);
+
+                            predictionState.surf.consecutiveLosses = 0; // Reseta no Win
+
+                            telegramState.active = false;
+                            lastSentSignalTimestamp = latestGameTime + 20000; // Pausa de 20 segundos após resultado
+                        } else {
+                            if (telegramState.galeLevel < telegramState.maxGales) {
+                                telegramState.galeLevel++;
+                                telegramState.triggerTimestamp = telegramState.triggerTimestamp + 60000;
+                            } else {
+                                sendTelegramResult('LOSS');
+
+                                predictionState.surf.consecutiveLosses++; // Incrementa no Loss
+                                if (predictionState.surf.consecutiveLosses >= 2) {
+                                    predictionState.surf.pauseUntil = Date.now() + 20000; // Pausa de 20 segundos
+                                    predictionState.surf.consecutiveLosses = 0; // Reseta contador para reiniciar ciclo após pausa
+                                }
+
+                                telegramState.active = false;
+                                lastSentSignalTimestamp = latestGameTime + 20000; // Pausa de 20 segundos após resultado
+                            }
                         }
                     }
-                    predictionState.surf.wasTriggered = false; // Consome a previsão
                 }
             }
-            // --- FIM LÓGICA DE PLACAR ---
+
+            // --- LÓGICA DE PLACAR (UI) ---
+            // Esta lógica foi unificada com a LÓGICA DE RESULTADO TELEGRAM para evitar discrepâncias.
+            // O placar da UI (scores.surf) agora é atualizado dentro da função sendTelegramResult,
+            // que é chamada apenas quando um resultado final (Win/Loss após gales) é definido.
+            // A lógica de pausa por 2 losses seguidos também foi movida para o bloco de resultado do Telegram.
 
             const lastColor = lastCandle.color;
             const isLight = document.body.classList.contains('light-mode');
@@ -2886,6 +3295,101 @@
                  return;
             }
 
+            // --- NOVAS ESTRATÉGIAS (PADRÕES) ---
+            let stratPrediction = null;
+            let stratProb = 0;
+            let stratMsg = "";
+            let stratColor = "#888";
+            let stratIcon = "⚖️";
+
+            const colors = [];
+            for(let i = 0; i < 10; i++) {
+                if (data.length - 1 - i >= 0) colors.push(data[data.length - 1 - i].color);
+            }
+
+            // 1. Padrão Xadrez (Alternado): R B R B -> Predict R
+            if (colors.length >= 4 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[0] !== colors[1] && colors[1] !== colors[2] && colors[2] !== colors[3]) {
+                stratPrediction = colors[0] === 'vermelho' ? 'PRETO' : 'VERMELHO';
+                stratProb = 88;
+                stratMsg = "Padrão Xadrez (Alternado)";
+                stratIcon = "♟️";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 2. Padrão 2x2 (Confirmação): R R B -> Predict B
+            else if (colors.length >= 3 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[0] !== colors[1] && colors[1] === colors[2]) {
+                stratPrediction = colors[0] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 85;
+                stratMsg = "Padrão 2x2 (Confirmação)";
+                stratIcon = "👥";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 3. Padrão 3x1 (Retorno): R R R B -> Predict R
+            else if (colors.length >= 4 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[0] !== colors[1] && colors[1] === colors[2] && colors[2] === colors[3]) {
+                stratPrediction = colors[1] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 80;
+                stratMsg = "Padrão 3x1 (Retorno)";
+                stratIcon = "↩️";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 4. Padrão Sanduíche (1x1x1): R B R -> Predict B
+            else if (colors.length >= 3 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[0] === colors[2] && colors[0] !== colors[1]) {
+                stratPrediction = colors[1] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 82;
+                stratMsg = "Padrão Sanduíche (1x1x1)";
+                stratIcon = "🥪";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 5. Padrão Espelho (1x2x1): R B B R -> Predict B
+            else if (colors.length >= 4 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[0] === colors[3] && colors[1] === colors[2] && colors[0] !== colors[1]) {
+                stratPrediction = colors[1] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 85;
+                stratMsg = "Padrão Espelho (1x2x1)";
+                stratIcon = "🪞";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 6. Padrão 2x2 (Quebra): R R B B -> Predict R
+            else if (colors.length >= 4 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[0] === colors[1] && colors[2] === colors[3] && colors[1] !== colors[2]) {
+                stratPrediction = colors[2] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 78;
+                stratMsg = "Padrão 2x2 (Quebra)";
+                stratIcon = "✂️";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 7. Padrão 3x2 (Fluxo): R R R B B -> Predict B
+            else if (colors.length >= 5 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[4] !== 'branco' && colors[0] === colors[1] && colors[2] === colors[3] && colors[3] === colors[4] && colors[1] !== colors[2]) {
+                stratPrediction = colors[0] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 76;
+                stratMsg = "Padrão 3x2 (Fluxo)";
+                stratIcon = "🌊";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 8. Padrão 5x1 (Retorno): R R R R R B -> Predict R
+            else if (colors.length >= 6 && colors[0] !== 'branco' && colors[1] !== 'branco' && colors[2] !== 'branco' && colors[3] !== 'branco' && colors[4] !== 'branco' && colors[5] !== 'branco' && colors[0] !== colors[1] && colors[1] === colors[2] && colors[2] === colors[3] && colors[3] === colors[4] && colors[4] === colors[5]) {
+                stratPrediction = colors[1] === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                stratProb = 88;
+                stratMsg = "Padrão 5x1 (Retorno)";
+                stratIcon = "🔙";
+                stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+            }
+            // 4. Maioria M5 (Força): 4/5 same color -> Predict Same
+            else if (colors.length >= 5) {
+                let r = 0, b = 0;
+                for(let i=0; i<5; i++) { if(colors[i] === 'vermelho') r++; else if(colors[i] === 'preto') b++; }
+                if (r >= 4 && colors[0] === 'vermelho') {
+                    stratPrediction = 'VERMELHO'; stratProb = 75; stratMsg = "Maioria M5 (Força)"; stratIcon = "💪"; stratColor = '#ff0055';
+                } else if (b >= 4 && colors[0] === 'preto') {
+                    stratPrediction = 'PRETO'; stratProb = 75; stratMsg = "Maioria M5 (Força)"; stratIcon = "💪"; stratColor = (isLight ? '#333' : '#fff');
+                }
+            }
+            // 5. Quebra de Sequência (Reversão): 6+ same -> Predict Opposite
+            if (!stratPrediction) {
+                 let streak = 1;
+                 for(let i=1; i<colors.length; i++) { if(colors[i] === colors[0]) streak++; else break; }
+                 if (streak >= 6 && colors[0] !== 'branco') {
+                    stratPrediction = colors[0] === 'vermelho' ? 'PRETO' : 'VERMELHO'; stratProb = Math.min(95, 60 + (streak * 5)); stratMsg = `Reversão de Sequência (${streak}x)`; stratIcon = "🔄"; stratColor = stratPrediction === 'VERMELHO' ? '#ff0055' : (isLight ? '#333' : '#fff');
+                 }
+            }
+
             let currentStreak = 0;
             for (let i = data.length - 1; i >= 0; i--) {
                 if (data[i].color === lastColor) currentStreak++;
@@ -2921,7 +3425,13 @@
             let msg = "Dados insuficientes";
             let color = "#888";
 
-            if (total > 0) {
+            if (stratPrediction) {
+                prediction = stratPrediction;
+                prob = stratProb;
+                msg = stratMsg;
+                color = stratColor;
+                icon = stratIcon;
+            } else if (total > 0 && currentStreak > 4) {
                 const continuePct = (continueCount / total) * 100;
                 const oppositePct = (oppositeCount / total) * 100;
                 const whitePct = (whiteCount / total) * 100;
@@ -2951,12 +3461,33 @@
 
             // Define a previsão para a PRÓXIMA vela
             if (total > 0) {
-                predictionState.surf.wasTriggered = true;
-                predictionState.surf.triggerTimestamp = currentTimestamp;
                 if (prediction.includes('⚪')) {
                     predictionState.surf.predictedColor = 'branco';
                 } else {
                     predictionState.surf.predictedColor = prediction.toLowerCase();
+                }
+
+                const autoTgBtn = document.getElementById('autoTgBtn');
+                const isAutoTgOn = autoTgBtn && autoTgBtn.getAttribute('data-active') === 'true';
+                const minProbInput = document.getElementById('autoTelegramProbability');
+                const minProb = minProbInput ? parseInt(minProbInput.value) : 75;
+
+                if (isAutoTgOn && !telegramState.active && prediction !== "NEUTRO" && currentTimestamp > lastSentSignalTimestamp && prob >= minProb) {
+                    // O sinal é para 2 velas à frente (2 min) para dar tempo de entrada.
+                    // Garante que o sinal seja para 2 minutos completos à frente. Ex: Análise às 19:00 -> Sinal para 19:02.
+                    const triggerTimestamp = Math.floor((currentTimestamp + (2 * 60000)) / 60000) * 60000;
+                    
+                    sendAutoTelegramSignal(prediction, prob, color, msg, triggerTimestamp);
+                    lastSentSignalTimestamp = currentTimestamp;
+                    
+                    telegramState.active = true;
+                    telegramState.predictedColor = predictionState.surf.predictedColor;
+                    telegramState.triggerTimestamp = triggerTimestamp;
+                    telegramState.originalTriggerTimestamp = triggerTimestamp;
+                    telegramState.galeLevel = 0;
+                    const galesSelect = document.getElementById('autoTelegramGales');
+                    telegramState.maxGales = galesSelect ? parseInt(galesSelect.value) : 1;
+                    telegramState.analysisMsg = msg;
                 }
             }
 
@@ -3654,6 +4185,41 @@
             return caption;
         }
 
+        function updateDoubleNews() {
+            const newsTextEl = document.getElementById('double-news-text');
+            if (!newsTextEl || !allCandles || allCandles.length < 5) return;
+
+            const { signal } = getTrendSignal(allCandles);
+            const pattern = identifyCandlePattern(allCandles);
+            
+            // Dominance Analysis (Last 20)
+            const recent = allCandles.slice(-20);
+            let red = 0, black = 0;
+            recent.forEach(c => { if(c.color === 'vermelho') red++; else if(c.color === 'preto') black++; });
+            const domColor = red > black ? 'Vermelho' : (black > red ? 'Preto' : 'Equilibrado');
+            const domPct = Math.round((Math.max(red, black) / recent.length) * 100);
+
+            // RSI Status
+            let rsiMsg = "";
+            const rsiToggle = document.getElementById('rsiToggle');
+            if (rsiToggle && rsiToggle.checked) {
+                const rsiVals = calculateRSI(allCandles, 14);
+                const lastRSI = rsiVals[rsiVals.length - 1];
+                if (lastRSI > 70) rsiMsg = " | ⚠️ RSI Sobrecompra";
+                else if (lastRSI < 30) rsiMsg = " | ⚠️ RSI Sobrevenda";
+            }
+
+            // Construct Message
+            let msg = `TENDÊNCIA: ${signal} | DOMINÂNCIA: ${domColor} (${domPct}%)`;
+            if (pattern !== "Normal" && pattern !== "N/A") msg += ` | PADRÃO: ${pattern}`;
+            msg += rsiMsg;
+            
+            const surfVal = document.getElementById('panel-surf-val');
+            if (surfVal && surfVal.innerText !== '--') msg += ` | 🎯 PREVISÃO: ${surfVal.innerText}`;
+
+            if (newsTextEl.innerText !== msg) newsTextEl.innerText = msg;
+        }
+
         async function takeScreenshot() {
             const canvas = await generateChartCanvas();
             if (!canvas) {
@@ -3669,10 +4235,15 @@
 
         async function sendScreenshotToTelegram(btn) {
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = localStorage.getItem('telegram_chat_id'); 
+            let chatId = localStorage.getItem('telegram_chat_id_double'); // Prioriza o ID específico do Double
+            
+            // Se não houver um ID específico, usa o ID principal como fallback
+            if (!chatId) {
+                chatId = localStorage.getItem('telegram_chat_id'); 
+            }
             
             if (!token || !chatId) {
-                alert('⚠️ Configure o Token e o Chat ID do Telegram primeiro (Menu > Telegram).');
+                alert('⚠️ Configure o Token e o Chat ID do Telegram (Opções Double ou principal) primeiro no menu de Configurações.');
                 return;
             }
 
@@ -3813,6 +4384,15 @@
             localStorage.setItem('white_gale_attempts', val);
         }
 
+        function saveAutoTgConfig() {
+            const val = document.getElementById('autoTelegramProbability').value;
+            localStorage.setItem('auto_tg_probability', val);
+            const galesSelect = document.getElementById('autoTelegramGales');
+            if (galesSelect) {
+                localStorage.setItem('auto_tg_gales', galesSelect.value);
+            }
+        }
+
         function resetAllConfigs() {
             if (!confirm('Tem certeza que deseja resetar todas as configurações para o padrão? Isso irá recarregar a página.')) {
                 return;
@@ -3821,6 +4401,10 @@
             // Limpa as configurações salvas no navegador
             localStorage.removeItem('warmup_seconds');
             localStorage.removeItem('white_gale_attempts');
+            localStorage.removeItem('auto_tg_probability');
+            localStorage.removeItem('auto_tg_gales');
+            localStorage.removeItem('auto_tg_state');
+            localStorage.removeItem('telegram_scores');
 
             alert('Configurações resetadas. A página será recarregada.');
             window.location.reload();
@@ -3840,13 +4424,47 @@
                 if (input) input.value = savedGale;
             }
 
+            const savedAutoTgProb = localStorage.getItem('auto_tg_probability');
+            if (savedAutoTgProb !== null) {
+                const input = document.getElementById('autoTelegramProbability');
+                if (input) input.value = savedAutoTgProb;
+            }
+
+            const savedAutoTgGales = localStorage.getItem('auto_tg_gales');
+            if (savedAutoTgGales !== null) {
+                const select = document.getElementById('autoTelegramGales');
+                if (select) select.value = savedAutoTgGales;
+            }
+
+            const savedAutoTgState = localStorage.getItem('auto_tg_state');
+            if (savedAutoTgState === 'true') {
+                const btn = document.getElementById('autoTgBtn');
+                if (btn) {
+                    // Seta o estado para ON sem disparar a mensagem de ativação no recarregamento da página
+                    btn.setAttribute('data-active', 'true');
+                    btn.innerText = '🤖 Auto TG: ON';
+                    btn.style.borderColor = '#00ff88';
+                    btn.style.color = '#00ff88';
+                    btn.style.background = 'rgba(0, 255, 136, 0.2)';
+                    btn.classList.add('active');
+                }
+            }
+
+            const savedTelegramScores = localStorage.getItem('telegram_scores');
+            if (savedTelegramScores) {
+                telegramScores = JSON.parse(savedTelegramScores);
+            }
+
+            checkDailyReset();
+            setInterval(checkDailyReset, 60000); // Verifica a cada minuto se mudou o dia
+
             const autoFetchToggle = document.getElementById('autoFetchToggle');
             if (autoFetchToggle) {
                 autoFetchToggle.addEventListener('change', (e) => {
                     if (e.target.checked) {
                         fetchData(); // Fetch immediately
                         if (autoFetchInterval) clearInterval(autoFetchInterval);
-                        autoFetchInterval = setInterval(fetchData, 15000); // Check for updates every 15s
+                        autoFetchInterval = setInterval(fetchData, 13000); // Check for updates every 13s
                     } else {
                         clearInterval(autoFetchInterval);
                     }
@@ -3855,7 +4473,7 @@
                 autoFetchToggle.dispatchEvent(new Event('change'));
             } else {
                 fetchData(); 
-                setInterval(fetchData, 15000);
+                setInterval(fetchData, 13000);
             }
 
             // Panning functionality (Mouse and Touch)

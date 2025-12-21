@@ -68,6 +68,12 @@
                     <input type="password" id="telegram_chat_id_white" placeholder="Cole o ID do canal ou grupo para o Robô Branco...">
                     <div class="hint">Ex: -100987654321 (Pode ser o mesmo ID do Robô Cores se desejar)</div>
                 </div>
+
+                <div class="control-group">
+                    <label>🆔 ID do Chat (Opções Double):</label>
+                    <input type="password" id="telegram_chat_id_double" placeholder="ID para alertas e capturas do gráfico...">
+                    <div class="hint">Canal para receber os sinais e capturas de tela do gráfico Opções Double.</div>
+                </div>
             
                 <hr style="border-color: #333; margin: 25px 0;">
 
@@ -87,6 +93,7 @@
                 <div class="inline-controls">
                     <button class="btn-cyber btn-save-neon" onclick="saveTelegramSettings(this)">💾 Salvar Tudo</button>
                     <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'cores')">🧪 Testar Robô Cores</button>
+                    <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'double')" style="border-color: #00ff88; color: #00ff88;">🧪 Testar Opções Double</button>
                     <button class="btn-cyber btn-test-neon" onclick="testTelegramConnection(this, 'branco')" style="border-color: #fff; color: #fff;">🧪 Testar Robô Branco</button>
                 </div>
                 
@@ -114,17 +121,20 @@
             const savedToken = localStorage.getItem('telegram_bot_token');
             const savedChatId = localStorage.getItem('telegram_chat_id');
             const savedChatIdWhite = localStorage.getItem('telegram_chat_id_white');
+            const savedChatIdDouble = localStorage.getItem('telegram_chat_id_double');
             const savedAutoBotTemplate = localStorage.getItem('telegram_autobot_template');
             if (savedToken) document.getElementById('telegram_bot_token').value = savedToken;
             if (savedChatId) document.getElementById('telegram_chat_id').value = savedChatId;
             if (savedChatIdWhite) document.getElementById('telegram_chat_id_white').value = savedChatIdWhite;
             if (savedAutoBotTemplate) document.getElementById('telegram_autobot_template').value = savedAutoBotTemplate;
+            if (savedChatIdDouble) document.getElementById('telegram_chat_id_double').value = savedChatIdDouble;
         });
 
         function saveTelegramSettings(btn) {
             const token = document.getElementById('telegram_bot_token').value.trim();
             const chatId = document.getElementById('telegram_chat_id').value.trim();
             const chatIdWhite = document.getElementById('telegram_chat_id_white').value.trim();
+            const chatIdDouble = document.getElementById('telegram_chat_id_double').value.trim();
             const resDiv = document.getElementById('resTelegramConfig');
             const autoBotTemplate = document.getElementById('telegram_autobot_template').value;
 
@@ -137,6 +147,7 @@
 
             localStorage.setItem('telegram_bot_token', token);
             localStorage.setItem('telegram_chat_id', chatId);
+            localStorage.setItem('telegram_chat_id_double', chatIdDouble);
             localStorage.setItem('telegram_chat_id_white', chatIdWhite);
             localStorage.setItem('telegram_autobot_template', autoBotTemplate);
 
@@ -154,9 +165,19 @@
 
         async function testTelegramConnection(btn, botType) {
             const token = document.getElementById('telegram_bot_token').value.trim();
-            const chatId = botType === 'cores' 
-                ? document.getElementById('telegram_chat_id').value.trim() 
-                : document.getElementById('telegram_chat_id_white').value.trim();
+            let chatId;
+            let botName;
+
+            if (botType === 'cores') {
+                chatId = document.getElementById('telegram_chat_id').value.trim();
+                botName = 'Robô Cores';
+            } else if (botType === 'branco') {
+                chatId = document.getElementById('telegram_chat_id_white').value.trim();
+                botName = 'Robô Branco';
+            } else if (botType === 'double') {
+                chatId = document.getElementById('telegram_chat_id_double').value.trim();
+                botName = 'Opções Double';
+            }
             const resDiv = document.getElementById('resTelegramConfig');
 
             if (!token || !chatId) {
@@ -175,7 +196,6 @@
 
                 if (data.ok) {
                     // Se o token for válido, tenta enviar uma mensagem de teste
-                    const botName = botType === 'cores' ? 'Robô Cores' : 'Robô Branco';
                     const msgUrl = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=✅ Teste de Conexão: ${botName} Conectado!`;
                     const msgResponse = await fetch(msgUrl);
                     const msgData = await msgResponse.json();
