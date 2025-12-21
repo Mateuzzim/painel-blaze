@@ -71,15 +71,29 @@
     </style>
     <style>
         /* Estilos para o filtro de giros */
-        .filter-buttons { display: flex; justify-content: center; gap: 8px; }
+        .filter-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
         .filter-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid #333; color: #aaa;
-            padding: 6px 18px; border-radius: 20px; cursor: pointer;
-            font-size: 0.8rem; font-weight: bold; transition: all 0.3s;
+            background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.2); color: #00d2ff;
+            padding: 10px 24px; border-radius: 25px; cursor: pointer;
+            font-size: 0.9rem; font-weight: bold; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 5px rgba(0, 210, 255, 0.1);
         }
-        .filter-btn:hover { background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
+        .filter-btn:hover { 
+            background: rgba(0, 210, 255, 0.2); color: #fff; 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
+            border-color: #00d2ff; transform: translateY(-2px) scale(1.02);
+        }
+        .filter-btn:active { transform: translateY(0) scale(0.98); }
         .filter-btn.active {
-            background: #00d2ff; color: #000; border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+            background: #00d2ff; color: #000; border-color: #00d2ff; 
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
+        }
+        
+        @keyframes card-pulse {
+            0% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
+            50% { border-color: rgba(0, 210, 255, 0.3); box-shadow: 0 0 15px rgba(0, 210, 255, 0.1); }
+            100% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
         }
     </style>
 </head>
@@ -255,21 +269,30 @@
                 <!-- Grupo 7: Ferramentas -->
                 <div class="stats-grid">
                     <!-- Gráfico de Dispersão -->
-                    <div class="stat-card">
+                    <div class="stat-card" style="animation: card-pulse 4s infinite;">
                         <div class="stat-title">🌌 Dispersão (Minuto vs Número)</div>
                         <div id="scatter_chart_container" style="width: 100%; height: 200px; margin-top: 10px;"></div>
                     </div>
                     <!-- Alerta de Padrão Personalizado -->
-                    <div class="stat-card">
+                    <div class="stat-card" style="animation: card-pulse 4s infinite; animation-delay: 1s; display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="stat-title">🔔 Alerta de Padrão Personalizado</div>
-                        <div style="display: flex; gap: 5px; justify-content: center; margin-top: 10px;">
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
                             <button class="filter-btn" onclick="addToPattern('red')" style="border-color: #ff0055; color: #ff0055;">V</button>
                             <button class="filter-btn" onclick="addToPattern('black')" style="border-color: #888; color: #888;">P</button>
                             <button class="filter-btn" onclick="addToPattern('white')" style="border-color: #fff; color: #fff;">B</button>
                             <button class="filter-btn" onclick="clearPattern()" style="border-color: #ff9800; color: #ff9800;">Limpar</button>
                         </div>
-                        <div id="custom_pattern_display" style="min-height: 30px; margin: 10px 0; display: flex; justify-content: center; gap: 5px;"></div>
+                        <div id="custom_pattern_display" style="min-height: 40px; margin: 15px 0; display: flex; justify-content: center; gap: 8px; align-items: center; background: rgba(0,0,0,0.2); border-radius: 8px;"></div>
                         <div id="pattern_alert_status" style="text-align: center; font-weight: bold; min-height: 20px;"></div>
+                    </div>
+                    <!-- Controle de Tamanho (Movido) -->
+                    <div class="stat-card" style="animation: card-pulse 4s infinite; animation-delay: 2s; display: flex; flex-direction: column; justify-content: center;">
+                        <div class="stat-title">🔍 Tamanho da Vela (Zoom)</div>
+                        <div class="filter-buttons" style="margin-top: 20px; justify-content: center; gap: 15px;">
+                            <button class="filter-btn" onclick="changeChartScale(-0.2)">Diminuir</button>
+                            <button class="filter-btn" onclick="resetChartScale()">Padrão</button>
+                            <button class="filter-btn" onclick="changeChartScale(0.2)">Aumentar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -305,6 +328,7 @@
         let analysisLimit = 100; // Limite padrão de análise
         let hotHoursColor = 'red'; // Cor padrão para horários quentes
         let customPattern = []; // Padrão personalizado
+        let chartScale = 1; // Escala dos gráficos
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchBlazeData();
@@ -325,6 +349,18 @@
             if (fullBlazeData.length > 0) {
                 analyzeData(fullBlazeData);
             }
+        }
+
+        function changeChartScale(delta) {
+            chartScale += delta;
+            if (chartScale < 0.5) chartScale = 0.5;
+            if (chartScale > 3) chartScale = 3;
+            if (fullBlazeData.length > 0) analyzeData(fullBlazeData);
+        }
+
+        function resetChartScale() {
+            chartScale = 1;
+            if (fullBlazeData.length > 0) analyzeData(fullBlazeData);
         }
 
         function toggleAutoUpdate() {
@@ -502,7 +538,8 @@
             if (points.length === 0) return;
 
             const width = container.clientWidth || 500;
-            const height = 120;
+            const height = 120 * chartScale;
+            container.style.height = height + 'px';
             const padding = 15;
 
             const minVal = Math.min(0, ...points);
@@ -653,7 +690,8 @@
 
             const maxCount = Math.max(...hourlyCounts, 1);
             const width = container.clientWidth || 500;
-            const height = 150;
+            const height = 150 * chartScale;
+            container.style.height = height + 'px';
             const barWidth = (width / 24) - 2;
             
             let svgContent = '';
@@ -1123,7 +1161,8 @@
             if (!container || !data || data.length === 0) return;
 
             const width = 800; 
-            const height = 200;
+            const height = 200 * chartScale;
+            container.style.height = height + 'px';
             const padding = 30;
 
             let circles = '';

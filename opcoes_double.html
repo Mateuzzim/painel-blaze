@@ -60,27 +60,87 @@
         .controls-panel {
             background: rgba(0,0,0,0.2);
             border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 20px;
             margin-top: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
             justify-content: center;
+            animation: card-pulse 4s infinite;
         }
+        
+        @keyframes card-pulse {
+            0% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
+            50% { border-color: rgba(0, 210, 255, 0.3); box-shadow: 0 0 15px rgba(0, 210, 255, 0.1); }
+            100% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
+        }
+
         .draw-mode-btn {
-            padding: 5px 10px;
-            background: #333;
-            color: #fff;
-            border: 1px solid #555;
-            border-radius: 4px;
+            background: rgba(0, 210, 255, 0.05) !important;
+            border: 1px solid rgba(0, 210, 255, 0.2) !important;
+            color: #00d2ff !important;
+            padding: 10px 24px;
+            border-radius: 25px;
             cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 5px rgba(0, 210, 255, 0.1);
+        }
+        .draw-mode-btn:hover {
+            background: rgba(0, 210, 255, 0.2) !important;
+            color: #fff !important;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            border-color: #00d2ff !important;
+            transform: translateY(-2px) scale(1.02);
+        }
+        .draw-mode-btn:active { transform: translateY(0) scale(0.98); }
+        .draw-mode-btn.active {
+            background: #00d2ff !important;
+            color: #000 !important;
+            border-color: #00d2ff !important;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
+        }
+
+        .tool-group {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.03);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
             transition: all 0.3s;
         }
-        .draw-mode-btn.active {
-            background: #00d2ff; color: #000; border-color: #00d2ff;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+        .tool-group:hover {
+            border-color: rgba(0, 210, 255, 0.3);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
         }
+        .tool-group span { font-size: 0.8rem; color: #aaa; font-weight: bold; text-transform: uppercase; }
+        .tool-group input[type="number"] {
+            background: rgba(0,0,0,0.3) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #fff !important;
+            border-radius: 4px !important;
+            padding: 4px !important;
+            text-align: center;
+        }
+        
+        #timeframeSelect {
+            background: rgba(0, 210, 255, 0.05) !important;
+            border: 1px solid rgba(0, 210, 255, 0.2) !important;
+            color: #00d2ff !important;
+            border-radius: 20px !important;
+            padding: 8px 15px !important;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #timeframeSelect:hover { background: rgba(0, 210, 255, 0.1) !important; }
+
         .current-price-line {
             animation: pulse-line 1.5s infinite alternate;
         }
@@ -268,7 +328,7 @@
                     </div>
                 </div>
                 <!-- Painel Lateral de Histórico -->
-                <div id="trend-history-panel">
+                <div id="trend-history-panel" style="display: none;">
                     <div class="history-header"><span class="history-title">Histórico</span><span style="font-size:0.8rem">⏳</span></div>
                     <ul id="history-list" class="history-list">
                         <li style="text-align: center; color: #555; padding: 10px; font-size: 0.7rem;">Aguardando sinais...</li>
@@ -281,85 +341,104 @@
             <div id="rsi-container"></div>
             <div id="stoch-container"></div>
             <div class="controls-panel">
-                <select id="timeframeSelect" onchange="updateChart()" style="padding: 8px 12px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                <select id="timeframeSelect" onchange="updateChart()">
                     <option value="tick">Tick</option>
                     <option value="1">1 Min</option>
                     <option value="5">5 Min</option>
                 </select>
-                <button id="themeToggleBtn" class="draw-mode-btn" onclick="toggleTheme()" style="background: #444;">☀️ Tema</button>
+                <button id="themeToggleBtn" class="draw-mode-btn" onclick="toggleTheme()">☀️ Tema</button>
                 <button id="drawModeBtn" class="draw-mode-btn" onclick="toggleDrawMode(this)">✏️ Desenhar</button>
-                <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()" style="background: #0088cc;">📸 Capturar</button>
-                <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)" style="background: #229ED9;">✈️ Telegram</button>
-                <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()" style="background: #6c757d;">🔄 Resetar Posição</button>
-                <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()" style="background: #333;">🖼️ Tela Cheia</button>
-                <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()" style="background: #555;">🗑️ Limpar</button>
+                <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()">📸 Capturar</button>
+                <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)">✈️ Telegram</button>
+                <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()">🔄 Resetar Posição</button>
+                <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()">🖼️ Tela Cheia</button>
+                <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()">🗑️ Limpar</button>
+                <div class="tool-group">
+                    <span style="font-size: 0.8rem; color: #fff;">🔍 Zoom</span>
+                    <button onclick="zoomIn()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Aumentar Zoom">+</button>
+                    <button onclick="resetZoom()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Resetar Zoom">R</button>
+                    <button onclick="zoomOut()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Diminuir Zoom">-</button>
+                </div>
                 <input type="color" id="drawingColorPicker" value="#00d2ff" title="Cor do Desenho" style="background: #222; border: 1px solid #444; border-radius: 4px; cursor: pointer; height: 35px; padding: 2px;">
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <span style="font-size: 0.8rem; color: #fff;">Velas:</span>
                     <input type="color" id="candleUpColor" value="#ff0055" title="Cor de Alta" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
                     <input type="color" id="candleDownColor" value="#343a40" title="Cor de Baixa" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="autoFetchToggle" checked title="Atualização Automática">
                     <span style="font-size: 0.8rem; color: #fff;">Auto</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="widgetsToggle" checked onchange="updateChart()" title="Mostrar/Ocultar Widgets">
                     <span style="font-size: 0.8rem; color: #fff;">Widgets</span>
+                    <input type="number" id="volatilityLookback" value="50" min="10" max="200" step="10" onchange="updateChart()" style="width: 40px;" title="Sensibilidade (Período de Análise)">
+                    <input type="number" id="volatilityWhiteThreshold" value="90" min="50" max="99" step="1" onchange="updateChart()" style="width: 35px;" title="Limiar Alerta Branco (%)">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
-                    <input type="checkbox" id="historyToggle" checked onchange="toggleHistory()" title="Mostrar/Ocultar Histórico">
+                <div class="tool-group">
+                    <input type="checkbox" id="historyToggle" onchange="toggleHistory()" title="Mostrar/Ocultar Histórico">
                     <span style="font-size: 0.8rem; color: #fff;">Histórico</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
-                    <input type="checkbox" id="smaToggle" onchange="updateChart()" title="Ativar SMA">
+                <div class="tool-group">
+                    <input type="checkbox" id="smaToggle" checked onchange="updateChart()" title="Ativar SMA">
                     <span style="font-size: 0.8rem; color: #fff;">SMA</span>
-                    <input type="number" id="smaPeriodInput" value="14" min="2" max="200" onchange="updateChart()" style="width: 50px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;">
+                    <input type="number" id="smaPeriodInput" value="14" min="2" max="200" onchange="updateChart()" style="width: 50px;">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="bbToggle" onchange="updateChart()" title="Ativar Bandas de Bollinger">
                     <span style="font-size: 0.8rem; color: #fff;">BB</span>
-                    <input type="number" id="bbPeriodInput" value="20" min="2" max="50" onchange="updateChart()" style="width: 40px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Período">
-                    <input type="number" id="bbStdDevInput" value="2" min="1" max="5" step="0.1" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Desvio Padrão">
+                    <input type="number" id="bbPeriodInput" value="20" min="2" max="50" onchange="updateChart()" style="width: 40px;" title="Período">
+                    <input type="number" id="bbStdDevInput" value="2" min="1" max="5" step="0.1" onchange="updateChart()" style="width: 30px;" title="Desvio Padrão">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="volumeToggle" onchange="updateChart()" title="Ativar Volume">
                     <span style="font-size: 0.8rem; color: #fff;">VOL</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
-                    <input type="checkbox" id="fractalsToggle" onchange="updateChart()" title="Ativar Fractais">
+                <div class="tool-group">
+                    <input type="checkbox" id="fractalsToggle" checked onchange="updateChart()" title="Ativar Fractais">
                     <span style="font-size: 0.8rem; color: #fff;">Fractais</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
-                    <input type="checkbox" id="trendLineToggle" onchange="updateChart()" title="Ativar Linhas de Tendência">
+                <div class="tool-group">
+                    <input type="checkbox" id="trendLineToggle" checked onchange="updateChart()" title="Ativar Linhas de Tendência">
                     <span style="font-size: 0.8rem; color: #fff;">L. Tend.</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
+                    <input type="checkbox" id="srToggle" checked onchange="updateChart()" title="Ativar Suporte e Resistência">
+                    <span style="font-size: 0.8rem; color: #fff;">Sup/Res</span>
+                    <input type="number" id="srLookbackInput" value="200" min="50" max="500" step="10" onchange="updateChart()" style="width: 45px;" title="Período de Análise">
+                    <input type="number" id="srLinesInput" value="3" min="1" max="10" onchange="updateChart()" style="width: 30px;" title="Máximo de Linhas">
+                </div>
+                <div class="tool-group">
+                    <input type="checkbox" id="emaToggle" onchange="updateChart()" title="Ativar EMA">
+                    <span style="font-size: 0.8rem; color: #fff;">EMA</span>
+                    <input type="number" id="emaPeriodInput" value="9" min="2" max="200" onchange="updateChart()" style="width: 50px;">
+                </div>
+                <div class="tool-group">
                     <input type="checkbox" id="adxToggle" onchange="updateChart()" title="Ativar ADX">
                     <span style="font-size: 0.8rem; color: #fff;">ADX</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="soundToggle" checked title="Ativar Alertas Sonoros">
                     <span style="font-size: 0.8rem; color: #fff;">🔊</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="rsiToggle" onchange="updateChart()" title="Ativar RSI (Índice de Força Relativa)">
                     <span style="font-size: 0.8rem; color: #fff;">RSI</span>
-                    <input type="number" id="rsiPeriodInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 40px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Período">
+                    <input type="number" id="rsiPeriodInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 40px;" title="Período">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="macdToggle" onchange="updateChart()" title="Ativar MACD">
                     <span style="font-size: 0.8rem; color: #fff;">MACD</span>
-                    <input type="number" id="macdFastInput" value="12" min="2" max="50" onchange="updateChart()" style="width: 35px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Rápida">
-                    <input type="number" id="macdSlowInput" value="26" min="2" max="100" onchange="updateChart()" style="width: 35px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Lenta">
-                    <input type="number" id="macdSignalInput" value="9" min="2" max="50" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Sinal">
+                    <input type="number" id="macdFastInput" value="12" min="2" max="50" onchange="updateChart()" style="width: 35px;" title="Rápida">
+                    <input type="number" id="macdSlowInput" value="26" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="Lenta">
+                    <input type="number" id="macdSignalInput" value="9" min="2" max="50" onchange="updateChart()" style="width: 30px;" title="Sinal">
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px; background: #333; padding: 5px 10px; border-radius: 4px; border: 1px solid #555;">
+                <div class="tool-group">
                     <input type="checkbox" id="stochToggle" onchange="updateChart()" title="Ativar Estocástico">
                     <span style="font-size: 0.8rem; color: #fff;">Stoch</span>
-                    <input type="number" id="stochKInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 35px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="%K">
-                    <input type="number" id="stochDInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="%D">
-                    <input type="number" id="stochSmoothInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px; padding: 2px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; font-size: 0.8rem; text-align: center;" title="Smooth">
+                    <input type="number" id="stochKInput" value="14" min="2" max="100" onchange="updateChart()" style="width: 35px;" title="%K">
+                    <input type="number" id="stochDInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="%D">
+                    <input type="number" id="stochSmoothInput" value="3" min="1" max="50" onchange="updateChart()" style="width: 30px;" title="Smooth">
                 </div>
             </div>
             <div id="chart-tooltip" class="chart-tooltip"></div>
@@ -381,6 +460,7 @@
         let autoFetchInterval = null;
         let lastDataSignature = '';
         let lastLiveTrend = null;
+        let visibleCandleCount = 100;
 
         // Helper function to identify color
         function identificarCor(numero) {
@@ -678,10 +758,9 @@
             }
 
             if (!allCandles || allCandles.length === 0) return;
-            const candleCount = 100;
             // Garante que o índice de início não saia dos limites do array
-            viewStartIndex = Math.max(0, Math.min(allCandles.length - candleCount, viewStartIndex));
-            const visibleData = allCandles.slice(viewStartIndex, viewStartIndex + candleCount);
+            viewStartIndex = Math.max(0, Math.min(allCandles.length - visibleCandleCount, viewStartIndex));
+            const visibleData = allCandles.slice(viewStartIndex, viewStartIndex + visibleCandleCount);
             
             drawChart(visibleData, shouldPlaySound);
             drawRSIChart(visibleData);
@@ -691,9 +770,32 @@
             drawStochasticChart(visibleData);
         }
 
+        function zoomIn() {
+            if (visibleCandleCount > 20) {
+                const center = viewStartIndex + visibleCandleCount / 2;
+                visibleCandleCount -= 10;
+                viewStartIndex = Math.max(0, Math.round(center - visibleCandleCount / 2));
+                renderVisibleCharts();
+            }
+        }
+
+        function zoomOut() {
+            if (visibleCandleCount < 500 && visibleCandleCount < allCandles.length) {
+                const center = viewStartIndex + visibleCandleCount / 2;
+                visibleCandleCount += 10;
+                viewStartIndex = Math.max(0, Math.round(center - visibleCandleCount / 2));
+                renderVisibleCharts();
+            }
+        }
+
+        function resetZoom() {
+            visibleCandleCount = 100;
+            resetView();
+        }
+
         function resetView() {
             // Define o índice para mostrar as últimas 100 velas
-            viewStartIndex = Math.max(0, allCandles.length - 100);
+            viewStartIndex = Math.max(0, allCandles.length - visibleCandleCount);
             renderVisibleCharts();
         }
 
@@ -1301,6 +1403,66 @@
                 }
             }
 
+            // Support and Resistance Logic
+            const showSR = document.getElementById('srToggle') && document.getElementById('srToggle').checked;
+            if (showSR && typeof allCandles !== 'undefined' && allCandles.length > 0) {
+                const srLookbackInput = document.getElementById('srLookbackInput');
+                const srLinesInput = document.getElementById('srLinesInput');
+                const lookback = srLookbackInput ? parseInt(srLookbackInput.value) : 200;
+                const maxLines = srLinesInput ? parseInt(srLinesInput.value) : 3;
+                const endIndex = viewStartIndex + priceData.length;
+                const startIndex = Math.max(0, endIndex - lookback);
+                const resistances = [];
+                const supports = [];
+
+                for (let i = startIndex + 2; i < endIndex - 2; i++) {
+                    if (i >= allCandles.length - 2) break;
+                    const d = allCandles[i];
+                    const prev1 = allCandles[i-1]; const prev2 = allCandles[i-2];
+                    const next1 = allCandles[i+1]; const next2 = allCandles[i+2];
+
+                    if (d.high > prev1.high && d.high > prev2.high && d.high > next1.high && d.high > next2.high) {
+                        resistances.push(d.high);
+                    }
+                    if (d.low < prev1.low && d.low < prev2.low && d.low < next1.low && d.low < next2.low) {
+                        supports.push(d.low);
+                    }
+                }
+
+                const uniqueRes = [...new Set(resistances.reverse())].slice(0, maxLines);
+                const uniqueSup = [...new Set(supports.reverse())].slice(0, maxLines);
+
+                uniqueRes.forEach(price => {
+                    const yVal = y(price);
+                    const line = document.createElementNS(svgNS, 'line');
+                    line.setAttribute('x1', 0); line.setAttribute('y1', yVal);
+                    line.setAttribute('x2', width); line.setAttribute('y2', yVal);
+                    line.setAttribute('stroke', '#ff0055'); line.setAttribute('stroke-width', '1');
+                    line.setAttribute('stroke-dasharray', '5,2'); line.setAttribute('opacity', '0.8');
+                    g.appendChild(line);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', width - 5); label.setAttribute('y', yVal - 3);
+                    label.setAttribute('text-anchor', 'end'); label.setAttribute('fill', '#ff0055');
+                    label.setAttribute('font-size', '9px'); label.textContent = 'RES ' + price;
+                    g.appendChild(label);
+                });
+
+                uniqueSup.forEach(price => {
+                    const yVal = y(price);
+                    const line = document.createElementNS(svgNS, 'line');
+                    line.setAttribute('x1', 0); line.setAttribute('y1', yVal);
+                    line.setAttribute('x2', width); line.setAttribute('y2', yVal);
+                    line.setAttribute('stroke', '#00ff88'); line.setAttribute('stroke-width', '1');
+                    line.setAttribute('stroke-dasharray', '5,2'); line.setAttribute('opacity', '0.8');
+                    g.appendChild(line);
+                    const label = document.createElementNS(svgNS, 'text');
+                    label.setAttribute('x', width - 5); label.setAttribute('y', yVal + 10);
+                    label.setAttribute('text-anchor', 'end'); label.setAttribute('fill', '#00ff88');
+                    label.setAttribute('font-size', '9px'); label.textContent = 'SUP ' + price;
+                    g.appendChild(label);
+                });
+            }
+
             // Draw SMA if enabled
             const showSMA = document.getElementById('smaToggle') && document.getElementById('smaToggle').checked;
             if (showSMA && priceData.length > 0) {
@@ -1329,6 +1491,32 @@
                 }
             }
 
+            // Draw EMA if enabled
+            const showEMA = document.getElementById('emaToggle') && document.getElementById('emaToggle').checked;
+            if (showEMA && priceData.length > 0) {
+                const emaPeriodInput = document.getElementById('emaPeriodInput');
+                const emaPeriod = emaPeriodInput ? parseInt(emaPeriodInput.value) : 9;
+                const emaValues = calculateEMA(priceData, emaPeriod);
+
+                let emaPath = "";
+                emaValues.forEach((val, i) => {
+                    if (val !== null) {
+                        const x = i * candleSpacing + candleWidth / 2;
+                        const yVal = y(val);
+                        if (emaPath === "") emaPath = `M ${x} ${yVal}`;
+                        else emaPath += ` L ${x} ${yVal}`;
+                    }
+                });
+
+                if (emaPath !== "") {
+                    const emaLine = document.createElementNS(svgNS, 'path');
+                    emaLine.setAttribute('d', emaPath);
+                    emaLine.setAttribute('stroke', '#00ff88'); // Green color for EMA
+                    emaLine.setAttribute('stroke-width', '1.5');
+                    emaLine.setAttribute('fill', 'none');
+                    g.appendChild(emaLine);
+                }
+            }
             // Redraw persistent lines
             const drawingsGroup = document.createElementNS(svgNS, 'g');
             g.appendChild(drawingsGroup);
@@ -1660,24 +1848,56 @@
             if (!widget || data.length < 20 || !showWidgets) { if(widget) widget.style.display = 'none'; return; }
             widget.style.display = 'flex';
 
-            // Calculate ATR (Average True Range)
+            // Calculate ATR first
             const atrData = calculateATR(data, 14);
-            const currentATR = atrData[atrData.length - 1];
-            if (currentATR === null) return;
+            
+            // Check if ATR is dynamic enough (in Tick mode it's constant)
+            let metricData = atrData;
+            let isFlat = false;
+            
+            const validATRs = atrData.filter(v => v !== null);
+            if (validATRs.length > 0) {
+                const recentATRs = validATRs.slice(-20);
+                const minA = Math.min(...recentATRs);
+                const maxA = Math.max(...recentATRs);
+                if (maxA === minA) isFlat = true;
+            }
+
+            // If ATR is flat, calculate Standard Deviation of Price
+            if (isFlat) {
+                const period = 20;
+                const stdDevData = [];
+                for (let i = 0; i < data.length; i++) {
+                    if (i < period - 1) { stdDevData.push(null); continue; }
+                    let sum = 0;
+                    for (let j = 0; j < period; j++) sum += data[i - j].close;
+                    const mean = sum / period;
+                    let sumSq = 0;
+                    for (let j = 0; j < period; j++) sumSq += Math.pow(data[i - j].close - mean, 2);
+                    stdDevData.push(Math.sqrt(sumSq / period));
+                }
+                metricData = stdDevData;
+            }
+
+            const currentMetric = metricData[metricData.length - 1];
+            if (currentMetric === null || currentMetric === undefined) return;
 
             // Normalize ATR relative to recent history (last 50 candles)
-            const lookback = Math.min(data.length, 50);
-            const recentATRs = [];
+            const lookbackInput = document.getElementById('volatilityLookback');
+            const lookbackValue = lookbackInput ? parseInt(lookbackInput.value) : 50;
+            const lookback = Math.min(data.length, lookbackValue);
+            const recentMetrics = [];
+            
             for(let i = data.length - lookback; i < data.length; i++) {
-                if(atrData[i] !== null) recentATRs.push(atrData[i]);
+                if(metricData[i] !== null) recentMetrics.push(metricData[i]);
             }
-            if (recentATRs.length === 0) return;
+            if (recentMetrics.length === 0) return;
 
-            let minAtr = Math.min(...recentATRs);
-            let maxAtr = Math.max(...recentATRs);
-            if (maxAtr === minAtr) maxAtr = minAtr + 1;
+            let minM = Math.min(...recentMetrics);
+            let maxM = Math.max(...recentMetrics);
+            if (maxM === minM) maxM = minM + 0.001;
 
-            const volatility = Math.max(0, Math.min(100, ((currentATR - minAtr) / (maxAtr - minAtr)) * 100));
+            const volatility = Math.max(0, Math.min(100, ((currentMetric - minM) / (maxM - minM)) * 100));
             
             const fill = document.getElementById('volatility-fill');
             const val = document.getElementById('volatility-val');
@@ -1686,8 +1906,22 @@
             let color = volatility >= 60 ? '#ff0055' : (volatility >= 30 ? '#ff9800' : '#00ff88');
             let icon = volatility >= 60 ? '⚡' : (volatility >= 30 ? '〰️' : '💤');
 
+            // Sugestão de Branco em Alta Volatilidade
+            const whiteThresholdInput = document.getElementById('volatilityWhiteThreshold');
+            const whiteThreshold = whiteThresholdInput ? parseInt(whiteThresholdInput.value) : 90;
+
+            if (volatility >= whiteThreshold) {
+                color = '#ffffff';
+                icon = '⚪';
+                val.innerText = "POSSÍVEL ⚪";
+                val.style.fontSize = "0.6rem";
+            } else {
+                val.innerText = `${Math.round(volatility)}%`;
+                val.style.fontSize = "1.1rem";
+            }
+
             fill.style.height = `${volatility}%`; fill.style.backgroundColor = color; fill.style.boxShadow = `0 0 15px ${color}`;
-            val.innerText = `${Math.round(volatility)}%`; val.style.color = color;
+            val.style.color = color;
             iconEl.innerText = icon;
             
             widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
@@ -2214,6 +2448,136 @@
             return canvas;
         }
 
+        function generateAnalysisCaption() {
+            if (!allCandles || allCandles.length === 0) return '📊 *Análise Gráfica - Opções Double*\n\nGerado pelo Cortex Virtual';
+
+            const lastCandle = allCandles[allCandles.length - 1];
+            const price = lastCandle.close;
+            
+            // Trend
+            const { signal, icon } = getTrendSignal(allCandles);
+            
+            // Strength
+            const lookback = Math.min(allCandles.length, 20);
+            const recent = allCandles.slice(-lookback);
+            let redPower = 0, blackPower = 0, whitePower = 0;
+            recent.forEach(d => {
+                if (d.color === 'vermelho') redPower++;
+                else if (d.color === 'preto') blackPower++;
+                else if (d.color === 'branco') whitePower++;
+            });
+            const total = redPower + blackPower + whitePower;
+            const redPct = total > 0 ? Math.round((redPower / total) * 100) : 0;
+            const blackPct = total > 0 ? Math.round((blackPower / total) * 100) : 0;
+            
+            // Volatility
+            let volatilityText = "";
+            const atrData = calculateATR(allCandles, 14);
+            
+            // Check if ATR is dynamic enough (in Tick mode it's constant)
+            let metricData = atrData;
+            let isFlat = false;
+            
+            const validATRs = atrData.filter(v => v !== null);
+            if (validATRs.length > 0) {
+                const recentATRs = validATRs.slice(-20);
+                const minA = Math.min(...recentATRs);
+                const maxA = Math.max(...recentATRs);
+                if (maxA === minA) isFlat = true;
+            }
+
+            // If ATR is flat, calculate Standard Deviation of Price
+            if (isFlat) {
+                const period = 20;
+                const stdDevData = [];
+                for (let i = 0; i < allCandles.length; i++) {
+                    if (i < period - 1) { stdDevData.push(null); continue; }
+                    let sum = 0;
+                    for (let j = 0; j < period; j++) sum += allCandles[i - j].close;
+                    const mean = sum / period;
+                    let sumSq = 0;
+                    for (let j = 0; j < period; j++) sumSq += Math.pow(allCandles[i - j].close - mean, 2);
+                    stdDevData.push(Math.sqrt(sumSq / period));
+                }
+                metricData = stdDevData;
+            }
+
+            const currentMetric = metricData[metricData.length - 1];
+            if (currentMetric !== null && currentMetric !== undefined) {
+                const volLookbackInput = document.getElementById('volatilityLookback');
+                const volLookbackValue = volLookbackInput ? parseInt(volLookbackInput.value) : 50;
+                const volLookback = Math.min(allCandles.length, volLookbackValue);
+                const recentMetrics = [];
+                for(let i = allCandles.length - volLookback; i < allCandles.length; i++) {
+                    if(metricData[i] !== null) recentMetrics.push(metricData[i]);
+                }
+                if (recentMetrics.length > 0) {
+                    let minM = Math.min(...recentMetrics);
+                    let maxM = Math.max(...recentMetrics);
+                    if (maxM === minM) maxM = minM + 0.001;
+                    const volatility = Math.max(0, Math.min(100, ((currentMetric - minM) / (maxM - minM)) * 100));
+                    volatilityText = `⚡ *Volatilidade:* ${Math.round(volatility)}%`;
+                }
+            }
+
+            let indicatorsText = "";
+            
+            // RSI
+            if (document.getElementById('rsiToggle').checked) {
+                const rsiPeriod = parseInt(document.getElementById('rsiPeriodInput').value) || 14;
+                const rsiValues = calculateRSI(allCandles, rsiPeriod);
+                const lastRSI = rsiValues[rsiValues.length - 1];
+                if (lastRSI !== null) {
+                    let rsiStatus = "Neutro";
+                    if (lastRSI >= 70) rsiStatus = "Sobrecompra 🔴";
+                    else if (lastRSI <= 30) rsiStatus = "Sobrevenda 🟢";
+                    indicatorsText += `\n📉 *RSI(${rsiPeriod}):* ${lastRSI.toFixed(1)} - ${rsiStatus}`;
+                }
+            }
+
+            // Bollinger Bands
+            if (document.getElementById('bbToggle').checked) {
+                const bbPeriod = parseInt(document.getElementById('bbPeriodInput').value) || 20;
+                const bbStdDev = parseFloat(document.getElementById('bbStdDevInput').value) || 2;
+                const bbData = calculateBollingerBands(allCandles, bbPeriod, bbStdDev);
+                const lastUpper = bbData.upper[bbData.upper.length - 1];
+                const lastLower = bbData.lower[bbData.lower.length - 1];
+                
+                if (lastUpper !== null && lastLower !== null) {
+                    if (price >= lastUpper) indicatorsText += `\n🌊 *Bollinger:* Rompendo Topo 🔴`;
+                    else if (price <= lastLower) indicatorsText += `\n🌊 *Bollinger:* Rompendo Fundo 🟢`;
+                    else indicatorsText += `\n🌊 *Bollinger:* Dentro das Bandas`;
+                }
+            }
+
+            // MACD
+            if (document.getElementById('macdToggle').checked) {
+                const fast = parseInt(document.getElementById('macdFastInput').value) || 12;
+                const slow = parseInt(document.getElementById('macdSlowInput').value) || 26;
+                const sig = parseInt(document.getElementById('macdSignalInput').value) || 9;
+                const macdData = calculateMACD(allCandles, fast, slow, sig);
+                const lastHist = macdData.histogram[macdData.histogram.length - 1];
+                if (lastHist !== null) {
+                    const macdStatus = lastHist > 0 ? "Alta 🟢" : "Baixa 🔴";
+                    indicatorsText += `\n📊 *MACD:* Tendência de ${macdStatus}`;
+                }
+            }
+
+            const now = new Date();
+            const dateTimeStr = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+
+            let caption = `📊 *ANÁLISE TÉCNICA - OPÇÕES DOUBLE*\n`;
+            caption += `📅 *Data:* ${dateTimeStr}\n\n`;
+            caption += `🧭 *Tendência:* ${icon} ${signal}\n`;
+            caption += `💪 *Força (20):* 🔴 ${redPct}% | ⚫ ${blackPct}%\n`;
+            if (volatilityText) caption += `${volatilityText}\n`;
+            if (indicatorsText) caption += `--------------------------${indicatorsText}\n`;
+            caption += `--------------------------\n`;
+            caption += `🤖 *Gerado pelo Cortex Virtual*`;
+
+            return caption;
+        }
+
         async function takeScreenshot() {
             const canvas = await generateChartCanvas();
             if (!canvas) {
@@ -2246,11 +2610,13 @@
 
                 btn.innerText = '📤 Enviando...';
 
+                const captionText = generateAnalysisCaption();
+
                 canvas.toBlob(async function(blob) {
                     const formData = new FormData();
                     formData.append('chat_id', chatId);
                     formData.append('photo', blob, 'grafico.png');
-                    formData.append('caption', '📊 *Análise Gráfica - Opções Double*\n\nGerado pelo Cortex Virtual');
+                    formData.append('caption', captionText);
                     formData.append('parse_mode', 'Markdown');
 
                     const response = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
@@ -2337,7 +2703,7 @@
             const movePan = (clientX) => {
                 if (!isPanning) return;
                 const dx = clientX - panStartX;
-                const candlePixelWidth = chartContainer.clientWidth / 100; // Based on fixed candle count
+                const candlePixelWidth = chartContainer.clientWidth / visibleCandleCount; // Based on visible candle count
                 const candleShift = Math.round(dx / candlePixelWidth);
                 
                 const newIndex = panStartViewIndex - candleShift;
