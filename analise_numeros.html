@@ -207,6 +207,12 @@
                                 <option value="alternating">Alternar (Xadrez)</option>
                                 <option value="follow">Seguir a Cor (Surf)</option>
                                 <option value="majority">Maioria (Últimos 5)</option>
+                                <option value="ia_cores">IA Cores (Preditiva)</option>
+                                <option value="analise_cores">Análise Cores (Híbrida)</option>
+                                <option value="alignment">Padrão Alinhamento (Tendência 20)</option>
+                                <option value="random">Aleatório</option>
+                                <option value="euler">Onda de Euler (Cíclico)</option>
+                                <option value="gauss">Curva de Gauss (Últimos 7)</option>
                             </select>
                             <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
                                 <input type="checkbox" id="sim_gale1" onchange="runSimulation()">
@@ -718,6 +724,99 @@
                         }
                         if (rCount > bCount) targetColor = 'red';
                         else if (bCount > rCount) targetColor = 'black';
+                    }
+                } else if (strategy === 'ia_cores') {
+                    // Lógica baseada na Previsão I.A. (Pontuação Simplificada)
+                    if (i >= 5) {
+                        let redScore = 0, blackScore = 0;
+                        const history = [];
+                        for(let j=1; j<=5; j++) {
+                            const rVal = simData[i-j].roll;
+                            if (rVal >= 1 && rVal <= 7) history.push('red');
+                            else if (rVal >= 8 && rVal <= 14) history.push('black');
+                            else history.push('white');
+                        }
+                        // 1. Surf (3+)
+                        if (history[0] === history[1] && history[1] === history[2]) {
+                            if (history[0] === 'red') redScore += 2; else if (history[0] === 'black') blackScore += 2;
+                        }
+                        // 2. Xadrez (Alternância)
+                        if (history[0] !== history[1] && history[1] !== history[2]) {
+                            if (history[0] === 'red') blackScore += 2; else if (history[0] === 'black') redScore += 2;
+                        }
+                        // 3. Maioria Recente
+                        const rCount = history.filter(c => c === 'red').length;
+                        const bCount = history.filter(c => c === 'black').length;
+                        if (rCount > bCount) redScore += 1; else blackScore += 1;
+
+                        if (redScore > blackScore) targetColor = 'red';
+                        else if (blackScore > redScore) targetColor = 'black';
+                    }
+                } else if (strategy === 'analise_cores') {
+                    // Lógica Híbrida (Surf se tendência, Xadrez se lateral)
+                    if (i >= 2) {
+                        const last1 = simData[i-1].roll;
+                        const last2 = simData[i-2].roll;
+                        
+                        const c1 = (last1 >= 1 && last1 <= 7) ? 'red' : ((last1 >= 8 && last1 <= 14) ? 'black' : 'white');
+                        const c2 = (last2 >= 1 && last2 <= 7) ? 'red' : ((last2 >= 8 && last2 <= 14) ? 'black' : 'white');
+                        
+                        if (c1 !== 'white' && c2 !== 'white') {
+                            if (c1 === c2) targetColor = c1; // Segue o surf
+                            else targetColor = (c1 === 'red' ? 'black' : 'red'); // Segue o xadrez
+                        } else {
+                            // Se houve branco recente, aposta na maioria dos últimos 5
+                            if (i >= 5) {
+                                let rCount = 0, bCount = 0;
+                                for(let j=1; j<=5; j++) {
+                                    const rVal = simData[i-j].roll;
+                                    if (rVal >= 1 && rVal <= 7) rCount++;
+                                    else if (rVal >= 8 && rVal <= 14) bCount++;
+                                }
+                                targetColor = rCount > bCount ? 'red' : 'black';
+                            }
+                        }
+                    }
+                } else if (strategy === 'alignment') {
+                    // Padrão Alinhamento: Segue a maioria dos últimos 20 (Tendência de Médio Prazo)
+                    if (i >= 20) {
+                        let rCount = 0, bCount = 0;
+                        for(let j=1; j<=20; j++) {
+                            const rVal = simData[i-j].roll;
+                            if (rVal >= 1 && rVal <= 7) rCount++;
+                            else if (rVal >= 8 && rVal <= 14) bCount++;
+                        }
+                        if (rCount > bCount) targetColor = 'red';
+                        else if (bCount > rCount) targetColor = 'black';
+                    }
+                } else if (strategy === 'random') {
+                    // Aleatório
+                    targetColor = Math.random() < 0.5 ? 'red' : 'black';
+                } else if (strategy === 'euler') {
+                    // Onda de Euler: Tenta surfar na onda (Alternância) ou na crista (Repetição)
+                    if (i >= 2) {
+                        const last1 = simData[i-1].roll;
+                        const last2 = simData[i-2].roll;
+                        const c1 = (last1 >= 1 && last1 <= 7) ? 'red' : ((last1 >= 8 && last1 <= 14) ? 'black' : 'white');
+                        const c2 = (last2 >= 1 && last2 <= 7) ? 'red' : ((last2 >= 8 && last2 <= 14) ? 'black' : 'white');
+
+                        if (c1 !== 'white' && c2 !== 'white') {
+                            // Se está alternando (Onda), aposta na próxima alternância
+                            if (c1 !== c2) targetColor = (c1 === 'red' ? 'black' : 'red');
+                            // Se está repetindo (Crista), aposta na repetição
+                            else targetColor = c1;
+                        }
+                    }
+                } else if (strategy === 'gauss') {
+                    // Curva de Gauss: Maioria dos últimos 7 (Distribuição Local)
+                    if (i >= 7) {
+                        let rCount = 0, bCount = 0;
+                        for(let j=1; j<=7; j++) {
+                            const rVal = simData[i-j].roll;
+                            if (rVal >= 1 && rVal <= 7) rCount++;
+                            else if (rVal >= 8 && rVal <= 14) bCount++;
+                        }
+                        targetColor = rCount > bCount ? 'red' : (bCount > rCount ? 'black' : null);
                     }
                 }
 

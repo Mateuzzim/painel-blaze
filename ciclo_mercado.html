@@ -113,7 +113,7 @@
             if (toggle && toggle.checked) {
                 if (updateInterval) clearInterval(updateInterval);
                 fetchBlazeData(); // Busca imediatamente ao ativar
-                updateInterval = setInterval(fetchBlazeData, 10000); // Busca e atualiza a cada 10 segundos
+                updateInterval = setInterval(fetchBlazeData, 15000); // Busca e atualiza a cada 15 segundos
             } else {
                 if (updateInterval) clearInterval(updateInterval);
             }
@@ -136,6 +136,9 @@
                     const targetUrl = `${baseUrl}${params}`;
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
+                    // Delay entre requisições para evitar erro 429 (Too Many Requests)
+                    if (page > 1) await new Promise(r => setTimeout(r, 2000));
+
                     try {
                         const response = await fetch(proxyUrl);
                         if (response.ok) {
@@ -374,6 +377,7 @@
                 
                 // --- Lógica para encontrar o próximo alvo válido (pulando LOSS e filtros) ---
                 let activeMultiplier = 1;
+                let lastLossMultiplier = null;
                 const useFilter = document.getElementById('assertivenessFilterToggle').checked;
                 
                 while (activeMultiplier <= 50) {
@@ -409,6 +413,7 @@
                         if (!alreadyExists) {
                             cycleMonitorHistory.push({ targetTime: tTime, result: 'LOSS' });
                         }
+                        lastLossMultiplier = activeMultiplier;
                         activeMultiplier++;
                     }
                     else break;
@@ -444,6 +449,11 @@
                 let targetsHtml = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
                 let targetsFound = 0;
                 let cycleMultiplier = activeMultiplier; // Começa do alvo ativo
+                
+                // Se o último alvo foi um LOSS, começa a exibir dele para mostrar o resultado
+                if (lastLossMultiplier !== null && lastLossMultiplier === activeMultiplier - 1) {
+                    cycleMultiplier = lastLossMultiplier;
+                }
                 
                 // Busca até 6 alvos
                 while (targetsFound < 6 && cycleMultiplier <= activeMultiplier + 30) {
@@ -699,8 +709,8 @@
             const fullHistory = [...dailyHistory, ...liveHistory];
             
             if (fullHistory.length > 0) {
-                // Pega os últimos 15 resultados para exibir
-                const recentHistory = fullHistory.slice(-15);
+                // Pega os últimos 14 resultados para exibir
+                const recentHistory = fullHistory.slice(-14);
                 const historyItemsHtml = recentHistory.map(item => {
                     const isWin = item.result === 'WIN';
                     const color = isWin ? '#00ff88' : '#ff0055';
@@ -719,41 +729,6 @@
                 scrollContainer.scrollLeft = scrollContainer.scrollWidth;
             }
         }
-
-        function playWinAlertSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (!ctx) return; // AudioContext not supported
-
-                const t = ctx.currentTime;
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(659.25, t); // E5
-                gain1.gain.setValueAtTime(0.1, t);
-                gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-                osc1.start(t);
-                osc1.stop(t + 0.2);
-
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(880.00, t + 0.1); // A5
-                gain2.gain.setValueAtTime(0.1, t + 0.1);
-                gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-                osc2.start(t + 0.1);
-                osc2.stop(t + 0.3);
-            } catch (e) {
-                console.error("Erro ao tocar som de WIN:", e);
-            }
-        }
-    </script>
-</body>
-</html> }
 
         function playWinAlertSound() {
             try {
