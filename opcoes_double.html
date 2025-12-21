@@ -10,9 +10,9 @@
             --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
             --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
         }
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-        .main-container { max-width: 98%; margin: 0 auto; }
-        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 5px; }
+        .main-container { max-width: 100%; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .main-header { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         h1 { margin: 0; }
         .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
@@ -297,42 +297,265 @@
         body.light-mode #trend-history-panel { background: rgba(255, 255, 255, 0.8); border-color: rgba(0, 210, 255, 0.5); box-shadow: 0 0 15px rgba(0,0,0,0.05); }
         body.light-mode .history-item { border-bottom-color: rgba(0,0,0,0.05); }
         body.light-mode .history-time { color: #666; }
+
+        /* Analysis Panel Styles (Nova Aba) */
+        #analysis-panel {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .analysis-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--panel-bg) 0%, rgba(20,20,25,0.95) 100%);
+        }
+        /* Garante que o texto fique sobre o efeito de fundo */
+        .analysis-card > * {
+            position: relative;
+            z-index: 1;
+        }
+        /* Efeito Scanline no Fundo do Card */
+        .analysis-card::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 0;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+        /* Animação de Glitch para atualizações de valor */
+        @keyframes text-glitch {
+            0% { transform: translate(0); opacity: 1; text-shadow: none; }
+            20% { transform: translate(-2px, 2px); opacity: 0.8; text-shadow: 2px 0 #ff0055; }
+            40% { transform: translate(-2px, -2px); opacity: 0.9; text-shadow: -2px 0 #00d2ff; }
+            60% { transform: translate(2px, 2px); opacity: 0.8; text-shadow: 2px 0 #ff0055; }
+            80% { transform: translate(2px, -2px); opacity: 0.9; text-shadow: -2px 0 #00d2ff; }
+            100% { transform: translate(0); opacity: 1; text-shadow: none; }
+        }
+        .value-update-anim {
+            animation: text-glitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+        .analysis-title {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .analysis-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .wl-counter {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-family: monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        @keyframes flash-win {
+            0% { background-color: rgba(0, 255, 136, 0.7); box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); border-color: rgba(0, 255, 136, 0.8); color: #fff; }
+            100% { background-color: rgba(0,0,0,0.2); box-shadow: none; border-color: var(--border-color); color: var(--text-muted); }
+        }
+        .flash-win-anim {
+            animation: flash-win 0.8s ease-out;
+        }
+
+        @keyframes flash-loss {
+            0% { background-color: rgba(255, 0, 85, 0.7); box-shadow: 0 0 10px rgba(255, 0, 85, 0.5); border-color: rgba(255, 0, 85, 0.8); color: #fff; }
+            100% { background-color: rgba(0,0,0,0.2); box-shadow: none; border-color: var(--border-color); color: var(--text-muted); }
+        }
+        .flash-loss-anim {
+            animation: flash-loss 0.8s ease-out;
+        }
+        .meter-horizontal {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+        .meter-fill-horizontal {
+            height: 100%;
+            background: #555;
+            width: 0%;
+            transition: width 0.5s ease, background-color 0.5s;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Brilho passando na barra (Scanner) */
+        .meter-fill-horizontal::after {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transform: translateX(-100%);
+            animation: meter-scan 2s infinite linear;
+        }
+        @keyframes meter-scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        /* Barra de Progresso Futurista (Warmup) */
+        .warmup-bar-container {
+            width: 70%;
+            height: 4px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 5px;
+            display: none;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 5px rgba(0, 210, 255, 0.1);
+        }
+        .warmup-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d2ff, #00ff88);
+            width: 0%;
+            transition: width 0.2s linear;
+            position: relative;
+            box-shadow: 0 0 8px #00d2ff;
+        }
+        .warmup-bar-fill::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); transform: translateX(-100%); animation: warmup-scan 1s infinite linear; }
+        @keyframes warmup-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+
+        @media (max-width: 1200px) {
+            #analysis-panel {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            #analysis-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            #analysis-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Alerta Visual de Branco (Borda Piscante) */
+        @keyframes white-alert-pulse {
+            0% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); border-color: transparent; }
+            50% { box-shadow: inset 0 0 80px 20px rgba(255, 255, 255, 0.4); border-color: rgba(255, 255, 255, 0.6); }
+            100% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); border-color: transparent; }
+        }
+        .white-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10000;
+            border: 0px solid transparent;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        .white-alert-active {
+            animation: white-alert-pulse 1s infinite ease-in-out;
+            border-width: 8px;
+        }
     </style>
 </head>
 <body>
+    <div id="white-alert-overlay" class="white-alert-overlay"></div>
     <div class="main-container">
         <div class="layout-panel">
             <a href="index.html" class="btn-back" style="display: none;">⬅ Voltar ao Menu</a>
-            <div class="main-header">
+            <div class="main-header" style="display: none;">
                 <h1 class="cortex-text-anim">OPÇÕES DOUBLE</h1>
             </div>
             <div id="chart-container">
                 <div class="loading-text">Carregando dados do gráfico...</div>
-                <div id="widgets-wrapper">
-                    <div id="market-strength" class="market-strength-widget" style="display: none;">
-                        <div class="strength-title">FORÇA</div>
-                        <div class="strength-meter-bg"><div id="strength-fill" class="strength-meter-fill" style="height: 0%;"></div></div>
-                        <div id="strength-val" class="strength-value">0%</div>
-                        <div id="strength-icon" class="strength-trend-icon">➖</div>
-                    </div>
-                    <div id="market-trend" class="market-strength-widget" style="display: none;">
-                        <div class="strength-title">TENDÊNCIA</div>
-                        <div id="trend-val" class="strength-value" style="font-size: 0.8rem; margin-top: 20px;">NEUTRO</div>
-                        <div id="trend-icon" class="strength-trend-icon" style="margin-top: 10px;">⚖️</div>
-                    </div>
-                    <div id="market-volatility" class="market-strength-widget" style="display: none;">
-                        <div class="strength-title">VOLAT.</div>
-                        <div class="strength-meter-bg"><div id="volatility-fill" class="strength-meter-fill" style="height: 0%;"></div></div>
-                        <div id="volatility-val" class="strength-value">0%</div>
-                        <div id="volatility-icon" class="strength-trend-icon">〰️</div>
-                    </div>
-                </div>
                 <!-- Painel Lateral de Histórico -->
                 <div id="trend-history-panel" style="display: none;">
                     <div class="history-header"><span class="history-title">Histórico</span><span style="font-size:0.8rem">⏳</span></div>
                     <ul id="history-list" class="history-list">
                         <li style="text-align: center; color: #555; padding: 10px; font-size: 0.7rem;">Aguardando sinais...</li>
                     </ul>
+                </div>
+            </div>
+            <!-- Nova Aba de Análise (Força, Tendência, Volatilidade) -->
+            <div id="analysis-panel">
+                <div class="analysis-card">
+                    <div class="analysis-title">FORÇA DO MERCADO</div>
+                    <div class="meter-horizontal"><div id="panel-strength-fill" class="meter-fill-horizontal"></div></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="panel-strength-val" class="analysis-value">0%</span>
+                        <span id="panel-strength-icon" style="font-size: 1.5rem;">➖</span>
+                    </div>
+                </div>
+                <div class="analysis-card" id="panel-trend-card">
+                    <div class="analysis-title">TENDÊNCIA ATUAL</div>
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <span id="panel-trend-val" class="analysis-value" style="margin-bottom: 5px;">NEUTRO</span>
+                        <span id="panel-trend-icon" style="font-size: 2rem;">⚖️</span>
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">VOLATILIDADE BRANCO</div>
+                    <div class="meter-horizontal"><div id="panel-volatility-fill" class="meter-fill-horizontal"></div></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="panel-volatility-val" class="analysis-value">0%</span>
+                        <span id="panel-volatility-icon" style="font-size: 1.5rem;">〰️</span>
+                    </div>
+                    <div id="warmup-bar-container" class="warmup-bar-container">
+                        <div id="warmup-bar-fill" class="warmup-bar-fill"></div>
+                    </div>
+                    <div id="last-white-counter" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Velas s/ Branco: N/A</div>
+                    <div id="wl-counter-white" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">VOLATILIDADE VERMELHO</div>
+                    <div class="meter-horizontal"><div id="panel-volatility-red-fill" class="meter-fill-horizontal"></div></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="panel-volatility-red-val" class="analysis-value">0%</span>
+                        <span id="panel-volatility-red-icon" style="font-size: 1.5rem;">〰️</span>
+                    </div>
+                    <div id="last-red-counter" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Seq. s/ Vermelho: 0</div>
+                    <div id="wl-counter-red" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">VOLATILIDADE PRETO</div>
+                    <div class="meter-horizontal"><div id="panel-volatility-black-fill" class="meter-fill-horizontal"></div></div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="panel-volatility-black-val" class="analysis-value">0%</span>
+                        <span id="panel-volatility-black-icon" style="font-size: 1.5rem;">〰️</span>
+                    </div>
+                    <div id="last-black-counter" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Seq. s/ Preto: 0</div>
+                    <div id="wl-counter-black" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0</div>
+                </div>
+                <div class="analysis-card" id="panel-surf-card">
+                    <div class="analysis-title">PROBABILIDADE (SURF)</div>
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <span id="panel-surf-val" class="analysis-value" style="margin-bottom: 5px;">--</span>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span id="panel-surf-icon" style="font-size: 1.5rem;">⏳</span>
+                            <span id="panel-surf-pct" style="font-size: 0.9rem; color: #888;">0%</span>
+                        </div>
+                    </div>
+                    <div id="surf-message" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Aguardando dados...</div>
+                    <div id="wl-counter-surf" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0 <span style="color: #fff; margin-left: 4px;">⚪: 0</span></div>
                 </div>
             </div>
             <div id="adx-container"></div>
@@ -353,6 +576,7 @@
                 <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()">🔄 Resetar Posição</button>
                 <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()">🖼️ Tela Cheia</button>
                 <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()">🗑️ Limpar</button>
+                <button class="draw-mode-btn" onclick="resetAllConfigs()">⚙️ Resetar Configs</button>
                 <div class="tool-group">
                     <span style="font-size: 0.8rem; color: #fff;">🔍 Zoom</span>
                     <button onclick="zoomIn()" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 8px; cursor: pointer;" title="Aumentar Zoom">+</button>
@@ -370,10 +594,13 @@
                     <span style="font-size: 0.8rem; color: #fff;">Auto</span>
                 </div>
                 <div class="tool-group">
-                    <input type="checkbox" id="widgetsToggle" checked onchange="updateChart()" title="Mostrar/Ocultar Widgets">
-                    <span style="font-size: 0.8rem; color: #fff;">Widgets</span>
                     <input type="number" id="volatilityLookback" value="50" min="10" max="200" step="10" onchange="updateChart()" style="width: 40px;" title="Sensibilidade (Período de Análise)">
-                    <input type="number" id="volatilityWhiteThreshold" value="90" min="50" max="99" step="1" onchange="updateChart()" style="width: 35px;" title="Limiar Alerta Branco (%)">
+                    <input type="number" id="volatilityWhiteThreshold" value="80" min="50" max="99" step="1" onchange="updateChart()" style="width: 35px;" title="Limiar Alerta Branco (%)">
+                    <input type="number" id="whiteGaleAttempts" value="6" min="1" max="15" step="1" onchange="saveWhiteGaleConfig(); updateChart()" style="width: 35px;" title="Tentativas Gale Branco">
+                </div>
+                <div class="tool-group">
+                    <span style="font-size: 0.8rem; color: #fff;">Calibração (s)</span>
+                    <input type="number" id="warmupInput" value="30" min="0" max="600" step="30" onchange="saveWarmupConfig(); updateChart()" style="width: 45px;" title="Tempo de Aquecimento (0 para desativar)">
                 </div>
                 <div class="tool-group">
                     <input type="checkbox" id="historyToggle" onchange="toggleHistory()" title="Mostrar/Ocultar Histórico">
@@ -460,7 +687,23 @@
         let autoFetchInterval = null;
         let lastDataSignature = '';
         let lastLiveTrend = null;
+        let whiteAlertConsecutiveCount = 0;
+        let lastCandleTimestampForWhiteAlert = 0;
         let visibleCandleCount = 100;
+        let pageLoadTime = Date.now();
+
+        let scores = {
+            white: { wins: 0, losses: 0 },
+            red: { wins: 0, losses: 0 },
+            black: { wins: 0, losses: 0 },
+            surf: { wins: 0, losses: 0, whiteWins: 0 }
+        };
+        let predictionState = {
+            white: { active: false, lastCheckedTimestamp: 0, attempts: 0 },
+            red: { wasTriggered: false, triggerTimestamp: 0 },
+            black: { wasTriggered: false, triggerTimestamp: 0 },
+            surf: { wasTriggered: false, predictedColor: null, triggerTimestamp: 0, consecutiveLosses: 0, pauseUntil: 0 }
+        };
 
         // Helper function to identify color
         function identificarCor(numero) {
@@ -983,8 +1226,9 @@
                     } else { // Branco (Doji)
                         close = open; high = open + 5; low = open - 5;
                     }
-                    const timeStr = new Date(game.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    priceData.push({ open, high, low, close, color, roll: game.roll, time: timeStr, volume: 1 });
+                    const gameDate = new Date(game.created_at);
+                    const timeStr = gameDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    priceData.push({ open, high, low, close, color, roll: game.roll, time: timeStr, timestamp: gameDate.getTime(), volume: 1 });
                     lastClose = close;
                 });
                 return priceData;
@@ -1052,7 +1296,6 @@
         // Function to render the candlestick chart
         function drawChart(priceData, shouldPlaySound = false) {
             const chartContainer = document.getElementById('chart-container');
-            const widgetsWrapper = document.getElementById('widgets-wrapper'); // Preserve wrapper
             const historyPanel = document.getElementById('trend-history-panel'); // Preserve history panel
             chartContainer.innerHTML = ''; // Clear previous chart or loading text
 
@@ -1463,6 +1706,56 @@
                 });
             }
 
+            // --- VISUALIZADOR DE DOUBLET (MÉDIA CURTA) ---
+            // Desenha linha onde a média de repetição curta é esperada
+            if (typeof allCandles !== 'undefined' && allCandles.length > 0) {
+                const whiteIndices = [];
+                allCandles.forEach((c, i) => { if (c.color === 'branco') whiteIndices.push(i); });
+                
+                if (whiteIndices.length >= 2) {
+                    const intervals = [];
+                    for (let i = 1; i < whiteIndices.length; i++) intervals.push(whiteIndices[i] - whiteIndices[i - 1]);
+                    
+                    const allRecentIntervals = intervals.slice(-50);
+                    const shortIntervals = allRecentIntervals.filter(i => i <= 12);
+                    
+                    if (shortIntervals.length > 0) {
+                        const shortFreq = shortIntervals.length / allRecentIntervals.length;
+                        const lastWhiteIndex = whiteIndices[whiteIndices.length - 1];
+                        const candlesSinceWhite = (allCandles.length - 1) - lastWhiteIndex;
+                        
+                        // Se o padrão for frequente (>15%) e estivermos numa janela relevante (<=20 casas)
+                        if (shortFreq >= 0.15 && candlesSinceWhite <= 20) {
+                            const avgShort = shortIntervals.reduce((a, b) => a + b, 0) / shortIntervals.length;
+                            const targetIndex = lastWhiteIndex + avgShort;
+                            const localTargetIndex = targetIndex - viewStartIndex;
+                            
+                            if (localTargetIndex >= -1 && localTargetIndex <= priceData.length + 1) {
+                                const x = localTargetIndex * candleSpacing + candleWidth / 2;
+                                
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.setAttribute('x1', x); line.setAttribute('y1', 0);
+                                line.setAttribute('x2', x); line.setAttribute('y2', height);
+                                line.setAttribute('stroke', '#00d2ff'); line.setAttribute('stroke-width', '1.5');
+                                line.setAttribute('stroke-dasharray', '4,4'); line.setAttribute('opacity', '0.7');
+                                g.appendChild(line);
+                                
+                                const icon = document.createElementNS(svgNS, 'text');
+                                icon.setAttribute('x', x); icon.setAttribute('y', 20); icon.setAttribute('text-anchor', 'middle');
+                                icon.setAttribute('font-size', '14px'); icon.textContent = '♻️';
+                                g.appendChild(icon);
+
+                                const label = document.createElementNS(svgNS, 'text');
+                                label.setAttribute('x', x); label.setAttribute('y', 32); label.setAttribute('text-anchor', 'middle');
+                                label.setAttribute('fill', '#00d2ff'); label.setAttribute('font-size', '9px'); label.setAttribute('font-weight', 'bold');
+                                label.textContent = avgShort.toFixed(1);
+                                g.appendChild(label);
+                            }
+                        }
+                    }
+                }
+            }
+
             // Draw SMA if enabled
             const showSMA = document.getElementById('smaToggle') && document.getElementById('smaToggle').checked;
             if (showSMA && priceData.length > 0) {
@@ -1689,12 +1982,14 @@
             chartContainer.appendChild(svg);
             
             // Re-append widgets wrapper
-            if(widgetsWrapper) chartContainer.appendChild(widgetsWrapper);
             if(historyPanel) chartContainer.appendChild(historyPanel);
             
-            updateMarketStrength(priceData);
-            updateMarketVolatility(priceData);
-            updateMarketTrend(priceData);
+            updateMarketStrength(allCandles);
+            updateMarketVolatility(allCandles);
+            updateMarketTrend(allCandles);
+            updateMarketVolatilityRed(allCandles);
+            updateMarketVolatilityBlack(allCandles);
+            updateSurfProbability(allCandles);
 
             // Touch support for tooltips (Chart Pan/Scan)
             svg.addEventListener('touchmove', (e) => {
@@ -1723,11 +2018,37 @@
             });
         }
 
+        // Função auxiliar para disparar a animação de glitch
+        function animateValueChange(elementId) {
+            const el = document.getElementById(elementId);
+            if(el) {
+                el.classList.remove('value-update-anim');
+                void el.offsetWidth; // força o reflow para reiniciar a animação
+                el.classList.add('value-update-anim');
+            }
+        }
+
+        function flashWL(elementId, result) { // result can be 'win' or 'loss'
+            const el = document.getElementById(elementId);
+            if (el) {
+                const winClass = 'flash-win-anim';
+                const lossClass = 'flash-loss-anim';
+                el.classList.remove(winClass, lossClass);
+                void el.offsetWidth; // Force reflow
+                if (result === 'win') {
+                    el.classList.add(winClass);
+                } else if (result === 'loss') {
+                    el.classList.add(lossClass);
+                }
+            }
+        }
+
         function updateMarketStrength(data) {
             const widget = document.getElementById('market-strength');
             const showWidgets = document.getElementById('widgetsToggle') ? document.getElementById('widgetsToggle').checked : true;
-            if (!widget || data.length < 5 || !showWidgets) { if(widget) widget.style.display = 'none'; return; }
-            widget.style.display = 'flex';
+            
+            if (widget) widget.style.display = (showWidgets && data.length >= 5) ? 'flex' : 'none';
+            if (data.length < 5) return;
 
             // Analyze last 20 candles
             const lookback = Math.min(data.length, 20);
@@ -1747,25 +2068,35 @@
             
             if (whitePower > redPower && whitePower > blackPower) {
                 strength = (whitePower / total) * 100; color = '#ffffff'; icon = '⚪';
-                widget.style.borderColor = '#ffffff'; widget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.5)';
             } else if (redPower > blackPower) {
                 strength = (redPower / total) * 100; color = '#ff0055'; icon = '🔴';
-                widget.style.borderColor = '#ff0055'; widget.style.boxShadow = '0 0 15px rgba(255, 0, 85, 0.2)';
             } else if (blackPower > redPower) {
                 strength = (blackPower / total) * 100; color = '#888'; icon = '⚫';
-                widget.style.borderColor = '#888'; widget.style.boxShadow = '0 0 15px rgba(136, 136, 136, 0.2)';
             } else {
                 strength = 50; color = '#ff9800'; icon = '⚖️';
-                widget.style.borderColor = '#ff9800'; widget.style.boxShadow = '0 0 15px rgba(255, 152, 0, 0.2)';
             }
             
-            const fill = document.getElementById('strength-fill');
-            const val = document.getElementById('strength-val');
-            const iconEl = document.getElementById('strength-icon');
+            // Atualiza widget antigo se existir (Prevenção de Erros)
+            if (widget) {
+                widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
+                const fill = document.getElementById('strength-fill');
+                const val = document.getElementById('strength-val');
+                const iconEl = document.getElementById('strength-icon');
+                if(fill) { fill.style.height = `${strength}%`; fill.style.backgroundColor = color; fill.style.boxShadow = `0 0 15px ${color}`; }
+                if(val) { val.innerText = `${Math.round(strength)}%`; val.style.color = color; }
+                if(iconEl) iconEl.innerText = icon;
+            }
 
-            fill.style.height = `${strength}%`; fill.style.backgroundColor = color; fill.style.boxShadow = `0 0 15px ${color}`;
-            val.innerText = `${Math.round(strength)}%`; val.style.color = color;
-            iconEl.innerText = icon;
+            // Update Panel (Nova Aba)
+            const pFill = document.getElementById('panel-strength-fill');
+            const pVal = document.getElementById('panel-strength-val');
+            const pIcon = document.getElementById('panel-strength-icon');
+            if(pFill) { pFill.style.width = `${strength}%`; pFill.style.backgroundColor = color; pFill.style.boxShadow = `0 0 10px ${color}`; }
+            if(pVal) { 
+                pVal.innerText = `${Math.round(strength)}%`; pVal.style.color = color; 
+                animateValueChange('panel-strength-val');
+            }
+            if(pIcon) pIcon.innerText = icon;
         }
 
         function getTrendSignal(data) {
@@ -1830,101 +2161,538 @@
         function updateMarketTrend(data) {
             const widget = document.getElementById('market-trend');
             const showWidgets = document.getElementById('widgetsToggle') ? document.getElementById('widgetsToggle').checked : true;
-            if (!widget || data.length < 26 || !showWidgets) { if(widget) widget.style.display = 'none'; return; }
-            widget.style.display = 'flex';
+            
+            if (widget) widget.style.display = (showWidgets && data.length >= 26) ? 'flex' : 'none';
+            if (data.length < 26) return;
 
             const { signal, color, icon } = getTrendSignal(data);
 
-            const val = document.getElementById('trend-val');
-            const iconEl = document.getElementById('trend-icon');
-            
-            val.innerText = signal; val.style.color = color; iconEl.innerText = icon;
-            widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
+            // Atualiza widget antigo se existir
+            if (widget) {
+                const val = document.getElementById('trend-val');
+                const iconEl = document.getElementById('trend-icon');
+                if(val) { val.innerText = signal; val.style.color = color; }
+                if(iconEl) iconEl.innerText = icon;
+                widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
+            }
+
+            // Update Panel (Nova Aba)
+            const pVal = document.getElementById('panel-trend-val');
+            const pIcon = document.getElementById('panel-trend-icon');
+            const pCard = document.getElementById('panel-trend-card');
+            if(pVal) { 
+                pVal.innerText = signal; pVal.style.color = color; 
+                animateValueChange('panel-trend-val');
+            }
+            if(pIcon) pIcon.innerText = icon;
+            if(pCard) pCard.style.borderColor = color;
         }
 
         function updateMarketVolatility(data) {
             const widget = document.getElementById('market-volatility');
             const showWidgets = document.getElementById('widgetsToggle') ? document.getElementById('widgetsToggle').checked : true;
-            if (!widget || data.length < 20 || !showWidgets) { if(widget) widget.style.display = 'none'; return; }
-            widget.style.display = 'flex';
-
-            // Calculate ATR first
-            const atrData = calculateATR(data, 14);
             
-            // Check if ATR is dynamic enough (in Tick mode it's constant)
-            let metricData = atrData;
-            let isFlat = false;
-            
-            const validATRs = atrData.filter(v => v !== null);
-            if (validATRs.length > 0) {
-                const recentATRs = validATRs.slice(-20);
-                const minA = Math.min(...recentATRs);
-                const maxA = Math.max(...recentATRs);
-                if (maxA === minA) isFlat = true;
-            }
+            if (widget) widget.style.display = (showWidgets && data.length >= 20) ? 'flex' : 'none';
+            if (data.length < 1) return;
 
-            // If ATR is flat, calculate Standard Deviation of Price
-            if (isFlat) {
-                const period = 20;
-                const stdDevData = [];
-                for (let i = 0; i < data.length; i++) {
-                    if (i < period - 1) { stdDevData.push(null); continue; }
-                    let sum = 0;
-                    for (let j = 0; j < period; j++) sum += data[i - j].close;
-                    const mean = sum / period;
-                    let sumSq = 0;
-                    for (let j = 0; j < period; j++) sumSq += Math.pow(data[i - j].close - mean, 2);
-                    stdDevData.push(Math.sqrt(sumSq / period));
+            const lastCandle = data[data.length - 1];
+            if (!lastCandle) return;
+            const currentTimestamp = lastCandle.timestamp;
+
+            const whiteGaleInput = document.getElementById('whiteGaleAttempts');
+            const maxAttempts = whiteGaleInput ? parseInt(whiteGaleInput.value) : 6;
+
+            // --- LÓGICA DE PLACAR ---
+            if (predictionState.white.active) {
+                if (currentTimestamp > predictionState.white.lastCheckedTimestamp) {
+                    predictionState.white.lastCheckedTimestamp = currentTimestamp;
+                    if (lastCandle.color === 'branco') {
+                        scores.white.wins++;
+                        flashWL('wl-counter-white', 'win');
+                        predictionState.white.active = false;
+                    } else {
+                        predictionState.white.attempts++;
+                        if (predictionState.white.attempts >= maxAttempts) {
+                            scores.white.losses++;
+                            flashWL('wl-counter-white', 'loss');
+                            predictionState.white.active = false;
+                        }
+                    }
                 }
-                metricData = stdDevData;
+            }
+            // --- FIM LÓGICA DE PLACAR ---
+
+            // --- NOVA LÓGICA DE ANÁLISE DE INTERVALO ---
+            const whiteIndices = [];
+            data.forEach((candle, index) => {
+                if (candle.color === 'branco') {
+                    whiteIndices.push(index);
+                }
+            });
+
+            let volatility = 0;
+            let candlesSinceWhite = data.length;
+            let avgInterval = 0;
+            let isDoubletPattern = false;
+
+            if (whiteIndices.length > 0) {
+                candlesSinceWhite = (data.length - 1) - whiteIndices[whiteIndices.length - 1];
             }
 
-            const currentMetric = metricData[metricData.length - 1];
-            if (currentMetric === null || currentMetric === undefined) return;
+            if (whiteIndices.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < whiteIndices.length; i++) {
+                    intervals.push(whiteIndices[i] - whiteIndices[i - 1]);
+                }
+                // Pega a média dos últimos 5 intervalos para ser mais reativo
+                const recentIntervals = intervals.slice(-5);
+                avgInterval = recentIntervals.reduce((a, b) => a + b, 0) / recentIntervals.length;
+                
+                if (avgInterval > 0) {
+                    // A volatilidade agora é a "proximidade" do próximo branco, baseado na média
+                    volatility = (candlesSinceWhite / avgInterval) * 100;
+                }
 
-            // Normalize ATR relative to recent history (last 50 candles)
-            const lookbackInput = document.getElementById('volatilityLookback');
-            const lookbackValue = lookbackInput ? parseInt(lookbackInput.value) : 50;
-            const lookback = Math.min(data.length, lookbackValue);
-            const recentMetrics = [];
-            
-            for(let i = data.length - lookback; i < data.length; i++) {
-                if(metricData[i] !== null) recentMetrics.push(metricData[i]);
+                // --- NOVA LÓGICA: PROXIMIDADE DO BRANCO ANTERIOR (DOUBLET) ---
+                // Analisa se há tendência de brancos saindo próximos uns dos outros (<= 12 casas)
+                const allRecentIntervals = intervals.slice(-50); // Olha histórico maior para padrão
+                const shortIntervals = allRecentIntervals.filter(i => i <= 12);
+                
+                if (shortIntervals.length > 0) {
+                    const shortFreq = shortIntervals.length / allRecentIntervals.length;
+                    // Se > 15% dos brancos recentes foram "duplos" ou próximos e estamos no início
+                    if (shortFreq >= 0.15 && candlesSinceWhite <= 15) {
+                        const avgShort = shortIntervals.reduce((a, b) => a + b, 0) / shortIntervals.length;
+                        
+                        // Calcula volatilidade baseada na média curta
+                        let shortVol = (candlesSinceWhite / avgShort) * 100;
+                        
+                        // Boost baseado na frequência (confiança do padrão)
+                        shortVol *= (0.9 + shortFreq); 
+
+                        // Se ainda estamos numa janela plausível para o padrão curto (até 1.8x a média curta)
+                        if (candlesSinceWhite <= avgShort * 1.8) {
+                            if (shortVol > volatility) {
+                                volatility = shortVol;
+                                isDoubletPattern = true;
+                            }
+                        }
+                    }
+                }
             }
-            if (recentMetrics.length === 0) return;
-
-            let minM = Math.min(...recentMetrics);
-            let maxM = Math.max(...recentMetrics);
-            if (maxM === minM) maxM = minM + 0.001;
-
-            const volatility = Math.max(0, Math.min(100, ((currentMetric - minM) / (maxM - minM)) * 100));
             
-            const fill = document.getElementById('volatility-fill');
-            const val = document.getElementById('volatility-val');
-            const iconEl = document.getElementById('volatility-icon');
+            // Limita a volatilidade para não explodir visualmente
+            volatility = Math.min(150, volatility);
+            // --- FIM DA NOVA LÓGICA ---
 
-            let color = volatility >= 60 ? '#ff0055' : (volatility >= 30 ? '#ff9800' : '#00ff88');
-            let icon = volatility >= 60 ? '⚡' : (volatility >= 30 ? '〰️' : '💤');
+            // --- WARMUP LOGIC ---
+            const warmupInput = document.getElementById('warmupInput');
+            const warmupSeconds = warmupInput ? parseInt(warmupInput.value) : 30;
+            const warmupDuration = warmupSeconds * 1000;
+            const timeSinceLoad = Date.now() - pageLoadTime;
+            const isWarmingUp = timeSinceLoad < warmupDuration;
+            if (isWarmingUp) {
+                volatility = 0;
+            }
 
-            // Sugestão de Branco em Alta Volatilidade
             const whiteThresholdInput = document.getElementById('volatilityWhiteThreshold');
-            const whiteThreshold = whiteThresholdInput ? parseInt(whiteThresholdInput.value) : 90;
+            const baseThreshold = whiteThresholdInput ? parseInt(whiteThresholdInput.value) : 80;
 
-            if (volatility >= whiteThreshold) {
+        // --- NOVA LÓGICA DE LIMITE DE ALERTA ---
+
+        const alertConditionMet = volatility >= baseThreshold;
+
+        if (currentTimestamp > lastCandleTimestampForWhiteAlert) {
+            lastCandleTimestampForWhiteAlert = currentTimestamp;
+            if (lastCandle.color === 'branco') {
+                whiteAlertConsecutiveCount = 0; // Reseta no branco
+            } else if (alertConditionMet) {
+                whiteAlertConsecutiveCount++; // Incrementa se a condição for atendida em uma nova vela
+            } else {
+                whiteAlertConsecutiveCount = 0; // Reseta se a sequência de alertas for quebrada
+            }
+            }
+
+        let isWhiteLikely = alertConditionMet && (whiteAlertConsecutiveCount > 0 && whiteAlertConsecutiveCount <= maxAttempts);
+        // --- FIM DA NOVA LÓGICA ---
+
+        // Define a previsão para a PRÓXIMA vela
+        if (isWhiteLikely && !predictionState.white.active) {
+            predictionState.white.active = true;
+            predictionState.white.attempts = 0;
+            predictionState.white.lastCheckedTimestamp = currentTimestamp;
+        }
+
+
+        let color = volatility >= 85 ? '#ff0055' : (volatility >= 50 ? '#ff9800' : '#00ff88');
+        let icon = volatility >= 85 ? '🔥' : (volatility >= 50 ? '⚠️' : '➖');
+        let displayText = `${Math.round(volatility)}%`;
+        if (isDoubletPattern && volatility >= 40) {
+             displayText = `♻️ ${Math.round(volatility)}%`;
+        }
+        let displayFontSize = "1.1rem";
+
+        const warmupBarContainer = document.getElementById('warmup-bar-container');
+        const warmupBarFill = document.getElementById('warmup-bar-fill');
+
+        if (isWarmingUp) {
+            const remaining = Math.ceil((warmupDuration - timeSinceLoad) / 1000);
+            displayText = `Calibrando ${remaining}s`;
+            color = '#888';
+            icon = '⏳';
+            displayFontSize = "0.7rem";
+            
+            if (warmupBarContainer && warmupBarFill) {
+                warmupBarContainer.style.display = 'block';
+                const progress = Math.min(100, (timeSinceLoad / warmupDuration) * 100);
+                warmupBarFill.style.width = `${progress}%`;
+            }
+        } else {
+            if (warmupBarContainer) warmupBarContainer.style.display = 'none';
+        }
+
+            const alertOverlay = document.getElementById('white-alert-overlay');
+            if (isWhiteLikely) {
                 color = '#ffffff';
                 icon = '⚪';
-                val.innerText = "POSSÍVEL ⚪";
-                val.style.fontSize = "0.6rem";
+            displayText = `POSSÍVEL ⚪ (${whiteAlertConsecutiveCount}/${maxAttempts})`;
+                displayFontSize = "0.6rem";
             } else {
-                val.innerText = `${Math.round(volatility)}%`;
-                val.style.fontSize = "1.1rem";
+            // Se o alerta está suprimido pelo contador, mostra um status de pausa
+            if (alertConditionMet && whiteAlertConsecutiveCount > maxAttempts) {
+                color = '#ffc107'; // Amarelo para aviso
+                icon = '⏸️';
+                displayText = 'PAUSADO';
+                displayFontSize = '0.7rem';
+            }
             }
 
-            fill.style.height = `${volatility}%`; fill.style.backgroundColor = color; fill.style.boxShadow = `0 0 15px ${color}`;
-            val.style.color = color;
-            iconEl.innerText = icon;
+            // Atualiza widget antigo se existir (prevenção de erros)
+            if (widget) {
+                const fill = document.getElementById('volatility-fill');
+                const val = document.getElementById('volatility-val');
+                const iconEl = document.getElementById('volatility-icon');
+                if(fill) { fill.style.height = `${Math.min(100, volatility)}%`; fill.style.backgroundColor = color; }
+                if(val) { val.innerText = displayText; val.style.color = color; val.style.fontSize = displayFontSize; }
+                if(iconEl) iconEl.innerText = icon;
+                widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
+            }
+
+            // Update Panel (Nova Aba)
+            const pFill = document.getElementById('panel-volatility-fill');
+            const pVal = document.getElementById('panel-volatility-val');
+            const pIcon = document.getElementById('panel-volatility-icon');
+            if(pFill) { pFill.style.width = `${Math.min(100, volatility)}%`; pFill.style.backgroundColor = color; pFill.style.boxShadow = `0 0 10px ${color}`; }
+            if(pVal) { 
+                pVal.innerText = displayText; pVal.style.color = color; pVal.style.fontSize = displayFontSize; 
+                animateValueChange('panel-volatility-val');
+            }
+            if(pIcon) pIcon.innerText = icon;
+
+            // Atualiza o contador de velas desde o último branco com a média
+            const counterEl = document.getElementById('last-white-counter');
+            if (counterEl) {
+                const count = whiteIndices.length > 0 ? candlesSinceWhite : `${data.length}+`;
+                let avgText = avgInterval > 0 ? ` / Média: ${avgInterval.toFixed(0)}` : '';
+                counterEl.innerHTML = `Velas s/ Branco: <strong style="color: #fff;">${count}</strong><span style="color:#888; font-size:0.9em;">${avgText}</span>`;
+            }
+
+            // Atualiza o placar na UI
+            const wlCounter = document.getElementById('wl-counter-white');
+            if (wlCounter) {
+                wlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.white.wins} - <span style="color: #ff0055">L</span>: ${scores.white.losses}`;
+            }
+
+            if (isWhiteLikely && document.getElementById('soundToggle').checked) {
+                playWhiteVolatilityAlertSound();
+            }
+        }
+
+        function updateMarketVolatilityRed(data) {
+            if (data.length < 1) return;
+
+            const lastCandle = data[data.length - 1];
+            if (!lastCandle) return;
+            const currentTimestamp = lastCandle.timestamp;
+
+            // --- LÓGICA DE PLACAR ---
+            if (predictionState.red.wasTriggered) {
+                if (currentTimestamp > predictionState.red.triggerTimestamp) {
+                    if (lastCandle.color === 'vermelho') {
+                        scores.red.wins++;
+                        flashWL('wl-counter-red', 'win');
+                    } else if (lastCandle.color !== 'branco') { // Não conta branco como derrota
+                        scores.red.losses++;
+                        flashWL('wl-counter-red', 'loss');
+                    }
+                    predictionState.red.wasTriggered = false; // Consome a previsão
+                }
+            }
+            // --- FIM LÓGICA DE PLACAR ---
+
+            // Conta velas pretas consecutivas a partir do final
+            let consecutiveBlacks = 0;
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (data[i].color === 'preto') {
+                    consecutiveBlacks++;
+                } else {
+                    break; // Para de contar quando encontra uma vela não-preta
+                }
+            }
+
+            // Normaliza para uma porcentagem (ex: 10 velas = 100%)
+            const maxStreak = 6;
+            const volatility = Math.min(100, (consecutiveBlacks / maxStreak) * 100);
+
+            // Define a previsão para a PRÓXIMA vela
+            if (volatility >= 70 && !predictionState.red.wasTriggered) {
+                predictionState.red.wasTriggered = true;
+                predictionState.red.triggerTimestamp = currentTimestamp;
+            }
+
+            let color = volatility >= 70 ? '#ff0055' : (volatility >= 40 ? '#ff9800' : '#888');
+            let icon = volatility >= 70 ? '🔥' : (volatility >= 40 ? '⚠️' : '➖');
+
+            // Atualiza o painel
+            const pFill = document.getElementById('panel-volatility-red-fill');
+            const pVal = document.getElementById('panel-volatility-red-val');
+            const pIcon = document.getElementById('panel-volatility-red-icon');
+            const pCounter = document.getElementById('last-red-counter');
+            const pWlCounter = document.getElementById('wl-counter-red');
+
+            if(pFill) { pFill.style.width = `${volatility}%`; pFill.style.backgroundColor = color; }
+            if(pVal) { 
+                pVal.innerText = `${Math.round(volatility)}%`; pVal.style.color = color; 
+                animateValueChange('panel-volatility-red-val');
+            }
+            if(pIcon) pIcon.innerText = icon;
+            if(pCounter) {
+                pCounter.innerHTML = `Seq. s/ Vermelho: <strong style="color: #fff;">${consecutiveBlacks}</strong>`;
+            }
+            if(pWlCounter) pWlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.red.wins} - <span style="color: #ff0055">L</span>: ${scores.red.losses}`;
+
+            if (volatility >= 70 && document.getElementById('soundToggle').checked) {
+                playRedVolatilityAlertSound();
+            }
+        }
+
+        function updateMarketVolatilityBlack(data) {
+            if (data.length < 1) return;
+
+            const lastCandle = data[data.length - 1];
+            if (!lastCandle) return;
+            const currentTimestamp = lastCandle.timestamp;
+
+            // --- LÓGICA DE PLACAR ---
+            if (predictionState.black.wasTriggered) {
+                if (currentTimestamp > predictionState.black.triggerTimestamp) {
+                    if (lastCandle.color === 'preto') {
+                        scores.black.wins++;
+                        flashWL('wl-counter-black', 'win');
+                    } else if (lastCandle.color !== 'branco') { // Não conta branco como derrota
+                        scores.black.losses++;
+                        flashWL('wl-counter-black', 'loss');
+                    }
+                    predictionState.black.wasTriggered = false; // Consome a previsão
+                }
+            }
+            // --- FIM LÓGICA DE PLACAR ---
+
+            // Conta velas vermelhas consecutivas a partir do final
+            let consecutiveReds = 0;
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (data[i].color === 'vermelho') {
+                    consecutiveReds++;
+                } else {
+                    break; // Para de contar
+                }
+            }
+
+            const maxStreak = 6;
+            const volatility = Math.min(100, (consecutiveReds / maxStreak) * 100);
+
+            // Define a previsão para a PRÓXIMA vela
+            if (volatility >= 70 && !predictionState.black.wasTriggered) {
+                predictionState.black.wasTriggered = true;
+                predictionState.black.triggerTimestamp = currentTimestamp;
+            }
+
+            let color = volatility >= 70 ? '#ccc' : (volatility >= 40 ? '#ff9800' : '#888');
+            let icon = volatility >= 70 ? '🖤' : (volatility >= 40 ? '⚠️' : '➖');
+
+            // Atualiza o painel
+            const pFill = document.getElementById('panel-volatility-black-fill');
+            const pVal = document.getElementById('panel-volatility-black-val');
+            const pIcon = document.getElementById('panel-volatility-black-icon');
+            const pCounter = document.getElementById('last-black-counter');
+            const pWlCounter = document.getElementById('wl-counter-black');
+
+            if(pFill) { pFill.style.width = `${volatility}%`; pFill.style.backgroundColor = color; }
+            if(pVal) { pVal.innerText = `${Math.round(volatility)}%`; pVal.style.color = color; animateValueChange('panel-volatility-black-val'); }
+            if(pIcon) pIcon.innerText = icon;
+            if(pWlCounter) pWlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.black.wins} - <span style="color: #ff0055">L</span>: ${scores.black.losses}`;
+            if(pCounter) { pCounter.innerHTML = `Seq. s/ Preto: <strong style="color: #fff;">${consecutiveReds}</strong>`; }
             
-            widget.style.borderColor = color; widget.style.boxShadow = `0 0 15px ${color}33`;
+            if (volatility >= 70 && document.getElementById('soundToggle').checked) {
+                playBlackVolatilityAlertSound();
+            }
+        }
+
+        function updateSurfProbability(data) {
+            if (!data || data.length < 5) return;
+
+            const lastCandle = data[data.length - 1];
+            const currentTimestamp = lastCandle.timestamp;
+
+            // --- LÓGICA DE PLACAR ---
+            if (predictionState.surf.wasTriggered) {
+                // Só processa se for uma NOVA vela (timestamp maior que o da previsão)
+                if (currentTimestamp > predictionState.surf.triggerTimestamp) {
+                    const newCandle = lastCandle;
+                    if (newCandle.color === predictionState.surf.predictedColor) {
+                        scores.surf.wins++;
+                        if (newCandle.color === 'branco') scores.surf.whiteWins++;
+                        predictionState.surf.consecutiveLosses = 0; // Reseta no Win
+                        flashWL('wl-counter-surf', 'win');
+                    } else if (newCandle.color !== 'branco') { // Não conta branco como derrota
+                        scores.surf.losses++;
+                        predictionState.surf.consecutiveLosses++; // Incrementa no Loss
+                        flashWL('wl-counter-surf', 'loss');
+                        if (predictionState.surf.consecutiveLosses >= 2) {
+                            predictionState.surf.pauseUntil = Date.now() + 180000; // Pausa de 3 minutos (180s)
+                            predictionState.surf.consecutiveLosses = 0; // Reseta contador para reiniciar ciclo após pausa
+                        }
+                    }
+                    predictionState.surf.wasTriggered = false; // Consome a previsão
+                }
+            }
+            // --- FIM LÓGICA DE PLACAR ---
+
+            const lastColor = lastCandle.color;
+            const isLight = document.body.classList.contains('light-mode');
+            
+            const pVal = document.getElementById('panel-surf-val');
+            const pIcon = document.getElementById('panel-surf-icon');
+            const pPct = document.getElementById('panel-surf-pct');
+            const pMsg = document.getElementById('surf-message');
+            const card = document.getElementById('panel-surf-card');
+            const pWlCounter = document.getElementById('wl-counter-surf');
+
+            // --- LÓGICA DE PAUSA (2 LOSS SEGUIDOS) ---
+            if (Date.now() < predictionState.surf.pauseUntil) {
+                // Cancela a pausa se sair um branco
+                if (lastCandle.color === 'branco') {
+                    predictionState.surf.pauseUntil = 0;
+                } else {
+                    const remaining = Math.ceil((predictionState.surf.pauseUntil - Date.now()) / 1000);
+                    if(pVal) { pVal.innerText = "PAUSADO"; pVal.style.color = "#ffc107"; }
+                    if(pIcon) pIcon.innerText = "⏳";
+                    if(pPct) pPct.innerText = "--";
+                    if(pMsg) pMsg.innerText = `Recalibrando... ${remaining}s`;
+                    if(card) { card.style.borderColor = "#ffc107"; card.style.boxShadow = "none"; }
+                    if(pWlCounter) pWlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.surf.wins} - <span style="color: #ff0055">L</span>: ${scores.surf.losses} <span style="color: #fff; margin-left: 4px;">⚪: ${scores.surf.whiteWins}</span>`;
+                    return; // Interrompe nova análise
+                }
+            }
+            // --- FIM LÓGICA DE PAUSA ---
+
+            if (lastColor === 'branco') {
+                 if(pVal) { pVal.innerText = "PÓS-BRANCO"; pVal.style.color = "#00d2ff"; }
+                 if(pIcon) pIcon.innerText = "⚪";
+                 if(pPct) pPct.innerText = "--";
+                 if(pMsg) pMsg.innerText = "Aguardando definição...";
+                 if(card) { card.style.borderColor = "#00d2ff"; card.style.boxShadow = "none"; }
+                 if(pWlCounter) pWlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.surf.wins} - <span style="color: #ff0055">L</span>: ${scores.surf.losses} <span style="color: #fff; margin-left: 4px;">⚪: ${scores.surf.whiteWins}</span>`;
+                 return;
+            }
+
+            let currentStreak = 0;
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (data[i].color === lastColor) currentStreak++;
+                else break;
+            }
+
+            let continueCount = 0;
+            let oppositeCount = 0;
+            let whiteCount = 0;
+            const startIndex = Math.max(0, data.length - 1000);
+            
+            for (let i = startIndex; i < data.length - 1; i++) {
+                if (data[i].color !== lastColor) continue;
+                let isStreak = true;
+                for (let k = 0; k < currentStreak; k++) {
+                    if (i - k < 0 || data[i - k].color !== lastColor) {
+                        isStreak = false;
+                        break;
+                    }
+                }
+                if (isStreak) {
+                    const nextColor = data[i+1].color;
+                    if (nextColor === lastColor) continueCount++;
+                    else if (nextColor === 'branco') whiteCount++;
+                    else oppositeCount++;
+                }
+            }
+
+            const total = continueCount + oppositeCount + whiteCount;
+            let prediction = "NEUTRO";
+            let prob = 0;
+            let icon = "⚖️";
+            let msg = "Dados insuficientes";
+            let color = "#888";
+
+            if (total > 0) {
+                const continuePct = (continueCount / total) * 100;
+                const oppositePct = (oppositeCount / total) * 100;
+                const whitePct = (whiteCount / total) * 100;
+                
+                if (whitePct >= 20) {
+                    prediction = "POSSÍVEL ⚪";
+                    prob = whitePct;
+                    icon = "⚪";
+                    color = "#00d2ff";
+                    msg = "Padrão de Branco Detectado";
+                } else if (continuePct >= oppositePct) {
+                    prediction = lastColor === 'vermelho' ? 'VERMELHO' : 'PRETO';
+                    prob = continuePct;
+                    icon = lastColor === 'vermelho' ? '🔴' : '⚫';
+                    color = lastColor === 'vermelho' ? '#ff0055' : (isLight ? '#333' : '#fff');
+                    msg = `Surf: Alta Probabilidade`;
+                    if (whitePct >= 10) msg += ` (Proteja ⚪)`;
+                } else {
+                    prediction = lastColor === 'vermelho' ? 'PRETO' : 'VERMELHO';
+                    prob = oppositePct;
+                    icon = lastColor === 'vermelho' ? '⚫' : '🔴';
+                    color = lastColor === 'vermelho' ? (isLight ? '#333' : '#fff') : '#ff0055';
+                    msg = `Reversão: Alta Probabilidade`;
+                    if (whitePct >= 10) msg += ` (Proteja ⚪)`;
+                }
+            }
+
+            // Define a previsão para a PRÓXIMA vela
+            if (total > 0) {
+                predictionState.surf.wasTriggered = true;
+                predictionState.surf.triggerTimestamp = currentTimestamp;
+                if (prediction.includes('⚪')) {
+                    predictionState.surf.predictedColor = 'branco';
+                } else {
+                    predictionState.surf.predictedColor = prediction.toLowerCase();
+                }
+            }
+
+            if(pVal) { 
+                pVal.innerText = prediction; 
+                pVal.style.color = color;
+                animateValueChange('panel-surf-val');
+            }
+            if(pIcon) pIcon.innerText = icon;
+            if(pPct) pPct.innerText = `${Math.round(prob)}%`;
+            if(pMsg) pMsg.innerText = msg;
+            if(pWlCounter) pWlCounter.innerHTML = `<span style="color: #00ff88">W</span>: ${scores.surf.wins} - <span style="color: #ff0055">L</span>: ${scores.surf.losses} <span style="color: #fff; margin-left: 4px;">⚪: ${scores.surf.whiteWins}</span>`;
+            if(card) {
+                card.style.borderColor = color;
+                card.style.boxShadow = `0 0 10px ${color}33`;
+            }
         }
 
         function drawRSIChart(priceData) {
@@ -2448,6 +3216,31 @@
             return canvas;
         }
 
+        function identifyCandlePattern(candles) {
+            if (!candles || candles.length < 2) return "N/A";
+            const last = candles[candles.length - 1];
+            const prev = candles[candles.length - 2];
+
+            const body = Math.abs(last.close - last.open);
+            const total = last.high - last.low;
+            const wickUpper = last.high - Math.max(last.open, last.close);
+            const wickLower = Math.min(last.open, last.close) - last.low;
+
+            if (total === 0 || body <= total * 0.1) return "Doji (Indecisão) ⚖️";
+
+            // Engulfing
+            const prevBody = Math.abs(prev.close - prev.open);
+            if (last.color === 'vermelho' && prev.color === 'preto' && body > prevBody) return "Engolfo de Alta 🟢";
+            if (last.color === 'preto' && prev.color === 'vermelho' && body > prevBody) return "Engolfo de Baixa 🔴";
+
+            // Pinbars
+            if (wickLower >= body * 2 && wickUpper <= body * 0.5) return "Martelo / Pinbar Alta 🔨";
+            if (wickUpper >= body * 2 && wickLower <= body * 0.5) return "Estrela Cadente / Pinbar Baixa 🌠";
+
+            if (body >= total * 0.8) return last.color === 'vermelho' ? "Vela de Força (Alta) 🚀" : "Vela de Força (Baixa) 🔻";
+            return "Normal";
+        }
+
         function generateAnalysisCaption() {
             if (!allCandles || allCandles.length === 0) return '📊 *Análise Gráfica - Opções Double*\n\nGerado pelo Cortex Virtual';
 
@@ -2563,12 +3356,15 @@
                 }
             }
 
+            const pattern = identifyCandlePattern(allCandles);
+
             const now = new Date();
             const dateTimeStr = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
 
             let caption = `📊 *ANÁLISE TÉCNICA - OPÇÕES DOUBLE*\n`;
             caption += `📅 *Data:* ${dateTimeStr}\n\n`;
             caption += `🧭 *Tendência:* ${icon} ${signal}\n`;
+            caption += `🕯️ *Padrão:* ${pattern}\n`;
             caption += `💪 *Força (20):* 🔴 ${redPct}% | ⚫ ${blackPct}%\n`;
             if (volatilityText) caption += `${volatilityText}\n`;
             if (indicatorsText) caption += `--------------------------${indicatorsText}\n`;
@@ -2669,8 +3465,101 @@
             }
         }
 
+        function playWhiteVolatilityAlertSound() {
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1000, ctx.currentTime); // High pitch
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            } catch (e) { console.error("Audio error (White Volatility):", e); }
+        }
+
+        function playRedVolatilityAlertSound() {
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'triangle'; // Different waveform
+                osc.frequency.setValueAtTime(440, ctx.currentTime); // A4
+                osc.frequency.exponentialRampToValueAtTime(330, ctx.currentTime + 0.3); // Descending tone
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(); osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { console.error("Audio error (Red Volatility):", e); }
+        }
+
+        function playBlackVolatilityAlertSound() {
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+            
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sawtooth'; // Different waveform
+                osc.frequency.setValueAtTime(330, ctx.currentTime); // E4
+                osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3); // Ascending tone
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(); osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { console.error("Audio error (Black Volatility):", e); }
+        }
+
+        function saveWarmupConfig() {
+            const val = document.getElementById('warmupInput').value;
+            localStorage.setItem('warmup_seconds', val);
+        }
+
+        function saveWhiteGaleConfig() {
+            const val = document.getElementById('whiteGaleAttempts').value;
+            localStorage.setItem('white_gale_attempts', val);
+        }
+
+        function resetAllConfigs() {
+            if (!confirm('Tem certeza que deseja resetar todas as configurações para o padrão? Isso irá recarregar a página.')) {
+                return;
+            }
+
+            // Limpa as configurações salvas no navegador
+            localStorage.removeItem('warmup_seconds');
+            localStorage.removeItem('white_gale_attempts');
+
+            alert('Configurações resetadas. A página será recarregada.');
+            window.location.reload();
+        }
+
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
+            const savedWarmup = localStorage.getItem('warmup_seconds');
+            if (savedWarmup !== null) {
+                const input = document.getElementById('warmupInput');
+                if (input) input.value = savedWarmup;
+            }
+
+            const savedGale = localStorage.getItem('white_gale_attempts');
+            if (savedGale !== null) {
+                const input = document.getElementById('whiteGaleAttempts');
+                if (input) input.value = savedGale;
+            }
+
             const autoFetchToggle = document.getElementById('autoFetchToggle');
             if (autoFetchToggle) {
                 autoFetchToggle.addEventListener('change', (e) => {
