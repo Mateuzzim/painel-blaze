@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Opções Double - Gráfico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic styles from other pages */
         :root {
@@ -212,7 +213,7 @@
             transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s;
             border-radius: 4px; box-shadow: 0 0 10px currentColor;
         }
-        .strength-value { font-size: 1.1rem; font-weight: 900; margin-top: 8px; font-family: 'Courier New', monospace; text-shadow: 0 0 5px currentColor; }
+        .strength-value { font-size: 1.1rem; font-weight: 900; margin-top: 8px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px currentColor; }
         .strength-trend-icon { font-size: 1.2rem; margin-top: 2px; }
 
         /* Trend History Panel */
@@ -364,6 +365,7 @@
             font-size: 1rem;
             font-weight: bold;
             color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
         }
         .wl-counter {
             font-size: 0.65rem;
@@ -374,6 +376,7 @@
             padding: 2px 5px;
             border-radius: 4px;
             border: 1px solid var(--border-color);
+            font-family: 'Orbitron', sans-serif;
         }
         @keyframes flash-win {
             0% { background-color: rgba(0, 255, 136, 0.7); box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); border-color: rgba(0, 255, 136, 0.8); color: #fff; }
@@ -475,6 +478,17 @@
             animation: white-alert-pulse 1s infinite ease-in-out;
             border-width: 8px;
         }
+
+        /* Animação para Linhas de Suporte/Resistência */
+        .sr-alert-blink { animation: blink-sr 0.8s infinite alternate; }
+        @keyframes blink-sr { from { opacity: 1; stroke-width: 1px; } to { opacity: 0.3; stroke-width: 3px; } }
+
+        /* Scrollbar Futurista */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.1); }
+        ::-webkit-scrollbar-thumb:hover { background: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8); }
+        ::-webkit-scrollbar-corner { background: #050505; }
     </style>
 </head>
 <body>
@@ -1126,7 +1140,7 @@
                 // Se a tendência mudou (ou é a primeira execução)
                 if (lastLiveTrend !== signal) {
                     addToTrendHistory(signal, color, icon);
-                    if (lastLiveTrend !== null && lastLiveTrend === "NEUTRO" && (signal === "COMPRA" || signal === "VENDA")) {
+                    if (lastLiveTrend !== null && lastLiveTrend === "NEUTRO" && (signal === "VERMELHO" || signal === "PRETO")) {
                         triggerTrendAlert(signal);
                     }
                     lastLiveTrend = signal;
@@ -1324,16 +1338,25 @@
             const defs = document.createElementNS(svgNS, 'defs');
             defs.innerHTML = `
                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur"></feGaussianBlur>
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
                     <feMerge>
-                        <feMergeNode in="coloredBlur"></feMergeNode>
-                        <feMergeNode in="SourceGraphic"></feMergeNode>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
                     </feMerge>
-                </filter>`;
+                </filter>
+                <filter id="glow-pulse" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur">
+                        <animate attributeName="stdDeviation" values="1.5; 4; 1.5" dur="1.2s" repeatCount="indefinite" />
+                    </feGaussianBlur>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            `;
             svg.appendChild(defs);
 
             // priceData is already prepared by generateCandles
-
+            const digitalFont = "'Orbitron', sans-serif";
             // 2. Find min/max price for scaling
             const minPrice = Math.min(...priceData.map(p => p.low));
             const maxPrice = Math.max(...priceData.map(p => p.high));
@@ -1366,6 +1389,7 @@
                 axisLabel.setAttribute('y', tickY + 4);
                 axisLabel.setAttribute('fill', isLight ? '#666' : '#888');
                 axisLabel.setAttribute('font-size', '10px');
+                axisLabel.setAttribute('font-family', digitalFont);
                 axisLabel.textContent = tickValue.toFixed(0);
                 g.appendChild(axisLabel);
             }
@@ -1529,6 +1553,7 @@
                     label.setAttribute('text-anchor', 'middle');
                     label.setAttribute('fill', isLight ? '#333' : '#fff');
                     label.setAttribute('font-size', '9px');
+                    label.setAttribute('font-family', digitalFont);
                     label.setAttribute('font-weight', 'bold');
                     label.textContent = '14x';
                     g.appendChild(label);
@@ -1675,6 +1700,8 @@
                 const uniqueRes = [...new Set(resistances.reverse())].slice(0, maxLines);
                 const uniqueSup = [...new Set(supports.reverse())].slice(0, maxLines);
 
+                const currentPrice = priceData.length > 0 ? priceData[priceData.length - 1].close : 0;
+
                 uniqueRes.forEach(price => {
                     const yVal = y(price);
                     const line = document.createElementNS(svgNS, 'line');
@@ -1682,11 +1709,15 @@
                     line.setAttribute('x2', width); line.setAttribute('y2', yVal);
                     line.setAttribute('stroke', '#ff0055'); line.setAttribute('stroke-width', '1');
                     line.setAttribute('stroke-dasharray', '5,2'); line.setAttribute('opacity', '0.8');
+                    if (Math.abs(currentPrice - price) <= 2) {
+                        line.classList.add('sr-alert-blink');
+                    }
                     g.appendChild(line);
                     const label = document.createElementNS(svgNS, 'text');
                     label.setAttribute('x', width - 5); label.setAttribute('y', yVal - 3);
                     label.setAttribute('text-anchor', 'end'); label.setAttribute('fill', '#ff0055');
                     label.setAttribute('font-size', '9px'); label.textContent = 'RES ' + price;
+                    label.setAttribute('font-family', digitalFont);
                     g.appendChild(label);
                 });
 
@@ -1697,13 +1728,39 @@
                     line.setAttribute('x2', width); line.setAttribute('y2', yVal);
                     line.setAttribute('stroke', '#00ff88'); line.setAttribute('stroke-width', '1');
                     line.setAttribute('stroke-dasharray', '5,2'); line.setAttribute('opacity', '0.8');
+                    if (Math.abs(currentPrice - price) <= 2) {
+                        line.classList.add('sr-alert-blink');
+                    }
                     g.appendChild(line);
                     const label = document.createElementNS(svgNS, 'text');
                     label.setAttribute('x', width - 5); label.setAttribute('y', yVal + 10);
                     label.setAttribute('text-anchor', 'end'); label.setAttribute('fill', '#00ff88');
                     label.setAttribute('font-size', '9px'); label.textContent = 'SUP ' + price;
+                    label.setAttribute('font-family', digitalFont);
                     g.appendChild(label);
                 });
+
+                // Contador de velas sem tocar S/R
+                let srCounter = 0;
+                let srFound = false;
+                const allLevels = [...uniqueRes, ...uniqueSup];
+                const lastVisibleIdx = viewStartIndex + priceData.length - 1;
+
+                if (allLevels.length > 0 && lastVisibleIdx >= 0) {
+                    for (let i = lastVisibleIdx; i >= 0; i--) {
+                        const c = allCandles[i];
+                        // Tolerância de 2 (mesma usada no blink)
+                        const touched = allLevels.some(lvl => c.high >= lvl - 2 && c.low <= lvl + 2);
+                        if (touched) { srFound = true; break; }
+                        srCounter++;
+                    }
+                }
+                const srText = document.createElementNS(svgNS, 'text');
+                srText.setAttribute('x', 10); srText.setAttribute('y', 20);
+                srText.setAttribute('fill', isLight ? '#333' : '#ccc'); srText.setAttribute('font-size', '10px');
+                srText.setAttribute('font-family', digitalFont);
+                srText.textContent = `Velas s/ S/R: ${srFound ? srCounter : (allCandles.length > 0 ? allCandles.length + '+' : '0')}`;
+                g.appendChild(srText);
             }
 
             // --- VISUALIZADOR DE DOUBLET (MÉDIA CURTA) ---
@@ -1744,12 +1801,14 @@
                                 icon.setAttribute('x', x); icon.setAttribute('y', 20); icon.setAttribute('text-anchor', 'middle');
                                 icon.setAttribute('font-size', '14px'); icon.textContent = '♻️';
                                 g.appendChild(icon);
+                                icon.setAttribute('font-family', digitalFont);
 
                                 const label = document.createElementNS(svgNS, 'text');
                                 label.setAttribute('x', x); label.setAttribute('y', 32); label.setAttribute('text-anchor', 'middle');
                                 label.setAttribute('fill', '#00d2ff'); label.setAttribute('font-size', '9px'); label.setAttribute('font-weight', 'bold');
                                 label.textContent = avgShort.toFixed(1);
                                 g.appendChild(label);
+                                label.setAttribute('font-family', digitalFont);
                             }
                         }
                     }
@@ -1857,6 +1916,7 @@
                 priceLabel.setAttribute('y', lastY + 4);
                 priceLabel.setAttribute('fill', '#000'); // Always black on yellow bg
                 priceLabel.setAttribute('font-size', '12px');
+                priceLabel.setAttribute('font-family', digitalFont);
                 priceLabel.setAttribute('font-weight', 'bold');
                 priceLabel.textContent = lastClosePrice.toFixed(0);
                 g.appendChild(priceLabel);
@@ -1881,6 +1941,7 @@
                     timerLabel.setAttribute('y', lastY - 8);
                     timerLabel.setAttribute('text-anchor', 'end');
                     timerLabel.setAttribute('fill', '#ffc107');
+                    timerLabel.setAttribute('font-family', digitalFont);
                     timerLabel.setAttribute('font-size', '11px');
                     timerLabel.setAttribute('font-weight', 'bold');
                     timerLabel.textContent = "--:--";
@@ -1907,9 +1968,188 @@
                     avgLabel.setAttribute('x', 10); avgLabel.setAttribute('y', lineY - 4);
                     avgLabel.setAttribute('fill', '#00d2ff'); avgLabel.setAttribute('font-size', '10px');
                     avgLabel.textContent = `Média Brancos (10): ${avgPrice.toFixed(0)}`;
+                    avgLabel.setAttribute('font-family', digitalFont);
                     g.appendChild(avgLabel);
                 }
             }
+
+            // --- BARRA LATERAL ESQUERDA (DISTRIBUIÇÃO VISÍVEL) ---
+            // Mostra a proporção de cores na tela atual para ajudar na análise de tendência visual
+            const leftBarX = -42;
+            const leftBarW = 8;
+            
+            let vRed = 0, vBlack = 0, vWhite = 0;
+            priceData.forEach(d => {
+                if (d.color === 'vermelho') vRed++;
+                else if (d.color === 'preto') vBlack++;
+                else if (d.color === 'branco') vWhite++;
+            });
+            const vTotal = vRed + vBlack + vWhite;
+
+            if (vTotal > 0) {
+                const pctRed = vRed / vTotal;
+                const pctWhite = vWhite / vTotal;
+                const pctBlack = vBlack / vTotal;
+                
+                const hRed = pctRed * height;
+                const hWhite = pctWhite * height;
+                const hBlack = pctBlack * height;
+
+                // Fundo da Barra (Track Futurista)
+                const track = document.createElementNS(svgNS, 'rect');
+                track.setAttribute('x', leftBarX); track.setAttribute('y', 0);
+                track.setAttribute('width', leftBarW); track.setAttribute('height', height);
+                track.setAttribute('fill', 'rgba(0,0,0,0.3)');
+                track.setAttribute('stroke', 'rgba(255,255,255,0.1)');
+                track.setAttribute('rx', 4);
+                g.appendChild(track);
+
+                let currentY = 0;
+
+                const drawSegment = (h, color, pct, labelColor, glow) => {
+                    if (h <= 0) return;
+                    // Segmento
+                    const r = document.createElementNS(svgNS, 'rect');
+                    r.setAttribute('x', leftBarX + 2); 
+                    r.setAttribute('y', currentY + 1);
+                    r.setAttribute('width', leftBarW - 4); 
+                    r.setAttribute('height', Math.max(0, h - 2));
+                    r.setAttribute('fill', color);
+                    r.setAttribute('rx', 2);
+                    // Aplica efeito de pulso se for dominante (>70%), senão aplica brilho normal se 'glow' for true
+                    if (pct > 0.7) {
+                        r.setAttribute('filter', 'url(#glow-pulse)');
+                    } else if (glow) {
+                        r.setAttribute('filter', 'url(#glow)');
+                    }
+                    g.appendChild(r);
+
+                    // Label Futurista
+                    if (h > 25) {
+                        const centerY = currentY + h / 2;
+                        
+                        // Linha conectora
+                        const line = document.createElementNS(svgNS, 'line');
+                        line.setAttribute('x1', leftBarX + leftBarW); line.setAttribute('y1', centerY);
+                        line.setAttribute('x2', leftBarX + leftBarW + 6); line.setAttribute('y2', centerY);
+                        line.setAttribute('stroke', color); line.setAttribute('stroke-width', '1');
+                        g.appendChild(line);
+
+                        // Texto
+                        const t = document.createElementNS(svgNS, 'text');
+                        t.setAttribute('x', leftBarX + leftBarW + 10); t.setAttribute('y', centerY + 3);
+                        t.setAttribute('fill', labelColor); t.setAttribute('font-size', '9px');
+                        t.setAttribute('font-family', digitalFont); t.setAttribute('font-weight', 'bold');
+                        t.textContent = `${Math.round(pct*100)}%`;
+                        g.appendChild(t);
+                    }
+                    currentY += h;
+                };
+
+                // Red (Top)
+                drawSegment(hRed, '#ff0055', pctRed, '#ff0055', true);
+                
+                // White (Middle)
+                drawSegment(hWhite, '#ffffff', pctWhite, isLight ? '#333' : '#fff', true);
+
+                // Black (Bottom)
+                drawSegment(hBlack, isLight ? '#333' : '#444', pctBlack, isLight ? '#333' : '#888', false);
+            }
+
+            // --- INDICADOR DE FORÇA DA TENDÊNCIA (TOPO) ---
+            if (vTotal > 0) {
+                const trendStrengthWidth = 200;
+                const trendStrengthHeight = 8;
+                const trendStrengthX = (width / 2) - (trendStrengthWidth / 2);
+                const trendStrengthY = -18; // Posição acima do gráfico
+
+                const trendTotal = vRed + vBlack;
+                if (trendTotal > 0) {
+                    const redStrengthPct = vRed / trendTotal;
+
+                    // Título do Indicador
+                    const title = document.createElementNS(svgNS, 'text');
+                    title.setAttribute('x', width / 2);
+                    title.setAttribute('y', trendStrengthY - 4);
+                    title.setAttribute('text-anchor', 'middle');
+                    title.setAttribute('fill', isLight ? '#666' : '#888');
+                    title.setAttribute('font-size', '9px');
+                    title.textContent = 'FORÇA DA TENDÊNCIA (VISÍVEL)';
+                    g.appendChild(title);
+
+                    // Adiciona o clip-path ao defs para bordas arredondadas
+                    const clipPath = document.createElementNS(svgNS, 'clipPath');
+                    clipPath.id = 'trend-strength-clip';
+                    const clipRect = document.createElementNS(svgNS, 'rect');
+                    clipRect.setAttribute('x', trendStrengthX);
+                    clipRect.setAttribute('y', trendStrengthY);
+                    clipRect.setAttribute('width', trendStrengthWidth);
+                    clipRect.setAttribute('height', trendStrengthHeight);
+                    clipRect.setAttribute('rx', '4');
+                    clipPath.appendChild(clipRect);
+                    defs.appendChild(clipPath);
+
+                    const clippedGroup = document.createElementNS(svgNS, 'g');
+                    clippedGroup.setAttribute('clip-path', 'url(#trend-strength-clip)');
+                    g.appendChild(clippedGroup);
+
+                    // Barra de fundo (Preto/Baixa)
+                    const blackPart = document.createElementNS(svgNS, 'rect');
+                    blackPart.setAttribute('x', trendStrengthX); blackPart.setAttribute('y', trendStrengthY);
+                    blackPart.setAttribute('width', trendStrengthWidth); blackPart.setAttribute('height', trendStrengthHeight);
+                    blackPart.setAttribute('fill', downColor);
+                    clippedGroup.appendChild(blackPart);
+
+                    // Barra sobreposta (Vermelho/Alta)
+                    const redPart = document.createElementNS(svgNS, 'rect');
+                    redPart.setAttribute('x', trendStrengthX); redPart.setAttribute('y', trendStrengthY);
+                    redPart.setAttribute('width', trendStrengthWidth * redStrengthPct); redPart.setAttribute('height', trendStrengthHeight);
+                    redPart.setAttribute('fill', upColor);
+                    clippedGroup.appendChild(redPart);
+
+                    // Ícone de Direção Dominante e Porcentagem
+                    const dominanceValue = Math.max(redStrengthPct, 1 - redStrengthPct);
+                    const dominancePctText = `${Math.round(dominanceValue * 100)}%`;
+                    const icon = redStrengthPct > 0.5 ? '⬆️' : (redStrengthPct < 0.5 ? '⬇️' : '⚖️');
+                    const dominantColor = redStrengthPct > 0.5 ? upColor : (redStrengthPct < 0.5 ? downColor : '#ffc107');
+
+                    const dirIcon = document.createElementNS(svgNS, 'text');
+                    dirIcon.setAttribute('x', trendStrengthX + trendStrengthWidth + 8);
+                    dirIcon.setAttribute('y', trendStrengthY + 7);
+                    dirIcon.setAttribute('font-size', '10px');
+                    dirIcon.innerHTML = `${icon} <tspan font-size="9px" font-weight="bold" fill="${dominantColor}">${dominancePctText}</tspan>`;
+                    g.appendChild(dirIcon);
+                }
+            }
+
+            // Contagem na Linha Amarela (Preço Atual)
+            let countRed = 0, countWhite = 0, countBlack = 0;
+            if (priceData.length > 0) {
+                const linePrice = priceData[priceData.length - 1].close;
+                priceData.forEach(d => {
+                    if (d.high >= linePrice && d.low <= linePrice) {
+                        if (d.color === 'vermelho') countRed++;
+                        else if (d.color === 'branco') countWhite++;
+                        else if (d.color === 'preto') countBlack++;
+                    }
+                });
+            }
+
+            const totalCount = countRed + countWhite + countBlack;
+            const pctRed = totalCount > 0 ? Math.round((countRed / totalCount) * 100) : 0;
+            const pctWhite = totalCount > 0 ? Math.round((countWhite / totalCount) * 100) : 0;
+            const pctBlack = totalCount > 0 ? Math.round((countBlack / totalCount) * 100) : 0;
+
+            const statsText = document.createElementNS(svgNS, 'text');
+            statsText.setAttribute('x', width / 2);
+            statsText.setAttribute('y', height + 25);
+            statsText.setAttribute('text-anchor', 'middle');
+            statsText.setAttribute('font-size', '12px');
+            statsText.setAttribute('font-weight', 'bold');
+            statsText.setAttribute('fill', isLight ? '#333' : '#ccc');
+            statsText.setAttribute('font-family', digitalFont);
+            statsText.innerHTML = `<tspan fill="#ff0055">🔴 ${countRed} (${pctRed}%)</tspan><tspan dx="20" fill="${isLight ? '#333' : '#fff'}">⚪ ${countWhite} (${pctWhite}%)</tspan><tspan dx="20" fill="${isLight ? '#333' : '#aaa'}">⚫ ${countBlack} (${pctBlack}%)</tspan>`;
+            g.appendChild(statsText);
 
             // Add drawing overlay and listeners
             const overlay = document.createElementNS(svgNS, 'rect');
@@ -2118,16 +2358,16 @@
                 const macdBullish = lastHist > 0;
 
                 if (priceAboveSMA && macdBullish) {
-                    signal = "COMPRA"; color = "#ff0055"; icon = "🔴";
+                    signal = "VERMELHO"; color = "#ff0055"; icon = "🔴";
                 } else if (!priceAboveSMA && !macdBullish) {
-                    signal = "VENDA"; color = "#ffffff"; icon = "⚫";
+                    signal = "PRETO"; color = "#ffffff"; icon = "⚫";
                 }
             }
             return { signal, color, icon };
         }
 
         function triggerTrendAlert(signal) {
-            const color = signal === "COMPRA" ? "rgba(255, 0, 85, 0.3)" : "rgba(255, 255, 255, 0.2)";
+            const color = signal === "VERMELHO" ? "rgba(255, 0, 85, 0.3)" : "rgba(255, 255, 255, 0.2)";
             const flash = document.createElement('div');
             Object.assign(flash.style, { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: color, zIndex: 99999, pointerEvents: 'none', transition: 'opacity 0.5s', opacity: 0 });
             document.body.appendChild(flash);
@@ -2284,6 +2524,32 @@
                 }
             }
             
+            // --- NOVA LÓGICA: SUPORTE E RESISTÊNCIA (S/R) PARA BRANCO ---
+            let isSRPattern = false;
+            if (data.length > 50) {
+                const srLookback = 100; 
+                const startIndex = Math.max(0, data.length - srLookback);
+                const levels = new Set();
+                
+                for (let i = startIndex + 2; i < data.length - 2; i++) {
+                    const d = data[i];
+                    const prev1 = data[i-1]; const prev2 = data[i-2];
+                    const next1 = data[i+1]; const next2 = data[i+2];
+
+                    if (d.high > prev1.high && d.high > prev2.high && d.high > next1.high && d.high > next2.high) levels.add(d.high);
+                    if (d.low < prev1.low && d.low < prev2.low && d.low < next1.low && d.low < next2.low) levels.add(d.low);
+                }
+                
+                const currentPrice = data[data.length - 1].close;
+                for (let level of levels) {
+                    if (Math.abs(currentPrice - level) <= 2) {
+                        volatility += 30; 
+                        isSRPattern = true;
+                        break;
+                    }
+                }
+            }
+
             // Limita a volatilidade para não explodir visualmente
             volatility = Math.min(150, volatility);
             // --- FIM DA NOVA LÓGICA ---
@@ -2331,7 +2597,9 @@
         let color = volatility >= 85 ? '#ff0055' : (volatility >= 50 ? '#ff9800' : '#00ff88');
         let icon = volatility >= 85 ? '🔥' : (volatility >= 50 ? '⚠️' : '➖');
         let displayText = `${Math.round(volatility)}%`;
-        if (isDoubletPattern && volatility >= 40) {
+        if (isSRPattern && volatility >= 40) {
+             displayText = `🧱 ${Math.round(volatility)}%`;
+        } else if (isDoubletPattern && volatility >= 40) {
              displayText = `♻️ ${Math.round(volatility)}%`;
         }
         let displayFontSize = "1.1rem";
