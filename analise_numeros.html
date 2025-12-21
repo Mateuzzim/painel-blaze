@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas Numéricas</title>
+    <style>
+        /* Estilos Base (Mesmo padrão do ciclo_mercado.html) */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+            --color-red: #ff0055; --color-black: #222; --color-white: #fff;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 98%; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        /* Switch Toggle */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Estilos Específicos da Análise Numérica */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; }
+        .stat-title { font-size: 0.8rem; color: #aaa; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        
+        .color-bar-container { display: flex; height: 25px; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        .color-bar { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #fff; transition: width 0.5s; text-shadow: 0 0 2px rgba(0,0,0,0.8); }
+        .bg-red { background: var(--color-red); }
+        .bg-black { background: #333; border-right: 1px solid #444; }
+        .bg-white { background: #fff; color: #000; text-shadow: none; }
+
+        .numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 10px; }
+        .number-box { 
+            background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 6px; padding: 10px 5px; 
+            text-align: center; position: relative; transition: transform 0.2s;
+        }
+        .number-box:hover { transform: translateY(-2px); border-color: #555; }
+        .number-box.hot { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.1); }
+        .number-box.cold { border-color: #ff0055; opacity: 0.7; }
+        
+        .n-val { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; }
+        .n-red { color: var(--color-red); }
+        .n-black { color: #aaa; }
+        .n-white { color: #fff; text-shadow: 0 0 5px #fff; }
+        
+        .n-count { font-size: 0.75rem; color: #888; }
+        .n-bar { height: 3px; background: #222; margin-top: 5px; border-radius: 2px; overflow: hidden; }
+        .n-fill { height: 100%; background: #00d2ff; }
+
+        .hot-cold-row { display: flex; gap: 10px; margin-top: 5px; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: #fff; }
+        .badge-hot { background: rgba(0, 255, 136, 0.2); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+        .badge-cold { background: rgba(255, 0, 85, 0.2); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.3); }
+
+        /* Estilos para Sequência e Previsão */
+        .seq-badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; border: 2px solid #333; margin-right: 5px; }
+        .seq-red { background: var(--color-red); border-color: #ff0055; color: #fff; }
+        .seq-black { background: #222; border-color: #444; color: #fff; }
+        .seq-white { background: #fff; border-color: #fff; color: #000; }
+    </style>
+    <style>
+        /* Estilos para o filtro de giros */
+        .filter-buttons { display: flex; justify-content: center; gap: 8px; }
+        .filter-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid #333; color: #aaa;
+            padding: 6px 18px; border-radius: 20px; cursor: pointer;
+            font-size: 0.8rem; font-weight: bold; transition: all 0.3s;
+        }
+        .filter-btn:hover { background: rgba(0, 210, 255, 0.1); color: #00d2ff; }
+        .filter-btn.active {
+            background: #00d2ff; color: #000; border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel">
+            <div class="main-header">
+                <h1 class="cortex-text-anim">ESTATÍSTICAS NUMÉRICAS</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 0.8rem; color: #aaa;">Auto-Atualizar:</span>
+                    <label class="switch" style="transform: scale(0.8);">
+                        <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdate()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <a href="index.html" class="btn-back" style="display: none;">← Voltar ao Painel</a>
+
+            <!-- Filtro de Giros -->
+            <div class="control-group" style="margin-bottom: 20px; text-align: center;">
+                <div class="filter-buttons">
+                    <button class="filter-btn" onclick="setAnalysisLimit(50)">50</button>
+                    <button class="filter-btn active" onclick="setAnalysisLimit(100)">100</button>
+                    <button class="filter-btn" onclick="setAnalysisLimit(500)">500</button>
+                    <button class="filter-btn" onclick="setAnalysisLimit(null)">Todos</button>
+                </div>
+            </div>
+
+            <div id="loading" style="text-align: center; color: #888; padding: 20px;">Carregando dados...</div>
+            
+            <div id="content" style="display: none;">
+                <!-- Grupo 2: Tendências e Previsão -->
+                <div class="stats-grid">
+                    <!-- Previsão de Padrão -->
+                    <div class="stat-card">
+                        <div class="stat-title">🔮 Previsão de Padrão (Últimos 5)</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; flex-wrap: wrap; gap: 10px;">
+                            <div id="last_5_sequence" style="display: flex;"></div>
+                            <div style="text-align: right; flex: 1;">
+                                <div style="font-size: 0.8rem; color: #aaa;">Sugestão I.A.:</div>
+                                <div id="prediction_result" style="font-size: 1.1rem; font-weight: bold; color: #fff;">Aguardando...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Gráfico de Tendência -->
+                    <div class="stat-card">
+                        <div class="stat-title" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>📈 Tendência de Saldo (Vermelho vs Preto - Últimos 100)</span>
+                            <span id="trend_strength_indicator" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);">Calculando...</span>
+                        </div>
+                        <div id="trend_chart_container" style="width: 100%; height: 120px; margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <!-- Grupo 3: Estatísticas Básicas -->
+                <div class="stats-grid">
+                    <!-- Hot Numbers -->
+                    <div class="stat-card">
+                        <div class="stat-title">🔥 Números Quentes (Top 3)</div>
+                        <div id="hot_numbers" class="hot-cold-row"></div>
+                    </div>
+                    <!-- Cold Numbers -->
+                    <div class="stat-card">
+                        <div class="stat-title">❄️ Números Frios (Top 3)</div>
+                        <div id="cold_numbers" class="hot-cold-row"></div>
+                    </div>
+                    <!-- Par/Ímpar -->
+                    <div class="stat-card">
+                        <div class="stat-title">⚖️ Par vs Ímpar (Sem o 0)</div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                            <div style="flex: 1; text-align: center;">
+                                <div style="font-size: 1.2rem; font-weight: bold; color: #00d2ff;" id="even_pct">0%</div>
+                                <div style="font-size: 0.7rem; color: #666;">PARES</div>
+                            </div>
+                            <div style="width: 1px; height: 30px; background: #333;"></div>
+                            <div style="flex: 1; text-align: center;">
+                                <div style="font-size: 1.2rem; font-weight: bold; color: #ff9800;" id="odd_pct">0%</div>
+                                <div style="font-size: 0.7rem; color: #666;">ÍMPARES</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grupo 4: Análise de Sequência -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">🔍 Após o <span id="last_number_display" style="color:#fff; font-weight:bold;">--</span> vem...</div>
+                        <div id="post_number_stats" style="font-size: 0.9rem; color: #ccc; margin-top: 10px; min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                            Aguardando dados...
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">⚪ Gatilhos do Branco (Top 3)</div>
+                        <div id="white_triggers_stats" style="font-size: 0.9rem; color: #ccc; margin-top: 10px; min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                            Aguardando dados...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grupo 5: Análise Profunda -->
+                <div class="stats-grid">
+                    <!-- Comparação de Períodos -->
+                    <div class="stat-card">
+                        <div class="stat-title">⚖️ Comparação de Períodos (Extremos da Seleção)</div>
+                        <div style="display: flex; gap: 20px; justify-content: space-around; flex-wrap: wrap; margin-top: 10px;">
+                            <div style="flex: 1; min-width: 200px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                                <div style="text-align: center; color: #00ff88; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">Recentes (50)</div>
+                                <div id="comp_recent_stats"></div>
+                            </div>
+                            <div style="flex: 1; min-width: 200px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                                <div style="text-align: center; color: #ff9800; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem;">Antigos (50)</div>
+                                <div id="comp_old_stats"></div>
+                            </div>
+                        </div>
+                        <div id="comp_message" style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px;"></div>
+                    </div>
+                    <!-- Simulação de Estratégia -->
+                    <div class="stat-card">
+                        <div class="stat-title">🎮 Simulação de Estratégia (Backtest)</div>
+                        <div style="display: flex; gap: 10px; margin: 10px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <select id="sim_strategy" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                                <option value="red">Sempre Vermelho</option>
+                                <option value="black">Sempre Preto</option>
+                                <option value="alternating">Alternar (Xadrez)</option>
+                                <option value="follow">Seguir a Cor (Surf)</option>
+                                <option value="majority">Maioria (Últimos 5)</option>
+                            <option value="minority">Minoria (Últimos 5)</option>
+                            <option value="break_streak_3">Quebra de Seq. (3+)</option>
+                            <option value="mirror">Espelho (Antepenúltimo)</option>
+                            </select>
+                        <select id="sim_gale_level" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                            <option value="0">Mão Fixa</option>
+                            <option value="1">Gale 1</option>
+                            <option value="2">Gale 2</option>
+                        </select>
+                            <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Wins</div><div id="sim_wins" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Losses</div><div id="sim_losses" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Assertividade</div><div id="sim_rate" style="font-size: 1.2rem; font-weight: bold; color: #fff;">0%</div></div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: #aaa;">Saldo (R$10)</div>
+                                <div id="sim_balance" style="font-size: 1.2rem; font-weight: bold; color: #00d2ff;">R$ 0</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.7rem; color: #666; text-align: center; margin-top: 5px;">*Simulação baseada nos dados filtrados acima.</div>
+                    </div>
+                </div>
+
+                <!-- Grupo 6: Frequência e Horários -->
+                <div class="stats-grid">
+                    <!-- Grid de Todos os Números -->
+                    <div class="stat-card">
+                        <div class="stat-title">📊 Frequência por Número (0-14)</div>
+                        <div class="numbers-grid" id="numbers_grid"></div>
+                    </div>
+                    <!-- Gráfico de Horários Quentes -->
+                    <div class="stat-card">
+                        <div class="stat-title">⏰ Horários Quentes (Frequência por Hora)</div>
+                        <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+                            <button class="filter-btn active" onclick="setHotHoursColor('red')" id="btn_hh_red" style="border-color: #ff0055; color: #ff0055; background: rgba(255, 0, 85, 0.2);">Vermelho</button>
+                            <button class="filter-btn" onclick="setHotHoursColor('white')" id="btn_hh_white" style="border-color: #fff; color: #fff;">Branco</button>
+                            <button class="filter-btn" onclick="setHotHoursColor('black')" id="btn_hh_black" style="border-color: #888; color: #888;">Preto</button>
+                        </div>
+                        <div id="hot_hours_chart_container" style="width: 100%; height: 150px; margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <!-- Grupo 7: Ferramentas -->
+                <div class="stats-grid">
+                    <!-- Gráfico de Dispersão -->
+                    <div class="stat-card">
+                        <div class="stat-title">🌌 Dispersão (Minuto vs Número)</div>
+                        <div id="scatter_chart_container" style="width: 100%; height: 200px; margin-top: 10px;"></div>
+                    </div>
+                    <!-- Alerta de Padrão Personalizado -->
+                    <div class="stat-card">
+                        <div class="stat-title">🔔 Alerta de Padrão Personalizado</div>
+                        <div style="display: flex; gap: 5px; justify-content: center; margin-top: 10px;">
+                            <button class="filter-btn" onclick="addToPattern('red')" style="border-color: #ff0055; color: #ff0055;">V</button>
+                            <button class="filter-btn" onclick="addToPattern('black')" style="border-color: #888; color: #888;">P</button>
+                            <button class="filter-btn" onclick="addToPattern('white')" style="border-color: #fff; color: #fff;">B</button>
+                            <button class="filter-btn" onclick="clearPattern()" style="border-color: #ff9800; color: #ff9800;">Limpar</button>
+                        </div>
+                        <div id="custom_pattern_display" style="min-height: 30px; margin: 10px 0; display: flex; justify-content: center; gap: 5px;"></div>
+                        <div id="pattern_alert_status" style="text-align: center; font-weight: bold; min-height: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- Grupo 1: Visão Geral (Movido) -->
+                <div class="stats-grid">
+                    <!-- Resumo de Cores -->
+                    <div class="stat-card">
+                        <div class="stat-title">Distribuição de Cores (Últimos <span id="total_spins">0</span> giros)</div>
+                        <div class="color-bar-container">
+                            <div id="bar_red" class="color-bar bg-red" style="width: 0%">0%</div>
+                            <div id="bar_white" class="color-bar bg-white" style="width: 0%">0%</div>
+                            <div id="bar_black" class="color-bar bg-black" style="width: 0%">0%</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.75rem; color: #888;">
+                            <span id="count_red">Vermelho: 0</span>
+                            <span id="count_white">Branco: 0</span>
+                            <span id="count_black">Preto: 0</span>
+                        </div>
+                    </div>
+                    <!-- Gráfico de Pizza Futurista -->
+                    <div class="stat-card">
+                        <div class="stat-title">🍰 Distribuição Visual (Pizza Futurista)</div>
+                        <div id="pie_chart_container" style="display: flex; justify-content: center; align-items: center; padding: 20px; position: relative;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let fullBlazeData = []; // Armazena todos os dados buscados
+        let analysisLimit = 100; // Limite padrão de análise
+        let hotHoursColor = 'red'; // Cor padrão para horários quentes
+        let customPattern = []; // Padrão personalizado
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBlazeData();
+            if(document.getElementById('autoUpdateToggle').checked) toggleAutoUpdate();
+        });
+
+        function setAnalysisLimit(limit) {
+            analysisLimit = limit;
+
+            // Atualiza o botão ativo
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const limitValue = limit === null ? 'null' : limit;
+            const activeButton = document.querySelector(`.filter-btn[onclick="setAnalysisLimit(${limitValue})"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+
+            if (fullBlazeData.length > 0) {
+                analyzeData(fullBlazeData);
+            }
+        }
+
+        function toggleAutoUpdate() {
+            const toggle = document.getElementById('autoUpdateToggle');
+            if (toggle && toggle.checked) {
+                if (updateInterval) clearInterval(updateInterval);
+                updateInterval = setInterval(fetchBlazeData, 13000);
+            } else {
+                if (updateInterval) clearInterval(updateInterval);
+            }
+        }
+
+        async function fetchBlazeData() {
+            try {
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                
+                let allGames = [];
+                // Busca páginas 1 a 5 para garantir dados suficientes (aprox 500 jogos)
+                for (let page = 1; page <= 5; page++) {
+                    const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                    const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                    const targetUrl = `${baseUrl}${params}`;
+                    
+                    let success = false;
+                    try {
+                        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            const records = Array.isArray(data) ? data : (data.records || []);
+                            if (records.length === 0) break;
+                            allGames = allGames.concat(records);
+                            success = true;
+                        }
+                    } catch (e) { console.warn(`Erro Proxy 1 na página ${page}`, e); }
+
+                    if (!success) {
+                        try {
+                            const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                const records = Array.isArray(data) ? data : (data.records || []);
+                                if (records.length === 0) break;
+                                allGames = allGames.concat(records);
+                            }
+                        } catch (e) { console.warn(`Erro Proxy 2 na página ${page}`, e); }
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Delay para evitar 429
+                }
+
+                // Remove duplicatas e ordena
+                const seenIds = new Set();
+                fullBlazeData = allGames.filter(game => {
+                    if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
+                    return false;
+                }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (fullBlazeData.length === 0) throw new Error("Nenhum dado encontrado.");
+
+                analyzeData(fullBlazeData);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                console.error("Erro:", error);
+                document.getElementById('loading').innerHTML = '<span style="color: #ff0055;">Erro ao carregar dados. Verifique sua conexão ou tente mais tarde.</span>';
+            }
+        }
+
+        function analyzeData(fullData) {
+            // Corta os dados com base no limite selecionado
+            const data = analysisLimit ? fullData.slice(0, analysisLimit) : fullData;
+
+            if (!data || data.length === 0) {
+                return; // Não faz nada se não houver dados
+            }
+            
+            const total = data.length;
+            const counts = Array(15).fill(0);
+            let red = 0, black = 0, white = 0;
+            let even = 0, odd = 0;
+
+            data.forEach(game => {
+                const r = game.roll;
+                counts[r]++;
+                
+                if (r === 0) white++;
+                else if (r >= 1 && r <= 7) red++;
+                else if (r >= 8 && r <= 14) black++;
+
+                if (r !== 0) {
+                    if (r % 2 === 0) even++; else odd++;
+                }
+            });
+
+            // Atualiza Cores
+            const pRed = ((red/total)*100).toFixed(1);
+            const pWhite = ((white/total)*100).toFixed(1);
+            const pBlack = ((black/total)*100).toFixed(1);
+
+            document.getElementById('total_spins').innerText = total;
+            
+            document.getElementById('bar_red').style.width = `${pRed}%`;
+            document.getElementById('bar_red').innerText = pRed > 5 ? `${pRed}%` : '';
+            document.getElementById('count_red').innerText = `Vermelho: ${red}`;
+
+            document.getElementById('bar_white').style.width = `${pWhite}%`;
+            document.getElementById('bar_white').innerText = pWhite > 3 ? `${pWhite}%` : '';
+            document.getElementById('count_white').innerText = `Branco: ${white}`;
+
+            document.getElementById('bar_black').style.width = `${pBlack}%`;
+            document.getElementById('bar_black').innerText = pBlack > 5 ? `${pBlack}%` : '';
+            document.getElementById('count_black').innerText = `Preto: ${black}`;
+
+            // Atualiza Par/Ímpar
+            const totalNonZero = even + odd;
+            document.getElementById('even_pct').innerText = totalNonZero ? Math.round((even/totalNonZero)*100) + '%' : '0%';
+            document.getElementById('odd_pct').innerText = totalNonZero ? Math.round((odd/totalNonZero)*100) + '%' : '0%';
+
+            // Prepara Grid e Hot/Cold
+            const maxCount = Math.max(...counts);
+            const numberObjects = counts.map((count, num) => ({ num, count })).sort((a, b) => b.count - a.count);
+            
+            const hot = numberObjects.slice(0, 3);
+            const cold = numberObjects.slice(-3).reverse();
+
+            const renderBadge = (item, type) => `
+                <div style="text-align: center;">
+                    <div class="badge ${type === 'hot' ? 'badge-hot' : 'badge-cold'}">${item.num}</div>
+                    <div style="font-size: 0.7rem; color: #888; margin-top: 2px;">${item.count}x</div>
+                </div>`;
+
+            document.getElementById('hot_numbers').innerHTML = hot.map(i => renderBadge(i, 'hot')).join('');
+            document.getElementById('cold_numbers').innerHTML = cold.map(i => renderBadge(i, 'cold')).join('');
+
+            // Renderiza Grid
+            let gridHtml = '';
+            for(let i=0; i<=14; i++) {
+                const count = counts[i];
+                const pct = ((count/total)*100).toFixed(0);
+                const barPct = (count/maxCount)*100;
+                
+                let colorClass = 'n-white';
+                if (i >= 1 && i <= 7) colorClass = 'n-red';
+                if (i >= 8 && i <= 14) colorClass = 'n-black';
+
+                let borderClass = '';
+                if (hot.some(h => h.num === i)) borderClass = 'hot';
+                if (cold.some(c => c.num === i)) borderClass = 'cold';
+
+                gridHtml += `
+                    <div class="number-box ${borderClass}">
+                        <div class="n-val ${colorClass}">${i}</div>
+                        <div class="n-count">${count}x (${pct}%)</div>
+                        <div class="n-bar"><div class="n-fill" style="width: ${barPct}%; background: ${i===0 ? '#fff' : (i<=7 ? '#ff0055' : '#888')}"></div></div>
+                    </div>
+                `;
+            }
+            document.getElementById('numbers_grid').innerHTML = gridHtml;
+            
+            renderTrendChart(fullData); // O gráfico de tendência sempre usa os últimos 100 do total
+            updatePrediction(fullData);
+            renderHotHoursChart(fullData);
+            runSimulation();
+            analyzeSequences(fullData);
+            renderPieChart(data);
+            renderPeriodComparison(data);
+            checkPattern(); // Verifica padrão ao atualizar dados
+            renderScatterChart(data);
+        }
+
+        function renderTrendChart(data) {
+            const container = document.getElementById('trend_chart_container');
+            if (!container) return;
+
+            // Pega os últimos 100 jogos e inverte para ordem cronológica
+            const trendData = data.slice(0, 100).reverse();
+            let balance = 0;
+            const points = trendData.map(game => {
+                const r = game.roll;
+                if (r >= 1 && r <= 7) balance++;      // Vermelho +1
+                else if (r >= 8 && r <= 14) balance--; // Preto -1
+                return balance;
+            });
+
+            if (points.length === 0) return;
+
+            const width = container.clientWidth || 500;
+            const height = 120;
+            const padding = 15;
+
+            const minVal = Math.min(0, ...points);
+            const maxVal = Math.max(0, ...points);
+            const range = (maxVal - minVal) || 1;
+
+            const getX = (i) => padding + (i / (points.length - 1)) * (width - 2 * padding);
+            const getY = (val) => height - padding - ((val - minVal) / range) * (height - 2 * padding);
+
+            let pathD = `M ${getX(0)} ${getY(points[0])}`;
+            for (let i = 1; i < points.length; i++) {
+                pathD += ` L ${getX(i)} ${getY(points[i])}`;
+            }
+
+            const zeroY = getY(0);
+            const zeroOffset = Math.max(0, Math.min(1, zeroY / height));
+            const lastVal = points[points.length - 1];
+            const svgId = 'trend_' + Math.random().toString(36).substr(2, 9);
+
+            const svg = `
+                <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">
+                    <defs>
+                        <linearGradient id="grad_${svgId}" x1="0" y1="0" x2="0" y2="${height}" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#00ff88" />
+                            <stop offset="${zeroOffset}" stop-color="#00ff88" />
+                            <stop offset="${zeroOffset}" stop-color="#ff0055" />
+                            <stop offset="1" stop-color="#ff0055" />
+                        </linearGradient>
+                        <filter id="glow_${svgId}" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <line x1="${padding}" y1="${zeroY}" x2="${width - padding}" y2="${zeroY}" stroke="#444" stroke-dasharray="4" stroke-width="1" />
+                    <path d="${pathD}" fill="none" stroke="url(#grad_${svgId})" stroke-width="2.5" filter="url(#glow_${svgId})" stroke-linecap="round" stroke-linejoin="round">
+                        <animate attributeName="stroke-dasharray" from="0, 5000" to="5000, 0" dur="2.5s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1" keyTimes="0;1" />
+                    </path>
+                    <circle cx="${getX(points.length - 1)}" cy="${getY(lastVal)}" r="4" fill="#fff" filter="url(#glow_${svgId})">
+                        <animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="1;0.6;1" dur="1.5s" repeatCount="indefinite" />
+                    </circle>
+                    <text x="${width - padding}" y="${getY(lastVal) - 10}" fill="${lastVal >= 0 ? '#00ff88' : '#ff0055'}" font-size="12" text-anchor="end" font-weight="bold" style="text-shadow: 0 0 5px rgba(0,0,0,0.8);">
+                        ${lastVal > 0 ? '+' : ''}${lastVal}
+                    </text>
+                </svg>
+            `;
+            container.innerHTML = svg;
+            updateTrendIndicator(points);
+        }
+
+        function updatePrediction(data) {
+            if (!data || data.length < 5) return;
+            const last5 = data.slice(0, 5);
+            const container = document.getElementById('last_5_sequence');
+            const predictionEl = document.getElementById('prediction_result');
+            
+            if (!container || !predictionEl) return;
+
+            let html = '';
+            let colors = []; // 0: white, 1: red, 2: black
+
+            // Renderiza sequência (Antigo -> Novo)
+            for(let i = last5.length - 1; i >= 0; i--) {
+                const r = last5[i].roll;
+                let colorClass = 'seq-white';
+                if (r >= 1 && r <= 7) colorClass = 'seq-red';
+                else if (r >= 8 && r <= 14) colorClass = 'seq-black';
+                
+                html += `<div class="seq-badge ${colorClass}">${r}</div>`;
+            }
+            container.innerHTML = html;
+
+            // Lógica de Previsão (Baseada no mais recente em data[0])
+            last5.forEach(g => {
+                const r = g.roll;
+                if (r === 0) colors.push(0);
+                else if (r >= 1 && r <= 7) colors.push(1);
+                else colors.push(2);
+            });
+
+            let suggestion = 'Analisando...';
+            let suggestionColor = '#aaa';
+
+            // Lógica Simples
+            const c0 = colors[0], c1 = colors[1], c2 = colors[2];
+            
+            if (c0 !== 0 && c0 === c1 && c1 === c2) {
+                // Sequência de 3 iguais -> Quebra
+                if (c0 === 1) { suggestion = '⚫ PRETO (Quebra)'; suggestionColor = '#fff'; }
+                else { suggestion = '🔴 VERMELHO (Quebra)'; suggestionColor = '#ff0055'; }
+            } else if (c0 !== 0 && c1 !== 0 && c2 !== 0 && c0 === c2 && c0 !== c1) {
+                // Alternância (Xadrez) -> Seguir
+                if (c0 === 1) { suggestion = '⚫ PRETO (Xadrez)'; suggestionColor = '#fff'; }
+                else { suggestion = '🔴 VERMELHO (Xadrez)'; suggestionColor = '#ff0055'; }
+            } else {
+                // Maioria
+                const rCount = colors.filter(c => c === 1).length;
+                const bCount = colors.filter(c => c === 2).length;
+                if (rCount > bCount) { suggestion = '🔴 VERMELHO (Tendência)'; suggestionColor = '#ff0055'; }
+                else if (bCount > rCount) { suggestion = '⚫ PRETO (Tendência)'; suggestionColor = '#fff'; }
+                else { suggestion = '⚖️ NEUTRO'; suggestionColor = '#aaa'; }
+            }
+
+            predictionEl.innerHTML = suggestion;
+            predictionEl.style.color = suggestionColor;
+        }
+
+        function setHotHoursColor(color) {
+            hotHoursColor = color;
+            // Atualiza botões
+            ['red', 'white', 'black'].forEach(c => {
+                const btn = document.getElementById(`btn_hh_${c}`);
+                if (btn) {
+                    if (c === color) {
+                        btn.classList.add('active');
+                        btn.style.background = c === 'red' ? 'rgba(255, 0, 85, 0.2)' : (c === 'white' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(136, 136, 136, 0.2)');
+                    } else {
+                        btn.classList.remove('active');
+                        btn.style.background = 'transparent';
+                    }
+                }
+            });
+            if (fullBlazeData.length > 0) renderHotHoursChart(fullBlazeData);
+        }
+
+        function renderHotHoursChart(data) {
+            const container = document.getElementById('hot_hours_chart_container');
+            if (!container || !data || data.length === 0) return;
+
+            const hourlyCounts = new Array(24).fill(0);
+            
+            data.forEach(game => {
+                if (!game.created_at) return;
+                const date = new Date(game.created_at);
+                const hour = date.getHours();
+                const r = game.roll;
+                
+                let isMatch = false;
+                if (hotHoursColor === 'red' && r >= 1 && r <= 7) isMatch = true;
+                else if (hotHoursColor === 'black' && r >= 8 && r <= 14) isMatch = true;
+                else if (hotHoursColor === 'white' && r === 0) isMatch = true;
+
+                if (isMatch) hourlyCounts[hour]++;
+            });
+
+            const maxCount = Math.max(...hourlyCounts, 1);
+            const width = container.clientWidth || 500;
+            const height = 150;
+            const barWidth = (width / 24) - 2;
+            
+            let svgContent = '';
+            let fillColor = hotHoursColor === 'red' ? '#ff0055' : (hotHoursColor === 'white' ? '#fff' : '#888');
+
+            hourlyCounts.forEach((count, hour) => {
+                const barHeight = (count / maxCount) * (height - 20);
+                const x = hour * (width / 24);
+                const y = height - barHeight - 15;
+                const opacity = 0.3 + (count / maxCount) * 0.7;
+
+                svgContent += `
+                    <rect x="${x + 1}" y="${y}" width="${barWidth}" height="${barHeight}" fill="${fillColor}" fill-opacity="${opacity}" rx="2">
+                        <title>${hour}h: ${count}x</title>
+                    </rect>
+                    <text x="${x + barWidth/2}" y="${height - 2}" font-size="9" fill="#888" text-anchor="middle">${hour}</text>
+                    ${count > 0 ? `<text x="${x + barWidth/2}" y="${y - 2}" font-size="9" fill="#fff" text-anchor="middle">${count}</text>` : ''}
+                `;
+            });
+
+            container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">${svgContent}</svg>`;
+        }
+
+        function runSimulation() {
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+            
+            const limit = analysisLimit || fullBlazeData.length;
+            const dataSlice = fullBlazeData.slice(0, limit);
+            // Inverte para ordem cronológica (Antigo -> Novo) para simular corretamente
+            const simData = [...dataSlice].reverse();
+            
+            const strategy = document.getElementById('sim_strategy').value;
+            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            let wins = 0, losses = 0, balance = 0;
+            const bet = 10; // Aposta fixa
+
+            for(let i=0; i<simData.length; i++) {
+                const result = simData[i];
+                const r = result.roll;
+                let resultColor = 'white';
+                if (r >= 1 && r <= 7) resultColor = 'red';
+                else if (r >= 8 && r <= 14) resultColor = 'black';
+
+                let targetColor = null;
+
+                if (strategy === 'red') targetColor = 'red';
+                else if (strategy === 'black') targetColor = 'black';
+                else if (strategy === 'alternating') {
+                    if (i > 0) {
+                        const prevR = simData[i-1].roll;
+                        let prevColor = (prevR >= 1 && prevR <= 7) ? 'red' : ((prevR >= 8 && prevR <= 14) ? 'black' : 'white');
+                        if (prevColor === 'red') targetColor = 'black';
+                        else if (prevColor === 'black') targetColor = 'red';
+                    }
+                } else if (strategy === 'follow') {
+                     if (i > 0) {
+                        const prevR = simData[i-1].roll;
+                        let prevColor = (prevR >= 1 && prevR <= 7) ? 'red' : ((prevR >= 8 && prevR <= 14) ? 'black' : 'white');
+                        if (prevColor !== 'white') targetColor = prevColor;
+                    }
+                } else if (strategy === 'majority') {
+                    if (i >= 5) {
+                        let rCount = 0, bCount = 0;
+                        for(let j=1; j<=5; j++) {
+                            const prevR = simData[i-j].roll;
+                            if (prevR >= 1 && prevR <= 7) rCount++;
+                            else if (prevR >= 8 && prevR <= 14) bCount++;
+                        }
+                        if (rCount > bCount) targetColor = 'red';
+                        else if (bCount > rCount) targetColor = 'black';
+                    }
+                } else if (strategy === 'minority') {
+                    if (i >= 5) {
+                        let rCount = 0, bCount = 0;
+                        for(let j=1; j<=5; j++) {
+                            const prevR = simData[i-j].roll;
+                            if (prevR >= 1 && prevR <= 7) rCount++;
+                            else if (prevR >= 8 && prevR <= 14) bCount++;
+                        }
+                        if (rCount < bCount && rCount > 0) targetColor = 'red';
+                        else if (bCount < rCount && bCount > 0) targetColor = 'black';
+                    }
+                } else if (strategy === 'break_streak_3') {
+                    if (i >= 3) {
+                        const getC = (idx) => { const r = simData[idx].roll; return (r >= 1 && r <= 7) ? 'red' : ((r >= 8 && r <= 14) ? 'black' : 'white'); };
+                        const c1 = getC(i-1); const c2 = getC(i-2); const c3 = getC(i-3);
+                        if (c1 !== 'white' && c1 === c2 && c2 === c3) {
+                            targetColor = c1 === 'red' ? 'black' : 'red';
+                        }
+                    }
+                } else if (strategy === 'mirror') {
+                    if (i >= 2) {
+                        const prev2R = simData[i-2].roll;
+                        if (prev2R >= 1 && prev2R <= 7) targetColor = 'red';
+                        else if (prev2R >= 8 && prev2R <= 14) targetColor = 'black';
+                    }
+                } else if (strategy === 'break_doubles') {
+                    if (i >= 2) {
+                        const getC = (idx) => { const r = simData[idx].roll; return (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black'); };
+                        const c1 = getC(i-1);
+                        const c2 = getC(i-2);
+                        if (c1 !== 'white' && c1 === c2) {
+                            targetColor = c1 === 'red' ? 'black' : 'red';
+                        }
+                    }
+                } else if (strategy === 'sandwich') {
+                    if (i >= 2) {
+                        const getC = (idx) => { const r = simData[idx].roll; return (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black'); };
+                        const c1 = getC(i-1);
+                        const c2 = getC(i-2);
+                        if (c1 !== 'white' && c2 !== 'white' && c1 !== c2) {
+                            targetColor = c2;
+                        }
+                    }
+                } else if (strategy === 'majority_20') {
+                    if (i >= 20) {
+                        let rCount = 0, bCount = 0;
+                        for(let j=1; j<=20; j++) {
+                            const r = simData[i-j].roll;
+                            if (r >= 1 && r <= 7) rCount++;
+                            else if (r >= 8 && r <= 14) bCount++;
+                        }
+                        if (rCount > bCount) targetColor = 'red';
+                        else if (bCount > rCount) targetColor = 'black';
+                    }
+                } else if (strategy === 'post_white_opp') {
+                    if (i >= 2) {
+                        const prevR = simData[i-1].roll;
+                        if (prevR === 0) { // Se o anterior foi branco
+                            const prev2R = simData[i-2].roll;
+                            if (prev2R >= 1 && prev2R <= 7) targetColor = 'black';
+                            else if (prev2R >= 8 && prev2R <= 14) targetColor = 'red';
+                        }
+                    }
+                }
+
+                if (targetColor) {
+                    // 0 (Branco) conta como Win (Proteção)
+                    if (resultColor === targetColor || resultColor === 'white') { 
+                        wins++; 
+                        balance += bet; 
+                    } else { 
+                        // Lógica de Gale (Suporta N níveis)
+                        let recovered = false;
+                        let currentBet = bet;
+                        let totalLossInRound = bet;
+                        let galesUsed = 0;
+
+                        for (let g = 1; g <= galeLevel; g++) {
+                            if (i + g < simData.length) {
+                                const nextResult = simData[i+g];
+                                const nextR = nextResult.roll;
+                                let nextResultColor = 'white';
+                                if (nextR >= 1 && nextR <= 7) nextResultColor = 'red';
+                                else if (nextR >= 8 && nextR <= 14) nextResultColor = 'black';
+
+                                currentBet *= 2; // Dobra a aposta
+                                galesUsed++;
+
+                                if (nextResultColor === targetColor || nextResultColor === 'white') {
+                                    recovered = true;
+                                    break;
+                                } else {
+                                    totalLossInRound += currentBet;
+                                }
+                            } else {
+                                break; // Sem dados futuros
+                            }
+                        }
+
+                        if (recovered) {
+                            wins++;
+                            balance += bet; // Recupera tudo e ganha o lucro base
+                        } else {
+                            losses++;
+                            balance -= totalLossInRound;
+                        }
+                        i += galesUsed; // Pula as rodadas usadas no Gale
+                    }
+                }
+            }
+
+            document.getElementById('sim_wins').innerText = wins;
+            document.getElementById('sim_losses').innerText = losses;
+            const total = wins + losses;
+            document.getElementById('sim_rate').innerText = total > 0 ? ((wins/total)*100).toFixed(1) + '%' : '0%';
+            const balEl = document.getElementById('sim_balance');
+            balEl.innerText = `R$ ${balance}`;
+            balEl.style.color = balance >= 0 ? '#00ff88' : '#ff0055';
+        }
+
+        function analyzeSequences(data) {
+            if (!data || data.length < 2) return;
+
+            // 1. Análise Pós-Número (O que vem depois do último resultado)
+            const lastRoll = data[0].roll;
+            const lastColor = (lastRoll === 0) ? 'white' : ((lastRoll >= 1 && lastRoll <= 7) ? 'red' : 'black');
+            const lastColorHex = (lastColor === 'red') ? '#ff0055' : ((lastColor === 'white') ? '#fff' : '#888');
+            
+            const displayEl = document.getElementById('last_number_display');
+            if(displayEl) {
+                displayEl.innerText = lastRoll;
+                displayEl.style.color = lastColorHex;
+                displayEl.style.textShadow = lastColor === 'white' ? '0 0 5px #fff' : 'none';
+            }
+
+            const followingCounts = Array(15).fill(0);
+            let totalOccurrences = 0;
+
+            // data[i] é o gatilho. O resultado seguinte no tempo é data[i-1] (pois a lista é Newest->Oldest)
+            for (let i = 1; i < data.length; i++) {
+                if (data[i].roll === lastRoll) {
+                    const nextResult = data[i-1];
+                    followingCounts[nextResult.roll]++;
+                    totalOccurrences++;
+                }
+            }
+
+            if (totalOccurrences > 0) {
+                const topFollowing = followingCounts
+                    .map((count, num) => ({ num, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 3);
+                
+                let html = '<div style="display:flex; gap:15px; justify-content:center; width:100%;">';
+                topFollowing.forEach(item => {
+                    if (item.count > 0) {
+                        const pct = Math.round((item.count / totalOccurrences) * 100);
+                        const c = (item.num === 0) ? 'white' : ((item.num >= 1 && item.num <= 7) ? 'red' : 'black');
+                        const bg = (c === 'red') ? '#ff0055' : ((c === 'white') ? '#fff' : '#333');
+                        const fg = (c === 'white') ? '#000' : '#fff';
+                        html += `
+                            <div style="text-align:center;">
+                                <div style="background:${bg}; color:${fg}; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; margin:0 auto; border: 1px solid #444;">${item.num}</div>
+                                <div style="font-size:0.75rem; color:#888; margin-top:4px;">${pct}%</div>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+                
+                // Barra de distribuição de cores pós-número
+                let r=0, b=0, w=0;
+                followingCounts.forEach((count, num) => {
+                    if (num === 0) w += count;
+                    else if (num >= 1 && num <= 7) r += count;
+                    else b += count;
+                });
+                const total = r+b+w;
+                html += `<div style="margin-top:15px; width:100%;"><div style="display:flex; height:6px; border-radius:3px; overflow:hidden; width:100%;">
+                    <div style="width:${(r/total)*100}%; background:#ff0055;"></div>
+                    <div style="width:${(w/total)*100}%; background:#fff;"></div>
+                    <div style="width:${(b/total)*100}%; background:#333;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#aaa; margin-top:2px;">
+                    <span>🔴 ${Math.round((r/total)*100)}%</span>
+                    <span>⚪ ${Math.round((w/total)*100)}%</span>
+                    <span>⚫ ${Math.round((b/total)*100)}%</span>
+                </div></div>`;
+
+                document.getElementById('post_number_stats').innerHTML = html;
+                document.getElementById('post_number_stats').style.flexDirection = 'column';
+            } else {
+                document.getElementById('post_number_stats').innerHTML = '<div style="text-align:center; color:#666;">Sem histórico suficiente para este número.</div>';
+            }
+
+            // 2. Gatilhos do Branco (Números que antecedem o 0)
+            const triggerCounts = Array(15).fill(0);
+            let totalWhites = 0;
+
+            // data[i] == 0. O número anterior no tempo é data[i+1].
+            for (let i = 0; i < data.length - 1; i++) {
+                if (data[i].roll === 0) {
+                    const prevResult = data[i+1];
+                    triggerCounts[prevResult.roll]++;
+                    totalWhites++;
+                }
+            }
+
+            if (totalWhites > 0) {
+                const topTriggers = triggerCounts
+                    .map((count, num) => ({ num, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 3);
+
+                let html = '<div style="display:flex; gap:15px; justify-content:center;">';
+                topTriggers.forEach(item => {
+                    if (item.count > 0) {
+                        const c = (item.num === 0) ? 'white' : ((item.num >= 1 && item.num <= 7) ? 'red' : 'black');
+                        const bg = (c === 'red') ? '#ff0055' : ((c === 'white') ? '#fff' : '#333');
+                        const fg = (c === 'white') ? '#000' : '#fff';
+                        html += `
+                            <div style="text-align:center;">
+                                <div style="background:${bg}; color:${fg}; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; margin:0 auto; border: 1px solid #444;">${item.num}</div>
+                                <div style="font-size:0.75rem; color:#888; margin-top:4px;">${item.count}x</div>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+                document.getElementById('white_triggers_stats').innerHTML = html;
+            } else {
+                document.getElementById('white_triggers_stats').innerHTML = '<div style="text-align:center; color:#666;">Nenhum branco no histórico recente.</div>';
+            }
+        }
+
+        function renderPieChart(data) {
+            const container = document.getElementById('pie_chart_container');
+            if (!container || !data || data.length === 0) return;
+
+            let red = 0, black = 0, white = 0;
+            data.forEach(game => {
+                const r = game.roll;
+                if (r === 0) white++;
+                else if (r >= 1 && r <= 7) red++;
+                else if (r >= 8 && r <= 14) black++;
+            });
+            const total = red + black + white;
+            
+            if (total === 0) return;
+
+            const pRed = (red / total) * 100;
+            const pBlack = (black / total) * 100;
+            const pWhite = (white / total) * 100;
+
+            const size = 160;
+            const strokeWidth = 12;
+            const radius = (size - strokeWidth) / 2;
+            const circumference = 2 * Math.PI * radius;
+            const cx = size / 2;
+            const cy = size / 2;
+
+            const dashRed = (pRed / 100) * circumference;
+            const dashBlack = (pBlack / 100) * circumference;
+            const dashWhite = (pWhite / 100) * circumference;
+
+            const offsetRed = 0;
+            const offsetBlack = -dashRed;
+            const offsetWhite = -(dashRed + dashBlack);
+
+            const svg = `
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform: rotate(-90deg);">
+                    <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#ff0055" stroke-width="${strokeWidth}" stroke-dasharray="${dashRed} ${circumference - dashRed}" stroke-dashoffset="${offsetRed}" style="transition: stroke-dasharray 0.5s ease-out; filter: drop-shadow(0 0 5px #ff0055);" />
+                    <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#333" stroke-width="${strokeWidth}" stroke-dasharray="${dashBlack} ${circumference - dashBlack}" stroke-dashoffset="${offsetBlack}" style="transition: stroke-dasharray 0.5s ease-out;" />
+                    <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#fff" stroke-width="${strokeWidth}" stroke-dasharray="${dashWhite} ${circumference - dashWhite}" stroke-dashoffset="${offsetWhite}" style="transition: stroke-dasharray 0.5s ease-out; filter: drop-shadow(0 0 8px #fff);" />
+                </svg>
+                <div style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; background: #ff0055; border-radius: 50%; box-shadow: 0 0 5px #ff0055;"></span> Vermelho: <b style="color: #ff0055;">${pRed.toFixed(1)}%</b></div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; background: #333; border: 1px solid #555; border-radius: 50%;"></span> Preto: <b style="color: #aaa;">${pBlack.toFixed(1)}%</b></div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff;"></span> Branco: <b style="color: #fff;">${pWhite.toFixed(1)}%</b></div>
+                </div>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function renderPeriodComparison(data) {
+            const containerRecent = document.getElementById('comp_recent_stats');
+            const containerOld = document.getElementById('comp_old_stats');
+            const msg = document.getElementById('comp_message');
+            
+            if (!containerRecent || !containerOld) return;
+
+            if (!data || data.length < 50) {
+                msg.innerText = "Dados insuficientes para comparação (Mínimo 50 jogos na seleção).";
+                containerRecent.innerHTML = '';
+                containerOld.innerHTML = '';
+                return;
+            }
+            msg.innerText = "";
+
+            // data is sorted Newest -> Oldest
+            const recentData = data.slice(0, 50);
+            const oldData = data.slice(-50); 
+
+            const calculateStats = (subset) => {
+                let r = 0, b = 0, w = 0;
+                subset.forEach(g => {
+                    if (g.roll === 0) w++;
+                    else if (g.roll >= 1 && g.roll <= 7) r++;
+                    else b++;
+                });
+                const total = subset.length;
+                return {
+                    rPct: ((r/total)*100).toFixed(1),
+                    bPct: ((b/total)*100).toFixed(1),
+                    wPct: ((w/total)*100).toFixed(1)
+                };
+            };
+
+            const recentStats = calculateStats(recentData);
+            const oldStats = calculateStats(oldData);
+
+            const generateHTML = (stats) => `
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between;"><span style="color: #ff0055;">Vermelho</span><span>${stats.rPct}%</span></div>
+                    <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;"><div style="width: ${stats.rPct}%; background: #ff0055; height: 100%; border-radius: 2px;"></div></div>
+                    
+                    <div style="display: flex; justify-content: space-between;"><span style="color: #aaa;">Preto</span><span>${stats.bPct}%</span></div>
+                    <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;"><div style="width: ${stats.bPct}%; background: #888; height: 100%; border-radius: 2px;"></div></div>
+
+                    <div style="display: flex; justify-content: space-between;"><span style="color: #fff;">Branco</span><span>${stats.wPct}%</span></div>
+                    <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;"><div style="width: ${stats.wPct}%; background: #fff; height: 100%; border-radius: 2px;"></div></div>
+                </div>
+            `;
+
+            containerRecent.innerHTML = generateHTML(recentStats);
+            containerOld.innerHTML = generateHTML(oldStats);
+        }
+
+        function addToPattern(color) {
+            customPattern.push(color);
+            updatePatternDisplay();
+            checkPattern();
+        }
+
+        function clearPattern() {
+            customPattern = [];
+            updatePatternDisplay();
+            document.getElementById('pattern_alert_status').innerHTML = '';
+        }
+
+        function updatePatternDisplay() {
+            const container = document.getElementById('custom_pattern_display');
+            container.innerHTML = customPattern.map(c => {
+                let colorClass = c === 'red' ? 'seq-red' : (c === 'black' ? 'seq-black' : 'seq-white');
+                let label = c === 'red' ? 'V' : (c === 'black' ? 'P' : 'B');
+                return `<div class="seq-badge ${colorClass}" style="width: 25px; height: 25px; font-size: 0.7rem;">${label}</div>`;
+            }).join('');
+        }
+
+        function checkPattern() {
+            if (customPattern.length === 0 || !fullBlazeData || fullBlazeData.length < customPattern.length) return;
+            
+            let match = true;
+            for(let i=0; i<customPattern.length; i++) {
+                const patternColor = customPattern[customPattern.length - 1 - i];
+                const result = fullBlazeData[i];
+                const r = result.roll;
+                let resultColor = (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black');
+                
+                if (patternColor !== resultColor) { match = false; break; }
+            }
+            
+            const statusEl = document.getElementById('pattern_alert_status');
+            statusEl.innerHTML = match ? '<span style="color: #00ff88; animation: pulse-text 1s infinite;">✅ PADRÃO ENCONTRADO AGORA!</span>' : '<span style="color: #666;">Aguardando padrão...</span>';
+        }
+
+        function renderScatterChart(data) {
+            const container = document.getElementById('scatter_chart_container');
+            if (!container || !data || data.length === 0) return;
+
+            const width = 800; 
+            const height = 200;
+            const padding = 30;
+
+            let circles = '';
+            
+            data.forEach(game => {
+                if (!game.created_at) return;
+                const date = new Date(game.created_at);
+                const minute = date.getMinutes();
+                const seconds = date.getSeconds();
+                const exactMinute = minute + (seconds / 60);
+                const roll = game.roll;
+                
+                const x = padding + (exactMinute / 60) * (width - 2 * padding);
+                const y = height - padding - (roll / 14) * (height - 2 * padding);
+                
+                let color = '#fff'; 
+                if (roll >= 1 && roll <= 7) color = '#ff0055'; 
+                else if (roll >= 8 && roll <= 14) color = '#888'; 
+                
+                circles += `<circle cx="${x}" cy="${y}" r="3" fill="${color}" opacity="0.7"><title>${minute}m ${seconds}s: ${roll}</title></circle>`;
+            });
+
+            const svg = `
+                <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                    <text x="${padding - 5}" y="${height - padding}" fill="#666" font-size="10" text-anchor="end">0</text>
+                    <text x="${padding - 5}" y="${height/2}" fill="#666" font-size="10" text-anchor="end">7</text>
+                    <text x="${padding - 5}" y="${padding + 5}" fill="#666" font-size="10" text-anchor="end">14</text>
+                    ${[0, 10, 20, 30, 40, 50, 60].map(m => {
+                        const xPos = padding + (m / 60) * (width - 2 * padding);
+                        return `<text x="${xPos}" y="${height - 5}" fill="#666" font-size="10" text-anchor="middle">${m}m</text><line x1="${xPos}" y1="${padding}" x2="${xPos}" y2="${height - padding}" stroke="#333" stroke-dasharray="2" opacity="0.3" />`;
+                    }).join('')}
+                    ${circles}
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function updateTrendIndicator(points) {
+            const indicator = document.getElementById('trend_strength_indicator');
+            if (!indicator || !points || points.length === 0) return;
+
+            // Analisa os últimos 20 pontos para determinar a tendência recente
+            const lookback = Math.min(points.length, 20);
+            const recentPoints = points.slice(-lookback);
+            const startVal = recentPoints[0];
+            const endVal = recentPoints[recentPoints.length - 1];
+            const diff = endVal - startVal;
+
+            let text = "LATERAL";
+            let color = "#aaa";
+            let bg = "rgba(255,255,255,0.1)";
+            let icon = "➡️";
+
+            if (diff >= 5) { text = "ALTA FORTE"; color = "#00ff88"; bg = "rgba(0, 255, 136, 0.2)"; icon = "🚀"; }
+            else if (diff >= 2) { text = "ALTA"; color = "#00ff88"; bg = "rgba(0, 255, 136, 0.1)"; icon = "↗️"; }
+            else if (diff <= -5) { text = "BAIXA FORTE"; color = "#ff0055"; bg = "rgba(255, 0, 85, 0.2)"; icon = "📉"; }
+            else if (diff <= -2) { text = "BAIXA"; color = "#ff0055"; bg = "rgba(255, 0, 85, 0.1)"; icon = "↘️"; }
+
+            indicator.innerHTML = `${icon} ${text}`;
+            indicator.style.color = color;
+            indicator.style.background = bg;
+            indicator.style.border = `1px solid ${color}`;
+        }
+    </script>
+</body>
+</html>
