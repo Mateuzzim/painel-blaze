@@ -207,15 +207,11 @@
                                 <option value="alternating">Alternar (Xadrez)</option>
                                 <option value="follow">Seguir a Cor (Surf)</option>
                                 <option value="majority">Maioria (Últimos 5)</option>
-                            <option value="minority">Minoria (Últimos 5)</option>
-                            <option value="break_streak_3">Quebra de Seq. (3+)</option>
-                            <option value="mirror">Espelho (Antepenúltimo)</option>
                             </select>
-                        <select id="sim_gale_level" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
-                            <option value="0">Mão Fixa</option>
-                            <option value="1">Gale 1</option>
-                            <option value="2">Gale 2</option>
-                        </select>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <input type="checkbox" id="sim_gale1" onchange="runSimulation()">
+                                <label for="sim_gale1" style="font-size: 0.8rem; color: #aaa; cursor: pointer; margin: 0;">Gale 1</label>
+                            </div>
                             <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
                         </div>
                         <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
@@ -329,7 +325,7 @@
             const toggle = document.getElementById('autoUpdateToggle');
             if (toggle && toggle.checked) {
                 if (updateInterval) clearInterval(updateInterval);
-                updateInterval = setInterval(fetchBlazeData, 13000);
+                updateInterval = setInterval(fetchBlazeData, 10000);
             } else {
                 if (updateInterval) clearInterval(updateInterval);
             }
@@ -350,31 +346,17 @@
                     const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
                     const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
                     const targetUrl = `${baseUrl}${params}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
-                    let success = false;
                     try {
-                        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+                        const response = await fetch(proxyUrl);
                         if (response.ok) {
                             const data = await response.json();
                             const records = Array.isArray(data) ? data : (data.records || []);
                             if (records.length === 0) break;
                             allGames = allGames.concat(records);
-                            success = true;
                         }
-                    } catch (e) { console.warn(`Erro Proxy 1 na página ${page}`, e); }
-
-                    if (!success) {
-                        try {
-                            const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-                            if (response.ok) {
-                                const data = await response.json();
-                                const records = Array.isArray(data) ? data : (data.records || []);
-                                if (records.length === 0) break;
-                                allGames = allGames.concat(records);
-                            }
-                        } catch (e) { console.warn(`Erro Proxy 2 na página ${page}`, e); }
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Delay para evitar 429
+                    } catch (e) { console.warn(`Erro na página ${page}`, e); }
                 }
 
                 // Remove duplicatas e ordena
@@ -698,7 +680,7 @@
             const simData = [...dataSlice].reverse();
             
             const strategy = document.getElementById('sim_strategy').value;
-            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const useGale1 = document.getElementById('sim_gale1').checked;
             let wins = 0, losses = 0, balance = 0;
             const bet = 10; // Aposta fixa
 
@@ -737,69 +719,6 @@
                         if (rCount > bCount) targetColor = 'red';
                         else if (bCount > rCount) targetColor = 'black';
                     }
-                } else if (strategy === 'minority') {
-                    if (i >= 5) {
-                        let rCount = 0, bCount = 0;
-                        for(let j=1; j<=5; j++) {
-                            const prevR = simData[i-j].roll;
-                            if (prevR >= 1 && prevR <= 7) rCount++;
-                            else if (prevR >= 8 && prevR <= 14) bCount++;
-                        }
-                        if (rCount < bCount && rCount > 0) targetColor = 'red';
-                        else if (bCount < rCount && bCount > 0) targetColor = 'black';
-                    }
-                } else if (strategy === 'break_streak_3') {
-                    if (i >= 3) {
-                        const getC = (idx) => { const r = simData[idx].roll; return (r >= 1 && r <= 7) ? 'red' : ((r >= 8 && r <= 14) ? 'black' : 'white'); };
-                        const c1 = getC(i-1); const c2 = getC(i-2); const c3 = getC(i-3);
-                        if (c1 !== 'white' && c1 === c2 && c2 === c3) {
-                            targetColor = c1 === 'red' ? 'black' : 'red';
-                        }
-                    }
-                } else if (strategy === 'mirror') {
-                    if (i >= 2) {
-                        const prev2R = simData[i-2].roll;
-                        if (prev2R >= 1 && prev2R <= 7) targetColor = 'red';
-                        else if (prev2R >= 8 && prev2R <= 14) targetColor = 'black';
-                    }
-                } else if (strategy === 'break_doubles') {
-                    if (i >= 2) {
-                        const getC = (idx) => { const r = simData[idx].roll; return (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black'); };
-                        const c1 = getC(i-1);
-                        const c2 = getC(i-2);
-                        if (c1 !== 'white' && c1 === c2) {
-                            targetColor = c1 === 'red' ? 'black' : 'red';
-                        }
-                    }
-                } else if (strategy === 'sandwich') {
-                    if (i >= 2) {
-                        const getC = (idx) => { const r = simData[idx].roll; return (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black'); };
-                        const c1 = getC(i-1);
-                        const c2 = getC(i-2);
-                        if (c1 !== 'white' && c2 !== 'white' && c1 !== c2) {
-                            targetColor = c2;
-                        }
-                    }
-                } else if (strategy === 'majority_20') {
-                    if (i >= 20) {
-                        let rCount = 0, bCount = 0;
-                        for(let j=1; j<=20; j++) {
-                            const r = simData[i-j].roll;
-                            if (r >= 1 && r <= 7) rCount++;
-                            else if (r >= 8 && r <= 14) bCount++;
-                        }
-                        if (rCount > bCount) targetColor = 'red';
-                        else if (bCount > rCount) targetColor = 'black';
-                    }
-                } else if (strategy === 'post_white_opp') {
-                    if (i >= 2) {
-                        const prevR = simData[i-1].roll;
-                        if (prevR === 0) { // Se o anterior foi branco
-                            const prev2R = simData[i-2].roll;
-                            if (prev2R >= 1 && prev2R <= 7) targetColor = 'black';
-                            else if (prev2R >= 8 && prev2R <= 14) targetColor = 'red';
-                        }
-                    }
                 }
 
                 if (targetColor) {
@@ -808,42 +727,29 @@
                         wins++; 
                         balance += bet; 
                     } else { 
-                        // Lógica de Gale (Suporta N níveis)
-                        let recovered = false;
-                        let currentBet = bet;
-                        let totalLossInRound = bet;
-                        let galesUsed = 0;
-
-                        for (let g = 1; g <= galeLevel; g++) {
-                            if (i + g < simData.length) {
-                                const nextResult = simData[i+g];
+                        if (useGale1) {
+                            // Verifica se existe próxima rodada para o Gale
+                            if (i + 1 < simData.length) {
+                                const nextResult = simData[i+1];
                                 const nextR = nextResult.roll;
                                 let nextResultColor = 'white';
                                 if (nextR >= 1 && nextR <= 7) nextResultColor = 'red';
                                 else if (nextR >= 8 && nextR <= 14) nextResultColor = 'black';
 
-                                currentBet *= 2; // Dobra a aposta
-                                galesUsed++;
-
                                 if (nextResultColor === targetColor || nextResultColor === 'white') {
-                                    recovered = true;
-                                    break;
+                                    wins++;
+                                    balance += bet; // Recupera o prejuízo e ganha o lucro base
                                 } else {
-                                    totalLossInRound += currentBet;
+                                    losses++;
+                                    balance -= (bet * 3); // Perde a aposta inicial (10) + aposta dobrada (20)
                                 }
+                                i++; // Pula a próxima rodada pois foi usada no Gale
                             } else {
-                                break; // Sem dados futuros
+                                losses++; balance -= bet; // Sem histórico futuro para gale
                             }
-                        }
-
-                        if (recovered) {
-                            wins++;
-                            balance += bet; // Recupera tudo e ganha o lucro base
                         } else {
-                            losses++;
-                            balance -= totalLossInRound;
+                            losses++; balance -= bet; 
                         }
-                        i += galesUsed; // Pula as rodadas usadas no Gale
                     }
                 }
             }
