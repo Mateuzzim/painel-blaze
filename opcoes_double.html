@@ -2201,6 +2201,8 @@
 
             const whiteGaleInput = document.getElementById('whiteGaleAttempts');
             const maxAttempts = whiteGaleInput ? parseInt(whiteGaleInput.value) : 6;
+            // Adiciona 1 tentativa extra para a fase de análise
+            const totalSequenceSteps = maxAttempts + 1;
 
             // --- LÓGICA DE PLACAR ---
             if (predictionState.white.active) {
@@ -2212,7 +2214,8 @@
                         predictionState.white.active = false;
                     } else {
                         predictionState.white.attempts++;
-                        if (predictionState.white.attempts >= maxAttempts) {
+                        // Considera derrota apenas após passar a fase de análise + tentativas
+                        if (predictionState.white.attempts >= totalSequenceSteps) {
                             scores.white.losses++;
                             flashWL('wl-counter-white', 'loss');
                             predictionState.white.active = false;
@@ -2313,7 +2316,8 @@
             }
             }
 
-        let isWhiteLikely = alertConditionMet && (whiteAlertConsecutiveCount > 0 && whiteAlertConsecutiveCount <= maxAttempts);
+        // Permite contagem até maxAttempts + 1 (1 para análise + N tentativas)
+        let isWhiteLikely = alertConditionMet && (whiteAlertConsecutiveCount > 0 && whiteAlertConsecutiveCount <= totalSequenceSteps);
         // --- FIM DA NOVA LÓGICA ---
 
         // Define a previsão para a PRÓXIMA vela
@@ -2355,11 +2359,16 @@
             if (isWhiteLikely) {
                 color = '#ffffff';
                 icon = '⚪';
-            displayText = `POSSÍVEL ⚪ (${whiteAlertConsecutiveCount}/${maxAttempts})`;
-                displayFontSize = "0.6rem";
+                if (whiteAlertConsecutiveCount === 1) {
+                    displayText = "ANALISANDO...";
+                    displayFontSize = "0.7rem";
+                } else {
+                    displayText = `ENTRADA ⚪ (${whiteAlertConsecutiveCount - 1}/${maxAttempts})`;
+                    displayFontSize = "0.6rem";
+                }
             } else {
             // Se o alerta está suprimido pelo contador, mostra um status de pausa
-            if (alertConditionMet && whiteAlertConsecutiveCount > maxAttempts) {
+            if (alertConditionMet && whiteAlertConsecutiveCount > totalSequenceSteps) {
                 color = '#ffc107'; // Amarelo para aviso
                 icon = '⏸️';
                 displayText = 'PAUSADO';
@@ -2404,7 +2413,10 @@
             }
 
             if (isWhiteLikely && document.getElementById('soundToggle').checked) {
-                playWhiteVolatilityAlertSound();
+                // Toca som apenas nas entradas reais (pula a fase de análise)
+                if (whiteAlertConsecutiveCount > 1) {
+                    playWhiteVolatilityAlertSound();
+                }
             }
         }
 
