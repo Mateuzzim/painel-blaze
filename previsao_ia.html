@@ -9,9 +9,12 @@
             --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
             --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
         }
+        * {
+            box-sizing: border-box;
+        }
         body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-        .main-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
-        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 15px; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         
         .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         h1 { margin: 0; font-size: 1.5rem; }
@@ -40,7 +43,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* AI Visual Elements */
-        .prediction-display { text-align: center; margin: 20px 0; }
+        .prediction-display { text-align: center; margin: 15px 0; }
         .prediction-color-box { padding: 20px; border-radius: 12px; font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border: 2px solid; box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: all 0.3s; }
         .prediction-color-box.red { border-color: #ff0055; color: #ff0055; text-shadow: 0 0 10px #ff0055; }
         .prediction-color-box.black { border-color: #fff; color: #fff; background: #222; }
@@ -55,7 +58,7 @@
         .prediction-reasoning ul { padding-left: 20px; margin: 0; }
 
         /* AI Circle Animation */
-        .ai-visual-container { display: flex; justify-content: center; margin-bottom: 25px; animation: glitch-anim 5s infinite; }
+        .ai-visual-container { display: flex; justify-content: center; margin-bottom: 15px; animation: glitch-anim 5s infinite; }
         .ai-circle-outer { width: 120px; height: 120px; border-radius: 50%; border: 2px solid transparent; border-top-color: #00d2ff; border-bottom-color: #ff0055; animation: spin-ai 3s linear infinite; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); transition: all 0.5s; }
         .ai-circle-inner { width: 80px; height: 80px; border-radius: 50%; border: 2px solid transparent; border-left-color: #a100ff; border-right-color: #ff9800; animation: spin-ai 2s linear infinite reverse; position: absolute; transition: all 0.5s; }
         .ai-core-dot { width: 15px; height: 15px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8); animation: pulse-ai 1s ease-in-out infinite alternate; transition: all 0.5s; }
@@ -68,37 +71,12 @@
         @keyframes pulse-chart { 0% { r: 3; opacity: 0.6; } 50% { r: 5; opacity: 1; box-shadow: 0 0 5px #fff; } 100% { r: 3; opacity: 0.6; } }
 
         /* Trend Meter */
-        .trend-meter-container { margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px solid #333; position: relative; overflow: hidden; }
-        .trend-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        .trend-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; position: relative; }
-        .trend-bar-fill { height: 100%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 3px; }
-
-        /* Futuristic Range Slider */
-        .volume-control-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid #333; }
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: #333; /* Cor da parte não preenchida */
-            border-radius: 3px;
-            outline: none;
-        }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(255,255,255,0.7);
-            cursor: pointer;
-            margin-top: -6px; /* Centraliza o polegar na barra */
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            -webkit-appearance: none;
-            background: none;
-            border: none;
-        }
+        .trend-meter-container { margin-bottom: 20px; background: rgba(10, 15, 25, 0.6); padding: 15px; border-radius: 12px; border: 1px solid #333; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.3); }
+        .trend-meter-container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); opacity: 0.7; }
+        .trend-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .trend-segments { display: flex; gap: 2px; height: 8px; width: 100%; margin-bottom: 5px; }
+        .trend-segment { flex: 1; background: rgba(255,255,255,0.05); border-radius: 1px; transition: all 0.3s; }
+        .trend-value { font-family: 'Courier New', monospace; font-size: 1rem; font-weight: bold; }
 
         /* 24h Winrate Circle */
         .winrate-circle-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 4; }
@@ -121,6 +99,30 @@
         .winrate-subtext { font-size: 0.7rem; fill: #888; text-anchor: middle; dominant-baseline: middle; }
         @keyframes fadeInText { from { opacity: 0; } to { opacity: 1; } }
 
+        /* --- Win Streak Counter --- */
+        .win-streak-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding-top: 5px;
+        }
+        .win-streak-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+        }
+        .win-streak-bar-bg {
+            width: 100%; height: 6px; background: rgba(0,0,0,0.4);
+            border-radius: 3px; overflow: hidden; border: 1px solid #333;
+        }
+        .win-streak-bar-fill {
+            height: 100%; background: linear-gradient(90deg, #00ff88, #00d2ff); width: 0%;
+            transition: width 0.5s ease-out; border-radius: 3px; box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+        }
+
         /* Connection Status Indicator */
         .connection-status { display: flex; align-items: center; gap: 6px; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; background-color: #555; transition: all 0.3s; }
@@ -139,14 +141,14 @@
 
         /* Sidebar Styles */
         .sidebar {
-            flex: 0 0 260px; /* Sidebar with fixed width */
+            flex: 0 0 220px; /* Sidebar with further reduced width */
             background: rgba(10, 15, 25, 0.5);
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
             backdrop-filter: blur(5px);
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             position: relative;
@@ -175,7 +177,7 @@
         }
 
         .sidebar-section {
-            padding: 15px;
+            padding: 8px;
             background: rgba(255,255,255,0.03);
             border: 1px solid #2a2a2a;
             border-radius: 8px;
@@ -193,14 +195,13 @@
 
         .sidebar .platform-switcher { flex-direction: column; }
         .sidebar .platform-btn { width: 100%; text-align: center; }
-        .sidebar .volume-control-container { padding: 0; background: none; border: none; margin: 0; }
-        .sidebar .sidebar-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .sidebar .sidebar-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .sidebar .sidebar-control:last-child { margin-bottom: 0; }
         .sidebar .sidebar-control span { font-size: 0.9rem; color: #ccc; }
         .layout-panel.suite { flex: 1; }
 
         /* Grid de Widgets para alinhar funções */
-        .widgets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .widgets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .widget-full { grid-column: span 2; }
 
         /* Responsividade */
@@ -214,13 +215,218 @@
             .ai-visual-container { margin-top: 20px; }
             .prediction-color-box { font-size: 1.5rem; padding: 15px; }
         }
+
+        /* --- MOBILE RESPONSIVE (Enhanced) --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .layout-panel {
+                padding: 15px;
+            }
+            .main-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            /* Adjust AI Visual Size */
+            .ai-circle-outer {
+                width: 100px;
+                height: 100px;
+            }
+            .ai-circle-inner {
+                width: 60px;
+                height: 60px;
+            }
+            
+            /* Prediction Box */
+            .prediction-color-box {
+                font-size: 1.2rem;
+                padding: 12px;
+                letter-spacing: 1px;
+            }
+
+            /* Winrate Circle scaling */
+            #ai_winrate_1h_container svg {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        /* Animation for Vertical Ticker */
+        @keyframes scrollUp {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        /* White Alert Animation */
+        @keyframes flash-white-screen {
+            0%, 100% { box-shadow: inset 0 0 0 transparent; }
+            50% { box-shadow: inset 0 0 50px 10px rgba(255, 255, 255, 0.4); }
+        }
+        .white-alert-active {
+            animation: flash-white-screen 1.5s infinite ease-in-out;
+        }
+
+        /* Gale 1 Indicator */
+        .gale-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff9800;
+            color: #000;
+            font-weight: 900;
+            font-size: 0.7rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px #ff9800;
+            animation: pulse-gale 1.5s infinite;
+            z-index: 10;
+        }
+        @keyframes pulse-gale {
+            0% { transform: scale(1); box-shadow: 0 0 10px #ff9800; }
+            50% { transform: scale(1.1); box-shadow: 0 0 15px 5px #ff9800; }
+            100% { transform: scale(1); box-shadow: 0 0 10px #ff9800; }
+        }
+
+        /* No Data Animation */
+        .nd-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80px; width: 100%; position: relative; overflow: hidden; }
+        .nd-ring { width: 30px; height: 30px; border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s linear infinite; margin-bottom: 8px; }
+        .nd-text { font-size: 0.7rem; color: #444; letter-spacing: 2px; text-transform: uppercase; animation: blink-text 2s infinite; }
+        .nd-scan { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, rgba(0, 210, 255, 0.1), transparent); animation: scan-vertical 2s linear infinite; pointer-events: none; }
+        @keyframes scan-vertical { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+        @keyframes blink-text { 0%, 100% { opacity: 0.5; color: #444; } 50% { opacity: 1; color: #666; } }
+
+        /* Waiting State Animation */
+        .prediction-color-box.waiting {
+            border-color: var(--accent); color: var(--accent); text-shadow: 0 0 10px var(--accent);
+            background: rgba(0, 210, 255, 0.05); animation: pulse-waiting 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse-waiting {
+            0% { box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(0, 210, 255, 0.5); transform: scale(1.02); }
+            100% { box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); transform: scale(1); }
+        }
+
+        /* Waiting Circular Progress */
+        .waiting-wrapper {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 15px;
+        }
+        .waiting-svg-ring {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+        }
+        .waiting-circle-track {
+            fill: rgba(0, 210, 255, 0.05);
+            stroke: rgba(0, 210, 255, 0.1);
+            stroke-width: 4;
+        }
+        .waiting-circle-progress {
+            fill: none; stroke: var(--accent); stroke-width: 4;
+            stroke-dasharray: 408; /* 2 * PI * 65 */
+            stroke-dashoffset: 0;
+            animation: waiting-countdown 4s linear forwards;
+            filter: drop-shadow(0 0 8px var(--accent));
+            stroke-linecap: round;
+        }
+        @keyframes waiting-countdown {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 408; }
+        }
+        .waiting-content {
+            z-index: 2;
+            font-size: 0.9rem;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent);
+            font-weight: bold;
+            letter-spacing: 1px;
+            animation: pulse-text 1s infinite alternate;
+        }
+        @keyframes pulse-text { from { opacity: 0.7; } to { opacity: 1; } }
+
+        /* Recalibrating Text Animation */
+        .recalibrating-anim {
+            display: inline-block;
+            position: relative;
+            color: #00d2ff;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+            overflow: hidden;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0, 210, 255, 0.05);
+            border: 1px solid rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .recalibrating-anim::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.4), transparent);
+            transform: skewX(-20deg);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+    </style>
+    <style>
+        /* --- Scrollbar Futurista Aprimorada --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 15, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(161, 0, 255, 0.6), rgba(255, 69, 212, 0.6));
+            border-radius: 10px;
+            border: 1px solid rgba(161, 0, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #a100ff, #ff45d4);
+            box-shadow: 0 0 15px rgba(161, 0, 255, 0.5);
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
+        <div class="layout-panel suite">
+            <div class="main-header">
+                <h1 class="cortex-text-anim" style="display: none;">PREVISÃO I.A.</h1>
+                <div id="ai_loading_indicator" class="spinner"></div>
+            </div>
+
+            <div class="content-section">
+                <!-- Main Prediction Content -->
+                <div id="ai_prediction_content">
+                    <div style="text-align: center; padding: 20px; color: #888;">
+                        <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
+                        <br>Inicializando I.A...
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="sidebar">
             <button class="btn-back" onclick="parent.closeTool()" style="display: none;">⬅ Voltar ao Menu</button>
-            <div class="sidebar-section">
+            <div class="sidebar-section" style="display: none;">
                 <h3 class="sidebar-title">Plataforma</h3>
                 <div class="platform-switcher">
                     <input type="hidden" id="ai_platformSelector" value="blaze">
@@ -242,41 +448,45 @@
                     <label class="switch"><input type="checkbox" id="ai_autoFetchToggle" checked><span class="slider"></span></label>
                 </div>
                 <div class="sidebar-control">
+                    <span>Som</span>
+                    <label class="switch"><input type="checkbox" id="ai_soundToggle" onchange="ai_toggleSound()"><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-control">
                     <span>Gale Virtual</span>
                     <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()"><span class="slider"></span></label>
                 </div>
-                <div class="volume-control-container">
-                    <span style="font-size: 1.2rem;">🔊</span>
-                    <input type="range" id="ai_volumeSlider" min="0" max="100" value="50" oninput="ai_updateVolume(this.value)">
-                    <span id="ai_volumeLabel" style="font-size: 0.9rem; color: #fff; font-weight: bold; min-width: 40px; text-align: right;">50%</span>
+                <div class="sidebar-control">
+                    <span>Gale 1</span>
+                    <label class="switch"><input type="checkbox" id="ai_gale1Toggle" onchange="ai_toggleGale1()"><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-control">
+                    <span>Inverter Gale 1</span>
+                    <label class="switch"><input type="checkbox" id="ai_invertGaleToggle" onchange="ai_toggleInvertGale()"><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-control">
+                    <span>Conservador</span>
+                    <label class="switch"><input type="checkbox" id="ai_conservativeToggle" onchange="ai_toggleConservativeMode()"><span class="slider"></span></label>
+                </div>
+                <div class="sidebar-control">
+                    <span>Horário de Ouro</span>
+                    <label class="switch"><input type="checkbox" id="ai_goldenHourToggle" onchange="ai_toggleGoldenHourMode()"><span class="slider"></span></label>
                 </div>
             </div>
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Placar</h3>
-                <div id="ai_stats_container" style="margin-bottom: 15px;"></div>
+                <div id="ai_stats_container" style="margin-bottom: 10px;"></div>
                 <button onclick="ai_resetAIStats()" style="width:100%; padding: 8px; background: rgba(255,0,85,0.2); border: 1px solid #ff0055; color: #ff0055; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">Resetar Placar</button>
             </div>
             <div class="sidebar-section">
-                <h3 class="sidebar-title">Assertividade (24h)</h3>
-                <div id="ai_winrate_24h_container" style="display: flex; justify-content: center; align-items: center; position: relative;">
-                    <!-- SVG for the circular progress bar will be injected here -->
+                <h3 class="sidebar-title">Sequência Atual</h3>
+                <div id="ai_win_streak_container">
+                    <!-- Content will be injected by JS -->
                 </div>
             </div>
-        </div>
-
-        <div class="layout-panel suite">
-            <div class="main-header">
-                <h1 class="cortex-text-anim">PREVISÃO I.A.</h1>
-                <div id="ai_loading_indicator" class="spinner"></div>
-            </div>
-
-            <div class="content-section">
-                <!-- Main Prediction Content -->
-                <div id="ai_prediction_content">
-                    <div style="text-align: center; padding: 20px; color: #888;">
-                        <div class="spinner" style="display: inline-block; margin-bottom: 10px;"></div>
-                        <br>Inicializando I.A...
-                    </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Assertividade (1h)</h3>
+                <div id="ai_winrate_1h_container" style="display: flex; justify-content: center; align-items: center; position: relative;">
+                    <!-- SVG for the circular progress bar will be injected here -->
                 </div>
             </div>
         </div>
@@ -286,16 +496,29 @@
         // --- Variáveis Globais ---
         let ai_interval = null;
         let ai_last_processed_signature = '';
-        let ai_wins = 0;
-        let ai_losses = 0;
+        // Carregar estatísticas salvas (Placar persistente)
+        const savedStats = localStorage.getItem('ai_session_stats');
+        const initialStats = savedStats ? JSON.parse(savedStats) : {};
+
+        let ai_wins = initialStats.wins || 0;
+        let ai_losses = initialStats.losses || 0;
         let ai_current_prediction = null;
-        let ai_balance_history = [0];
+        let ai_balance_history = initialStats.balance || [0];
         let ai_use_virtual_gale = false;
         let ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
         let ai_results_history = []; // Para o placar de 24h
         let ai_volume = 0.5;
-        let ai_isMuted = false;
-        let ai_lastVolume = 0.5; // Armazena o último volume antes de mutar
+        let ai_sound_enabled = false; // Padrão OFF
+        let ai_pause_until = 0; // Timestamp for pause after loss
+        let ai_consecutive_wins = initialStats.consecutive_wins || 0;
+        let ai_consecutive_losses = initialStats.consecutive_losses || 0;
+        let ai_filter_history = false;
+        let ai_conservative_mode = false;
+        let ai_golden_hour_mode = false;
+        let ai_use_gale1 = false;
+        let ai_invert_gale = false;
+        let ai_last_prediction_on_loss = null;
+        let ai_waiting_until = 0;
 
         function updateConnectionStatus(status, text) {
             const statusContainer = document.getElementById('ai_connection_status');
@@ -308,55 +531,38 @@
             }
         }
 
-        function ai_updateVolume(val) {
-            ai_volume = val / 100;
-            const slider = document.getElementById('ai_volumeSlider');
-            const label = document.getElementById('ai_volumeLabel');
-            if(label) label.innerText = val + '%';
-
-            // Define a cor com base no nível do volume
-            let color = 'var(--accent)'; // Azul padrão para 0-40%
-            if (val > 75) {
-                color = '#ff0055'; // Vermelho para 76-100%
-            } else if (val > 40) {
-                color = '#ffc107'; // Amarelo para 41-75%
-            }
-
-            // Aplica o gradiente dinâmico ao fundo do slider
-            if(slider) {
-                slider.style.background = `linear-gradient(to right, ${color} ${val}%, #333 ${val}%)`;
-            }
-
-            // Salva no localStorage
-            localStorage.setItem('ai_saved_volume', val);
-
-            if (ai_isMuted && parseInt(val) > 0) { // Se estava mutado e o slider foi movido para > 0
-                ai_isMuted = false;
-                const muteIcon = document.getElementById('ai_muteIcon');
-                if(muteIcon) muteIcon.innerText = '🔊';
-            } else if (parseInt(val) === 0) { // Se o slider foi para 0
-                ai_isMuted = true;
-                const muteIcon = document.getElementById('ai_muteIcon');
-                if(muteIcon) muteIcon.innerText = '🔇';
-            }
-            ai_lastVolume = ai_volume; // Atualiza o último volume não-mutado
-            localStorage.setItem('ai_is_muted', ai_isMuted);
+        function ai_toggleSound() {
+            const el = document.getElementById('ai_soundToggle');
+            ai_sound_enabled = el.checked;
         }
 
-        function ai_toggleMute() {
-            const slider = document.getElementById('ai_volumeSlider');
-            if (ai_isMuted) {
-                slider.value = ai_lastVolume * 100 > 0 ? ai_lastVolume * 100 : 50;
-                const muteIcon = document.getElementById('ai_muteIcon');
-                if(muteIcon) muteIcon.innerText = '🔊';
-            } else {
-                ai_lastVolume = ai_volume; // Salva o volume atual antes de mutar
-                slider.value = 0;
-                const muteIcon = document.getElementById('ai_muteIcon');
-                if(muteIcon) muteIcon.innerText = '🔇';
-            }
-            ai_isMuted = !ai_isMuted;
-            ai_updateVolume(slider.value); // Atualiza o volume e o label
+        function ai_toggleHistoryFilter() {
+            ai_filter_history = !ai_filter_history;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleConservativeMode() {
+            const el = document.getElementById('ai_conservativeToggle');
+            ai_conservative_mode = el.checked;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleGoldenHourMode() {
+            const el = document.getElementById('ai_goldenHourToggle');
+            ai_golden_hour_mode = el.checked;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleInvertGale() {
+            const el = document.getElementById('ai_invertGaleToggle');
+            ai_invert_gale = el.checked;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleGale1() {
+            const el = document.getElementById('ai_gale1Toggle');
+            ai_use_gale1 = el.checked;
+            ai_showAIPrediction();
         }
 
         function ai_toggleVirtualGale() {
@@ -496,15 +702,43 @@
                         // Atualiza o placar e histórico independentemente do Gale Virtual
                         if (isWin) {
                             ai_wins++;
+                            ai_consecutive_wins++;
+                            ai_consecutive_losses = 0;
+                            ai_last_prediction_on_loss = null; 
                             ai_playWinSound();
                             ai_results_history.push({ timestamp: Date.now(), result: 'win' });
                             ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
+                            if (ai_consecutive_wins >= 4) {
+                                ai_pause_until = Date.now() + 30000; // Pausa de 30 segundos após 4 wins
+                                ai_consecutive_wins = 0;
+                            }
+                            ai_waiting_until = Date.now() + 4000; // Exibe "Aguardando..." por 4s
+                            setTimeout(() => ai_showAIPrediction(), 4000); // Atualiza após espera
                         } else {
                             ai_losses++;
+                            ai_consecutive_losses++;
+                            ai_consecutive_wins = 0;
+                            if (ai_use_gale1) {
+                                ai_last_prediction_on_loss = ai_current_prediction;
+                            }
                             ai_playLossSound();
                             ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
-                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
+                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);                            
+                            
+                            // Pausa progressiva: 30s (1º loss), 60s (2º loss), etc.
+                            // A pausa após a perda foi removida. A próxima análise será imediata.
+                            ai_waiting_until = Date.now() + 20000; // Exibe "Aguardando..." por 20s
+                            setTimeout(() => ai_showAIPrediction(), 20000); // Atualiza após espera
                         }
+
+                        // Salvar placar atualizado
+                        localStorage.setItem('ai_session_stats', JSON.stringify({
+                            wins: ai_wins,
+                            losses: ai_losses,
+                            balance: ai_balance_history,
+                            consecutive_wins: ai_consecutive_wins,
+                            consecutive_losses: ai_consecutive_losses
+                        }));
 
                         // Lógica do Gale Virtual (Apenas para controle de estado visual)
                         if (ai_use_virtual_gale) {
@@ -524,8 +758,8 @@
                     ai_last_processed_signature = signature;
 
                     // Limpa histórico antigo e salva
-                    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-                    ai_results_history = ai_results_history.filter(r => r.timestamp > twentyFourHoursAgo);
+                    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+                    ai_results_history = ai_results_history.filter(r => r.timestamp > oneHourAgo);
                     localStorage.setItem('ai_results_history', JSON.stringify(ai_results_history));
                 }
             }
@@ -551,58 +785,145 @@
             let history = [], fullHistory = [];
             let redCount = 0, blackCount = 0;
 
-            // Executa a lógica de previsão apenas se houver dados suficientes
-            if (rawData && rawData.split(/[\s\n]+/).filter(n => n.trim() !== '').length >= 20) {
+            // Verifica se está em pausa pós-loss
+            if (Date.now() < ai_pause_until) {
+                prediction = 'Analisando...';
+                confidence = 0;
+                predictionClass = '';
+                reasoning.push("Pausa tática de segurança.");
+                document.body.classList.remove('white-alert-active');
+                ai_current_prediction = null;
+            }
+            // Verifica se está em espera visual pós-resultado
+            else if (Date.now() < ai_waiting_until) {
+                prediction = 'AGUARDANDO..';
+                predictionClass = 'waiting';
+                confidence = 0;
+                reasoning.push("<span class='recalibrating-anim'>🔄 Reiniciando: Processando resultados e recalibrando I.A.</span>");
+                ai_current_prediction = null;
+            }
+            // Executa a lógica de previsão apenas se houver dados suficientes e não estiver em pausa
+            else if (rawData && rawData.split(/[\s\n]+/).filter(n => n.trim() !== '').length >= 20) {
                 const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
                 fullHistory = [];
                 for (let i = 0; i < tokens.length; i++) {
                     if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
-                        fullHistory.push({ color: ai_identificarCor(parseInt(tokens[i + 1])), roll: parseInt(tokens[i + 1]) });
+                        const timeParts = tokens[i+2].split(':');
+                        const minuteDigit = timeParts[1] ? parseInt(timeParts[1][1]) : 0; // Pega o último dígito do minuto
+                        fullHistory.push({ 
+                            color: ai_identificarCor(parseInt(tokens[i + 1])), 
+                            roll: parseInt(tokens[i + 1]),
+                            minuteDigit: minuteDigit
+                        });
                         i += 2;
                     }
                 }
                 history = fullHistory.filter(item => item.color !== 'branco').map(item => item.color);
                 
-                // Lógica de Previsão
-                // 1. Surf (Sequência Longa 5+)
-                if (history.length >= 5 && history[0] === history[1] && history[1] === history[2] && history[2] === history[3] && history[3] === history[4]) {
-                    if (history[0] === 'vermelho') redScore += 3; else blackScore += 3;
-                    reasoning.push("<strong>🌊 Surf de Tendência:</strong> Sequência longa (5+), alta chance de continuar.");
-                }
-                // 2. Tendência Simples (3+)
-                else if (history.length >= 3 && history[0] === history[1] && history[1] === history[2]) {
-                    if (history[0] === 'vermelho') redScore += 2; else blackScore += 2;
-                    reasoning.push("<strong>Tendência Forte:</strong> Sequência de 3 cores iguais.");
-                }
-                
-                // 3. Padrão Xadrez (Alternância)
-                if (history.length >= 4 && history[0] !== history[1] && history[1] !== history[2] && history[2] !== history[3]) {
-                    if (history[0] === 'vermelho') blackScore += 2.5; else redScore += 2.5;
-                    reasoning.push("<strong>♟️ Padrão Xadrez:</strong> Alternância detectada, seguindo o padrão.");
-                }
-                
-                // 4. Padrão de Duplas (XX YY)
-                if (history.length >= 4 && history[0] === history[1] && history[2] === history[3] && history[0] !== history[2]) {
-                    if (history[0] === 'vermelho') blackScore += 2; else redScore += 2;
-                    reasoning.push("<strong>Padrão de Duplas:</strong> Alternância de pares identificada (XX YY).");
+                // GALE 1 OVERRIDE LOGIC
+                if (ai_use_gale1 && ai_last_prediction_on_loss) {
+                    const galeTargetColor = ai_invert_gale 
+                        ? (ai_last_prediction_on_loss === 'vermelho' ? 'preto' : 'vermelho') 
+                        : ai_last_prediction_on_loss;
+
+                    if (galeTargetColor === 'vermelho') {
+                        redScore += 10;
+                    } else {
+                        blackScore += 10;
+                    }
+                    reasoning.push(`<strong>🔄 GALE 1 (${ai_invert_gale ? 'Invertido' : 'Normal'}):</strong> Buscando ${galeTargetColor.toUpperCase()}.`);
+                    
                 }
 
-                // 5. Padrão Espelho/Sanduíche (X YY -> X)
+                // --- NOVA LÓGICA DE ANÁLISE ADAPTATIVA (V2.0) ---
+                
+                // 1. Análise de Contexto de Mercado (Trend vs Lateral)
+                const recent10 = history.slice(0, 10);
+                const r10 = recent10.filter(c => c === 'vermelho').length;
+                const b10 = recent10.filter(c => c === 'preto').length;
+                const marketTrend = Math.abs(r10 - b10) / 10; // 0.0 a 1.0
+                const isTrend = marketTrend >= 0.4; // Tendência se diferença >= 40%
+                
+                if (isTrend) reasoning.push(`<strong>📊 Contexto:</strong> Mercado em Tendência (${(marketTrend*100).toFixed(0)}% força).`);
+                else reasoning.push(`<strong>📊 Contexto:</strong> Mercado Lateralizado/Equilíbrio.`);
+
+                // 2. Estratégias Baseadas no Contexto
+
+                // A. Surf Inteligente (Apenas em Tendência)
+                if (isTrend && history.length >= 3 && history[0] === history[1]) {
+                    if (history[0] === 'vermelho') redScore += 3; else blackScore += 3;
+                    reasoning.push("<strong>🌊 Surf de Tendência:</strong> Aproveitando o fluxo forte.");
+                }
+
+                // B. Quebra de Padrão (Apenas em Lateralização)
+                if (!isTrend && history.length >= 2 && history[0] === history[1]) {
+                    if (history[0] === 'vermelho') blackScore += 2; else redScore += 2;
+                    reasoning.push("<strong>⚡ Quebra de Lateralização:</strong> Apostando contra micro-sequência.");
+                }
+
+                // C. Padrão Xadrez (Alternância)
+                if (history.length >= 3 && history[0] !== history[1] && history[1] !== history[2]) {
+                    if (history[0] === 'vermelho') blackScore += 2.5; else redScore += 2.5;
+                    reasoning.push("<strong>♟️ Xadrez Confirmado:</strong> Seguindo a alternância.");
+                }
+
+                // D. Padrão 2x2 (Formação de Duplas)
                 if (history.length >= 3 && history[0] !== history[1] && history[1] === history[2]) {
-                    // Ex: V P P -> Sugere V
-                    if (history[0] === 'vermelho') redScore += 1.5; else blackScore += 1.5;
-                    reasoning.push("<strong>🥪 Padrão Espelho:</strong> Possível fechamento de simetria (X YY X).");
+                    // Ex: V V P -> P (Para formar V V P P)
+                    if (history[0] === 'vermelho') redScore += 2; else blackScore += 2;
+                    reasoning.push("<strong>🪞 Padrão 2x2:</strong> Buscando simetria de duplas.");
+                }
+
+                // E. Reversão Crítica (Sniper)
+                if (history.length >= 6 && history.slice(0, 6).every(c => c === history[0])) {
+                    if (history[0] === 'vermelho') blackScore += 4; else redScore += 4;
+                    reasoning.push("<strong>⚠️ Reversão Crítica:</strong> Sequência esticada (6+), alta probabilidade de corte.");
+                }
+
+                // F. MHI Adaptativo (Maioria em Trend, Minoria em Lateral)
+                if (history.length >= 3) {
+                    const last3 = history.slice(0, 3);
+                    const r3 = last3.filter(c => c === 'vermelho').length;
+                    const b3 = last3.filter(c => c === 'preto').length;
+                    if (!isTrend) {
+                        if (r3 > b3) { blackScore += 1.5; reasoning.push("<strong>📉 MHI (Lateral):</strong> Apostando na minoria."); }
+                        else { redScore += 1.5; reasoning.push("<strong>📉 MHI (Lateral):</strong> Apostando na minoria."); }
+                    } else {
+                        if (r3 > b3) { redScore += 1.5; reasoning.push("<strong>📈 MHI Reverso (Trend):</strong> Apostando na maioria."); }
+                        else { blackScore += 1.5; reasoning.push("<strong>📈 MHI Reverso (Trend):</strong> Apostando na maioria."); }
+                    }
+                }
+
+                // G. Balanceamento Global (100 rodadas)
+                if (fullHistory.length >= 50) {
+                    const last50 = fullHistory.slice(0, 50).filter(x => x.color !== 'branco');
+                    const r50 = last50.filter(x => x.color === 'vermelho').length;
+                    const rPct = r50 / last50.length;
+                    if (rPct > 0.60) { blackScore += 1.5; reasoning.push("<strong>⚖️ Balanceamento:</strong> Vermelho sobrecomprado (>60%)."); }
+                    if (rPct < 0.40) { redScore += 1.5; reasoning.push("<strong>⚖️ Balanceamento:</strong> Vermelho sobrevendido (<40%)."); }
                 }
                 
+                // Cálculo para UI
                 const recentHistory = history.slice(0, 20);
                 redCount = recentHistory.filter(c => c === 'vermelho').length;
                 blackCount = recentHistory.filter(c => c === 'preto').length;
-                if (redCount > blackCount * 1.5) { redScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de vermelhos recentes."); }
-                else if (blackCount > redCount * 1.5) { blackScore += 1.5; reasoning.push("<strong>Frequência:</strong> Dominância de pretos recentes."); }
                 
                 const lastWhiteIndex = fullHistory.findIndex(x => x.color === 'branco');
                 const roundsSinceWhite = lastWhiteIndex === -1 ? fullHistory.length : lastWhiteIndex;
                 
+                // Cálculo de Probabilidade de Branco (Estimativa)
+                let whiteProb = 7.14; // Base 1/14
+                if (roundsSinceWhite > 15) whiteProb += (roundsSinceWhite - 15) * 0.6;
+                
+                if (whiteProb > 10) {
+                    if (!document.body.classList.contains('white-alert-active')) {
+                        document.body.classList.add('white-alert-active');
+                    }
+                    reasoning.push(`<strong>⚪ ALERTA DE BRANCO:</strong> Probabilidade > 10% (${whiteProb.toFixed(1)}%).`);
+                } else {
+                    document.body.classList.remove('white-alert-active');
+                }
+
                 if (roundsSinceWhite >= 25) { whiteScore += 1; reasoning.push(`<strong>Alerta Branco:</strong> ${roundsSinceWhite} rodadas sem branco.`); }
                 if (roundsSinceWhite >= 50) { whiteScore += 2; reasoning.push(`<strong>Branco Crítico:</strong> Acúmulo muito alto (${roundsSinceWhite}).`); }
 
@@ -618,6 +939,36 @@
                     else if (blackScore > redScore) { prediction = 'PRETO'; predictionClass = 'black'; confidence = (blackScore / totalScore) * 100; }
                 } else {
                     prediction = 'Analisando...';
+                }
+
+                // Análise de Minuto Quente (Frequência 0-9)
+                const minuteCounts = Array(10).fill(0);
+                fullHistory.forEach(item => {
+                    if (item.minuteDigit !== undefined && !isNaN(item.minuteDigit)) {
+                        minuteCounts[item.minuteDigit]++;
+                    }
+                });
+                let hotMinute = 0;
+                let maxFreq = 0;
+                for(let i=0; i<10; i++) {
+                    if (minuteCounts[i] > maxFreq) { maxFreq = minuteCounts[i]; hotMinute = i; }
+                }
+                const nowTime = new Date();
+                const currentMinuteUnit = nowTime.getMinutes() % 10;
+                if (currentMinuteUnit === hotMinute && confidence > 0) {
+                    confidence += 10;
+                    reasoning.push(`<strong>⏰ Minuto Quente (${hotMinute}):</strong> Alta frequência histórica neste final de minuto.`);
+                }
+
+                // Filtro Horário de Ouro (19h - 21h)
+                if (ai_golden_hour_mode) {
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    // Aumenta a confiança se estiver entre 19:00 e 20:59
+                    if (currentHour >= 19 && currentHour < 21 && confidence > 0) {
+                        confidence += 15;
+                        reasoning.push("<strong>🌟 Horário de Ouro:</strong> Bônus de confiança ativo (19h-21h).");
+                    }
                 }
 
                 // --- Lógica de Gale Virtual Retroativo (Correção) ---
@@ -661,15 +1012,32 @@
 
             } else {
                 reasoning.push("Aguardando dados suficientes para análise...");
+                document.body.classList.remove('white-alert-active');
             }
 
-            if (confidence < 55) { 
+            if (confidence < 55 && prediction !== 'Analisando...' && prediction !== 'Aguardando Dados...' && prediction !== 'AGUARDANDO..') { 
                 prediction = 'Sinal Fraco'; 
                 reasoning = ["A I.A. não encontrou um padrão claro."];
                 ai_current_prediction = null; 
             }
 
+            // Filtro do Modo Conservador (Confiança > 90%)
+            if (ai_conservative_mode && confidence <= 90 && prediction !== 'Aguardando Dados...' && prediction !== 'Analisando...') {
+                prediction = 'Modo Conservador';
+                predictionClass = '';
+                ai_current_prediction = null;
+                // Adiciona nota ao raciocínio
+                reasoning.unshift("<strong>Filtro Ativo:</strong> Aguardando sinal com confiança > 90%.");
+            }
+
             let predictionDisplayText = prediction;
+            let gale1IndicatorHtml = '';
+
+            if (ai_use_gale1 && prediction !== 'Aguardando Dados...' && prediction !== 'Analisando...' && prediction !== 'Sinal Fraco' && prediction !== 'Modo Conservador' && prediction !== 'Buscando Certeira...' && prediction !== 'POSSÍVEL BRANCO' && prediction !== 'AGUARDANDO..') {
+                gale1IndicatorHtml = `<div class="gale-indicator">1x</div>`;
+                reasoning.push("<strong>🔄 Gale 1 Ativo:</strong> Cobrir até a 2ª tentativa.");
+            }
+
             let virtualStatusHtml = "";
             let boxStyle = "";
 
@@ -683,10 +1051,7 @@
                     predictionDisplayText += " (REAL)";
                     virtualStatusHtml = `<div style="color: #00ff88; font-size: 0.9rem; margin-top: 5px; font-weight: bold; border-top: 1px solid #444; padding-top: 5px;">🔥 LOSS VIRTUAL DETECTADO! ENTRADA LIBERADA!</div>`;
                     boxStyle = "box-shadow: 0 0 25px " + (predictionClass === 'red' ? 'rgba(255, 0, 85, 0.6)' : 'rgba(255, 255, 255, 0.4)') + "; transform: scale(1.05); border-width: 3px;";
-                    if (confidence > 80) ai_playNotificationSound();
                 }
-            } else {
-                if (confidence > 80) ai_playNotificationSound();
             }
 
             let whiteHtml = '';
@@ -705,6 +1070,10 @@
                 outerStyle = 'border-top-color: #fff; border-bottom-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); animation-duration: 1s;';
                 innerStyle = 'border-left-color: #ccc; border-right-color: #eee; animation-duration: 0.5s;';
                 coreStyle = 'background-color: #fff; box-shadow: 0 0 25px 10px rgba(255, 255, 255, 0.9); animation: pulse-ai 0.2s ease-in-out infinite alternate;';
+            } else if (predictionClass === 'waiting') {
+                outerStyle = 'border-top-color: #00d2ff; border-bottom-color: #00d2ff; animation: spin-ai 1s linear infinite;';
+                innerStyle = 'border-left-color: #00d2ff; border-right-color: #00d2ff; opacity: 0.5;';
+                coreStyle = 'background-color: #00d2ff; box-shadow: 0 0 15px #00d2ff; animation: pulse-ai 0.5s infinite;';
             }
 
             const aiVisualHtml = `
@@ -752,63 +1121,100 @@
                 currentStreak = 1;
                 for(let i=1; i<history.length; i++) { if(history[i] === history[0]) currentStreak++; else break; }
             }
-            if (currentStreak >= 3) trendScore += (currentStreak * 8);
+            if (currentStreak >= 3) trendScore += (currentStreak * 10);
             trendScore = Math.min(100, Math.max(0, trendScore));
             
-            let trendLabel = "Lateralizado (Neutro)";
-            let trendColor = "#00d2ff";
-            if (trendScore >= 75) { trendLabel = "🔥 TENDÊNCIA FORTE"; trendColor = "#ff0055"; }
-            else if (trendScore >= 40) { trendLabel = "⚡ Tendência Moderada"; trendColor = "#ff9800"; }
+            let trendLabel = "Lateral (Neutro)";
+            let trendColor = "#00d2ff"; // Blue
+            let trendIcon = "↔";
+            
+            if (trendScore >= 80) { trendLabel = "TENDÊNCIA FORTE"; trendColor = "#ff0055"; trendIcon = "🔥"; } // Red
+            else if (trendScore >= 40) { trendLabel = "TENDÊNCIA MODERADA"; trendColor = "#ff9800"; trendIcon = "⚡"; } // Orange
+
+            const totalSegments = 25;
+            const activeSegments = Math.floor((trendScore / 100) * totalSegments);
+            let segmentsHtml = '';
+            for(let i=0; i<totalSegments; i++) {
+                const isActive = i < activeSegments;
+                const opacity = isActive ? '1' : '0.1';
+                const glow = isActive ? `box-shadow: 0 0 5px ${trendColor};` : '';
+                segmentsHtml += `<div class="trend-segment" style="background: ${trendColor}; opacity: ${opacity}; ${glow}"></div>`;
+            }
 
             const trendHtml = `
                 <div class="trend-meter-container">
-                    <div class="trend-header"><span>Força do Mercado</span><span style="color: ${trendColor}; text-shadow: 0 0 5px ${trendColor};">${trendLabel}</span></div>
-                    <div class="trend-bar-bg"><div class="trend-bar-fill" style="width: ${trendScore.toFixed(0)}%; background: linear-gradient(90deg, #00d2ff, ${trendColor}); box-shadow: 0 0 10px ${trendColor};"></div></div>
+                    <div class="trend-header">
+                        <span style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 1.2rem;">${trendIcon}</span> FORÇA DO MERCADO</span>
+                        <span class="trend-value" style="color: ${trendColor}; text-shadow: 0 0 8px ${trendColor};">${trendScore.toFixed(0)}%</span>
+                    </div>
+                    <div class="trend-segments">
+                        ${segmentsHtml}
+                    </div>
+                    <div style="text-align: right; font-size: 0.7rem; color: ${trendColor}; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; font-weight: bold;">${trendLabel}</div>
                 </div>
             `;
 
-            // Gráfico de Pizza (Distribuição 100 Rodadas)
-            let pieChartHtml = '';
-            if (fullHistory.length > 0) {
-                const last100 = fullHistory.slice(0, 100);
-                const counts = { vermelho: 0, preto: 0, branco: 0 };
-                last100.forEach(item => { if(counts[item.color] !== undefined) counts[item.color]++; });
-                const total100 = last100.length;
+            // Placar Movendo de Baixo para Cima (Ticker Vertical - Últimos Resultados)
+            let tickerHtml = '';
+            let displayItems = [];
 
-                let slices = '';
-                if (total100 > 0) {
-                    let startAngle = 0;
-                    const radius = 40; const cx = 50, cy = 50;
-                    const colors = [{ id: 'vermelho', fill: '#ff0055' }, { id: 'preto', fill: '#333' }, { id: 'branco', fill: '#fff' }];
-                    
-                    const dominant = colors.find(c => counts[c.id] === total100);
-                    if (dominant) {
-                        slices = `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${dominant.fill}" stroke="#1a1a1a" stroke-width="1"/>`;
-                    } else {
-                        colors.forEach(color => {
-                            const count = counts[color.id];
-                            if (count > 0) {
-                                const angle = (count / total100) * 360;
-                                const endAngle = startAngle + angle;
-                                const r1 = (startAngle - 90) * Math.PI / 180;
-                                const r2 = (endAngle - 90) * Math.PI / 180;
-                                const x1 = cx + radius * Math.cos(r1);
-                                const y1 = cy + radius * Math.sin(r1);
-                                const x2 = cx + radius * Math.cos(r2);
-                                const y2 = cy + radius * Math.sin(r2);
-                                const largeArc = angle > 180 ? 1 : 0;
-                                slices += `<path d="M ${cx},${cy} L ${x1},${y1} A ${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z" fill="${color.fill}" stroke="#1a1a1a" stroke-width="1" />`;
-                                startAngle += angle;
-                            }
-                        });
-                    }
-                }
-                pieChartHtml = `<div style="margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 8px; padding: 10px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="width: 80px; height: 80px; flex-shrink: 0;"><svg viewBox="0 0 100 100">${slices}</svg></div>
-                    <div style="flex: 1; padding-left: 15px; display: flex; flex-direction: column; justify-content: center;"><div style="font-size: 0.7rem; color: #aaa; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Distribuição (Últimas ${total100})</div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; font-size: 0.8rem; text-align: center;">
-                        <div style="color: #ff0055; background: rgba(255,0,85,0.1); border-radius: 4px; padding: 2px;">${counts.vermelho}</div><div style="color: #ccc; background: rgba(255,255,255,0.1); border-radius: 4px; padding: 2px;">${counts.preto}</div><div style="color: #fff; background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px; text-shadow: 0 0 5px #fff;">${counts.branco}</div>
-                    </div></div></div>`;
+            if (ai_filter_history) {
+                // Show AI Results (Wins/Losses)
+                displayItems = [...ai_results_history].reverse().slice(0, 20).map(r => ({
+                    main: r.result === 'win' ? 'WIN' : 'LOSS',
+                    sub: new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                    color: r.result === 'win' ? 'green' : 'red',
+                    is_ai: true
+                }));
+            } else if (fullHistory.length > 0) {
+                // Show Raw Game History
+                displayItems = fullHistory.slice(0, 20).map(item => ({
+                    main: item.roll,
+                    sub: item.color,
+                    color: item.color,
+                    is_ai: false
+                }));
             }
+
+            let itemsHtml = '';
+            if (displayItems.length > 0) {
+                itemsHtml = displayItems.map(item => {
+                    let colorHex, bg, textShadow;
+                    if (item.is_ai) {
+                        colorHex = item.color === 'green' ? '#00ff88' : '#ff0055';
+                        bg = item.color === 'green' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 0, 85, 0.1)';
+                        textShadow = item.color === 'green' ? '0 0 5px rgba(0,255,136,0.5)' : 'none';
+                    } else {
+                        colorHex = item.color === 'vermelho' ? '#ff0055' : (item.color === 'branco' ? '#fff' : '#ccc');
+                        bg = item.color === 'branco' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)';
+                        textShadow = item.color === 'branco' ? '0 0 5px #fff' : 'none';
+                    }
+                    return `<div style="display: flex; justify-content: space-between; padding: 6px 10px; background: ${bg}; border-radius: 4px; border-left: 3px solid ${colorHex}; font-size: 0.8rem; color: ${colorHex}; text-shadow: ${textShadow}; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        <span style="font-weight: bold;">${item.main}</span>
+                        <span style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.8;">${item.sub}</span>
+                    </div>`;
+                }).join('');
+            } else {
+                itemsHtml = `<div class="nd-container"><div class="nd-scan"></div><div class="nd-ring"></div><div class="nd-text">AGUARDANDO DADOS</div></div>`;
+            }
+
+            const filterLabel = ai_filter_history ? 'FILTRO: I.A.' : 'FILTRO: GERAL';
+            const filterStyle = ai_filter_history ? 'color: #00d2ff; cursor: pointer; text-decoration: underline;' : 'color: #666; cursor: pointer;';
+            const animationStyle = displayItems.length > 0 ? 'animation: scrollUp 15s linear infinite;' : '';
+
+            tickerHtml = `
+            <div style="margin-bottom: 20px; height: 100px; overflow: hidden; position: relative; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 8px;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; padding: 10px; ${animationStyle}">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        ${itemsHtml}
+                        ${displayItems.length > 0 ? itemsHtml : ''} <!-- Duplicado para efeito de loop infinito -->
+                    </div>
+                </div>
+                <!-- Máscaras de Gradiente para suavizar topo e base -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 20px; background: linear-gradient(to bottom, var(--panel-bg), transparent); z-index: 2; pointer-events: none;"></div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(to top, var(--panel-bg), transparent); z-index: 2; pointer-events: none;"></div>
+                <div onclick="ai_toggleHistoryFilter()" style="position: absolute; top: 5px; right: 10px; font-size: 0.6rem; z-index: 3; text-transform: uppercase; font-weight: bold; ${filterStyle}">${filterLabel}</div>
+            </div>`;
 
             const totalPreds = ai_wins + ai_losses;
             const winRate = totalPreds > 0 ? ((ai_wins / totalPreds) * 100).toFixed(0) : 0;
@@ -822,23 +1228,55 @@
                     </div>`;
             }
 
-            // Renderiza o placar de 24h
-            const winrateContainer = document.getElementById('ai_winrate_24h_container');
-            if (winrateContainer) {
-                const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-                const recentResults = ai_results_history.filter(r => r.timestamp > twentyFourHoursAgo);
+            // --- Win Streak Counter ---
+            const winStreakContainer = document.getElementById('ai_win_streak_container');
+            if (winStreakContainer) {
+                let streakCount = 0;
+                let streakType = 'NEUTRO';
+                let streakColor = '#888';
+                let streakGoal = 4;
 
-                const wins24h = recentResults.filter(r => r.result === 'win').length;
-                const total24h = recentResults.length;
-                const winRate24h = total24h > 0 ? (wins24h / total24h) * 100 : 0;
+                if (ai_consecutive_losses > 0) {
+                    streakCount = ai_consecutive_losses;
+                    streakType = 'LOSS';
+                    streakColor = '#ff0055';
+                    streakGoal = 1; // Pausa imediata no loss
+                } else if (ai_consecutive_wins > 0) {
+                    streakCount = ai_consecutive_wins;
+                    streakType = 'WIN';
+                    streakColor = '#00ff88';
+                }
+
+                const streakPercent = Math.min(100, (streakCount / streakGoal) * 100);
+
+                winStreakContainer.innerHTML = `
+                    <div class="win-streak-display">
+                        <div class="win-streak-text" style="color: ${streakColor}; text-shadow: 0 0 8px ${streakColor};">${streakCount} <span style="font-size:0.6em">${streakType}</span></div>
+                        <div class="win-streak-bar-bg">
+                            <div class="win-streak-bar-fill" style="width: ${streakPercent}%; background: ${streakColor}; box-shadow: 0 0 8px ${streakColor};"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            // --- End Win Streak Counter ---
+
+            // Renderiza o placar de 1h
+            const winrateContainer = document.getElementById('ai_winrate_1h_container');
+            if (winrateContainer) {
+                const oneHourAgo = Date.now() - (60 * 60 * 1000);
+                const recentResults = ai_results_history.filter(r => r.timestamp > oneHourAgo);
+
+                const wins1h = recentResults.filter(r => r.result === 'win').length;
+                const total1h = recentResults.length;
+                const winRate1h = total1h > 0 ? (wins1h / total1h) * 100 : 0;
 
                 const radius = 38;
                 const circumference = 2 * Math.PI * radius;
-                const offset = circumference - (winRate24h / 100) * circumference;
+                const offset = circumference - (winRate1h / 100) * circumference;
 
                 let progressColor = '#00d2ff'; // default
-                if (winRate24h >= 75) progressColor = '#00ff88'; // green
-                else if (winRate24h < 50) progressColor = '#ff0055'; // red
+                if (winRate1h >= 75) progressColor = '#00ff88'; // green
+                else if (winRate1h < 50) progressColor = '#ff0055'; // red
 
                 winrateContainer.innerHTML = `
                     <svg width="120" height="120" viewBox="0 0 100 100">
@@ -848,10 +1286,117 @@
                             stroke-dashoffset="${offset}"
                             style="stroke: ${progressColor}; filter: drop-shadow(0 0 5px ${progressColor});">
                         </circle>
-                        <text x="50" y="48" class="winrate-text" style="fill: ${progressColor};">${winRate24h.toFixed(0)}%</text>
-                        <text x="50" y="65" class="winrate-subtext">${wins24h}W / ${total24h - wins24h}L</text>
+                        <text x="50" y="48" class="winrate-text" style="fill: ${progressColor};">${winRate1h.toFixed(0)}%</text>
+                        <text x="50" y="65" class="winrate-subtext">${wins1h}W / ${total1h - wins1h}L</text>
                     </svg>
                 `;
+            }
+
+            // Frequência por Minuto (0-9) - Design Futurista
+            let barChartHtml = '';
+            let radarChartHtml = '';
+            if (fullHistory.length > 0) {
+                const minuteStats = Array.from({ length: 10 }, () => ({ total: 0, vermelho: 0, preto: 0, branco: 0 }));
+                // Analisa todo o histórico disponível para maior precisão estatística
+                fullHistory.forEach(item => {
+                    if (item.minuteDigit !== undefined && !isNaN(item.minuteDigit)) {
+                        minuteStats[item.minuteDigit].total++;
+                        if (item.color === 'vermelho') minuteStats[item.minuteDigit].vermelho++;
+                        else if (item.color === 'preto') minuteStats[item.minuteDigit].preto++;
+                        else if (item.color === 'branco') minuteStats[item.minuteDigit].branco++;
+                    }
+                });
+                
+                const maxCount = Math.max(...minuteStats.map(s => s.total)) || 1;
+                let bars = '';
+                
+                for(let i=0; i<10; i++) {
+                    const stats = minuteStats[i];
+                    const heightPct = Math.max((stats.total / maxCount) * 100, 5); // Mínimo 5% para visualização
+                    const isHot = (stats.total / maxCount) >= 0.85;
+                    const borderStyle = isHot ? 'border: 1px solid rgba(0, 210, 255, 0.5); box-shadow: 0 0 5px rgba(0, 210, 255, 0.3);' : '';
+                    const labelColor = isHot ? '#00d2ff' : '#888';
+
+                    const pRed = stats.total > 0 ? (stats.vermelho / stats.total) * 100 : 0;
+                    const pBlack = stats.total > 0 ? (stats.preto / stats.total) * 100 : 0;
+                    const pWhite = stats.total > 0 ? (stats.branco / stats.total) * 100 : 0;
+
+                    bars += `
+                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1;" onmouseover="this.querySelector('.tooltip').style.opacity=1; this.style.zIndex=10" onmouseout="this.querySelector('.tooltip').style.opacity=0; this.style.zIndex=1">
+                            <div style="width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px;">
+                                <div style="width: 70%; height: ${heightPct}%; display: flex; flex-direction: column-reverse; background: rgba(255,255,255,0.05); border-radius: 3px 3px 0 0; overflow: hidden; transition: height 0.5s; ${borderStyle}">
+                                    ${pRed > 0 ? `<div style="height: ${pRed}%; background: #ff0055;"></div>` : ''}
+                                    ${pBlack > 0 ? `<div style="height: ${pBlack}%; background: #444;"></div>` : ''}
+                                    ${pWhite > 0 ? `<div style="height: ${pWhite}%; background: #fff; box-shadow: 0 0 5px #fff; z-index: 2;"></div>` : ''}
+                                </div>
+                            </div>
+                            <div style="font-size: 0.7rem; color: ${labelColor}; font-family: 'Courier New', monospace; font-weight: ${isHot ? 'bold' : 'normal'};">${i}</div>
+                            <div class="tooltip" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: #fff; padding: 5px; border-radius: 4px; font-size: 0.65rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; border: 1px solid #333; white-space: nowrap; text-align: left; line-height: 1.3; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                                <div style="border-bottom: 1px solid #444; margin-bottom: 2px; padding-bottom: 2px; font-weight: bold; text-align: center;">Minuto ${i}</div>
+                                <div>🔴 ${stats.vermelho} (${pRed.toFixed(0)}%)</div>
+                                <div>⚫ ${stats.preto} (${pBlack.toFixed(0)}%)</div>
+                                <div>⚪ ${stats.branco} (${pWhite.toFixed(0)}%)</div>
+                                <div style="margin-top: 2px; color: #aaa; font-size: 0.6rem; text-align: center;">Total: ${stats.total}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                barChartHtml = `
+                <div style="margin-top: 15px; background: rgba(15, 20, 30, 0.6); padding: 15px; border-radius: 12px; border: 1px solid #333; position: relative; overflow: visible; box-shadow: 0 0 20px rgba(0,0,0,0.3);">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent);"></div>
+                    <h4 style="margin: 0 0 15px 0; font-size: 0.8rem; color: #ccc; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>📊 Frequência por Minuto</span>
+                        <span style="font-size: 0.65rem; color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); padding: 2px 6px; border-radius: 4px; background: rgba(0, 210, 255, 0.1);">0-9</span>
+                    </h4>
+                    <div style="display: flex; justify-content: space-between; height: 90px; gap: 4px;">
+                        ${bars}
+                    </div>
+                </div>`;
+
+                // --- Radar Chart (Spider) Generation ---
+                const rMax = Math.max(...minuteStats.map(s => Math.max(s.vermelho, s.preto, s.branco))) || 1;
+                const cx = 100, cy = 100, radius = 70;
+                
+                const getPoints = (type) => {
+                    return minuteStats.map((s, i) => {
+                        const val = s[type];
+                        const angle = (i * 36 - 90) * (Math.PI / 180);
+                        const r = (val / rMax) * radius;
+                        const x = cx + r * Math.cos(angle);
+                        const y = cy + r * Math.sin(angle);
+                        return `${x},${y}`;
+                    }).join(' ');
+                };
+
+                const ptsRed = getPoints('vermelho');
+                const ptsBlack = getPoints('preto');
+                const ptsWhite = getPoints('branco');
+
+                // Grid (Teia) e Eixos
+                let webHtml = '';
+                let axesHtml = '';
+                let labelsHtml = '';
+                
+                for(let level=1; level<=4; level++) {
+                    const r = (radius / 4) * level;
+                    const pts = Array.from({length: 10}, (_, i) => `${cx + r * Math.cos((i * 36 - 90) * Math.PI / 180)},${cy + r * Math.sin((i * 36 - 90) * Math.PI / 180)}`).join(' ');
+                    webHtml += `<polygon points="${pts}" fill="none" stroke="#333" stroke-width="1" opacity="0.5" />`;
+                }
+                for(let i=0; i<10; i++) {
+                    const angle = (i * 36 - 90) * (Math.PI / 180);
+                    axesHtml += `<line x1="${cx}" y1="${cy}" x2="${cx + radius * Math.cos(angle)}" y2="${cy + radius * Math.sin(angle)}" stroke="#333" stroke-width="1" />`;
+                    labelsHtml += `<text x="${cx + (radius + 15) * Math.cos(angle)}" y="${cy + (radius + 15) * Math.sin(angle)}" fill="#888" font-size="8" text-anchor="middle" dominant-baseline="middle" font-family="Courier New">${i}</text>`;
+                }
+
+                radarChartHtml = `
+                <div style="margin-top: 15px; background: rgba(10, 15, 25, 0.6); padding: 15px; border-radius: 12px; border: 1px solid #333; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; justify-content: space-between; margin-bottom: 5px; align-items: center;">
+                        <span style="font-size: 0.8rem; color: #ccc; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">🕸️ Radar (0-9)</span>
+                        <div style="font-size: 0.6rem; display: flex; gap: 8px;"><span style="color:#ff0055">● Red</span><span style="color:#888">● Black</span><span style="color:#fff">● White</span></div>
+                    </div>
+                    <svg viewBox="0 0 200 200" style="width: 100%; max-width: 220px; overflow: visible;"><g>${webHtml}${axesHtml}</g><polygon points="${ptsBlack}" fill="rgba(100, 100, 100, 0.2)" stroke="#888" stroke-width="1.5" /><polygon points="${ptsRed}" fill="rgba(255, 0, 85, 0.2)" stroke="#ff0055" stroke-width="1.5" /><polygon points="${ptsWhite}" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1.5" stroke-dasharray="2,2" />${labelsHtml}</svg>
+                </div>`;
             }
 
             const content = document.getElementById('ai_prediction_content');
@@ -861,49 +1406,50 @@
                 <div class="widgets-grid">
                     <div class="widget-full">${chartHtml}</div>
                     <div>${trendHtml}</div>
-                    <div>${pieChartHtml}</div>
+                    <div>${tickerHtml}</div>
                 </div>
             `;
 
-            content.innerHTML = aiVisualHtml + widgetsHtml + `<div class="prediction-display"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div><p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
+            let predictionBoxHtml = '';
+            if (predictionClass === 'waiting') {
+                const waitDuration = Math.max(1, (ai_waiting_until - Date.now()) / 1000);
+                predictionBoxHtml = `
+                    <div class="waiting-wrapper">
+                        <svg class="waiting-svg-ring" viewBox="0 0 150 150">
+                            <circle class="waiting-circle-track" cx="75" cy="75" r="65"></circle>
+                            <circle class="waiting-circle-progress" cx="75" cy="75" r="65" style="animation-duration: ${waitDuration}s"></circle>
+                        </svg>
+                        <div class="waiting-content">AGUARDANDO..</div>
+                    </div>`;
+            } else {
+                predictionBoxHtml = `<div style="position: relative; display: inline-block;"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${gale1IndicatorHtml}</div>`;
+            }
+
+            content.innerHTML = aiVisualHtml + widgetsHtml + `<div class="prediction-display">${predictionBoxHtml}${virtualStatusHtml}${whiteHtml}<div class="confidence-label">Confiança da Previsão: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div>` + barChartHtml + radarChartHtml + `<p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
         }
 
         function ai_resetAIStats() {
-            if (confirm("Você tem certeza que deseja resetar o placar da sessão E o histórico de 24 horas?")) {
+            if (confirm("Você tem certeza que deseja resetar o placar da sessão E o histórico de 1 hora?")) {
                 ai_wins = 0;
                 ai_losses = 0;
                 ai_balance_history = [0];
                 ai_current_prediction = null;
                 ai_virtual_stage = 0;
+                ai_consecutive_wins = 0;
+                ai_consecutive_losses = 0;
+                ai_last_prediction_on_loss = null;
                 
-                // Reset 24h history
+                // Reset 1h history
                 ai_results_history = [];
                 localStorage.removeItem('ai_results_history');
+                localStorage.removeItem('ai_session_stats');
 
                 ai_showAIPrediction();
             }
         }
 
-        function ai_playNotificationSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                
-                // Som de Alerta: "Ping" tecnológico (distinto do Win)
-                osc.type = 'sine'; 
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-                
-                gain.gain.setValueAtTime(0.08 * ai_volume, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-                
-                osc.start(); osc.stop(ctx.currentTime + 0.15);
-            } catch (e) { console.error("Erro ao tocar som:", e); }
-        }
-
         function ai_playWinSound() {
+            if (!ai_sound_enabled) return;
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const t = ctx.currentTime;
@@ -930,6 +1476,7 @@
         }
 
         function ai_playLossSound() {
+            if (!ai_sound_enabled) return;
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
@@ -957,14 +1504,8 @@
                     updateConnectionStatus('offline', 'Offline');
                 }
             });
-            // Carrega o volume salvo
-            const savedVolume = localStorage.getItem('ai_saved_volume');
-            if (savedVolume) {
-                document.getElementById('ai_volumeSlider').value = savedVolume;
-                ai_updateVolume(savedVolume);
-            }
 
-            // Carrega o histórico de 24h
+            // Carrega o histórico de 1h
             const savedResults = localStorage.getItem('ai_results_history');
             if (savedResults) {
                 try {

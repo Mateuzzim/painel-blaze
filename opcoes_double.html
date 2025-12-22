@@ -267,18 +267,26 @@
         @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .main-container { width: 100%; padding: 0; }
-            .layout-panel { padding: 10px; border-radius: 8px; }
-            #chart-container { height: 600px; }
-            #adx-container, #macd-container, #rsi-container, #stoch-container { height: 120px; }
-            #volume-container { height: 80px; }
-            .controls-panel { padding: 10px; gap: 5px; justify-content: space-between; }
-            .controls-panel > * { flex: 1 1 auto; text-align: center; justify-content: center; font-size: 0.75rem; }
-            .draw-mode-btn { padding: 8px; }
-            h1 { font-size: 1.5rem; }
-            .btn-back { width: 100%; justify-content: center; box-sizing: border-box; }
-            .chart-tooltip { font-size: 0.7rem; padding: 5px 8px; }
+            body { padding: 0; overflow-x: hidden; } /* Remove padding extra e evita scroll horizontal */
+            .main-container { width: 100%; padding: 0; margin: 0; }
+            .layout-panel { padding: 5px; border-radius: 0; border: none; box-shadow: none !important; } /* Full width e remove sombras pesadas */
+            
+            /* Altura dinâmica para caber na tela do celular */
+            #chart-container { height: 50vh; min-height: 350px; border-left: none; border-right: none; border-radius: 0; }
+            
+            #adx-container, #macd-container, #rsi-container, #stoch-container { height: 100px; border-radius: 0; }
+            #volume-container { height: 60px; border-radius: 0; }
+            
+            .controls-panel { padding: 5px; gap: 8px; margin-top: 10px; background: transparent; border: none; }
+            .control-row { padding: 5px 0; gap: 6px; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .control-row > * { flex: 1 1 auto; margin: 2px; } /* Melhor distribuição dos botões */
+            
+            .draw-mode-btn { padding: 8px 10px; font-size: 0.75rem; width: auto; min-width: 80px; justify-content: center; }
+            .tool-group { padding: 6px 10px; justify-content: center; flex-wrap: wrap; }
+            
+            h1 { font-size: 1.2rem; }
+            .btn-back { width: 100%; justify-content: center; box-sizing: border-box; margin-bottom: 10px; }
+            .chart-tooltip { display: none !important; } /* Desativa tooltip no touch para não atrapalhar a visão */
             #trend-history-panel { display: none; } /* Hide on mobile to save space */
 
             /* Responsive Widgets */
@@ -287,8 +295,13 @@
                 top: 10px; left: 0; width: 100%;
                 justify-content: center; gap: 8px;
             }
-            .market-strength-widget { width: 55px; padding: 5px; }
+            .market-strength-widget { width: 55px; padding: 5px; box-shadow: none !important; background: rgba(12, 16, 20, 0.95); }
             .strength-meter-bg { height: 50px; }
+            
+            /* Ajustes nos Cards de Análise */
+            .analysis-card { padding: 8px; min-height: 70px; box-shadow: none !important; border: 1px solid rgba(255,255,255,0.1); }
+            .analysis-title { font-size: 0.6rem; }
+            .analysis-value { font-size: 0.9rem; }
         }
 
         /* Light Mode Styles */
@@ -415,6 +428,78 @@
             margin-bottom: 5px;
             overflow: hidden;
         }
+        /* History Grid for Telegram Scoreboard */
+        .history-grid-container {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .history-grid-header {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #telegram-history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 140px; /* 3 rows approx */
+            overflow-y: auto;
+            align-content: flex-start;
+        }
+        .history-badge {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            position: relative;
+            background: #0f0f13;
+            border: 1px solid #333;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+            color: #fff;
+        }
+        .history-badge .badge-time {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.6rem;
+            color: #888;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+        .history-badge.vermelho { border-color: #ff0055; color: #ff0055; }
+        .history-badge.preto { border-color: #555; color: #aaa; }
+        .history-badge.branco { border-color: #fff; color: #000; background: #fff; text-shadow: 0 0 5px #000; }
+        @keyframes slideInBadge {
+            0% { opacity: 0; transform: translateX(-30px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes intenseGlow {
+            0% { box-shadow: inset 0 0 8px rgba(0,0,0,0.7), 0 0 10px 2px #fff; }
+            50% { box-shadow: inset 0 0 8px rgba(0,0,0,0.7), 0 0 25px 8px #fff; }
+            100% { box-shadow: inset 0 0 8px rgba(0,0,0,0.7); }
+        }
+        .slide-in-anim {
+            animation: slideInBadge 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), intenseGlow 1.5s ease-out;
+        }
+        .meter-horizontal {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
         .meter-fill-horizontal {
             height: 100%;
             background: #555;
@@ -497,12 +582,27 @@
         .sr-alert-blink { animation: blink-sr 0.8s infinite alternate; }
         @keyframes blink-sr { from { opacity: 1; stroke-width: 1px; } to { opacity: 0.3; stroke-width: 3px; } }
 
-        /* Scrollbar Futurista */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.1); }
-        ::-webkit-scrollbar-thumb:hover { background: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8); }
-        ::-webkit-scrollbar-corner { background: #050505; }
+        /* --- Scrollbar Futurista Aprimorada --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 15, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(161, 0, 255, 0.5));
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, var(--accent), var(--accent-blaze));
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
 
         /* News Panel Styles */
         .news-panel {
@@ -622,9 +722,11 @@
                     <div id="wl-counter-surf" class="wl-counter"><span style="color: #00ff88">W</span>: 0 - <span style="color: #ff0055">L</span>: 0 <span style="color: #fff; margin-left: 4px;">⚪: 0</span></div>
                 </div>
             </div>
-            <div class="news-panel" id="double-news-panel">
-                <div class="news-label">NOTÍCIAS DOUBLE</div>
-                <div class="news-text" id="double-news-text">Carregando análise de mercado...</div>
+            <div class="history-grid-container">
+                <div class="history-grid-header">Histórico de Resultados</div>
+                <div id="telegram-history-grid">
+                    <!-- Badges will be inserted here by JS -->
+                </div>
             </div>
             <div id="adx-container"></div>
             <div id="volume-container"></div>
@@ -641,13 +743,13 @@
                     <button id="haToggleBtn" class="draw-mode-btn" onclick="toggleHeikinAshi()" title="Suavizar Tendência">🕯️ Heikin Ashi</button>
                     <button id="themeToggleBtn" class="draw-mode-btn" onclick="toggleTheme()">☀️ Tema</button>
                     <button id="autoTgBtn" class="draw-mode-btn" onclick="toggleAutoTg()" style="border-color: #555; color: #888; background: rgba(255,255,255,0.05);">🤖 Auto TG: OFF</button>
-                    <div class="tool-group" style="border-color: #00d2ff;" title="Configuração Auto TG">
+                    <div class="tool-group" style="border-color: #00d2ff;" title="Configuração de Probabilidade Auto TG">
                         <span style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">Prob:</span>
-                        <input type="number" id="autoTelegramProbability" value="75" min="50" max="99" step="1" onchange="saveAutoTgConfig()" style="width: 40px;" title="Probabilidade Mínima para Envio Automático (%)">
+                        <input type="number" id="autoTelegramMinProbability" value="75" min="50" max="99" step="1" onchange="saveAutoTgConfig()" style="width: 40px;" title="Probabilidade Mínima para Envio (%)">
+                        <span style="font-size: 0.7rem; color: #aaa;">-</span>
+                        <input type="number" id="autoTelegramMaxProbability" value="95" min="50" max="99" step="1" onchange="saveAutoTgConfig()" style="width: 40px;" title="Probabilidade Máxima para Envio (%)">
                         <span style="font-size: 0.7rem; color: #00d2ff;">%</span>
                     </div>
-                    <button id="telegramBtn" class="draw-mode-btn" onclick="sendScreenshotToTelegram(this)">✈️ Telegram</button>
-                    <button id="screenshotBtn" class="draw-mode-btn" onclick="takeScreenshot()">📸 Capturar</button>
                     <button id="resetTgBtn" class="draw-mode-btn" onclick="resetTelegramScores()">🔄 Zerar Placar</button>
                 </div>
 
@@ -663,7 +765,6 @@
                     <button id="resetViewBtn" class="draw-mode-btn" onclick="resetView()">🔄 Resetar Posição</button>
                     <button id="fullscreenBtn" class="draw-mode-btn" onclick="toggleFullscreen()">🖼️ Tela Cheia</button>
                     <button id="clearDrawingsBtn" class="draw-mode-btn" onclick="clearDrawings()">🗑️ Limpar</button>
-                    <button class="draw-mode-btn" onclick="resetAllConfigs()">⚙️ Resetar Configs</button>
                 </div>
 
                 <div class="control-row">
@@ -781,6 +882,7 @@
         let whiteAlertConsecutiveCount = 0;
         let lastCandleTimestampForWhiteAlert = 0;
         let visibleCandleCount = 100;
+        let lastAutoSentTimestamp = 0;
         let lastSentSignalTimestamp = 0;
         let pageLoadTime = Date.now();
         let telegramState = {
@@ -792,7 +894,6 @@
             maxGales: 1,
             analysisMsg: ""
         };
-        let telegramScores = { wins: 0, losses: 0 };
 
         let scores = {
             white: { wins: 0, losses: 0 },
@@ -814,6 +915,16 @@
             if (numero >= 1 && numero <= 7) return 'vermelho';
             if (numero >= 8 && numero <= 14) return 'preto';
             return 'desconhecido';
+        }
+
+        function getFormattedHistory(limit = 12) {
+            if (!globalGamesData || globalGamesData.length === 0) return "";
+            return globalGamesData.slice(0, limit).reverse().map(g => {
+                const c = identificarCor(g.roll);
+                if (c === 'vermelho') return '🔴';
+                if (c === 'preto') return '⚫';
+                return '⚪';
+            }).join(' ');
         }
 
         function calculateSMA(data, period) {
@@ -1095,6 +1206,53 @@
             return { k: stochK, d: stochD };
         }
 
+        function createHistoryBadge(game) {
+            const colorClass = identificarCor(game.roll);
+            const badge = document.createElement('div');
+            badge.className = `history-badge ${colorClass}`;
+            badge.dataset.id = game.id;
+            
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'badge-number';
+            numberSpan.textContent = game.roll;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'badge-time';
+            const date = new Date(game.created_at);
+            timeSpan.textContent = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+            badge.appendChild(numberSpan);
+            badge.appendChild(timeSpan);
+            return badge;
+        }
+
+        function updateTelegramHistoryGrid() {
+            const grid = document.getElementById('telegram-history-grid');
+            if (!grid) return;
+
+            const recentGames = globalGamesData.slice(0, 9);
+            
+            if (grid.children.length === 0) {
+                const fragment = document.createDocumentFragment();
+                [...recentGames].reverse().forEach(game => fragment.appendChild(createHistoryBadge(game)));
+                grid.appendChild(fragment);
+                return;
+            }
+
+            const existingIds = new Set(Array.from(grid.children).map(b => b.dataset.id));
+            const newItems = recentGames.filter(g => !existingIds.has(String(g.id)));
+
+            for (let i = newItems.length - 1; i >= 0; i--) {
+                const badge = createHistoryBadge(newItems[i]);
+                badge.classList.add('slide-in-anim');
+                grid.appendChild(badge);
+            }
+            
+            while (grid.children.length > 9) {
+                grid.removeChild(grid.firstChild);
+            }
+        }
+
         function renderVisibleCharts(shouldPlaySound = false) {
             const chartContainer = document.getElementById('chart-container');
             // Se o container não estiver visível, não desenha nada para evitar erros.
@@ -1244,6 +1402,9 @@
             // Ao atualizar os dados, sempre volta para as velas mais recentes
             resetView();
             updateDoubleNews();
+
+            // Verifica se deve enviar análise automática para o Telegram
+            checkAndSendAutoTelegram();
         }
 
         let isFetching = false;
@@ -1313,7 +1474,8 @@
                 if (newSignature === lastDataSignature) { if(loadingText && loadingText.innerText.includes('Buscando')) loadingText.style.display = 'none'; return; }
                 lastDataSignature = newSignature;
 
-                globalGamesData = uniqueGames.map(g => ({ created_at: g.created_at, roll: g.roll }));
+                globalGamesData = uniqueGames.map(g => ({ id: g.id, created_at: g.created_at, roll: g.roll }));
+                updateTelegramHistoryGrid();
                 updateChart(shouldPlaySound);
 
             } catch (e) {
@@ -3061,46 +3223,45 @@
             }
         }
 
-        async function sendTelegramResult(resultType) {
+        async function sendTelegramResult(resultType, resultGame) {
             const token = localStorage.getItem('telegram_bot_token');
             let chatId = localStorage.getItem('telegram_chat_id_double');
             if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
             
             if (!token || !chatId) return;
 
-            let text;
+            let text = "";
             if (resultType.startsWith('WIN')) {
-                telegramScores.wins++;
                 scores.surf.wins++;
                 flashWL('wl-counter-surf', 'win');
 
                 if (resultType === 'WIN') text = "✅✅✅ GREEN! ✅✅✅";
                 else if (resultType === 'WIN_G1') text = "✅✅✅ GREEN NO G1! ✅✅✅";
                 else if (resultType === 'WIN_G2') text = "✅✅✅ GREEN NO G2! ✅✅✅";
-                else if (resultType === 'WIN_WHITE') {
-                    text = "⚪⚪⚪ GREEN NO BRANCO! ⚪⚪⚪";
-                    scores.surf.whiteWins++;
-                } else if (resultType === 'WIN_WHITE_G1') {
-                    text = "⚪⚪⚪ GREEN NO BRANCO (G1)! ⚪⚪⚪";
-                    scores.surf.whiteWins++;
-                } else if (resultType === 'WIN_WHITE_G2') {
-                    text = "⚪⚪⚪ GREEN NO BRANCO (G2)! ⚪⚪⚪";
+                else if (resultType.includes('WHITE')) {
+                    text = `⚪⚪⚪ GREEN NO BRANCO! (${resultType.replace('WIN_', '')}) ⚪⚪⚪`;
                     scores.surf.whiteWins++;
                 }
             } else if (resultType === 'LOSS') {
-                telegramScores.losses++;
                 scores.surf.losses++;
                 flashWL('wl-counter-surf', 'loss');
                 text = "❌❌❌ LOSS ❌❌❌";
             }
 
-            localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
-
             const entryTime = new Date(telegramState.originalTriggerTimestamp);
             const timeStr = entryTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-            text += `\n\n*Placar do Robô:* ${telegramScores.wins} ✅ | ${telegramScores.losses} ❌`;
             text += `\n*Horário da Entrada:* ${timeStr}`;
+            
+            if (resultGame) {
+                const c = identificarCor(resultGame.roll);
+                let emoji = '⚪';
+                if (c === 'vermelho') emoji = '🔴';
+                if (c === 'preto') emoji = '⚫';
+                text += `\n🎯 *Pagou:* ${emoji} ${resultGame.roll}`;
+            }
+            text += `\n📊 *Placar:* ✅ ${scores.surf.wins} vs ${scores.surf.losses} ❌`;
+            text += `\n🎲 *Histórico:* ${getFormattedHistory()}`;
 
             if (telegramState.analysisMsg) {
                 text += `\nℹ️ *Análise:* ${telegramState.analysisMsg}`;
@@ -3112,27 +3273,6 @@
             formData.append('text', text);
             formData.append('parse_mode', 'Markdown');
             try { await fetch(url, { method: 'POST', body: formData }); } catch (e) { console.error("Erro ao enviar resultado:", e); }
-        }
-
-        function checkDailyReset() {
-            const now = new Date();
-            const today = now.toLocaleDateString('pt-BR');
-            const lastResetDate = localStorage.getItem('last_reset_date');
-
-            if (lastResetDate !== today) {
-                telegramScores = { wins: 0, losses: 0 };
-                localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
-                localStorage.setItem('last_reset_date', today);
-                console.log('Placar do Telegram resetado automaticamente (Novo dia).');
-            }
-        }
-
-        function resetTelegramScores() {
-            if (confirm('Tem certeza que deseja zerar o placar do Telegram?')) {
-                telegramScores = { wins: 0, losses: 0 };
-                localStorage.setItem('telegram_scores', JSON.stringify(telegramScores));
-                alert('Placar do Telegram zerado com sucesso!');
-            }
         }
 
         async function sendAutoTelegramSignal(prediction, probability, colorHex, analysisMsg, customTriggerTime) {
@@ -3161,9 +3301,7 @@
                 else if (prediction.includes('PRETO')) direction = "PRETO ⚫";
                 else if (prediction.includes('⚪')) direction = "BRANCO ⚪";
 
-                const galesSelect = document.getElementById('autoTelegramGales');
-                const gales = galesSelect ? galesSelect.value : '1';
-                const gestaoText = `Até G${gales} (Gale ${gales})`;
+                const gestaoText = "Até G1 (Gale 1)";
 
                 const caption = `
 🚨 *SINAL DETECTADO - OPÇÕES DOUBLE* 🚨
@@ -3176,6 +3314,7 @@
 📉 *Probabilidade:* ${Math.round(probability)}%
 🔄 *Gestão:* ${gestaoText}
 
+🎲 *Histórico:* ${getFormattedHistory()}
 📝 *Análise:* ${analysisMsg}
 
 ⚠️ _Gerencie sua banca com responsabilidade._`.trim();
@@ -3202,49 +3341,87 @@
                 const latestGameTime = new Date(globalGamesData[0].created_at).getTime();
 
                 if (latestGameTime >= telegramState.triggerTimestamp) {
-                    // Busca os jogos do minuto alvo na lista global (independente do timeframe do gráfico)
+                    // Busca os jogos do minuto alvo
                     const gamesInMinute = globalGamesData.filter(g => {
                         const t = new Date(g.created_at).getTime();
                         return t >= telegramState.triggerTimestamp && t < telegramState.triggerTimestamp + 60000;
                     });
 
                     if (gamesInMinute.length > 0) {
-                        // Pega o jogo mais antigo do minuto (o primeiro que aconteceu), pois define a cor da vela
-                        const resultGame = gamesInMinute[gamesInMinute.length - 1];
-                        const resultColor = identificarCor(resultGame.roll);
+                        // Ordena do mais antigo para o mais novo: [Pedra 1, Pedra 2]
+                        const sortedGames = [...gamesInMinute].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
                         
-                        let isWin = false;
-                        let isWhite = resultColor === 'branco';
-                        
-                        if (resultColor === telegramState.predictedColor) {
-                            isWin = true;
-                        }
+                        // Pedra 1 (Entrada Principal)
+                        const stone1 = sortedGames[0];
+                        const color1 = identificarCor(stone1.roll);
+                        const isWhite1 = color1 === 'branco';
+                        const isWin1 = (color1 === telegramState.predictedColor) || isWhite1;
 
-                        if (isWin || isWhite) {
-                            let type = 'WIN';
-                            if (isWhite) type = 'WIN_WHITE';
+                        if (isWin1) {
+                            // WIN na primeira pedra
+                            let type = isWhite1 ? 'WIN_WHITE' : 'WIN';
                             if (telegramState.galeLevel > 0) type += `_G${telegramState.galeLevel}`;
-                            sendTelegramResult(type);
-
-                            predictionState.surf.consecutiveLosses = 0; // Reseta no Win
-
+                            
+                            sendTelegramResult(type, stone1);
+                            
+                            predictionState.surf.consecutiveLosses = 0;
                             telegramState.active = false;
-                            lastSentSignalTimestamp = latestGameTime + 20000; // Pausa de 20 segundos após resultado
+                            lastSentSignalTimestamp = latestGameTime + 20000;
                         } else {
-                            if (telegramState.galeLevel < telegramState.maxGales) {
-                                telegramState.galeLevel++;
-                                telegramState.triggerTimestamp = telegramState.triggerTimestamp + 60000;
-                            } else {
-                                sendTelegramResult('LOSS');
+                            // LOSS na primeira pedra. Verifica G1 (Pedra 2) se estiver no nível 0 e maxGales >= 1
+                            if (telegramState.galeLevel === 0 && telegramState.maxGales >= 1) {
+                                if (sortedGames.length >= 2) {
+                                    const stone2 = sortedGames[1];
+                                    const color2 = identificarCor(stone2.roll);
+                                    const isWhite2 = color2 === 'branco';
+                                    const isWin2 = (color2 === telegramState.predictedColor) || isWhite2;
 
-                                predictionState.surf.consecutiveLosses++; // Incrementa no Loss
-                                if (predictionState.surf.consecutiveLosses >= 2) {
-                                    predictionState.surf.pauseUntil = Date.now() + 20000; // Pausa de 20 segundos
-                                    predictionState.surf.consecutiveLosses = 0; // Reseta contador para reiniciar ciclo após pausa
+                                    if (isWin2) {
+                                        // WIN no G1 (mesmo minuto)
+                                        let type = isWhite2 ? 'WIN_WHITE_G1' : 'WIN_G1';
+                                        sendTelegramResult(type, stone2);
+                                        
+                                        predictionState.surf.consecutiveLosses = 0;
+                                        telegramState.active = false;
+                                        lastSentSignalTimestamp = latestGameTime + 20000;
+                                    } else {
+                                        // LOSS no G1
+                                        sendTelegramResult('LOSS', stone2);
+                                        predictionState.surf.consecutiveLosses++;
+                                        if (predictionState.surf.consecutiveLosses >= 2) {
+                                            predictionState.surf.pauseUntil = Date.now() + 20000;
+                                            predictionState.surf.consecutiveLosses = 0;
+                                        }
+                                        telegramState.active = false;
+                                        lastSentSignalTimestamp = latestGameTime + 20000;
+                                    }
                                 }
-
+                                // Se não tem 2 pedras ainda, aguarda...
+                            } else if (telegramState.galeLevel > 0) {
+                                // Lógica para G2+ (Minutos seguintes)
+                                if (telegramState.galeLevel < telegramState.maxGales) {
+                                    telegramState.galeLevel++;
+                                    telegramState.triggerTimestamp += 60000;
+                                } else {
+                                    sendTelegramResult('LOSS', stone1);
+                                    predictionState.surf.consecutiveLosses++;
+                                    if (predictionState.surf.consecutiveLosses >= 2) {
+                                        predictionState.surf.pauseUntil = Date.now() + 20000;
+                                        predictionState.surf.consecutiveLosses = 0;
+                                    }
+                                    telegramState.active = false;
+                                    lastSentSignalTimestamp = latestGameTime + 20000;
+                                }
+                            } else {
+                                // Sem gale configurado, LOSS na primeira pedra
+                                sendTelegramResult('LOSS', stone1);
+                                predictionState.surf.consecutiveLosses++;
+                                if (predictionState.surf.consecutiveLosses >= 2) {
+                                    predictionState.surf.pauseUntil = Date.now() + 20000;
+                                    predictionState.surf.consecutiveLosses = 0;
+                                }
                                 telegramState.active = false;
-                                lastSentSignalTimestamp = latestGameTime + 20000; // Pausa de 20 segundos após resultado
+                                lastSentSignalTimestamp = latestGameTime + 20000;
                             }
                         }
                     }
@@ -3469,10 +3646,12 @@
 
                 const autoTgBtn = document.getElementById('autoTgBtn');
                 const isAutoTgOn = autoTgBtn && autoTgBtn.getAttribute('data-active') === 'true';
-                const minProbInput = document.getElementById('autoTelegramProbability');
+                const minProbInput = document.getElementById('autoTelegramMinProbability');
+                const maxProbInput = document.getElementById('autoTelegramMaxProbability');
                 const minProb = minProbInput ? parseInt(minProbInput.value) : 75;
+                const maxProb = maxProbInput ? parseInt(maxProbInput.value) : 95;
 
-                if (isAutoTgOn && !telegramState.active && prediction !== "NEUTRO" && currentTimestamp > lastSentSignalTimestamp && prob >= minProb) {
+                if (isAutoTgOn && !telegramState.active && prediction !== "NEUTRO" && currentTimestamp > lastSentSignalTimestamp && prob >= minProb && prob <= maxProb) {
                     // O sinal é para 2 velas à frente (2 min) para dar tempo de entrada.
                     // Garante que o sinal seja para 2 minutos completos à frente. Ex: Análise às 19:00 -> Sinal para 19:02.
                     const triggerTimestamp = Math.floor((currentTimestamp + (2 * 60000)) / 60000) * 60000;
@@ -3485,8 +3664,7 @@
                     telegramState.triggerTimestamp = triggerTimestamp;
                     telegramState.originalTriggerTimestamp = triggerTimestamp;
                     telegramState.galeLevel = 0;
-                    const galesSelect = document.getElementById('autoTelegramGales');
-                    telegramState.maxGales = galesSelect ? parseInt(galesSelect.value) : 1;
+                    telegramState.maxGales = 1;
                     telegramState.analysisMsg = msg;
                 }
             }
@@ -4176,6 +4354,7 @@
             caption += `📅 *Data:* ${dateTimeStr}\n\n`;
             caption += `🧭 *Tendência:* ${icon} ${signal}\n`;
             caption += `🕯️ *Padrão:* ${pattern}\n`;
+            caption += `🎲 *Histórico:* ${getFormattedHistory()}\n`;
             caption += `💪 *Força (20):* 🔴 ${redPct}% | ⚫ ${blackPct}%\n`;
             if (volatilityText) caption += `${volatilityText}\n`;
             if (indicatorsText) caption += `--------------------------${indicatorsText}\n`;
@@ -4220,73 +4399,67 @@
             if (newsTextEl.innerText !== msg) newsTextEl.innerText = msg;
         }
 
-        async function takeScreenshot() {
-            const canvas = await generateChartCanvas();
-            if (!canvas) {
-                alert('Gráfico principal não encontrado para capturar.');
-                return;
-            }
+        async function checkAndSendAutoTelegram() {
+            const isAutoOn = localStorage.getItem('auto_tg_state') === 'true';
+            if (!isAutoOn) return;
 
-            const link = document.createElement('a');
-            link.download = `grafico_opcoes_double_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const now = Date.now();
+            // Evita spam: limita a um envio a cada 5 minutos
+            if (now - lastAutoSentTimestamp < 5 * 60 * 1000) return;
+
+            if (!allCandles || allCandles.length < 20) return;
+
+            // Calcula a Força da Tendência (Baseado na lógica do widget)
+            const lookback = 20;
+            const recent = allCandles.slice(-lookback);
+            let redPower = 0, blackPower = 0, whitePower = 0;
+            recent.forEach(d => {
+                if (d.color === 'vermelho') redPower++;
+                else if (d.color === 'preto') blackPower++;
+                else if (d.color === 'branco') whitePower++;
+            });
+            const total = redPower + blackPower + whitePower;
+            if (total === 0) return;
+
+            let strength = 0;
+            if (redPower > blackPower) strength = (redPower / total) * 100;
+            else if (blackPower > redPower) strength = (blackPower / total) * 100;
+            
+            const minProbInput = document.getElementById('autoTelegramMinProbability');
+            const maxProbInput = document.getElementById('autoTelegramMaxProbability');
+            const minProb = minProbInput ? parseInt(minProbInput.value) : 75;
+            const maxProb = maxProbInput ? parseInt(maxProbInput.value) : 95;
+
+            if (strength >= minProb && strength <= maxProb) {
+                await sendDirectTelegramAnalysis();
+                lastAutoSentTimestamp = Date.now();
+            }
         }
 
-        async function sendScreenshotToTelegram(btn) {
+        async function sendDirectTelegramAnalysis() {
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = localStorage.getItem('telegram_chat_id_double'); // Prioriza o ID específico do Double
-            
-            // Se não houver um ID específico, usa o ID principal como fallback
-            if (!chatId) {
-                chatId = localStorage.getItem('telegram_chat_id'); 
-            }
-            
-            if (!token || !chatId) {
-                alert('⚠️ Configure o Token e o Chat ID do Telegram (Opções Double ou principal) primeiro no menu de Configurações.');
-                return;
-            }
+            let chatId = sessionStorage.getItem('telegram_chat_id_double') || localStorage.getItem('telegram_chat_id_double');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
 
-            const originalText = btn.innerText;
-            btn.innerText = '⏳ Gerando...';
-            btn.disabled = true;
+            if (!token || !chatId) return;
 
             try {
+                const analysisCaption = generateAnalysisCaption();
                 const canvas = await generateChartCanvas();
-                if (!canvas) throw new Error("Falha ao gerar imagem do gráfico.");
-
-                btn.innerText = '📤 Enviando...';
-
-                const captionText = generateAnalysisCaption();
+                if (!canvas) return;
 
                 canvas.toBlob(async function(blob) {
                     const formData = new FormData();
                     formData.append('chat_id', chatId);
-                    formData.append('photo', blob, 'grafico.png');
-                    formData.append('caption', captionText);
+                    formData.append('photo', blob, 'chart.png');
+                    formData.append('caption', analysisCaption);
                     formData.append('parse_mode', 'Markdown');
-
-                    const response = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const data = await response.json();
-                    if (data.ok) {
-                        alert('✅ Gráfico enviado para o Telegram com sucesso!');
-                    } else {
-                        throw new Error(data.description || 'Erro desconhecido no Telegram');
-                    }
                     
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                    await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: formData });
+                    console.log("Auto TG: Análise enviada com sucesso.");
                 }, 'image/png');
-
             } catch (e) {
-                console.error(e);
-                alert('❌ Erro ao enviar: ' + e.message);
-                btn.innerText = originalText;
-                btn.disabled = false;
+                console.error("Auto TG Erro:", e);
             }
         }
 
@@ -4385,8 +4558,10 @@
         }
 
         function saveAutoTgConfig() {
-            const val = document.getElementById('autoTelegramProbability').value;
-            localStorage.setItem('auto_tg_probability', val);
+            const minVal = document.getElementById('autoTelegramMinProbability').value;
+            const maxVal = document.getElementById('autoTelegramMaxProbability').value;
+            localStorage.setItem('auto_tg_min_probability', minVal);
+            localStorage.setItem('auto_tg_max_probability', maxVal);
             const galesSelect = document.getElementById('autoTelegramGales');
             if (galesSelect) {
                 localStorage.setItem('auto_tg_gales', galesSelect.value);
@@ -4401,10 +4576,10 @@
             // Limpa as configurações salvas no navegador
             localStorage.removeItem('warmup_seconds');
             localStorage.removeItem('white_gale_attempts');
-            localStorage.removeItem('auto_tg_probability');
+            localStorage.removeItem('auto_tg_min_probability');
+            localStorage.removeItem('auto_tg_max_probability');
             localStorage.removeItem('auto_tg_gales');
             localStorage.removeItem('auto_tg_state');
-            localStorage.removeItem('telegram_scores');
 
             alert('Configurações resetadas. A página será recarregada.');
             window.location.reload();
@@ -4424,10 +4599,16 @@
                 if (input) input.value = savedGale;
             }
 
-            const savedAutoTgProb = localStorage.getItem('auto_tg_probability');
-            if (savedAutoTgProb !== null) {
-                const input = document.getElementById('autoTelegramProbability');
-                if (input) input.value = savedAutoTgProb;
+            const savedAutoTgMinProb = localStorage.getItem('auto_tg_min_probability');
+            if (savedAutoTgMinProb !== null) {
+                const input = document.getElementById('autoTelegramMinProbability');
+                if (input) input.value = savedAutoTgMinProb;
+            }
+
+            const savedAutoTgMaxProb = localStorage.getItem('auto_tg_max_probability');
+            if (savedAutoTgMaxProb !== null) {
+                const input = document.getElementById('autoTelegramMaxProbability');
+                if (input) input.value = savedAutoTgMaxProb;
             }
 
             const savedAutoTgGales = localStorage.getItem('auto_tg_gales');
@@ -4450,21 +4631,13 @@
                 }
             }
 
-            const savedTelegramScores = localStorage.getItem('telegram_scores');
-            if (savedTelegramScores) {
-                telegramScores = JSON.parse(savedTelegramScores);
-            }
-
-            checkDailyReset();
-            setInterval(checkDailyReset, 60000); // Verifica a cada minuto se mudou o dia
-
             const autoFetchToggle = document.getElementById('autoFetchToggle');
             if (autoFetchToggle) {
                 autoFetchToggle.addEventListener('change', (e) => {
                     if (e.target.checked) {
                         fetchData(); // Fetch immediately
                         if (autoFetchInterval) clearInterval(autoFetchInterval);
-                        autoFetchInterval = setInterval(fetchData, 13000); // Check for updates every 13s
+                        autoFetchInterval = setInterval(fetchData, 15000); // Check for updates every 15s
                     } else {
                         clearInterval(autoFetchInterval);
                     }
@@ -4473,7 +4646,7 @@
                 autoFetchToggle.dispatchEvent(new Event('change'));
             } else {
                 fetchData(); 
-                setInterval(fetchData, 13000);
+                setInterval(fetchData, 15000);
             }
 
             // Panning functionality (Mouse and Touch)

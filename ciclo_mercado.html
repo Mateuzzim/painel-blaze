@@ -55,7 +55,7 @@
         .score-card.max { border-bottom: 2px solid #ff0055; }
         .score-card.last { border-bottom: 2px solid #a100ff; }
         .score-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 2px; }
-        .score-value { font-size: 1.8rem; font-weight: 800; font-family: monospace; }
+        .score-value { font-size: 1.7rem; font-weight: 800; font-family: monospace; } /* Reduced from 1.8rem */
         .avg-text { color: #00d2ff; text-shadow: 0 0 8px rgba(0, 210, 255, 0.4); }
         .min-text { color: #00ff88; text-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
         .max-text { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.4); }
@@ -63,6 +63,15 @@
         @keyframes scan-line { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .progress-ring-circle { transition: stroke-dashoffset 0.35s; transform-origin: 50% 50%; transform: rotate(-90deg); }
         
+        /* Daily Stats Panel */
+        .daily-stats-panel .daily-stat-label { color: #ccc; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .daily-stats-panel .daily-stat-value { font-weight: bold; font-size: 1.1rem; } /* Reduced from 1.2rem */
+        .daily-stats-panel .win { color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+        .daily-stats-panel .loss { color: #ff0055; text-shadow: 0 0 10px rgba(255, 0, 85, 0.4); }
+        .daily-stats-panel .assertiveness { color: #00d2ff; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+
+        .target-time { font-size: 1.1rem; font-weight: bold; color: #fff; }
+
         /* Estilos do Botão Switch */
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -70,6 +79,66 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #00d2ff; }
         input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- MOBILE RESPONSIVE (Added for precision) --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .layout-panel {
+                padding: 15px;
+            }
+
+            /* Header controls */
+            .main-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            /* Scoreboard */
+            .futuristic-scoreboard {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .score-value {
+                font-size: 1.5rem; /* Reduced from 1.6rem */
+            }
+
+            /* Daily Stats (Placar do Dia) */
+            .daily-stats-panel {
+                flex-wrap: wrap;
+                gap: 10px !important;
+                padding: 10px !important;
+                justify-content: space-around !important;
+            }
+            .daily-stats-panel .daily-stat-value { font-size: 1rem !important; }
+
+            /* Target Monitor (Alvos) */
+            .targets-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; gap: 8px !important; }
+            .target-time {
+                font-size: 1rem; /* Reduced from 1.1rem */
+            }
+        }
+
+        /* --- Scrollbar Futurista Aprimorada --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 15, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(255, 235, 59, 0.5)); /* Amarelo do ciclo */
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, var(--accent), #ffeb3b);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -346,7 +415,7 @@
             const dailyTotal = dailyWins + dailyLosses;
             const dailyAssertiveness = dailyTotal > 0 ? Math.round((dailyWins / dailyTotal) * 100) : 0;
             
-            const dailyStatsHtml = `<div style="display: flex; justify-content: center; align-items: center; gap: 20px; background: linear-gradient(90deg, rgba(0, 40, 60, 0.6), rgba(0, 0, 0, 0.8), rgba(60, 0, 20, 0.6)); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); margin-bottom: 25px; position: relative; overflow: hidden;"><div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent);"></div><span style="color: #ccc; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">Placar do Dia</span><span style="color: #00ff88; font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);">WIN: ${dailyWins}</span><span style="color: #ff0055; font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);">LOSS: ${dailyLosses}</span><span style="color: #00d2ff; font-weight: bold; font-size: 1.2rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);">${dailyAssertiveness}%</span></div>`;
+            const dailyStatsHtml = `<div class="daily-stats-panel" style="display: flex; justify-content: center; align-items: center; gap: 20px; background: linear-gradient(90deg, rgba(0, 40, 60, 0.6), rgba(0, 0, 0, 0.8), rgba(60, 0, 20, 0.6)); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); margin-bottom: 25px; position: relative; overflow: hidden;"><div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent);"></div><span class="daily-stat-label">Placar do Dia</span><span class="daily-stat-value win">WIN: ${dailyWins}</span><span class="daily-stat-value loss">LOSS: ${dailyLosses}</span><span class="daily-stat-value assertiveness">${dailyAssertiveness}%</span></div>`;
 
             const hourlyCounts = Array(24).fill(0);
             whiteTimes.forEach(date => hourlyCounts[date.getHours()]++);
@@ -446,7 +515,7 @@
                 <style>@keyframes pulse-text { 0% { opacity: 0.8; } 100% { opacity: 1; text-shadow: 0 0 8px; } }</style>`;
 
                 // --- Monitoramento de Entrada (6 Alvos Futuros) ---
-                let targetsHtml = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
+                let targetsHtml = '<div class="targets-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
                 let targetsFound = 0;
                 let cycleMultiplier = activeMultiplier; // Começa do alvo ativo
                 

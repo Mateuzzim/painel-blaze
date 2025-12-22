@@ -143,12 +143,27 @@
             color: #ccc;
         }
 
-        /* Scrollbar Futurista */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.1); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); box-shadow: 0 0 10px rgba(0, 210, 255, 0.8); }
-        ::-webkit-scrollbar-corner { background: #050505; }
+        /* --- Scrollbar Futurista Aprimorada --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 15, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(161, 0, 255, 0.5));
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, var(--accent), var(--accent-blaze));
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
 
         /* Controles (Busca e Atualizar) */
         .controls {
@@ -597,6 +612,72 @@
             font-size: 0.7rem; color: #aaa; cursor: pointer; 
             font-family: 'Orbitron', sans-serif; margin-bottom: 0;
         }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+            .layout-panel {
+                padding: 15px;
+            }
+            
+            /* Top Controls */
+            .top-controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            /* Controls Layout */
+            .controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            #search-input, #category-filter {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+            .btn-refresh {
+                flex: 1 1 calc(50% - 5px);
+                padding: 12px 5px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            /* News Card Layout */
+            .news-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .news-body {
+                flex-direction: column;
+            }
+            .mini-pie-chart {
+                margin: 10px auto 0 auto;
+            }
+            
+            /* Confluence Monitor */
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            /* Trend Chart (Ciclo de Mercado) */
+            .trend-chart {
+                padding: 12px;
+                gap: 8px;
+            }
+            .chart-label {
+                font-size: 0.65rem;
+                letter-spacing: 0.5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -891,6 +972,8 @@
                 const blinkClass = item.color === '#ff0055' ? 'blink-alert' : '';
                 const iconHtml = item.icon ? `<span style="margin-right: 8px;">${item.icon}</span>` : '';
                 
+                const imageHtml = item.image ? `<img src="${item.image}" style="width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #444;">` : '';
+
                 let chartHtml = '';
                 if (item.pieChart) {
                     const p = item.pieChart.percent;
@@ -911,6 +994,7 @@
                         <p class="news-content" style="margin: 0; flex-grow: 1;">${item.content}</p>
                         ${chartHtml}
                     </div>
+                    ${imageHtml}
                     <div class="news-footer">
                         <button class="btn-copy" onclick="copyNewsText(this, \`${item.icon || ''} ${item.title}\`, \`${item.content}\`)">
                             📋 COPIAR
@@ -923,6 +1007,33 @@
                 container.appendChild(card);
             });
         }
+
+        // Listener para comunicação entre abas
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cortex_new_news_item' && e.newValue) {
+                try {
+                    const newsItemData = JSON.parse(e.newValue);
+                    
+                    // Formata o timestamp para exibição
+                    const displayTimestamp = new Date(newsItemData.timestamp).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+                    const newNewsItem = {
+                        title: newsItemData.title,
+                        content: newsItemData.content,
+                        timestamp: displayTimestamp, // Usa o timestamp formatado
+                        icon: newsItemData.icon,
+                        color: newsItemData.color,
+                        image: newsItemData.image
+                    };
+
+                    // Adiciona a nova notícia no topo do array
+                    newsData.unshift(newNewsItem);
+                    renderNews();
+                    playNotificationSound();
+                    startTitleBlinking();
+                } catch (err) { console.error("Erro ao processar nova notícia do localStorage:", err); }
+            }
+        });
 
         function copyNewsText(btn, title, content) {
             // Remove tags HTML (como <b>, <span>) para copiar apenas o texto limpo
