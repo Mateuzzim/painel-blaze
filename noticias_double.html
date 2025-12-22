@@ -149,42 +149,1585 @@
         ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.2); border-radius: 4px; border: 1px solid rgba(0, 210, 255, 0.1); }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); box-shadow: 0 0 10px rgba(0, 210, 255, 0.8); }
         ::-webkit-scrollbar-corner { background: #050505; }
+
+        /* Controles (Busca e Atualizar) */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #category-filter {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        #category-filter:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #category-filter option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .btn-refresh {
+            padding: 0 20px;
+            border-radius: 6px;
+            border: 1px solid var(--accent);
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-refresh:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .countdown-timer {
+            display: flex;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @keyframes blink-red {
+            0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(255, 0, 85, 0.8); }
+            50% { opacity: 0.4; text-shadow: none; }
+        }
+
+        .blink-alert {
+            animation: blink-red 1s infinite;
+        }
+
+        @keyframes pulse-green-card {
+            0% { box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-color: var(--border-color); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.5); border-color: #00ff88; }
+            100% { box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-color: var(--border-color); }
+        }
+        .win-pulse {
+            animation: pulse-green-card 2s infinite;
+        }
+
+        /* Gráfico de Tendência */
+        .trend-chart {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .chart-column { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .chart-bar-bg { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
+        .chart-bar-fill { height: 100%; width: 0%; transition: width 1s ease-in-out; }
+        .fill-red { background: #ff0055; box-shadow: 0 0 8px rgba(255, 0, 85, 0.6); }
+        .fill-white { background: #ffffff; box-shadow: 0 0 8px rgba(255, 255, 255, 0.6); }
+        .fill-black { background: #888; box-shadow: 0 0 8px rgba(136, 136, 136, 0.6); }
+        .chart-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .chart-value { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: bold; }
+
+        /* Efeito Flash de Perigo */
+        #flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 0, 85, 0.3);
+            z-index: 9999; pointer-events: none; opacity: 0;
+        }
+        @keyframes flash-anim {
+            0% { opacity: 0; } 10% { opacity: 1; } 100% { opacity: 0; }
+        }
+        .flash-active { animation: flash-anim 0.8s ease-out; }
+
+        /* Gráfico de Pizza (Pie Chart) na Notícia */
+        .news-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        .mini-pie-chart {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .pie-inner {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 0.7rem; font-weight: bold; color: #fff; background: rgba(0,0,0,0.6);
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Botão de Compartilhar */
+        .news-footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: right;
+        }
+
+        .btn-share {
+            background: rgba(36, 161, 222, 0.15);
+            border: 1px solid #24A1DE;
+            color: #24A1DE;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-share:hover {
+            background: #24A1DE;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(36, 161, 222, 0.4);
+        }
+
+        .btn-copy {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        .btn-copy:hover {
+            background: #00ff88;
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Contador de Wins */
+        .win-counter-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid #00ff88;
+            padding: 8px 25px;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+            transition: all 0.3s;
+        }
+        .win-label {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff88;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        .win-value {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff88;
+        }
+        @keyframes win-pulse-anim {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(0, 255, 136, 0.15); background: rgba(0, 255, 136, 0.05); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 255, 136, 0.5); background: rgba(0, 255, 136, 0.2); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(0, 255, 136, 0.15); background: rgba(0, 255, 136, 0.05); }
+        }
+        .win-update-active {
+            animation: win-pulse-anim 0.6s ease-out;
+        }
+
+        /* Gráfico de Banca */
+        .bankroll-chart-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            height: 90px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bankroll-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        .bankroll-line {
+            fill: none;
+            stroke: #00ff88;
+            stroke-width: 2;
+            vector-effect: non-scaling-stroke;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.5));
+            transition: stroke 0.5s;
+        }
+        .bankroll-area {
+            fill: rgba(0, 255, 136, 0.1);
+            stroke: none;
+            transition: fill 0.5s;
+        }
+        .chart-title {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .chart-current-value {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Efeito Chuva de Dinheiro */
+        .money-rain {
+            position: fixed;
+            top: -50px;
+            z-index: 10000;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Efeito Confete */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            z-index: 10001;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            animation: confetti-fall linear forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Monitor de Confluência */
+        .confluence-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .confluence-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: scan-line-anim 4s linear infinite;
+        }
+        @keyframes scan-line-anim {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .confluence-header {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .tool-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        .tool-name { font-size: 0.6rem; color: #888; text-transform: uppercase; }
+        .tool-signal { font-size: 1rem; }
+        
+        .confluence-status {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #888;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+        .confluence-status.active-red {
+            background: rgba(255, 0, 85, 0.15);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
+            animation: pulse-red 1s infinite;
+        }
+        .confluence-status.active-black {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid #fff;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            animation: pulse-white 1s infinite;
+        }
+        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes pulse-white { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* Gráfico de Força da Confluência */
+        .confluence-strength-chart {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px auto;
+            animation: breathing-glow 3s infinite ease-in-out;
+        }
+        @keyframes breathing-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 5px rgba(0, 210, 255, 0.1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
+        }
+        .confluence-strength-chart svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 4;
+        }
+        .circle {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease-out, stroke 0.5s;
+        }
+        .strength-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+            transition: color 0.5s;
+        }
+
+        /* Animação de Recorde no Gráfico */
+        @keyframes chart-flash {
+            0% { box-shadow: 0 0 0 rgba(0, 255, 136, 0); border-color: var(--border-color); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.8); border-color: #00ff88; background-color: rgba(0, 255, 136, 0.1); }
+            100% { box-shadow: 0 0 0 rgba(0, 255, 136, 0); border-color: var(--border-color); }
+        }
+        .chart-record-flash {
+            animation: chart-flash 1s ease-out;
+        }
+
+        /* --- ALINHAMENTO CONTROLES SUPERIORES --- */
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .checkbox-container label {
+            font-size: 0.7rem; color: #aaa; cursor: pointer; 
+            font-family: 'Orbitron', sans-serif; margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
+    <div id="flash-overlay"></div>
     <div class="main-container">
         <div class="layout-panel">
-            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            <a href="index.html" class="btn-back" style="display: none;">⬅ Voltar ao Menu</a>
             <div class="main-header">
-                <h1 class="cortex-text-anim">NOTÍCIAS DO MERCADO</h1>
+                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                    <h1 class="cortex-text-anim" style="display: none;">NOTÍCIAS DO MERCADO</h1>
+                    <div id="win-counter-box" class="win-counter-container" style="display: none;">
+                        <span style="font-size: 1.2rem;">🏆</span>
+                        <span class="win-label">WINS HOJE:</span>
+                        <span id="daily-wins-count" class="win-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="top-controls">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="chk-auto-share-filter" style="accent-color: var(--accent); cursor: pointer;">
+                    <label for="chk-auto-share-filter">SÓ WINS/ALERTAS</label>
+                </div>
+                <div id="countdown-display" class="countdown-timer"></div>
+            </div>
+
+            <div class="controls">
+                <select id="category-filter">
+                    <option value="all">Todas as Categorias</option>
+                    <option value="padroes">Padrões</option>
+                    <option value="alertas">Alertas</option>
+                    <option value="numeros">Análise de Números</option>
+                    <option value="ciclo">Ciclo de Mercado</option>
+                    <option value="ia">Previsão I.A.</option>
+                    <option value="ferramentas">Ferramentas (Win/Loss)</option>
+                </select>
+                <input type="text" id="search-input" placeholder="Buscar por título ou conteúdo...">
+                <button id="btn-refresh" class="btn-refresh">ATUALIZAR</button>
+                <button id="btn-toggle-auto" class="btn-refresh">PARAR AUTO</button>
+                <button id="btn-sound" class="btn-refresh" style="border-color: #555; color: #555;">🔇 MUDO</button>
+                <button id="btn-auto-share" class="btn-refresh">AUTO SHARE</button>
+            </div>
+
+            <div class="confluence-box">
+                <div class="confluence-header">📡 MONITOR DE CONFLUÊNCIA</div>
+                <div class="confluence-strength-chart">
+                    <svg viewBox="0 0 36 36">
+                        <path class="circle-bg"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path id="confluence-progress-circle" class="circle"
+                            stroke-dasharray="100, 100"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                    </svg>
+                    <div id="confluence-strength-text" class="strength-text">0%</div>
+                </div>
+                <div class="tools-grid">
+                    <div class="tool-item" id="tool-robo">
+                        <span class="tool-name">Robô Cores</span>
+                        <span class="tool-signal">⏳</span>
+                    </div>
+                    <div class="tool-item" id="tool-padroes">
+                        <span class="tool-name">Padrões</span>
+                        <span class="tool-signal">⏳</span>
+                    </div>
+                    <div class="tool-item" id="tool-ia">
+                        <span class="tool-name">I.A.</span>
+                        <span class="tool-signal">⏳</span>
+                    </div>
+                    <div class="tool-item" id="tool-ciclos">
+                        <span class="tool-name">Ciclos</span>
+                        <span class="tool-signal">⏳</span>
+                    </div>
+                </div>
+                <div id="confluence-alert" class="confluence-status">AGUARDANDO ANÁLISE...</div>
+            </div>
+
+            <div class="bankroll-chart-container">
+                <div class="chart-title">Crescimento da Banca</div>
+                <div id="bankroll-current" class="chart-current-value">R$ 1.000,00</div>
+                <svg id="bankroll-svg" class="bankroll-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path id="bankroll-area" class="bankroll-area" d="" />
+                    <path id="bankroll-line" class="bankroll-line" d="" />
+                </svg>
+            </div>
+
+            <div class="trend-chart">
+                <div class="chart-column">
+                    <span class="chart-label">Vermelho</span>
+                    <div class="chart-bar-bg"><div id="fill-red" class="chart-bar-fill fill-red"></div></div>
+                    <span id="val-red" class="chart-value" style="color: #ff0055">0%</span>
+                </div>
+                <div class="chart-column">
+                    <span class="chart-label">Branco</span>
+                    <div class="chart-bar-bg"><div id="fill-white" class="chart-bar-fill fill-white"></div></div>
+                    <span id="val-white" class="chart-value" style="color: #fff">0%</span>
+                </div>
+                <div class="chart-column">
+                    <span class="chart-label">Preto</span>
+                    <div class="chart-bar-bg"><div id="fill-black" class="chart-bar-fill fill-black"></div></div>
+                    <span id="val-black" class="chart-value" style="color: #888">0%</span>
+                </div>
             </div>
 
             <div id="news-container">
-                <div class="news-card">
-                    <div class="news-header">
-                        <span class="news-title">Análise de Volatilidade</span>
-                        <span class="news-timestamp">21/12/2025 16:50</span>
-                    </div>
-                    <p class="news-content">A volatilidade para a cor Branca atingiu picos inesperados nas últimas horas. Nossos analistas recomendam cautela e o uso de ferramentas de confirmação, como o indicador de S/R, antes de realizar entradas baseadas em volatilidade pura.</p>
-                </div>
-
-                <div class="news-card">
-                    <div class="news-header">
-                        <span class="news-title">Padrão de Tendência</span>
-                        <span class="news-timestamp">21/12/2025 15:15</span>
-                    </div>
-                    <p class="news-content">Observou-se uma forte tendência de alta (Vermelho) após um período de consolidação. O indicador MACD cruzou para cima, confirmando o momento. Fique atento a possíveis reversões ao se aproximar de níveis de resistência históricos.</p>
-                </div>
-
-                <div class="news-card">
-                    <div class="news-header">
-                        <span class="news-title">Atualização do Sistema</span>
-                        <span class="news-timestamp">20/12/2025 10:00</span>
-                    </div>
-                    <p class="news-content">O algoritmo de análise de "Surf" foi recalibrado para melhor identificar padrões de continuação e reversão. Uma pausa automática de 3 minutos foi implementada após 2 perdas consecutivas para evitar perdas em mercados instáveis.</p>
-                </div>
+                <!-- Conteúdo será carregado via JavaScript -->
             </div>
         </div>
     </div>
+
+    <script>
+        // Dados das notícias (Simulando um banco de dados)
+        const newsData = [];
+
+        const container = document.getElementById('news-container');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const btnRefresh = document.getElementById('btn-refresh');
+        const btnToggleAuto = document.getElementById('btn-toggle-auto');
+        const btnSound = document.getElementById('btn-sound');
+        const btnAutoShare = document.getElementById('btn-auto-share');
+        const countdownDisplay = document.getElementById('countdown-display');
+
+        // Inicializa contador de Wins
+        let dailyWins = 0; 
+        document.getElementById('daily-wins-count').textContent = dailyWins;
+
+        // Dados da Banca (Simulação)
+        let bankroll = 1000;
+        let bankrollHistory = [1000];
+
+        // --- OPÇÕES DOUBLE BACKGROUND DATA ---
+        let opcoesDoubleGamesData = [];
+        let allCandlesOpcoesDouble = [];
+        let newsCycleCounter = 0;
+        let lastProcessedResultId = null; // Para rastrear o último resultado
+
+        let maxBankroll = Math.max(...bankrollHistory);
+
+        function triggerMoneyRain() {
+            for (let i = 0; i < 30; i++) {
+                const money = document.createElement('div');
+                money.classList.add('money-rain');
+                money.innerText = '💸';
+                money.style.left = Math.random() * 100 + 'vw';
+                money.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                money.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                money.style.animationDelay = Math.random() * 1 + 's';
+                
+                document.body.appendChild(money);
+
+                setTimeout(() => {
+                    money.remove();
+                }, 4000);
+            }
+        }
+
+        // Função para atualizar o Monitor de Confluência
+        function updateConfluenceMonitor() {
+            const progressCircle = document.getElementById('confluence-progress-circle');
+            const strengthText = document.getElementById('confluence-strength-text');
+            const tools = ['tool-robo', 'tool-padroes', 'tool-ia', 'tool-ciclos'];
+            let votes = { '🔴': 0, '⚫': 0 };
+            
+            tools.forEach(id => {
+                const el = document.querySelector(`#${id} .tool-signal`);
+                const item = document.getElementById(id);
+                
+                // Simulação: 40% Vermelho, 40% Preto, 20% Neutro
+                const rand = Math.random();
+                let sig = '⏳';
+                
+                if (rand < 0.4) { sig = '🔴'; votes['🔴']++; item.style.borderColor = '#ff0055'; }
+                else if (rand < 0.8) { sig = '⚫'; votes['⚫']++; item.style.borderColor = '#fff'; }
+                else { item.style.borderColor = 'transparent'; }
+                
+                el.textContent = sig;
+            });
+
+            const alertBox = document.getElementById('confluence-alert');
+            const maxVotes = Math.max(votes['🔴'], votes['⚫']);
+            // A força é a porcentagem de ferramentas que concordam (mínimo de 2 para ter força > 0)
+            const strength = (maxVotes >= 2) ? (maxVotes / tools.length) * 100 : 0;
+
+            // Atualiza o círculo de progresso
+            const circumference = 100; // Baseado no stroke-dasharray="100, 100"
+            const offset = circumference - strength;
+            progressCircle.style.strokeDashoffset = offset;
+            strengthText.textContent = `${Math.round(strength)}%`;
+            
+            if (votes['🔴'] >= 3) {
+                alertBox.innerHTML = "🔥 CONFLUÊNCIA FORTE: VERMELHO";
+                alertBox.className = "confluence-status active-red";
+                progressCircle.style.stroke = '#ff0055';
+                strengthText.style.color = '#ff0055';
+            } else if (votes['⚫'] >= 3) {
+                alertBox.innerHTML = "🔥 CONFLUÊNCIA FORTE: PRETO";
+                alertBox.className = "confluence-status active-black";
+                progressCircle.style.stroke = '#fff';
+                strengthText.style.color = '#fff';
+            } else {
+                alertBox.innerHTML = "DIVERGÊNCIA DETECTADA - AGUARDE";
+                alertBox.className = "confluence-status";
+                progressCircle.style.stroke = 'var(--accent)';
+                strengthText.style.color = '#fff';
+            }
+        }
+
+        function updateBankrollChart() {
+            const line = document.getElementById('bankroll-line');
+            const area = document.getElementById('bankroll-area');
+            const display = document.getElementById('bankroll-current');
+            
+            display.textContent = `R$ ${bankroll.toFixed(2)}`;
+
+            // FIX: Handle case where there's only one point in history, which causes a division by zero (NaN).
+            if (bankrollHistory.length < 2) {
+                line.setAttribute('d', ''); // Clear the path to prevent errors
+                area.setAttribute('d', ''); // Clear the area path
+                display.style.color = '#fff'; // Reset color to default
+                return;
+            }
+            
+            const min = Math.min(...bankrollHistory);
+            const max = Math.max(...bankrollHistory);
+            const range = max - min || 1;
+            
+            const points = bankrollHistory.map((val, index) => {
+                const x = (index / (bankrollHistory.length - 1)) * 100;
+                const normalizedVal = (val - min) / range; 
+                const y = 100 - (normalizedVal * 80 + 10); // 10% de margem
+                return `${x},${y}`;
+            });
+            
+            const lineD = `M ${points.join(' L ')}`;
+            const areaD = `${lineD} L 100,100 L 0,100 Z`;
+            
+            line.setAttribute('d', lineD);
+            area.setAttribute('d', areaD);
+            
+            if (bankroll >= bankrollHistory[0]) {
+                line.style.stroke = '#00ff88';
+                area.style.fill = 'rgba(0, 255, 136, 0.1)';
+                display.style.color = '#00ff88';
+            } else {
+                line.style.stroke = '#ff0055';
+                area.style.fill = 'rgba(255, 0, 85, 0.1)';
+                display.style.color = '#ff0055';
+            }
+        }
+
+        // Função para renderizar as notícias
+        function renderNews() {
+            const filterText = searchInput.value.toLowerCase();
+            const filterCat = categoryFilter.value;
+
+            container.innerHTML = '';
+            
+            const filtered = newsData.filter(item => {
+                const matchesText = item.title.toLowerCase().includes(filterText) || 
+                                    item.content.toLowerCase().includes(filterText);
+                
+                let matchesCat = true;
+                if (filterCat !== 'all') {
+                    const t = item.title.toLowerCase();
+                    if (filterCat === 'padroes') matchesCat = t.includes('padrão');
+                    else if (filterCat === 'alertas') matchesCat = t.includes('alerta') || t.includes('atenção');
+                    else if (filterCat === 'numeros') matchesCat = t.includes('análise de números');
+                    else if (filterCat === 'ciclo') matchesCat = t.includes('ciclo de mercado');
+                    else if (filterCat === 'ia') matchesCat = t.includes('previsão i.a.');
+                    else if (filterCat === 'ferramentas') matchesCat = t.includes('robô') || t.includes('i.a branco') || t.includes('ferramenta') || t.includes('win') || t.includes('loss');
+                }
+
+                return matchesText && matchesCat;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color: #888; margin-top: 20px;">Nenhuma notícia encontrada.</p>';
+                return;
+            }
+
+            filtered.slice(0, 10).forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'news-card';
+                
+                if (item.title.includes("WIN") || item.title.includes("Robô Cores ON")) {
+                    card.classList.add('win-pulse');
+                }
+
+                const titleStyle = item.color ? `style="color: ${item.color}"` : '';
+                const blinkClass = item.color === '#ff0055' ? 'blink-alert' : '';
+                const iconHtml = item.icon ? `<span style="margin-right: 8px;">${item.icon}</span>` : '';
+                
+                let chartHtml = '';
+                if (item.pieChart) {
+                    const p = item.pieChart.percent;
+                    const c = item.pieChart.color;
+                    chartHtml = `
+                        <div class="mini-pie-chart" style="background: conic-gradient(${c} 0% ${p}%, rgba(255,255,255,0.1) ${p}% 100%);">
+                            <div class="pie-inner">${p}%</div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="news-header">
+                        <span class="news-title ${blinkClass}" ${titleStyle}>${iconHtml}${item.title}</span>
+                        <span class="news-timestamp">${item.timestamp}</span>
+                    </div>
+                    <div class="news-body">
+                        <p class="news-content" style="margin: 0; flex-grow: 1;">${item.content}</p>
+                        ${chartHtml}
+                    </div>
+                    <div class="news-footer">
+                        <button class="btn-copy" onclick="copyNewsText(this, \`${item.icon || ''} ${item.title}\`, \`${item.content}\`)">
+                            📋 COPIAR
+                        </button>
+                        <button class="btn-share" onclick="shareOnTelegram(\`${item.icon || ''} ${item.title}\`, \`${item.content}\`)">
+                            ➤ COMPARTILHAR
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function copyNewsText(btn, title, content) {
+            // Remove tags HTML (como <b>, <span>) para copiar apenas o texto limpo
+            const cleanContent = content.replace(/<[^>]*>?/gm, '');
+            const text = `*${title.trim()}*\n\n${cleanContent}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = "✅ COPIADO!";
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => console.error('Erro ao copiar:', err));
+        }
+
+        // Função para gerar imagem do gráfico Opções Double
+        function generateOpcoesChartBlob() {
+            return new Promise((resolve) => {
+                if (!allCandlesOpcoesDouble || allCandlesOpcoesDouble.length < 26) {
+                    resolve(null);
+                    return;
+                }
+
+                const canvas = document.createElement('canvas');
+                const width = 800;
+                const height = 600;
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // --- DEFINIÇÕES DE LAYOUT ---
+                const mainChartHeight = 300;
+                const volumeChartHeight = 80;
+                const rsiChartHeight = 80;
+                const macdChartHeight = 80;
+                const chartGap = 15;
+                const padding = { top: 20, right: 50, bottom: 20, left: 10 };
+
+                // --- DADOS ---
+                const candles = allCandlesOpcoesDouble.slice(-60); // Pega um pouco mais para os indicadores
+                const smaData = od_calculateSMA(candles, 14).slice(-50);
+                const bbData = od_calculateBollingerBands(candles, 20, 2);
+                const macdData = od_calculateMACD(candles, 12, 26, 9);
+                const rsiData = od_calculateRSI(candles, 14).slice(-50);
+                const displayCandles = candles.slice(-50); // Velas que serão realmente desenhadas
+
+                // --- FUNÇÕES AUXILIARES DE DESENHO ---
+                const drawLinePath = (plotCtx, data, yFunc, color, width = 1, dash = []) => {
+                    plotCtx.beginPath();
+                    let firstPoint = true;
+                    data.forEach((val, i) => {
+                        if (val !== null) {
+                            const x = padding.left + (i * candleSpacing) + (candleWidth / 2);
+                            const y = yFunc(val);
+                            if (firstPoint) { plotCtx.moveTo(x, y); firstPoint = false; }
+                            else { plotCtx.lineTo(x, y); }
+                        }
+                    });
+                    plotCtx.strokeStyle = color;
+                    plotCtx.lineWidth = width;
+                    plotCtx.setLineDash(dash);
+                    plotCtx.stroke();
+                    plotCtx.setLineDash([]);
+                };
+
+                // --- FUNDO GERAL ---
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, width, height);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                for(let x=0; x<width; x+=40) { ctx.moveTo(x,0); ctx.lineTo(x,height); }
+                for(let y=0; y<height; y+=40) { ctx.moveTo(0,y); ctx.lineTo(width,y); }
+                ctx.stroke();
+
+                // --- 1. GRÁFICO PRINCIPAL (VELAS) ---
+                const mainPlotY = 0;
+                const mainPlotHeight = mainChartHeight;
+                const mainPlotWidth = width - padding.left - padding.right;
+                const candleSpacing = mainPlotWidth / displayCandles.length;
+                const candleWidth = candleSpacing * 0.7;
+                
+                const mainMin = Math.min(...displayCandles.map(c => c.low));
+                const mainMax = Math.max(...displayCandles.map(c => c.high));
+                const mainRange = mainMax - mainMin || 1;
+                const mainY = (val) => padding.top + mainPlotHeight - (((val - mainMin) / mainRange) * (mainPlotHeight - padding.top - padding.bottom));
+
+                // Bandas de Bollinger
+                const bbUpper = bbData.upper.slice(-50);
+                const bbLower = bbData.lower.slice(-50);
+                ctx.fillStyle = 'rgba(0, 210, 255, 0.1)';
+                ctx.beginPath();
+                let firstUpper = true;
+                bbUpper.forEach((val, i) => {
+                    if (val !== null) {
+                        const x = padding.left + (i * candleSpacing) + (candleWidth / 2);
+                        const y = mainY(val);
+                        if (firstUpper) { ctx.moveTo(x, y); firstUpper = false; }
+                        else { ctx.lineTo(x, y); }
+                    }
+                });
+                for (let i = bbLower.length - 1; i >= 0; i--) {
+                    const val = bbLower[i];
+                    if (val !== null) {
+                        const x = padding.left + (i * candleSpacing) + (candleWidth / 2);
+                        const y = mainY(val);
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                // Linhas SMA
+                drawLinePath(ctx, smaData, mainY, '#ff9800', 1.5);
+
+                // Velas
+                displayCandles.forEach((c, i) => {
+                    const x = padding.left + i * candleSpacing;
+                    const yHigh = mainY(c.high);
+                    const yLow = mainY(c.low);
+                    const yOpen = mainY(c.open);
+                    const yClose = mainY(c.close);
+                    const color = c.close >= c.open ? '#00ff88' : '#ff0055';
+                    ctx.strokeStyle = color;
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(x + candleWidth / 2, yHigh);
+                    ctx.lineTo(x + candleWidth / 2, yLow);
+                    ctx.stroke();
+                    ctx.fillRect(x, Math.min(yOpen, yClose), candleWidth, Math.max(1, Math.abs(yOpen - yClose)));
+                });
+
+                // --- 2. GRÁFICO DE VOLUME ---
+                const volumePlotY = mainChartHeight + chartGap;
+                const volumePlotHeight = volumeChartHeight - padding.top - padding.bottom;
+                const maxVolume = Math.max(...displayCandles.map(c => c.volume), 1);
+
+                displayCandles.forEach((c, i) => {
+                    const x = padding.left + i * candleSpacing;
+                    const barHeight = (c.volume / maxVolume) * volumePlotHeight;
+                    const y = volumePlotY + padding.top + volumePlotHeight - barHeight;
+                    ctx.fillStyle = c.close >= c.open ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)';
+                    ctx.fillRect(x, y, candleWidth, barHeight);
+                });
+                ctx.font = '10px Orbitron'; ctx.fillStyle = '#888'; ctx.fillText('Volume', padding.left, volumePlotY + 12);
+
+
+                // --- 3. GRÁFICO MACD ---
+                const macdPlotY = volumePlotY + volumeChartHeight + chartGap;
+                const macdPlotHeight = macdChartHeight;
+                const macdMin = Math.min(...macdData.histogram.filter(v => v !== null));
+                const macdMax = Math.max(...macdData.histogram.filter(v => v !== null));
+                const macdRange = macdMax - macdMin || 1;
+                const macdY = (val) => macdPlotY + macdPlotHeight - padding.bottom - (((val - macdMin) / macdRange) * (macdPlotHeight - padding.top - padding.bottom));
+                const macdZeroY = macdY(0);
+
+                // Histograma
+                macdData.histogram.slice(-50).forEach((val, i) => {
+                    if (val !== null) {
+                        const x = padding.left + i * candleSpacing;
+                        const yVal = macdY(val);
+                        ctx.fillStyle = val > 0 ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)';
+                        ctx.fillRect(x, Math.min(yVal, macdZeroY), candleWidth, Math.abs(yVal - macdZeroY));
+                    }
+                });
+                drawLinePath(ctx, macdData.macdLine.slice(-50), macdY, '#00d2ff', 1.5);
+                drawLinePath(ctx, macdData.signalLine.slice(-50), macdY, '#ff9800', 1.5);
+                ctx.font = '10px Orbitron'; ctx.fillStyle = '#888'; ctx.fillText('MACD', padding.left, macdPlotY + 12);
+
+                // --- 4. GRÁFICO RSI ---
+                const rsiPlotY = macdPlotY + macdChartHeight + chartGap;
+                const rsiPlotHeight = rsiChartHeight;
+                const rsiY = (val) => rsiPlotY + rsiPlotHeight - padding.bottom - ((val / 100) * (rsiPlotHeight - padding.top - padding.bottom));
+                
+                // Linhas 70/30
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+                ctx.beginPath(); ctx.moveTo(padding.left, rsiY(70)); ctx.lineTo(width - padding.right, rsiY(70)); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(padding.left, rsiY(30)); ctx.lineTo(width - padding.right, rsiY(30)); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Linha RSI
+                drawLinePath(ctx, rsiData, rsiY, '#a100ff', 2);
+                ctx.font = '10px Orbitron'; ctx.fillStyle = '#888'; ctx.fillText('RSI(14)', padding.left, rsiPlotY + 12);
+
+                // --- FINALIZAÇÃO ---
+                // Adiciona a marca d'água
+                ctx.font = 'bold 16px Orbitron, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('Cortex Virtual', width - 15, height - 15);
+
+                // Adiciona Data e Hora
+                const now = new Date();
+                const dateTimeStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+                ctx.font = '12px sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.fillText(dateTimeStr, width - 15, height - 35);
+
+                canvas.toBlob(resolve, 'image/png');
+            });
+        }
+
+        async function shareOnTelegram(title, content, isAuto = false) {
+            const cleanContent = content.replace(/<[^>]*>?/gm, ''); // Remove tags HTML
+            let text = `*${title.trim()}*\n\n${cleanContent}`;
+
+            // Personaliza a mensagem se for do Robô Cores
+            if (title.includes("Robô Cores")) {
+                text += `\n\n🚀 *Acesse nosso painel e não perca nenhuma entrada!*`;
+            }
+
+            // Tenta enviar via API para o Chat ID configurado (Robô Cores)
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = sessionStorage.getItem('telegram_chat_id_noticias') || localStorage.getItem('telegram_chat_id_noticias') || sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+
+            if (token && chatId) {
+                try {
+                    // Se for notícia de Opções Double, tenta enviar com imagem
+                    if (title.includes("Opções Double")) {
+                        const imageBlob = await generateOpcoesChartBlob();
+                        if (imageBlob) {
+                            const formData = new FormData();
+                            formData.append('chat_id', chatId);
+                            formData.append('photo', imageBlob, 'chart.png');
+                            formData.append('caption', text);
+                            formData.append('parse_mode', 'Markdown');
+                            const response = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: formData });
+                            const data = await response.json();
+                            if (data.ok) { if (!isAuto) alert('✅ Notícia com gráfico enviada!'); return; }
+                        }
+                    }
+
+                    // Envio padrão de texto
+                    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.ok) {
+                        if (!isAuto) alert('✅ Notícia enviada para o canal configurado!');
+                        return; // Sucesso, não abre janela manual
+                    }
+                } catch (e) {
+                    console.error('Erro ao enviar via API:', e);
+                }
+            }
+
+            if (isAuto) return; // Se for automático e falhar/não tiver config, não abre popup
+
+            // Fallback: Compartilhamento manual se não houver config ou falhar
+            const encodedText = encodeURIComponent(text);
+            const telegramUrl = `https://t.me/share/url?text=${encodedText}`;
+            window.open(telegramUrl, '_blank');
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', () => renderNews());
+        categoryFilter.addEventListener('change', () => renderNews());
+
+        btnRefresh.addEventListener('click', () => {
+            const originalText = btnRefresh.textContent;
+            btnRefresh.textContent = '...';
+            setTimeout(() => {
+                renderNews();
+                btnRefresh.textContent = originalText;
+            }, 500);
+        });
+
+        // Controle de Som
+        let soundEnabled = false;
+        
+        btnSound.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            btnSound.textContent = soundEnabled ? '🔊 SOM' : '🔇 MUDO';
+            btnSound.style.borderColor = soundEnabled ? 'var(--accent)' : '#555';
+            btnSound.style.color = soundEnabled ? 'var(--accent)' : '#555';
+        });
+
+        // Controle de Auto Share (Telegram)
+        let isAutoShareActive = false; // Começa desativado
+
+        btnAutoShare.addEventListener('click', () => {
+            isAutoShareActive = !isAutoShareActive;
+            if (isAutoShareActive) {
+                btnAutoShare.textContent = 'PARAR SHARE';
+                btnAutoShare.style.borderColor = 'var(--accent-blaze)';
+                btnAutoShare.style.color = 'var(--accent-blaze)';
+            } else {
+                btnAutoShare.textContent = 'AUTO SHARE';
+                btnAutoShare.style.borderColor = '';
+                btnAutoShare.style.color = '';
+            }
+        });
+
+
+        function playNotificationSound() {
+            if (!soundEnabled) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // Frequência A5
+                gain.gain.setValueAtTime(0.1, ctx.currentTime); // Volume baixo
+                
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15); // Duração curta
+            } catch (e) { console.error("Erro som:", e); }
+        }
+
+        // Som de Caixa Registradora (Cha-Ching)
+        function playCashSound() {
+            if (!soundEnabled) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const t = ctx.currentTime;
+
+                // Parte 1: "Cha" (Som mecânico rápido)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.connect(gain1); gain1.connect(ctx.destination);
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(200, t);
+                osc1.frequency.linearRampToValueAtTime(400, t + 0.1);
+                gain1.gain.setValueAtTime(0.1, t);
+                gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+                osc1.start(t); osc1.stop(t + 0.15);
+
+                // Parte 2: "Ching" (Moedas/Sino)
+                [1200, 1600, 2000].forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, t + 0.1 + (i*0.02));
+                    gain.gain.setValueAtTime(0, t + 0.1);
+                    gain.gain.linearRampToValueAtTime(0.15, t + 0.12 + (i*0.02));
+                    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.8);
+                    osc.start(t + 0.1); osc.stop(t + 0.8);
+                });
+            } catch (e) { console.error("Erro som cash:", e); }
+        }
+
+        // Efeito Confete
+        function triggerConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff', '#ffffff'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // --- OPÇÕES DOUBLE BACKGROUND LOGIC ---
+
+        function od_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function od_calculateEMA(data, period) {
+            const emaArray = new Array(data.length).fill(null);
+            if (data.length < period) return emaArray;
+            const k = 2 / (period + 1);
+            let sum = 0;
+            for (let i = 0; i < period; i++) {
+                if (data[i] && typeof data[i].close === 'number') sum += data[i].close;
+            }
+            emaArray[period - 1] = sum / period;
+            for (let i = period; i < data.length; i++) {
+                if (data[i] && typeof data[i].close === 'number' && emaArray[i - 1] !== null) {
+                    emaArray[i] = (data[i].close * k) + (emaArray[i - 1] * (1 - k));
+                }
+            }
+            return emaArray;
+        }
+
+        function od_calculateSMA(data, period) {
+            const smaData = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) { smaData.push(null); continue; }
+                let sum = 0;
+                for (let j = 0; j < period; j++) { sum += data[i - j].close; }
+                smaData.push(sum / period);
+            }
+            return smaData;
+        }
+
+        function od_calculateMACD(data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+            const emaFast = od_calculateEMA(data, fastPeriod);
+            const emaSlow = od_calculateEMA(data, slowPeriod);
+            const macdLine = [];
+            const histogram = [];
+            for (let i = 0; i < data.length; i++) {
+                if (emaFast[i] !== null && emaSlow[i] !== null) { macdLine.push(emaFast[i] - emaSlow[i]); } 
+                else { macdLine.push(null); }
+            }
+            const signalLine = od_calculateEMA(macdLine.map(v => ({ close: v })), signalPeriod);
+            for (let i = 0; i < data.length; i++) {
+                if (macdLine[i] !== null && signalLine[i] !== null) { histogram.push(macdLine[i] - signalLine[i]); } 
+                else { histogram.push(null); }
+            }
+            return { macdLine, signalLine, histogram };
+        }
+
+        function od_calculateBollingerBands(data, period = 20, multiplier = 2) {
+            const upper = [];
+            const lower = [];
+            const middle = [];
+
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) {
+                    upper.push(null); lower.push(null); middle.push(null);
+                    continue;
+                }
+                let sum = 0;
+                for (let j = 0; j < period; j++) { sum += data[i - j].close; }
+                const sma = sum / period;
+                middle.push(sma);
+                let sumSqDiff = 0;
+                for (let j = 0; j < period; j++) { sumSqDiff += Math.pow(data[i - j].close - sma, 2); }
+                const stdDev = Math.sqrt(sumSqDiff / period);
+                upper.push(sma + (stdDev * multiplier));
+                lower.push(sma - (stdDev * multiplier));
+            }
+            return { upper, middle, lower };
+        }
+
+        function od_calculateRSI(data, period = 14) {
+            const rsi = new Array(data.length).fill(null);
+            if (data.length <= period) return rsi;
+            let avgGain = 0;
+            let avgLoss = 0;
+            for (let i = 1; i <= period; i++) {
+                const change = data[i].close - data[i - 1].close;
+                if (change > 0) avgGain += change;
+                else avgLoss += Math.abs(change);
+            }
+            avgGain /= period; avgLoss /= period;
+            rsi[period] = avgLoss === 0 ? 100 : 100 - (1 + (avgGain / avgLoss));
+            for (let i = period + 1; i < data.length; i++) {
+                const change = data[i].close - data[i - 1].close;
+                const gain = change > 0 ? change : 0;
+                const loss = change < 0 ? Math.abs(change) : 0;
+                avgGain = ((avgGain * (period - 1)) + gain) / period;
+                avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+                rsi[i] = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
+            }
+            return rsi;
+        }
+
+        function od_getTrendSignal(data) {
+            if (data.length < 26) return { signal: "NEUTRO", color: "#888", icon: "⚖️" };
+            const smaData = od_calculateSMA(data, 14);
+            const lastSMA = smaData[smaData.length - 1];
+            const lastClose = data[data.length - 1].close;
+            const macdData = od_calculateMACD(data, 12, 26, 9);
+            const lastHist = macdData.histogram[macdData.histogram.length - 1];
+            if (lastSMA !== null && lastHist !== null) {
+                if (lastClose > lastSMA && lastHist > 0) return { signal: "VERMELHO", color: "#ff0055", icon: "🔴" };
+                if (lastClose < lastSMA && lastHist < 0) return { signal: "PRETO", color: "#ffffff", icon: "⚫" };
+            }
+            return { signal: "NEUTRO", color: "#888", icon: "⚖️" };
+        }
+
+        function od_generateCandles(data) {
+            let priceData = [];
+            let lastClose = 100;
+            const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            sortedData.forEach(game => {
+                const open = lastClose;
+                let high, low, close;
+                const color = od_identificarCor(game.roll);
+                if (color === 'vermelho') { close = open + 10; high = close; low = open; } 
+                else if (color === 'preto') { close = open - 10; high = open; low = close; } 
+                else { close = open; high = open + 5; low = open - 5; }
+                priceData.push({ open, high, low, close, color, roll: game.roll, timestamp: new Date(game.created_at).getTime(), volume: 1 });
+                lastClose = close;
+            });
+            return priceData;
+        }
+
+        async function fetchOpcoesDoubleData() {
+            try {
+                let token = localStorage.getItem('blaze_token');
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    headers['x-access-token'] = token;
+                }
+                const response = await fetch(`https://corsproxy.io/?https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1?_nc=${Date.now()}`, { headers });
+                if (!response.ok) return;
+                const data = await response.json();
+                const records = Array.isArray(data) ? data : (data.records || []);
+
+                // --- LÓGICA DE NOTÍCIA DE COLETA DE DADOS ---
+                if (records.length > 0) {
+                    const latestResult = records[0];
+                    if (lastProcessedResultId === null) {
+                        lastProcessedResultId = latestResult.id;
+                    } else if (latestResult.id !== lastProcessedResultId) {
+                        lastProcessedResultId = latestResult.id;
+
+                        const now = new Date(latestResult.created_at);
+                        const timeString = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                        const color = od_identificarCor(latestResult.roll);
+                        let colorEmoji = '❓', colorName = 'Desconhecido', colorHex = '#888';
+
+                        if (color === 'vermelho') { colorEmoji = '🔴'; colorName = 'Vermelho'; colorHex = '#ff0055'; }
+                        else if (color === 'preto') { colorEmoji = '⚫'; colorName = 'Preto'; colorHex = '#aaa'; }
+                        else if (color === 'branco') { colorEmoji = '⚪'; colorName = 'Branco'; colorHex = '#fff'; }
+
+                        const dataNews = {
+                            title: "🤖 Coleta de Dados",
+                            timestamp: timeString,
+                            content: `Novo resultado detectado: <strong style="color:${colorHex};">${latestResult.roll} ${colorEmoji} (${colorName})</strong>.`,
+                            color: colorHex,
+                            icon: "📡"
+                        };
+
+                        newsData.unshift(dataNews);
+                        renderNews();
+                        playNotificationSound();
+                    }
+                }
+
+                // Atualiza dados para a análise de Opções Double
+                opcoesDoubleGamesData = records.map(g => ({ created_at: g.created_at, roll: g.roll, id: g.id }));
+                if (opcoesDoubleGamesData.length > 0) {
+                    allCandlesOpcoesDouble = od_generateCandles(opcoesDoubleGamesData);
+                    // generateOpcoesChartBlob(); // Removido para não atualizar o gráfico na tela
+                }
+            } catch (e) { console.error("Erro ao buscar dados:", e); }
+        }
+
+        function generateOpcoesDoubleNewsItem() {
+            if (opcoesDoubleGamesData.length < 26) return null;
+            // allCandlesOpcoesDouble is updated in fetchOpcoesDoubleData
+            const { signal, icon } = od_getTrendSignal(allCandlesOpcoesDouble);
+            
+            if (signal === "NEUTRO") return null;
+
+            let trendText = signal === "VERMELHO" ? "ALTA" : "BAIXA";
+            const color = signal === "VERMELHO" ? "#00ff88" : "#ff0055";
+            const text = `Análise do gráfico de velas indica forte tendência de <strong>${trendText}</strong>. Indicadores MACD e SMA confirmam o momento.`;
+            
+            return {
+                title: "Opções Double",
+                text: text,
+                color: color,
+                icon: icon
+            };
+        }
+
+        // --- FIM OPÇÕES DOUBLE ---
+
+        // Função para efeito visual de flash e vibração
+        function triggerDangerFlash() {
+            const overlay = document.getElementById('flash-overlay');
+            overlay.classList.remove('flash-active');
+            void overlay.offsetWidth; // Força reflow para reiniciar animação
+            overlay.classList.add('flash-active');
+
+            // Adiciona vibração para dispositivos móveis, se suportado
+            if ('vibrate' in navigator) {
+                // Padrão: vibra 200ms, pausa 100ms, vibra 200ms
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+
+        // Função para piscar a aba do navegador
+        let originalTitle = document.title;
+        let blinkInterval = null;
+
+        function startTitleBlinking() {
+            if (blinkInterval || !document.hidden) return; // Só pisca se a aba estiver oculta
+            let isAlert = true;
+            blinkInterval = setInterval(() => {
+                document.title = isAlert ? "🔔 NOVA NOTÍCIA!" : originalTitle;
+                isAlert = !isAlert;
+            }, 1000);
+        }
+
+        function stopTitleBlinking() {
+            if (blinkInterval) {
+                clearInterval(blinkInterval);
+                blinkInterval = null;
+                document.title = originalTitle;
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) stopTitleBlinking();
+        });
+
+        // Controle da Atualização Automática
+        let countdownInterval = null;
+        let timeLeft = 5;
+
+        function startAutoUpdate() {
+            if (countdownInterval) return;
+            
+            timeLeft = 5;
+            countdownDisplay.textContent = `PRÓX: ${timeLeft}s`;
+            countdownDisplay.style.color = "var(--accent)";
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownDisplay.textContent = `PRÓX: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    const now = new Date();
+                    const timeString = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    // Gerar porcentagens dinâmicas para as notícias
+                    const pctHigh = Math.floor(Math.random() * 15) + 80; // 80% a 95%
+                    const pctMed = Math.floor(Math.random() * 20) + 60;  // 60% a 80%
+                    const pctWhite = Math.floor(Math.random() * 20) + 10; // 10% a 30%
+
+                    newsCycleCounter++;
+                    let autoNews = null;
+
+                    const patterns = [
+                        { title: "Padrão Pagante", text: "Padrão de alternância detectado. Alta probabilidade de pagamento na cor oposta.", color: "var(--accent)", icon: "✅" },
+                        { title: "Padrão Pagante", text: "Sequência de espelhamento identificada. Possível entrada confirmada.", color: "#00ff88", icon: "✅" },
+                        { title: "Alerta de Perigo", text: "Zona de alta assertividade: O algoritmo detectou um ciclo pagante para a cor Vermelha.", color: "#ff0055", icon: "🚨" },
+                        { title: "Alerta de Branco", text: "Padrão de repetição temporal sugere entrada de proteção no Branco.", color: "#ffffff", icon: "⚪" },
+                        { title: "Atenção Mercado", text: "Correção de mercado finalizada. Cautela recomendada.", color: "#ff9800", icon: "⚠️" },
+                        // NOVAS CATEGORIAS
+                        { title: "Análise de Números", text: "Alta frequência dos números 5, 6 e 7 detectada. Possível repetição de zona.", color: "#00d2ff", icon: "🔢" },
+                        { title: "Análise de Números", text: "Ausência prolongada dos números baixos (1-4). Correção estatística iminente.", color: "#00d2ff", icon: "🔢" },
+                        { title: "Ciclo de Mercado", text: "Ciclo de recuperação iniciado. Tendência de alta volatilidade nas próximas rodadas.", color: "#ffeb3b", icon: "🔄" },
+                        { title: "Ciclo de Mercado", text: "Mercado em consolidação lateral. Recomendamos entradas conservadoras.", color: "#ffeb3b", icon: "🔄" },
+                        { title: "Previsão I.A.", text: "Rede neural prevê entrada na cor Vermelha com 87% de confiança baseada em Deep Learning.", color: "#d400d4", icon: "🤖" },
+                        { title: "Previsão I.A.", text: "Algoritmo de I.A. detectou anomalia no padrão de distribuição. Aguarde confirmação de sinal.", color: "#d400d4", icon: "🤖" },
+                        // NOVAS NOTÍCIAS COM PORCENTAGEM E ÍCONES DE COR
+                        { title: "Probabilidade Vermelho", text: `Análise de fluxo indica <b>${pctHigh}%</b> de chance para <span style="color:#ff0055">Vermelho 🔴</span> nas próximas rodadas.`, color: "#ff0055", icon: "🔥", pieChart: { percent: pctHigh, color: "#ff0055" } },
+                        { title: "Probabilidade Preto", text: `Tendência de alta confirmada: <b>${pctHigh}%</b> de chance para <span style="color:#aaa">Preto ⚫</span>. Aproveite o momento.`, color: "#aaaaaa", icon: "🔥", pieChart: { percent: pctHigh, color: "#aaaaaa" } },
+                        { title: "Chance de Branco", text: `Sinal de ruído detectado. Probabilidade de <span style="color:#fff">Branco ⚪</span> subiu para <b>${pctWhite}%</b>.`, color: "#ffffff", icon: "💎", pieChart: { percent: pctWhite, color: "#ffffff" } },
+                        { title: "Zona de Proteção", text: `Risco médio. Recomendamos proteção no <span style="color:#fff">Branco ⚪</span> (${pctWhite}%) e entrada no <span style="color:#ff0055">Vermelho 🔴</span> (${pctMed}%).`, color: "#ff9800", icon: "🛡️", pieChart: { percent: pctMed, color: "#ff9800" } },
+                        
+                        // FERRAMENTAS WIN/LOSS
+                        { title: "🔥 Robô Cores ON", text: `A ferramenta <b>Robô Cores</b> está em sequência de <b>WINS</b>! Assertividade atual: <span style="color:#00ff88">94%</span>.`, color: "#00ff88", icon: "🤖" },
+                        { title: "💎 I.A Branco WIN", text: `<b>I.A Branco</b> acabou de pegar um branco! Estratégia "Caçador" pagando muito.`, color: "#ffffff", icon: "⚪" },
+                        { title: "📉 Alerta Robô Padrões", text: `<b>Robô Padrões</b> registrou LOSS recente. Mercado mudou o padrão, aguarde recalibragem.`, color: "#ff0055", icon: "🧩" },
+                        { title: "🚀 Previsão I.A.", text: `<b>Previsão I.A.</b> acertou 8 das últimas 10 entradas. Tendência de alta assertividade.`, color: "#d400d4", icon: "🧠" },
+                        { title: "⚠️ Ciclo de Mercado", text: `Ferramenta <b>Ciclo de Mercado</b> indica zona de perigo (LOSS provável). Evite entradas pesadas.`, color: "#ff9800", icon: "🔄" }
+                    ];
+
+                    // Se não gerou notícia de Opções Double, gera uma aleatória
+                    if (!autoNews) {
+                        const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                        autoNews = {
+                            title: randomPattern.title, timestamp: timeString,
+                            content: `Análise realizada às ${timeString}. ${randomPattern.text}`,
+                            color: randomPattern.color, icon: randomPattern.icon,
+                            pieChart: randomPattern.pieChart
+                        };
+                    }
+
+                    newsData.unshift(autoNews);
+
+                    // Envia para o Telegram se o Auto Share estiver ativo
+                    if (isAutoShareActive) { // This logic is correct.
+                        // ...
+                    }
+                    if (isAutoShareActive) {
+                        const onlyImportant = document.getElementById('chk-auto-share-filter').checked;
+                        let shouldSend = true;
+                        if (onlyImportant) {
+                            const t = autoNews.title.toUpperCase();
+                            const isWin = t.includes('WIN') || t.includes('ROBÔ CORES ON');
+                            const isDanger = t.includes('ALERTA DE PERIGO');
+                            if (!isWin && !isDanger) {
+                                shouldSend = false;
+                            }
+                        }
+                        if (shouldSend) {
+                            shareOnTelegram(`${autoNews.icon || ''} ${autoNews.title}`, autoNews.content, true);
+                        }
+                    }
+
+
+                    renderNews();
+                    timeLeft = 40; // Reinicia o contador
+                    countdownDisplay.textContent = `PRÓX: ${timeLeft}s`;
+                    playNotificationSound(); // Toca o som
+                    
+                    if (autoNews.title === "Alerta de Perigo") {
+                        triggerDangerFlash();
+                    }
+                    
+                    // Verifica se é notícia de WIN para aumentar o contador
+                    if (autoNews.title.includes("WIN") || autoNews.title.includes("Robô Cores ON")) {
+                        dailyWins++;
+                        document.getElementById('daily-wins-count').textContent = dailyWins;
+                        const winBox = document.getElementById('win-counter-box');
+                        winBox.classList.remove('win-update-active');
+                        void winBox.offsetWidth; // Força reinício da animação
+                        winBox.classList.add('win-update-active');
+                        
+                        // Atualiza Banca (Win)
+                        bankroll += 50;
+                        bankrollHistory.push(bankroll);
+                        if(bankrollHistory.length > 50) bankrollHistory.shift(); // Mantém apenas os últimos 50 pontos
+                        
+                        if (bankroll > maxBankroll) {
+                            maxBankroll = bankroll;
+                            triggerMoneyRain();
+                            playCashSound(); // Toca o som de dinheiro
+                            
+                            const chartContainer = document.querySelector('.bankroll-chart-container');
+                            chartContainer.classList.remove('chart-record-flash');
+                            void chartContainer.offsetWidth; // Força reflow
+                            chartContainer.classList.add('chart-record-flash');
+                        }
+                        
+                        // Efeito de Confete a cada 10 vitórias (ex: 10, 20, 30...)
+                        if (dailyWins % 10 === 0) {
+                            triggerConfetti();
+                        }
+
+                        updateBankrollChart();
+                        updateConfluenceMonitor(); // Atualiza a confluência a cada ciclo
+                    } else if (autoNews.title.includes("LOSS") || autoNews.title.includes("Alerta Robô Padrões")) {
+                        bankroll -= 50;
+                        bankrollHistory.push(bankroll);
+                        if(bankrollHistory.length > 50) bankrollHistory.shift();
+                        updateBankrollChart();
+                        updateConfluenceMonitor();
+                    }
+
+                    startTitleBlinking(); // Pisca a aba se estiver em segundo plano
+                    updateTrendChart(); // Atualiza o gráfico junto com a notícia
+                }
+            }, 1000);
+
+            btnToggleAuto.textContent = "PARAR AUTO";
+            btnToggleAuto.style.borderColor = ""; // Reseta para o estilo padrão
+            btnToggleAuto.style.color = "";
+        }
+
+        function stopAutoUpdate() {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            countdownDisplay.textContent = "PAUSADO";
+            countdownDisplay.style.color = "var(--text-muted)";
+
+            btnToggleAuto.textContent = "INICIAR AUTO";
+            btnToggleAuto.style.borderColor = "var(--accent-blaze)"; // Usa a cor vermelha definida no CSS
+            btnToggleAuto.style.color = "var(--accent-blaze)";
+        }
+
+        btnToggleAuto.addEventListener('click', () => {
+            if (countdownInterval) stopAutoUpdate();
+            else startAutoUpdate();
+        });
+
+        // Função para atualizar o gráfico de tendência (Simulação)
+        function updateTrendChart() {
+            const white = Math.floor(Math.random() * 15) + 5; // 5% a 20%
+            const remaining = 100 - white;
+            const red = Math.floor(Math.random() * (remaining - 10)) + 5;
+            const black = 100 - white - red;
+
+            document.getElementById('fill-red').style.width = `${red}%`;
+            document.getElementById('val-red').innerText = `${red}%`;
+
+            document.getElementById('fill-white').style.width = `${white}%`;
+            document.getElementById('val-white').innerText = `${white}%`;
+
+            document.getElementById('fill-black').style.width = `${black}%`;
+            document.getElementById('val-black').innerText = `${black}%`;
+        }
+
+        // Inicializar
+        renderNews();
+        updateTrendChart();
+        updateBankrollChart();
+        updateConfluenceMonitor();
+
+        // Inicializa a busca de dados para Opções Double e define o intervalo
+        fetchOpcoesDoubleData();
+        setInterval(fetchOpcoesDoubleData, 15000); // Atualiza os dados a cada 15 segundos
+
+        startAutoUpdate(); // Começa ativado por padrão
+    </script>
 </body>
 </html>

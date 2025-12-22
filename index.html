@@ -1583,6 +1583,11 @@
                         <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
                     </div>
                     <div class="control-group">
+                        <label for="config_telegram_chat_id_noticias">Seu Chat ID (Noticias Double):</label>
+                        <input type="text" id="config_telegram_chat_id_noticias" placeholder="ID do seu chat/grupo para Notícias">
+                        <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
+                    </div>
+                    <div class="control-group">
                         <label for="config_telegram_chat_id_double">Seu Chat ID (Opções Double):</label>
                         <input type="text" id="config_telegram_chat_id_double" placeholder="ID do seu chat/grupo para Opções Double">
                         <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
@@ -1999,6 +2004,7 @@
                 document.getElementById('config_telegram_chat_id_white').value = localStorage.getItem('telegram_chat_id_white') || '';
                 document.getElementById('config_telegram_chat_id_patterns').value = localStorage.getItem('telegram_chat_id_patterns') || '';
                 document.getElementById('config_telegram_chat_id_double').value = localStorage.getItem('telegram_chat_id_double') || '';
+                document.getElementById('config_telegram_chat_id_noticias').value = localStorage.getItem('telegram_chat_id_noticias') || '';
                 document.getElementById('config_telegram_autobot_template').value = localStorage.getItem('telegram_autobot_template') || '';
                 document.getElementById('config_telegram_whitebot_template').value = localStorage.getItem('telegram_whitebot_template') || '';
                 return; // Finaliza para o admin
@@ -2017,12 +2023,15 @@
                     document.getElementById('config_telegram_chat_id_white').value = userData.telegramChatIdWhite || '';
                     document.getElementById('config_telegram_chat_id_patterns').value = userData.telegramChatIdPatterns || '';
                     document.getElementById('config_telegram_chat_id_double').value = userData.telegramChatIdDouble || '';
+                    document.getElementById('config_telegram_chat_id_noticias').value = userData.telegramChatIdNoticias || '';
+
                     const autobotTemplate = userData.telegramAutobotTemplate || '';
                     const whitebotTemplate = userData.telegramWhitebotTemplate || '';
                     document.getElementById('config_telegram_autobot_template').value = autobotTemplate;
                     document.getElementById('config_telegram_whitebot_template').value = whitebotTemplate;
                     sessionStorage.setItem('telegram_chat_id_patterns', userData.telegramChatIdPatterns || '');
                     sessionStorage.setItem('telegram_chat_id_double', userData.telegramChatIdDouble || '');
+                    sessionStorage.setItem('telegram_chat_id_noticias', userData.telegramChatIdNoticias || '');
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
                 }
@@ -2072,6 +2081,7 @@
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value;
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value;
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value;
+            const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value;
             const autobotTemplate = document.getElementById('config_telegram_autobot_template').value;
             const whitebotTemplate = document.getElementById('config_telegram_whitebot_template').value;
 
@@ -2081,6 +2091,7 @@
                     localStorage.setItem('telegram_chat_id', chatIdCores);
                     localStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     localStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                    localStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
                     localStorage.setItem('telegram_autobot_template', autobotTemplate);
                     localStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2089,6 +2100,7 @@
                     sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                     sessionStorage.setItem('telegram_chat_id_double', chatIdDouble);
+                    sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2115,6 +2127,7 @@
                     telegramChatIdWhite: chatIdWhite,
                     telegramChatIdPatterns: chatIdPatterns,
                     telegramChatIdDouble: chatIdDouble,
+                    telegramChatIdNoticias: chatIdNoticias,
                     telegramAutobotTemplate: autobotTemplate,
                     telegramWhitebotTemplate: whitebotTemplate
                 });
@@ -2123,6 +2136,7 @@
                 sessionStorage.setItem('telegram_chat_id', chatIdCores);
                 sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                 sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
+                sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
                 sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                 sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2144,13 +2158,14 @@
             const chatIdWhite = document.getElementById('config_telegram_chat_id_white').value.trim();
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value.trim();
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value.trim();
+            const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value.trim();
 
             if (!token) {
                 alert('⚠️ Token do Bot não configurado (Admin).');
                 return;
             }
 
-            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble) {
+            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble && !chatIdNoticias) {
                 alert('⚠️ Digite pelo menos um Chat ID para testar.');
                 return;
             }
@@ -2176,6 +2191,7 @@
             if (chatIdWhite) await send(chatIdWhite, 'Robô Branco');
             if (chatIdPatterns) await send(chatIdPatterns, 'Robô Padrões');
             if (chatIdDouble) await send(chatIdDouble, 'Opções Double');
+            if (chatIdNoticias) await send(chatIdNoticias, 'Notícias Double');
 
             btn.innerText = originalText;
             btn.disabled = false;
