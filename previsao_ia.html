@@ -471,6 +471,10 @@
                     <span>Horário de Ouro</span>
                     <label class="switch"><input type="checkbox" id="ai_goldenHourToggle" onchange="ai_toggleGoldenHourMode()"><span class="slider"></span></label>
                 </div>
+                <div class="sidebar-control">
+                    <span>Opções Double</span>
+                    <label class="switch"><input type="checkbox" id="ai_opcoesDoubleToggle" onchange="ai_showAIPrediction()"><span class="slider"></span></label>
+                </div>
             </div>
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Placar</h3>
@@ -519,6 +523,8 @@
         let ai_invert_gale = false;
         let ai_last_prediction_on_loss = null;
         let ai_waiting_until = 0;
+        let ai_opcoes_double_mode = false;
+        let ai_confidence_history = [];
 
         function updateConnectionStatus(status, text) {
             const statusContainer = document.getElementById('ai_connection_status');
@@ -785,6 +791,12 @@
             let history = [], fullHistory = [];
             let redCount = 0, blackCount = 0;
 
+            // Verifica estado do toggle Opções Double
+            const opcoesDoubleToggle = document.getElementById('ai_opcoesDoubleToggle');
+            if (opcoesDoubleToggle) {
+                ai_opcoes_double_mode = opcoesDoubleToggle.checked;
+            }
+
             // Verifica se está em pausa pós-loss
             if (Date.now() < ai_pause_until) {
                 prediction = 'Analisando...';
@@ -903,6 +915,26 @@
                     if (rPct < 0.40) { redScore += 1.5; reasoning.push("<strong>⚖️ Balanceamento:</strong> Vermelho sobrevendido (<40%)."); }
                 }
                 
+                // --- LÓGICA OPÇÕES DOUBLE (PROBABILIDADE TÉCNICA) ---
+                if (ai_opcoes_double_mode) {
+                    const candles = ai_od_generateCandles(rawData);
+                    if (candles.length >= 26) {
+                        const trendSignal = ai_od_getTrendSignal(candles);
+                        if (trendSignal.signal !== "NEUTRO") {
+                            if (trendSignal.signal === "VERMELHO") {
+                                redScore += 5; // Peso alto para análise técnica
+                                reasoning.unshift(`<strong>📈 Opções Double:</strong> Tendência de ALTA confirmada (SMA/MACD).`);
+                            } else if (trendSignal.signal === "PRETO") {
+                                blackScore += 5; // Peso alto para análise técnica
+                                reasoning.unshift(`<strong>📉 Opções Double:</strong> Tendência de BAIXA confirmada (SMA/MACD).`);
+                            }
+                        } else {
+                            reasoning.push(`<strong>⚖️ Opções Double:</strong> Mercado sem tendência clara.`);
+                        }
+                    }
+                }
+                // -----------------------------------------------------
+
                 // Cálculo para UI
                 const recentHistory = history.slice(0, 20);
                 redCount = recentHistory.filter(c => c === 'vermelho').length;
@@ -1520,6 +1552,147 @@
                 ai_fetchData();
                 ai_interval = setInterval(ai_fetchData, 15000);
             }
+        }
+
+        // --- FUNÇÕES AUXILIARES OPÇÕES DOUBLE (INTEGRAÇÃO) ---
+        function ai_od_calculateEMA(data, period) {
+            const emaArray = new Array(data.length).fill(null);
+            if (data.length < period) return emaArray;
+            const k = 2 / (period + 1);
+            let sum = 0;
+            for (let i = 0; i < period; i++) { if (data[i] && typeof data[i].close === 'number') sum += data[i].close; }
+            emaArray[period - 1] = sum / period;
+            for (let i = period; i < data.length; i++) {
+                if (data[i] && typeof data[i].close === 'number' && emaArray[i - 1] !== null) {
+                    emaArray[i] = (data[i].close * k) + (emaArray[i - 1] * (1 - k));
+                }
+            }
+            return emaArray;
+        }
+
+        function ai_od_calculateSMA(data, period) {
+            const smaData = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) { smaData.push(null); continue; }
+                let sum = 0;
+                for (let j = 0; j < period; j++) { sum += data[i - j].close; }
+                smaData.push(sum / period);
+            }
+            return smaData;
+        }
+
+        function ai_od_calculateMACD(data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+            const emaFast = ai_od_calculateEMA(data, fastPeriod);
+            const emaSlow = ai_od_calculateEMA(data, slowPeriod);
+            const macdLine = []; const histogram = [];
+            for (let i = 0; i < data.length; i++) {
+                if (emaFast[i] !== null && emaSlow[i] !== null) { macdLine.push(emaFast[i] - emaSlow[i]); } else { macdLine.push(null); }
+            }
+            const signalLine = ai_od_calculateEMA(macdLine.map(v => ({ close: v })), signalPeriod);
+            for (let i = 0; i < data.length; i++) {
+                if (macdLine[i] !== null && signalLine[i] !== null) { histogram.push(macdLine[i] - signalLine[i]); } else { histogram.push(null); }
+            }
+            return { macdLine, signalLine, histogram };
+        }
+
+        function ai_od_getTrendSignal(data) {
+            if (data.length < 26) return { signal: "NEUTRO" };
+            const smaData = ai_od_calculateSMA(data, 14);
+            const lastSMA = smaData[smaData.length - 1];
+            const lastClose = data[data.length - 1].close;
+            const macdData = ai_od_calculateMACD(data, 12, 26, 9);
+            const lastHist = macdData.histogram[macdData.histogram.length - 1];
+            if (lastSMA !== null && lastHist !== null) {
+                if (lastClose > lastSMA && lastHist > 0) return { signal: "VERMELHO" };
+                if (lastClose < lastSMA && lastHist < 0) return { signal: "PRETO" };
+            }
+            return { signal: "NEUTRO" };
+        }
+
+        function ai_od_generateCandles(rawData) {
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const games = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    const dateParts = tokens[i].split('/');
+                    const timeParts = tokens[i+2].split(':');
+                    const date = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]);
+                    games.push({ roll: parseInt(tokens[i+1]), created_at: date.getTime() });
+                    i += 2;
+                }
+            }
+            games.sort((a, b) => a.created_at - b.created_at);
+            let priceData = []; let lastClose = 100;
+            games.forEach(game => {
+                const open = lastClose; let high, low, close;
+                const color = ai_identificarCor(game.roll);
+                if (color === 'vermelho') { close = open + 10; high = close; low = open; } 
+                else if (color === 'preto') { close = open - 10; high = open; low = close; } 
+                else { close = open; high = open + 5; low = open - 5; }
+                priceData.push({ open, high, low, close, color, roll: game.roll, timestamp: game.created_at, volume: 1 });
+                lastClose = close;
+            });
+            return priceData;
+        }
+
+        function ai_renderConfidenceChartHTML() {
+            const width = 500; // Largura fixa para consistência
+            const height = 120;
+
+            if (ai_confidence_history.length < 2) {
+                return `<div class="confidence-chart-container"><h4 class="confidence-chart-title">Evolução da Confiança</h4><div style="height: ${height}px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8rem; border: 1px dashed #444; border-radius: 4px;">Aguardando histórico...</div></div>`;
+            }
+
+            const data = ai_confidence_history;
+            const padding = { top: 10, right: 30, bottom: 20, left: 30 };
+
+            const plotWidth = width - padding.left - padding.right;
+            const plotHeight = height - padding.top - padding.bottom;
+
+            const getX = (index) => padding.left + (index / (data.length - 1)) * plotWidth;
+            const getY = (confidence) => padding.top + plotHeight - (confidence / 100) * plotHeight;
+
+            let pathD = '';
+            let areaD = `M ${padding.left} ${height - padding.bottom}`;
+
+            data.forEach((point, i) => {
+                const x = getX(i);
+                const y = getY(point.confidence);
+                if (i === 0) {
+                    pathD += `M ${x} ${y}`;
+                } else {
+                    pathD += ` L ${x} ${y}`;
+                }
+                areaD += ` L ${x} ${y}`;
+            });
+            areaD += ` L ${getX(data.length - 1)} ${height - padding.bottom} Z`;
+
+            const lastPoint = data[data.length - 1];
+            const lastColor = lastPoint.prediction.includes('VERMELHO') ? '#ff0055' : (lastPoint.prediction.includes('PRETO') ? '#ccc' : '#00d2ff');
+
+            const gridLines = `
+                <line class="confidence-chart-grid" x1="${padding.left}" y1="${getY(25)}" x2="${width - padding.right}" y2="${getY(25)}"></line>
+                <line class="confidence-chart-grid" x1="${padding.left}" y1="${getY(50)}" x2="${width - padding.right}" y2="${getY(50)}"></line>
+                <line class="confidence-chart-grid" x1="${padding.left}" y1="${getY(75)}" x2="${width - padding.right}" y2="${getY(75)}"></line>
+            `;
+
+            const axisLabels = `
+                <text class="confidence-chart-axis-label" x="${width - padding.right + 4}" y="${getY(100) + 4}">100%</text>
+                <text class="confidence-chart-axis-label" x="${width - padding.right + 4}" y="${getY(50) + 4}">50%</text>
+                <text class="confidence-chart-axis-label" x="${width - padding.right + 4}" y="${getY(0) + 4}">0%</text>
+                ${data.map((p, i) => `<text class="confidence-chart-axis-label" x="${getX(i)}" y="${height - 5}" text-anchor="middle">-${data.length - 1 - i}</text>`).join('')}
+            `;
+
+            const dots = data.map((point, i) => {
+                let color = '#888'; // Default for 'Sinal Fraco' etc.
+                if (point.prediction.includes('VERMELHO')) color = '#ff0055';
+                else if (point.prediction.includes('PRETO')) color = '#ccc';
+                else if (point.prediction.includes('BRANCO')) color = '#00d2ff';
+                
+                return `<circle class="confidence-chart-dot" cx="${getX(i)}" cy="${getY(point.confidence)}" r="4" fill="${color}"><title>Confiança: ${point.confidence.toFixed(0)}% em ${point.prediction}</title></circle>`;
+            }).join('');
+
+            return `<div class="confidence-chart-container"><h4 class="confidence-chart-title">Evolução da Confiança (Últimas ${data.length} Rodadas)</h4><svg class="confidence-chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">${gridLines}<path d="${areaD}" fill="${lastColor}" class="confidence-chart-area" /><path d="${pathD}" stroke="${lastColor}" class="confidence-chart-line" />${dots}${axisLabels}</svg></div>`;
         }
     </script>
 </body>
