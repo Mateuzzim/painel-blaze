@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciclo de Mercado</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%2300d2ff' /%3E%3C/svg%3E">
     <style>
         /* Basic styles from other pages */
         :root {
@@ -177,7 +176,7 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <span style="font-size: 0.8rem; color: #aaa;">Auto-Atualizar (20s):</span>
+                    <span style="font-size: 0.8rem; color: #aaa;">Auto-Atualizar (15s):</span>
                     <label class="switch" style="transform: scale(0.8);">
                         <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdate()">
                         <span class="slider"></span>
@@ -199,11 +198,6 @@
         let hotMinuteCountdownInterval; // Intervalo para o contador regressivo
         let variationViewMode = 'last100'; // 'last100' ou 'all'
         let isSimulatingTrigger = false; // Controle de simulação do alerta
-        
-        // --- Configuração Telegram ---
-        const TELEGRAM_TOKEN = '8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc';
-        let TELEGRAM_CHAT_ID = ''; // <--- COLOQUE O ID DO SEU CANAL AQUI (Ex: -100123456789)
-        let lastTriggerUniqueId = null; // Controle para não repetir o mesmo alerta
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log("Página Ciclo de Mercado carregada.");
@@ -216,7 +210,7 @@
             if (toggle && toggle.checked) {
                 if (updateInterval) clearInterval(updateInterval);
                 fetchBlazeData(); // Busca imediatamente ao ativar
-                updateInterval = setInterval(fetchBlazeData, 20000); // Busca e atualiza a cada 20 segundos
+                updateInterval = setInterval(fetchBlazeData, 15000); // Busca e atualiza a cada 15 segundos
             } else {
                 if (updateInterval) clearInterval(updateInterval);
             }
@@ -242,20 +236,6 @@
         function toggleVariationViewMode() {
             variationViewMode = variationViewMode === 'last100' ? 'all' : 'last100';
             analyzeAndDisplayCycles();
-        }
-
-        function enviarAlertaTelegram(mensagem) {
-            if (!TELEGRAM_CHAT_ID) {
-                console.warn("Telegram: Chat ID não configurado no código.");
-                return;
-            }
-            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(mensagem)}&parse_mode=Markdown`;
-            fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    if(!data.ok) console.error("Erro Telegram:", data);
-                })
-                .catch(err => console.error("Erro Req Telegram:", err));
         }
 
         function simulateTrigger() {
@@ -285,18 +265,10 @@
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
                     // Delay entre requisições para evitar erro 429 (Too Many Requests)
-                    if (page > 1) await new Promise(r => setTimeout(r, 3500));
+                    if (page > 1) await new Promise(r => setTimeout(r, 2000));
 
                     try {
-                        let response = await fetch(proxyUrl);
-                        
-                        // Retry simples para erro 429
-                        if (response.status === 429) {
-                            console.warn(`Erro 429 na página ${page}. Aguardando 5s...`);
-                            await new Promise(r => setTimeout(r, 5000));
-                            response = await fetch(proxyUrl);
-                        }
-
+                        const response = await fetch(proxyUrl);
                         if (response.ok) {
                             const data = await response.json();
                             const records = Array.isArray(data) ? data : (data.records || []);
@@ -1090,17 +1062,6 @@
                             <div style="font-size: 0.8rem;">A última pedra <b>${displayRoll}</b> é o gatilho principal.</div>
                             <div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">Fique atento para uma possível entrada!</div>
                         </div><style>@keyframes pulse-border { 0% { border-color: #ff0055; box-shadow: 0 0 5px rgba(255,0,85,0.2); } 100% { border-color: #ffeb3b; box-shadow: 0 0 15px rgba(255,235,59,0.4); } }</style>`;
-                        
-                        // --- Disparo Automático para Telegram ---
-                        // Cria um ID único baseado no tempo da última pedra para evitar envios duplicados
-                        const currentUniqueId = isSimulatingTrigger ? 'sim_' + Date.now() : (fullResults.length > 0 ? fullResults[fullResults.length - 1].date + fullResults[fullResults.length - 1].time : null);
-                        
-                        if (currentUniqueId && lastTriggerUniqueId !== currentUniqueId) {
-                            lastTriggerUniqueId = currentUniqueId;
-                            const icon = isSimulatingTrigger ? '🔔 TESTE' : '🚨 ALERTA';
-                            const msg = `*${icon} DE GATILHO IDENTIFICADO!* \n\n🎲 *Gatilho:* ${displayRoll}\n🎯 *Soma Ideal:* ${bestSum}\n📊 *Frequência:* ${bestPreRollCount}x\n⏱ *Horário:* ${fullResults.length > 0 ? fullResults[fullResults.length - 1].time : 'Agora'}\n\n_Fique atento à próxima rodada!_`;
-                            enviarAlertaTelegram(msg);
-                        }
                     }
                 }
 

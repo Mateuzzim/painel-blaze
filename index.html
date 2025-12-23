@@ -1786,7 +1786,7 @@
 <div class="control-panel">
     <div id="auto-import-box" class="futuristic-data-box" style="border: 1px solid #ff9800; padding: 10px; border-radius: 8px; margin-bottom: 20px; background-color: rgba(255, 152, 0, 0.05);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-            <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Coleta de Dados</h3>
+            <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Auto Busca</h3>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <label for="toggleReverseDirection" style="font-size: 0.8rem; color: #aaa; margin: 0; cursor: pointer;">Inverter:</label>
@@ -2250,26 +2250,29 @@
 
         // 1. FUNÇÃO PRINCIPAL DO BOTÃO (ROTEADOR)
         // Essa é a função que o botão do HTML chama.
-        async function dash_autoFetchBlaze() {
+        async function dash_autoFetchBlaze(isAuto = false) {
             const platform = document.getElementById('dash_platformSelector').value;
             
             if (platform === 'jonbet') {
                 await dash_impl_Jonbet();
             } else {
-                await dash_impl_Blaze();
+                await dash_impl_Blaze(isAuto);
             }
         }
 
         // 2. IMPLEMENTAÇÃO BLAZE (V9 - FAILOVER INTELIGENTE + VALIDAÇÃO DE DATA)
         // 2. IMPLEMENTAÇÃO BLAZE (COM SEU TOKEN INSERIDO)
-        async function dash_impl_Blaze() {
+        async function dash_impl_Blaze(isAuto = false) {
             const statusBtn = document.getElementById('dash_fetchDataBtn');
             const originalText = statusBtn.innerText;
             const autoTextarea = document.getElementById('dash_autoInput');
             
+            // URL para atualização automática (Opcional: Coloque a URL raw do seu token aqui)
+            const REMOTE_TOKEN_URL = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYjUyMzY3NzUtNmFlMC00NDMzLWI1M2MtYzFmNmY4ZDZmNjJlIiwiaWF0IjoxNzY2NDkwNzAwLCJleHAiOjE3NjY1MzM5MDB9.tuWLmU6u9Gv1JBkYDQTkuVlKAjDFMB_uA6KIxmejpt0"; 
+
             let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
             if (!SEU_TOKEN_BLAZE) {
-                SEU_TOKEN_BLAZE = ""; 
+                SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYjUyMzY3NzUtNmFlMC00NDMzLWI1M2MtYzFmNmY4ZDZmNjJlIiwiaWF0IjoxNzY2NDkwNzAwLCJleHAiOjE3NjY1MzM5MDB9.tuWLmU6u9Gv1JBkYDQTkuVlKAjDFMB_uA6KIxmejpt0"; 
             }
 
             try {
@@ -2290,7 +2293,7 @@
                 }
 
                 // Busca páginas 1 a 4 sequencialmente para evitar sobrecarregar o proxy
-                const pages = [1, 2, 3, 4];
+                const pages = isAuto ? [1] : [1, 2, 3, 4];
                 let allGames = [];
                 for (const page of pages) {
                     try {
@@ -2299,7 +2302,32 @@
                         const targetUrl = `${baseUrl}${params}`;
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                         
-                        const response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                        let response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+
+                        // --- LÓGICA DE RENOVAÇÃO AUTOMÁTICA (401) ---
+                        if (response.status === 401) {
+                            console.warn("Token expirado (401). Tentando renovar...");
+                            
+                            if (REMOTE_TOKEN_URL) {
+                                try {
+                                    const tokenRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(REMOTE_TOKEN_URL)}`);
+                                    if (tokenRes.ok) {
+                                        const newToken = (await tokenRes.text()).trim();
+                                        if (newToken && newToken.length > 20) {
+                                            console.log("Token renovado via URL remota!");
+                                            SEU_TOKEN_BLAZE = newToken;
+                                            localStorage.setItem('blaze_token', newToken);
+                                            headers['Authorization'] = `Bearer ${SEU_TOKEN_BLAZE}`;
+                                            headers['x-access-token'] = SEU_TOKEN_BLAZE;
+                                            // Tenta novamente a requisição
+                                            response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                                        }
+                                    }
+                                } catch(e) { console.error("Erro na renovação remota:", e); }
+                            }
+                        }
+                        // ---------------------------------------------
+
                         if (response.ok) {
                             const data = await response.json();
                             if (data) {
@@ -2312,10 +2340,13 @@
                             if (response.status === 429) {
                                 throw new Error("Limite de requisições atingido (429). Tente novamente mais tarde.");
                             }
+                            if (response.status === 401) {
+                                throw new Error("Token expirado (401). Atualize nas configurações.");
+                            }
                         }
                     } catch (err) {
                         console.warn(`Erro de rede ao buscar página ${page}:`, err);
-                        if (err.message.includes("429")) throw err;
+                        if (err.message.includes("429") || err.message.includes("401")) throw err;
                     }
                     await new Promise(resolve => setTimeout(resolve, 250)); // Pequeno delay
                 }
@@ -4270,8 +4301,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         function checkManualLogin() {
             // Verifica se o usuário já está logado na sessão (login manual)
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
-                const operatorName = sessionStorage.getItem('operatorName');
-                setupOperatorInfo(operatorName);
+                // A chamada para setupOperatorInfo foi removida daqui para evitar a busca duplicada de dados na inicialização.
+                // A função showApp() já é responsável por chamar setupOperatorInfo de forma segura.
                 showApp();
             }
             // Se não, a tela de login continuará visível por padrão.
@@ -4800,7 +4831,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         
                         autoFetchIntervalId = setInterval(() => {
                             console.log("Executando busca automática periódica...");
-                            dash_autoFetchBlaze().then(() => {
+                            dash_autoFetchBlaze(true).then(() => {
                                 if (document.getElementById('dash_autoAnalyzeToggle').checked) {
                                     dash_processarDados();
                                 }
