@@ -754,11 +754,19 @@
                         <input type="number" id="autoTelegramMaxProbability" value="95" min="50" max="99" step="1" onchange="saveAutoTgConfig()" style="width: 40px;" title="Probabilidade Máxima para Envio (%)">
                         <span style="font-size: 0.7rem; color: #00d2ff;">%</span>
                     </div>
+                    <div class="tool-group" style="border-color: #00d2ff;" title="Auto Telegram Minutos 5, 4, 3, 2, 1">
+                        <input type="checkbox" id="strategy5to1Toggle" onchange="updateChart()">
+                        <span style="font-size: 0.8rem; color: #fff; font-weight: bold;">Auto 5-1</span>
+                    </div>
                     <div class="tool-group" style="border-color: #00d2ff;" title="Minutos para Entrada (Delay)">
                         <span style="font-size: 0.8rem; color: #00d2ff; font-weight: bold;">Min:</span>
                         <input type="number" id="autoTelegramEntryMinute" value="1" min="1" max="5" step="1" onchange="saveAutoTgConfig()" style="width: 35px;" title="Minutos à frente para entrada">
                     </div>
                     <button id="resetTgBtn" class="draw-mode-btn" onclick="resetTelegramScores()">🔄 Zerar Placar</button>
+                    <div class="tool-group" style="border-color: #00d2ff;" title="Analisar apenas minutos final 1 a 5">
+                        <input type="checkbox" id="minute1to5Toggle" onchange="updateChart()">
+                        <span style="font-size: 0.8rem; color: #fff; font-weight: bold;">Min 1-5</span>
+                    </div>
                 </div>
 
                 <div class="control-row">
@@ -1821,8 +1829,30 @@
             }
 
             // 3. Draw candles
+            const minute1to5Toggle = document.getElementById('minute1to5Toggle');
+            const showMinuteMarkers = minute1to5Toggle && minute1to5Toggle.checked;
+            const strategy5to1Toggle = document.getElementById('strategy5to1Toggle');
+            const show5to1Markers = strategy5to1Toggle && strategy5to1Toggle.checked;
+
             priceData.forEach((d, i) => {
                 const x = i * candleSpacing;
+
+                // Highlight for Min 1-5
+                if (showMinuteMarkers || show5to1Markers) {
+                    const candleDate = new Date(d.timestamp);
+                    const minute = candleDate.getMinutes();
+                    const lastDigit = minute % 10;
+
+                    if (lastDigit >= 1 && lastDigit <= 5) {
+                        const bgRect = document.createElementNS(svgNS, 'rect');
+                        bgRect.setAttribute('x', x);
+                        bgRect.setAttribute('y', 0);
+                        bgRect.setAttribute('width', candleSpacing);
+                        bgRect.setAttribute('height', height);
+                        bgRect.setAttribute('fill', 'rgba(0, 210, 255, 0.05)');
+                        g.appendChild(bgRect);
+                    }
+                }
                 
                 // Wick
                 const wick = document.createElementNS(svgNS, 'line');
@@ -3781,6 +3811,17 @@
                 }
             }
 
+            // Filtro Minutos 1-5
+            const minute1to5Toggle = document.getElementById('minute1to5Toggle');
+            if (minute1to5Toggle && minute1to5Toggle.checked) {
+                const nextCandleTime = new Date(currentTimestamp + 60000);
+                const minUnit = nextCandleTime.getMinutes() % 10;
+                if (minUnit < 1 || minUnit > 5) {
+                    prediction = "NEUTRO";
+                    msg = `Aguardando Minuto 1-5 (Próx: ${minUnit})`;
+                }
+            }
+
             // Define a previsão para a PRÓXIMA vela
             if (total > 0) {
                 if (prediction.includes('⚪')) {
@@ -3808,7 +3849,16 @@
                 const entryMinuteInput = document.getElementById('autoTelegramEntryMinute');
                 const entryMinute = entryMinuteInput ? parseInt(entryMinuteInput.value) : 1;
 
-                if (isAutoTgOn && !telegramState.active && prediction !== "NEUTRO" && currentTimestamp > lastSentSignalTimestamp && prob >= minProb && prob <= maxProb && isRsiSafe) {
+                // Lógica Auto 5-1
+                const strategy5to1Toggle = document.getElementById('strategy5to1Toggle');
+                const isStrategy5to1On = strategy5to1Toggle && strategy5to1Toggle.checked;
+                const nextCandleTime = new Date(currentTimestamp + 60000);
+                const minUnit = nextCandleTime.getMinutes() % 10;
+                const isMinute1to5 = (minUnit >= 1 && minUnit <= 5);
+
+                const shouldSend = isAutoTgOn || (isStrategy5to1On && isMinute1to5);
+
+                if (shouldSend && !telegramState.active && prediction !== "NEUTRO" && currentTimestamp > lastSentSignalTimestamp && prob >= minProb && prob <= maxProb && isRsiSafe) {
                     // O sinal é para N velas à frente (N min) para dar tempo de entrada.
                     // Garante que o sinal seja para o minuto completo à frente. Ex: Análise às 19:00 + 1min -> Sinal para 19:01.
                     const triggerTimestamp = Math.floor((currentTimestamp + (entryMinute * 60000)) / 60000) * 60000;

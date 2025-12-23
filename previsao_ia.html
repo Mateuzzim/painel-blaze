@@ -475,6 +475,10 @@
                     <span>Opções Double</span>
                     <label class="switch"><input type="checkbox" id="ai_opcoesDoubleToggle" onchange="ai_showAIPrediction()"><span class="slider"></span></label>
                 </div>
+                <div class="sidebar-control">
+                    <span>Minutos 1-5</span>
+                    <label class="switch"><input type="checkbox" id="ai_minute1to5Toggle" onchange="ai_toggleMinute1to5()"><span class="slider"></span></label>
+                </div>
             </div>
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Placar</h3>
@@ -524,6 +528,7 @@
         let ai_last_prediction_on_loss = null;
         let ai_waiting_until = 0;
         let ai_opcoes_double_mode = false;
+        let ai_minute_1_5_mode = false;
         let ai_confidence_history = [];
 
         function updateConnectionStatus(status, text) {
@@ -556,6 +561,12 @@
         function ai_toggleGoldenHourMode() {
             const el = document.getElementById('ai_goldenHourToggle');
             ai_golden_hour_mode = el.checked;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleMinute1to5() {
+            const el = document.getElementById('ai_minute1to5Toggle');
+            ai_minute_1_5_mode = el.checked;
             ai_showAIPrediction();
         }
 
@@ -1000,6 +1011,16 @@
                     if (currentHour >= 19 && currentHour < 21 && confidence > 0) {
                         confidence += 15;
                         reasoning.push("<strong>🌟 Horário de Ouro:</strong> Bônus de confiança ativo (19h-21h).");
+                    }
+                }
+
+                // Filtro Minutos 1-5
+                if (ai_minute_1_5_mode) {
+                    const now = new Date();
+                    const currentMinuteUnit = now.getMinutes() % 10;
+                    if (currentMinuteUnit >= 1 && currentMinuteUnit <= 5 && confidence > 0) {
+                        confidence += 10;
+                        reasoning.push("<strong>⏰ Minuto 1-5:</strong> Entrada validada pelo intervalo de tempo.");
                     }
                 }
 
