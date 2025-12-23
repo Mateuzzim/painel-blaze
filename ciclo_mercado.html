@@ -161,6 +161,75 @@
             content: "10 01 11 00 10 01 11 00"; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             font-family: monospace; color: rgba(0, 255, 136, 0.03); font-size: 10px; line-height: 10px; word-break: break-all; overflow: hidden; pointer-events: none; z-index: 0;
         }
+
+        /* --- Trigger Status Box Styles --- */
+        .trigger-status-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .trigger-active {
+            background: rgba(255, 0, 85, 0.15);
+            border: 1px solid #ff0055;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+            animation: pulse-border-red 1s infinite alternate;
+        }
+        @keyframes pulse-border-red {
+            0% { border-color: #ff0055; box-shadow: 0 0 10px rgba(255,0,85,0.2); }
+            100% { border-color: #ffeb3b; box-shadow: 0 0 20px rgba(255,235,59,0.4); }
+        }
+        .trigger-waiting {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        .trigger-waiting::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            animation: scan-waiting 3s infinite linear;
+        }
+        @keyframes scan-waiting { 0% { left: -100%; } 100% { left: 200%; } }
+        .waiting-text {
+            font-weight: bold; letter-spacing: 2px; text-transform: uppercase;
+            animation: text-flicker 3s infinite;
+        }
+        @keyframes text-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 0 0 8px #00ff88; }
+            20%, 24%, 55% { opacity: 0.6; text-shadow: none; }
+        }
+        .buscar-branco-anim {
+            animation: blink-text-yellow 1.2s infinite ease-in-out;
+        }
+        @keyframes blink-text-yellow {
+            0%, 100% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; transform: scale(1); }
+            50% { color: #fff; text-shadow: none; transform: scale(1.05); }
+        }
+        @keyframes blink-green-text {
+            0%, 100% { color: #00ff88; text-shadow: 0 0 8px #00ff88; }
+            50% { color: #fff; text-shadow: none; }
+        }
+        .high-accuracy-anim {
+            animation: blink-green-text 1s infinite;
+            font-weight: bold;
+        }
+        @keyframes futuristic-search-pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 235, 59, 0.1); border-color: rgba(255, 235, 59, 0.3); transform: scale(0.99); }
+            50% { box-shadow: 0 0 25px rgba(255, 235, 59, 0.5), inset 0 0 15px rgba(255, 235, 59, 0.1); border-color: #ffeb3b; transform: scale(1); }
+            100% { box-shadow: 0 0 5px rgba(255, 235, 59, 0.1); border-color: rgba(255, 235, 59, 0.3); transform: scale(0.99); }
+        }
+        @keyframes blink-red-text {
+            0%, 100% { color: #ff0055; text-shadow: 0 0 8px #ff0055; }
+            50% { color: #fff; text-shadow: none; }
+        }
+        @keyframes new-roll-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,255,255,0.3); border-color: #fff; }
+            100% { transform: scale(1); box-shadow: 0 0 5px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+        }
     </style>
 </head>
 <body>
@@ -198,6 +267,19 @@
         let hotMinuteCountdownInterval; // Intervalo para o contador regressivo
         let variationViewMode = 'last100'; // 'last100' ou 'all'
         let isSimulatingTrigger = false; // Controle de simulação do alerta
+
+        // --- NOVO: Estado do Gatilho ---
+        let triggerState = {
+            isActive: false,
+            startEntryTime: null,
+            result: null, // 'WIN', 'LOSS', ou 'PENDING'
+            showResultUntilIndex: -1
+        };
+        let triggerWins = 0;
+        let triggerLosses = 0;
+        let triggerHistory = [];
+        const ENTRIES_TO_WAIT = 6; // MODIFICADO: Agora espera 6 pedras individuais.
+
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log("Página Ciclo de Mercado carregada.");
@@ -245,6 +327,14 @@
                 isSimulatingTrigger = false;
                 analyzeAndDisplayCycles();
             }, 5000);
+        }
+
+        function identificarCorCiclo(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
         }
 
         async function fetchBlazeData() {
@@ -980,7 +1070,9 @@
                 for (let i = 1; i < fullResults.length; i++) {
                     if (fullResults[i].roll === 0) {
                         const preRoll = fullResults[i-1].roll;
-                        preRollCounts[preRoll] = (preRollCounts[preRoll] || 0) + 1;
+                        if (preRoll !== 0) {
+                            preRollCounts[preRoll] = (preRollCounts[preRoll] || 0) + 1;
+                        }
                     }
                 }
                 const sortedPreRolls = Object.entries(preRollCounts).sort(([, a], [, b]) => b - a);
@@ -1050,20 +1142,333 @@
                 const totalWhites = fullResults.filter(r => r.roll === 0).length;
                 const mirrorPct = totalWhites > 0 ? Math.round((mirrorCount / totalWhites) * 100) : 0;
 
-                // --- Alerta de Gatilho ---
-                let triggerAlert = '';
-                if (isSimulatingTrigger || (fullResults.length > 0 && bestPreRoll !== '--')) {
-                    const lastRoll = fullResults.length > 0 ? fullResults[fullResults.length - 1].roll : '--';
-                    if (isSimulatingTrigger || parseInt(bestPreRoll) === lastRoll) {
-                        const displayRoll = isSimulatingTrigger ? (bestPreRoll !== '--' ? bestPreRoll : "TESTE") : lastRoll;
-                        const simLabel = isSimulatingTrigger ? ' (TESTE)' : '';
-                        triggerAlert = `<div style="margin-top: 10px; background: rgba(255, 0, 85, 0.15); border: 1px solid #ff0055; color: #fff; padding: 10px; border-radius: 6px; text-align: center; animation: pulse-border 1s infinite alternate;">
-                            <div style="font-weight: bold; color: #ff0055; font-size: 0.9rem;">🚨 GATILHO ATIVADO!${simLabel}</div>
-                            <div style="font-size: 0.8rem;">A última pedra <b>${displayRoll}</b> é o gatilho principal.</div>
-                            <div style="font-size: 0.7rem; color: #ccc; margin-top: 2px;">Fique atento para uma possível entrada!</div>
-                        </div><style>@keyframes pulse-border { 0% { border-color: #ff0055; box-shadow: 0 0 5px rgba(255,0,85,0.2); } 100% { border-color: #ffeb3b; box-shadow: 0 0 15px rgba(255,235,59,0.4); } }</style>`;
+                // --- Sequência Mestra (3 Cores) ---
+                const colorPatternCounts = {};
+                const colorPatternTotalOccurrences = {};
+                for (let i = 3; i < fullResults.length; i++) {
+                    const c1 = identificarCorCiclo(fullResults[i-3].roll);
+                    const c2 = identificarCorCiclo(fullResults[i-2].roll);
+                    const c3 = identificarCorCiclo(fullResults[i-1].roll);
+                    const mapC = c => c === 'vermelho' ? 'V' : (c === 'preto' ? 'P' : 'B');
+                    const key = `${mapC(c1)}-${mapC(c2)}-${mapC(c3)}`;
+                    
+                    colorPatternTotalOccurrences[key] = (colorPatternTotalOccurrences[key] || 0) + 1;
+
+                    if (fullResults[i].roll === 0) {
+                        colorPatternCounts[key] = (colorPatternCounts[key] || 0) + 1;
                     }
                 }
+                
+                // Filtra padrões com mais de 50% de acerto
+                const validPatterns = Object.keys(colorPatternCounts)
+                    .map(key => ({
+                        key: key,
+                        count: colorPatternCounts[key],
+                        accuracy: Math.round((colorPatternCounts[key] / (colorPatternTotalOccurrences[key] || 1)) * 100)
+                    }))
+                    .filter(p => p.accuracy > 50);
+
+                // Ordena os padrões válidos pela contagem de ocorrências (o mais frequente entre os de alta assertividade)
+                validPatterns.sort((a, b) => b.count - a.count);
+
+                const bestPatternObj = validPatterns.length > 0 ? validPatterns[0] : null;
+                const bestPattern = bestPatternObj ? bestPatternObj.key : '---';
+                const bestPatternAccuracy = bestPatternObj ? bestPatternObj.accuracy : 0;
+                
+                const patternAccClass = bestPatternAccuracy > 80 ? 'high-accuracy-anim' : '';
+                const patternAccStyle = bestPatternAccuracy > 80 ? 'font-size: 0.8rem;' : 'font-size: 0.8rem; color: #00ff88; font-weight: bold;';
+
+                const formatPattern = (p) => {
+                    if (p === '---') return p;
+                    return p.split('-').map(c => c === 'V' ? '🔴' : (c === 'P' ? '⚫' : '⚪')).join('');
+                };
+                let isPatternActive = false;
+                if (fullResults.length >= 3) {
+                    const l1 = identificarCorCiclo(fullResults[fullResults.length-3].roll);
+                    const l2 = identificarCorCiclo(fullResults[fullResults.length-2].roll);
+                    const l3 = identificarCorCiclo(fullResults[fullResults.length-1].roll);
+                    const mapC = c => c === 'vermelho' ? 'V' : (c === 'preto' ? 'P' : 'B');
+                    const currentPattern = `${mapC(l1)}-${mapC(l2)}-${mapC(l3)}`;
+                    if (currentPattern === bestPattern && bestPattern !== '---') isPatternActive = true;
+                }
+
+                // --- Minuto da Sorte ---
+                const minuteDigitCounts = Array(10).fill(0);
+                for (let i = 0; i < fullResults.length; i++) { if (fullResults[i].roll === 0) { const min = parseInt(fullResults[i].time.split(':')[1]); if (!isNaN(min)) minuteDigitCounts[min % 10]++; } }
+                const maxMinCount = Math.max(...minuteDigitCounts);
+                const luckyDigits = minuteDigitCounts.map((c, i) => c === maxMinCount ? i : -1).filter(i => i !== -1);
+                const luckyDigitStr = luckyDigits.join(', ');
+
+                // --- Soma Mágica (Soma dos 2 vizinhos) ---
+                const neighborSumCounts = {};
+                const neighborSumTotalOccurrences = {};
+                for (let i = 2; i < fullResults.length; i++) {
+                    const sum = fullResults[i-1].roll + fullResults[i-2].roll;
+                    neighborSumTotalOccurrences[sum] = (neighborSumTotalOccurrences[sum] || 0) + 1;
+
+                    if (fullResults[i].roll === 0) {
+                        neighborSumCounts[sum] = (neighborSumCounts[sum] || 0) + 1;
+                    }
+                }
+                
+                // Filtra somas com mais de 50% de acerto
+                const validSums = Object.keys(neighborSumCounts)
+                    .map(key => ({
+                        key: key,
+                        count: neighborSumCounts[key],
+                        accuracy: Math.round((neighborSumCounts[key] / (neighborSumTotalOccurrences[key] || 1)) * 100)
+                    }))
+                    .filter(s => s.accuracy > 50);
+                
+                // Ordena as somas válidas pela contagem de ocorrências
+                validSums.sort((a, b) => b.count - a.count);
+
+                const magicSumObj = validSums.length > 0 ? validSums[0] : null;
+                const magicSum = magicSumObj ? magicSumObj.key : '--';
+                const magicSumAccuracy = magicSumObj ? magicSumObj.accuracy : 0;
+                
+                const magicAccClass = magicSumAccuracy > 80 ? 'high-accuracy-anim' : '';
+                const magicAccStyle = magicSumAccuracy > 80 ? 'font-size: 0.8rem;' : 'font-size: 0.8rem; color: #a100ff; font-weight: bold;';
+
+                let isMagicSumActive = false;
+                if (fullResults.length >= 2) { const currentSum = fullResults[fullResults.length - 1].roll + fullResults[fullResults.length - 2].roll; if (String(currentSum) === magicSum && magicSum !== '--') { isMagicSumActive = true; } }
+
+                // --- Entropia do Sistema (Física) ---
+                const entropyLookback = 20;
+                const recentNonWhite = fullResults.filter(r => r.roll !== 0).slice(0, entropyLookback);
+                let colorChanges = 0;
+                if (recentNonWhite.length > 1) {
+                    for (let i = 1; i < recentNonWhite.length; i++) {
+                        const c1 = identificarCorCiclo(recentNonWhite[i-1].roll);
+                        const c2 = identificarCorCiclo(recentNonWhite[i].roll);
+                        if (c1 !== c2) {
+                            colorChanges++;
+                        }
+                    }
+                }
+                // A entropia é a quantidade de mudanças sobre o número máximo de mudanças possíveis
+                const maxChanges = recentNonWhite.length > 1 ? recentNonWhite.length - 1 : 1;
+                const entropyPercentage = Math.round((colorChanges / maxChanges) * 100);
+                const isEntropyActive = entropyPercentage >= 75; // Gatilho se 75%+ das últimas rodadas alternaram
+
+                // --- Ressonância Harmônica (Física Teórica) ---
+                let harmonicPct = 0;
+                let isHarmonicActive = false;
+                if (fullResults.length >= 3) {
+                    const r1 = fullResults[fullResults.length-1].roll;
+                    const r2 = fullResults[fullResults.length-2].roll;
+                    const r3 = fullResults[fullResults.length-3].roll;
+                    const sum3 = r1 + r2 + r3;
+                    
+                    // Verifica alinhamento com Fibonacci (Soma dos 3 últimos)
+                    const fibs = [2, 3, 5, 8, 13, 21, 34, 55];
+                    const isFib = fibs.includes(sum3);
+                    
+                    // Calcula "Volatilidade Quântica" (Diferença média quadrática)
+                    const diff1 = Math.pow(r1 - r2, 2);
+                    const diff2 = Math.pow(r2 - r3, 2);
+                    const volatility = Math.sqrt((diff1 + diff2) / 2);
+                    const maxVol = 14; // Max diff possible roughly
+                    const volPct = (volatility / maxVol) * 100;
+                    
+                    harmonicPct = Math.round(volPct);
+                    if (isFib) {
+                        harmonicPct = Math.min(100, harmonicPct + 30); // Bonus por Fibonacci
+                        if (harmonicPct > 70) isHarmonicActive = true;
+                    } else if (harmonicPct > 80) {
+                        isHarmonicActive = true;
+                    }
+                }
+
+                // --- Pressão de Aposta (Simulação Contrarian) ---
+                let pressureRed = 0;
+                let pressureBlack = 0;
+                let pressureTotal = 0;
+                for (let i = 0; i < fullResults.length && pressureTotal < 15; i++) {
+                    const r = fullResults[i].roll;
+                    if (r !== 0) {
+                        if (r >= 1 && r <= 7) pressureRed++;
+                        else pressureBlack++;
+                        pressureTotal++;
+                    }
+                }
+                let crowdSide = 'NEUTRO';
+                let contrarianSide = '---';
+                let pressureVal = 50;
+                let pressureColor = '#888';
+                if (pressureTotal > 0) {
+                    const redRatio = pressureRed / pressureTotal;
+                    if (redRatio >= 0.6) { crowdSide = 'PRETO ⚫'; contrarianSide = 'VERMELHO 🔴'; pressureVal = Math.round(redRatio * 100); pressureColor = '#ff0055'; }
+                    else if (redRatio <= 0.4) { crowdSide = 'VERMELHO 🔴'; contrarianSide = 'PRETO ⚫'; pressureVal = Math.round((1 - redRatio) * 100); pressureColor = '#fff'; }
+                }
+
+                // --- Alerta de Gatilho ---
+                let triggerAlert = '';
+                const currentEntryIndex = fullResults.length - 1;
+                
+                // 0. Recupera o índice correto baseado no tempo (Correção de deslocamento de array)
+                let triggerStartIndex = -1;
+                if (triggerState.isActive && triggerState.startEntryTime) {
+                    for (let i = fullResults.length - 1; i >= 0; i--) {
+                        if (fullResults[i].date + fullResults[i].time === triggerState.startEntryTime) {
+                            triggerStartIndex = i;
+                            break;
+                        }
+                    }
+                    if (triggerStartIndex === -1) triggerState.isActive = false;
+                }
+
+                // A. Se estávamos mostrando um resultado, verifica se é hora de esconder.
+                if (triggerState.showResultUntilIndex !== -1 && currentEntryIndex >= triggerState.showResultUntilIndex) {
+                    triggerState.showResultUntilIndex = -1;
+                    triggerState.result = null;
+                }
+
+                // B. Se um gatilho está ativo, verifica seu status.
+                if (triggerState.isActive && triggerStartIndex !== -1) {
+                    const entriesPassed = currentEntryIndex - triggerStartIndex;
+
+                    // Verifica por um WIN dentro da janela de 6 entradas
+                    if (triggerState.result !== 'WIN') {
+                        for (let i = 1; i <= entriesPassed && i <= ENTRIES_TO_WAIT; i++) {
+                            const checkIndex = triggerStartIndex + i;
+                            if (fullResults[checkIndex] && fullResults[checkIndex].roll === 0) {
+                                triggerState.result = 'WIN';
+                                break;
+                            }
+                        }
+                    }
+
+                    // Se ganhou ou se as 6 entradas passaram (loss)
+                    if (triggerState.result === 'WIN' || entriesPassed >= ENTRIES_TO_WAIT) {
+                        if (triggerState.result === 'WIN') {
+                            triggerWins++;
+                            triggerHistory.push('WIN');
+                        } else {
+                            triggerState.result = 'LOSS';
+                            triggerLosses++;
+                            triggerHistory.push('LOSS');
+                        }
+                        triggerState.isActive = false;
+                        if (triggerHistory.length > 5) triggerHistory.shift(); // Mantém apenas os últimos 5
+                        triggerState.showResultUntilIndex = -1; // Volta imediatamente a analisar
+                    }
+                }
+                
+                // C. Se nenhum gatilho está ativo (ou acabou de finalizar), verifica por um novo gatilho IMEDIATAMENTE.
+                if (!triggerState.isActive) {
+                    const lastResult = fullResults.length > 0 ? fullResults[currentEntryIndex] : null;
+                    const isTriggerConditionMet = isSimulatingTrigger || (lastResult && bestPreRoll !== '--' && parseInt(bestPreRoll) === lastResult.roll && lastResult.roll !== 0);
+                    
+                    if (isTriggerConditionMet) {
+                        triggerState.isActive = true;
+                        triggerState.startEntryTime = lastResult.date + lastResult.time;
+                        triggerState.result = 'PENDING';
+                        triggerState.showResultUntilIndex = -1;
+                        triggerStartIndex = currentEntryIndex; // Atualiza para exibição imediata
+                    }
+                }
+
+                const historyItems = triggerHistory.map(result => {
+                    const isWin = result === 'WIN';
+                    const color = isWin ? '#00ff88' : '#ff0055';
+                    const text = isWin ? 'W' : 'L';
+                    const bgColor = isWin ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 0, 85, 0.1)';
+                    return `<div title="${result}" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: ${bgColor}; border: 1px solid ${color}; color: ${color}; border-radius: 50%; font-weight: bold; font-size: 0.8rem; box-shadow: 0 0 5px ${color};">${text}</div>`;
+                }).join('');
+
+                // --- NEW: Last 6 Rolls History ---
+                const last6Rolls = fullResults.slice(-6);
+                const rollsHtml = last6Rolls.map((r, idx) => {
+                    const color = identificarCorCiclo(r.roll);
+                    let borderColor = '#333';
+                    let textColor = '#fff';
+                    let shadow = 'none';
+                    
+                    if (color === 'vermelho') {
+                        borderColor = '#ff0055';
+                        textColor = '#ff0055';
+                        shadow = '0 0 5px rgba(255, 0, 85, 0.2)';
+                    } else if (color === 'branco') {
+                        borderColor = '#fff';
+                        textColor = '#fff';
+                        shadow = '0 0 8px rgba(255, 255, 255, 0.4)';
+                    } else { // Preto
+                        borderColor = '#444';
+                        textColor = '#ccc';
+                    }
+                    
+                    const animStyle = idx === last6Rolls.length - 1 ? 'animation: new-roll-pulse 2s infinite;' : '';
+                    
+                    return `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 40px; height: 45px; background: rgba(0,0,0,0.4); border: 1px solid ${borderColor}; border-radius: 6px; margin: 0 3px; ${animStyle} box-shadow: ${shadow};">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: ${textColor}; line-height: 1;">${r.roll}</div>
+                        <div style="font-size: 0.6rem; color: #888; margin-top: 2px;">${r.time}</div>
+                    </div>`;
+                }).join('');
+
+                const placarHtml = `
+                    <div style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 15px;">
+                        <div style="flex: 1; text-align: center; min-width: 150px;">
+                            <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">PLACAR GATILHO</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;"><span style="color: #00ff88;">${triggerWins} W</span> - <span style="color: #ff0055;">${triggerLosses} L</span></div>
+                            <div style="display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 25px;">${historyItems}</div>
+                        </div>
+                        <div style="flex: 1.5; text-align: center; min-width: 220px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
+                            <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Últimos 6 Giros</div>
+                            <div style="display: flex; justify-content: center; align-items: center;">${rollsHtml}</div>
+                        </div>
+                    </div>`;
+
+                if (triggerState.isActive) {
+                    const entriesPassed = Math.max(0, currentEntryIndex - triggerStartIndex);
+
+                    const totalMinutes = ENTRIES_TO_WAIT / 2;
+                    let statusText = `BUSCANDO BRANCO... (${ENTRIES_TO_WAIT} ENTRADAS)`;
+                    let statusColor = "#ffeb3b";
+                    let extraInfo = `<div style="font-size: 0.8rem; color: #ccc; margin-top: 2px;">(Total de ${totalMinutes} minutos)</div>`;
+
+                    let animStyle = 'animation: futuristic-search-pulse 2s infinite ease-in-out;';
+
+                    triggerAlert = `<div class="trigger-status-box trigger-active" style="${animStyle} background: radial-gradient(circle, rgba(255,235,59,0.1) 0%, transparent 70%);">
+                        <div style="font-weight: bold; color: ${statusColor}; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">${statusText}</div>
+                        <div style="font-size: 0.9rem; color: #fff; margin-top: 5px;">Gatilho: <b>${fullResults[triggerStartIndex].roll}</b></div>
+                        ${extraInfo}
+                    </div>`;
+                } else if (triggerState.showResultUntilIndex !== -1) {
+                    const isWin = triggerState.result === 'WIN';
+                    const resultText = isWin ? '✅ WIN!' : '❌ LOSS';
+                    const resultColor = isWin ? '#00ff88' : '#ff0055';
+                    const resultBg = isWin ? 'rgba(0,255,136,0.1)' : 'rgba(255,0,85,0.1)';
+                    triggerAlert = `<div class="trigger-status-box" style="background: ${resultBg}; border: 1px solid ${resultColor};">
+                        <div style="font-weight: bold; color: ${resultColor}; font-size: 1.2rem;">${resultText}</div>
+                    </div>`;
+                } else {
+                    let timeSinceLastTriggerText = '';
+                    if (bestPreRoll !== '--') {
+                        const triggerNum = parseInt(bestPreRoll);
+                        let lastTriggerTime = null;
+                        for (let i = fullResults.length - 1; i >= 0; i--) {
+                            if (fullResults[i].roll === triggerNum) {
+                                const [d, m, y] = fullResults[i].date.split('/').map(Number);
+                                const [h, min] = fullResults[i].time.split(':').map(Number);
+                                lastTriggerTime = new Date(y, m - 1, d, h, min);
+                                break;
+                            }
+                        }
+                        if (lastTriggerTime && latestGameTime) {
+                            const diffMs = latestGameTime - lastTriggerTime;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            timeSinceLastTriggerText = `<div style="font-size: 0.65rem; color: #666; margin-top: 2px;">Último visto há: <span style="color: #ccc;">${diffMins} min</span></div>`;
+                        }
+                    }
+                    triggerAlert = `<div class="trigger-status-box trigger-waiting">
+                        <div class="waiting-text">AGUARDANDO PRÓXIMO GATILHO...</div>
+                        <div style="font-size: 0.7rem; color: #aaa; margin-top: 5px;">Monitorando padrão de gatilho (${bestPreRoll})</div>
+                        ${timeSinceLastTriggerText}
+                    </div>`;
+                }
+
+                triggerAlert += placarHtml;
 
                 const historyHtml = rastreioSums.slice(-5).reverse().map(s => 
                     `<div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -1074,9 +1479,46 @@
 
                 const simulateBtn = `<button onclick="simulateTrigger()" style="float: right; background: rgba(255, 0, 85, 0.2); border: 1px solid #ff0055; color: #ff0055; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.6rem; transition: all 0.3s;">🔔 Testar Alerta</button>`;
 
+                // --- Lógica de Consenso (IA) ---
+                let consensusScore = 0;
+                // Pontuação baseada nos indicadores ativos
+                if (isPatternActive) consensusScore += 30;      // Sequência Mestra (Muito Forte)
+                if (isMagicSumActive) consensusScore += 30;     // Soma Mágica (Muito Forte)
+                if (isEntropyActive) consensusScore += 20;      // Entropia (Forte)
+                if (isHarmonicActive) consensusScore += 20;     // Ressonância Harmônica (Forte)
+                if (triggerState.isActive) consensusScore += 40;// Gatilho Específico Ativo (Fortíssimo)
+                
+                // Pontuação baseada em estatísticas
+                if (neighborPct > 35) consensusScore += 10;     // Vizinhos do Zero
+                if (mirrorPct > 25) consensusScore += 10;       // Padrão Espelho
+                
+                // Penalidades
+                if (isRepetition) consensusScore -= 100;        // Repetição (Perigo/Bloqueio)
+
+                let consensusHtml = '';
+                let consensusStatus = 'NÃO ENTRAR';
+                let consensusColor = '#ff0055';
+                let consensusAnim = 'animation: blink-red-text 1s infinite;';
+                let consensusIcon = '⛔';
+
+                // Define o limiar para entrada (30 pontos = pelo menos 1 padrão forte ou vários médios)
+                if (consensusScore >= 30) {
+                    consensusStatus = 'ENTRADA CONFIRMADA';
+                    consensusColor = '#00ff88';
+                    consensusAnim = 'animation: blink-green-text 0.8s infinite;';
+                    consensusIcon = '✅';
+                }
+
+                consensusHtml = `<div style="margin-bottom: 15px; padding: 15px; border: 1px solid ${consensusColor}; background: rgba(0,0,0,0.4); border-radius: 8px; text-align: center; box-shadow: 0 0 20px ${consensusColor}20; position: relative; overflow: hidden;">
+                    <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">Análise de Convergência</div>
+                    <div style="font-size: 1.4rem; font-weight: bold; color: ${consensusColor}; ${consensusAnim}">${consensusIcon} ${consensusStatus}</div>
+                    <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">Força do Sinal: ${Math.max(0, consensusScore)}%</div>
+                </div>`;
+
                 rastreioHtml = `
                     <div style="margin-top: 20px; background: rgba(161, 0, 255, 0.1); border-radius: 8px; padding: 15px; border: 1px solid #a100ff;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h4 style="margin: 0; color: #a100ff; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🔎 Rastreio de Branco</h4>${simulateBtn}</div>
+                        ${consensusHtml}
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
                             <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;"><div style="font-size: 0.7rem; color: #aaa;">ÚLTIMA SOMA</div><div style="font-size: 2rem; font-weight: bold; color: #fff;">${lastSum.sum}</div><div style="font-size: 0.7rem; color: #666;">(${lastSum.time})</div></div>
                             <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;"><div style="font-size: 0.7rem; color: #aaa;">MÉDIA DAS SOMAS</div><div style="font-size: 2rem; font-weight: bold; color: #00d2ff;">${avgSum}</div></div>
@@ -1112,6 +1554,43 @@
                                 <div style="font-size: 0.7rem; color: #aaa;">PADRÃO ESPELHO</div>
                                 <div style="font-size: 1.5rem; font-weight: bold; color: ${mirrorPct > 20 ? '#a100ff' : '#fff'}; margin: 2px 0;">${mirrorPct}%</div>
                                 <div style="font-size: 0.6rem; color: #666;">${topMirrorPair ? topMirrorPair : 'Sem padrão claro'}</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; ${isPatternActive ? 'border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.2);' : ''}">
+                                <div style="font-size: 0.7rem; color: #aaa;">SEQUÊNCIA MESTRA</div>
+                                <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 2px 0;">
+                                    <div style="font-size: 1.2rem;">${formatPattern(bestPattern)}</div>
+                                    <div class="${patternAccClass}" style="${patternAccStyle}">(${bestPatternAccuracy}%)</div>
+                                </div>
+                                <div style="font-size: 0.6rem; color: ${isPatternActive ? '#00ff88' : '#666'}; font-weight: bold;">${isPatternActive ? 'PADRÃO ATIVO!' : 'Top Padrão'}</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">
+                                <div style="font-size: 0.7rem; color: #aaa;">MINUTO DA SORTE</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #ffeb3b; margin: 2px 0;">${luckyDigitStr}</div>
+                                <div style="font-size: 0.6rem; color: #666;">Final do Minuto (0-9)</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; ${isMagicSumActive ? 'border: 1px solid #a100ff; box-shadow: 0 0 10px rgba(161,0,255,0.2);' : ''}">
+                                <div style="font-size: 0.7rem; color: #aaa;">SOMA MÁGICA</div>
+                                <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 2px 0;">
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #a100ff;">${magicSum}</div>
+                                    <div class="${magicAccClass}" style="${magicAccStyle}">(${magicSumAccuracy}%)</div>
+                                </div>
+                                <div style="font-size: 0.6rem; color: ${isMagicSumActive ? '#a100ff' : '#666'}; font-weight: bold;">${isMagicSumActive ? 'PADRÃO ATIVO!' : 'Soma dos 2 Vizinhos'}</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; ${isEntropyActive ? 'border: 1px solid #ff9800; box-shadow: 0 0 10px rgba(255,152,0,0.3);' : ''}">
+                                <div style="font-size: 0.7rem; color: #aaa;">ENTROPIA DO SISTEMA</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #ff9800; margin: 2px 0;">${entropyPercentage}%</div>
+                                <div style="font-size: 0.6rem; color: ${isEntropyActive ? '#ff9800' : '#666'}; font-weight: bold;">${isEntropyActive ? 'PADRÃO ATIVO!' : 'Nível de Caos'}</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; ${isHarmonicActive ? 'border: 1px solid #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);' : ''}">
+                                <div style="font-size: 0.7rem; color: #aaa;">RESSONÂNCIA HARMÔNICA</div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #00d2ff; margin: 2px 0;">${harmonicPct}%</div>
+                                <div style="font-size: 0.6rem; color: ${isHarmonicActive ? '#00d2ff' : '#666'}; font-weight: bold;">${isHarmonicActive ? 'ALINHAMENTO QUÂNTICO' : 'Estabilidade de Campo'}</div>
+                            </div>
+                            <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">
+                                <div style="font-size: 0.7rem; color: #aaa;">PRESSÃO DE APOSTA</div>
+                                <div style="font-size: 1.1rem; font-weight: bold; color: #fff; margin: 2px 0;">${crowdSide}</div>
+                                <div style="font-size: 0.6rem; color: #666;">Contrarian: <span style="color: #00d2ff;">${contrarianSide}</span></div>
+                                <div style="width: 100%; height: 4px; background: #333; margin-top: 5px; border-radius: 2px; overflow: hidden;"><div style="width: ${pressureVal}%; background: ${pressureColor}; height: 100%;"></div></div>
                             </div>
                         </div>
                         
