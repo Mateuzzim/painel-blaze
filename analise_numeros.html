@@ -344,12 +344,6 @@
                                 <option value="fibonacci">Fibonacci (Retração)</option>
                                 <option value="sniper">Sniper (Alta Precisão)</option>
                             </select>
-                            <select id="sim_gale_level" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
-                                <option value="0">Sem Gale</option>
-                                <option value="1" selected>Gale 1</option>
-                                <option value="2">Gale 2</option>
-                                <option value="3">Gale 3</option>
-                            </select>
                             <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
                         </div>
                         <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; flex-wrap: wrap;">
@@ -357,6 +351,13 @@
                                 <span style="font-size: 0.8rem; color: #aaa;">Auto Melhor:</span>
                                 <label class="switch" style="transform: scale(0.7); margin: 0;">
                                     <input type="checkbox" id="best_strategy_toggle" checked onchange="toggleBestStrategy()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Gale 1:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="gale_active_toggle" checked onchange="runSimulation()">
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -1134,7 +1135,7 @@
             const limit = analysisLimit || fullBlazeData.length;
             const dataSlice = fullBlazeData.slice(0, limit);
             const simData = [...dataSlice].reverse();
-            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const galeLevel = document.getElementById('gale_active_toggle')?.checked ? 1 : 0;
             const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
             const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
             
@@ -1211,7 +1212,7 @@
             const simData = [...dataSlice].reverse();
             
             const strategy = document.getElementById('sim_strategy').value;
-            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const galeLevel = document.getElementById('gale_active_toggle')?.checked ? 1 : 0;
             const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
             const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
             
@@ -1931,7 +1932,7 @@
             }
 
             const simData = [...lastHourData].reverse();
-            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const galeLevel = document.getElementById('gale_active_toggle')?.checked ? 1 : 0;
             const select = document.getElementById('sim_strategy');
             const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
             const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
