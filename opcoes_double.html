@@ -478,9 +478,6 @@
             margin-bottom: 10px;
             padding-bottom: 5px;
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         #telegram-history-grid {
             display: flex;
@@ -825,13 +822,7 @@
                 </div>
             </div>
             <div class="history-grid-container">
-                <div class="history-grid-header">
-                    <span>Histórico de Resultados</span>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <input type="checkbox" id="invertColorsToggle" onchange="toggleColorInversion()" style="cursor: pointer;">
-                        <label for="invertColorsToggle" style="cursor: pointer; font-size: 0.7rem; color: var(--accent);">Inversão de Cores</label>
-                    </div>
-                </div>
+                <div class="history-grid-header">Histórico de Resultados</div>
                 <div id="telegram-history-grid">
                     <!-- Badges will be inserted here by JS -->
                 </div>
@@ -997,7 +988,6 @@
 
     <script>
         let globalGamesData = [];
-        let isColorInverted = false;
         let isDrawMode = false;
         let isDrawing = false;
         let startPoint = null;
@@ -1570,12 +1560,6 @@
             });
         }
 
-        function toggleColorInversion() {
-            isColorInverted = !isColorInverted;
-            localStorage.setItem('invert_colors_state', isColorInverted);
-            updateChart();
-        }
-
         function clearDrawings() {
             if (drawnLines.length > 0 && confirm('Limpar todos os desenhos?')) {
                 drawnLines = [];
@@ -1708,16 +1692,10 @@
                     const open = lastClose;
                     let high, low, close;
                     const color = identificarCor(game.roll);
-                    
-                    let effectiveColor = color;
-                    if (isColorInverted) {
-                        if (color === 'vermelho') effectiveColor = 'preto';
-                        else if (color === 'preto') effectiveColor = 'vermelho';
-                    }
 
-                    if (effectiveColor === 'vermelho') { // Up
+                    if (color === 'vermelho') { // Up
                         close = open + 10; high = close; low = open;
-                    } else if (effectiveColor === 'preto') { // Down
+                    } else if (color === 'preto') { // Down
                         close = open - 10; high = open; low = close;
                     } else { // Branco (Doji)
                         close = open; high = open + 5; low = open - 5;
@@ -1742,14 +1720,8 @@
                     let close;
                     const gameColor = identificarCor(game.roll);
                     
-                    let effectiveColor = gameColor;
-                    if (isColorInverted) {
-                        if (gameColor === 'vermelho') effectiveColor = 'preto';
-                        else if (gameColor === 'preto') effectiveColor = 'vermelho';
-                    }
-                    
-                    if (effectiveColor === 'vermelho') close = open + 10;
-                    else if (effectiveColor === 'preto') close = open - 10;
+                    if (gameColor === 'vermelho') close = open + 10;
+                    else if (gameColor === 'preto') close = open - 10;
                     else close = open;
                     
                     if (currentBucketStart === null || bucketStart !== currentBucketStart) {
@@ -5015,7 +4987,6 @@
             localStorage.removeItem('auto_tg_entry_minute');
             localStorage.removeItem('auto_tg_gales');
             localStorage.removeItem('auto_tg_state');
-            localStorage.removeItem('invert_colors_state');
 
             alert('Configurações resetadas. A página será recarregada.');
             window.location.reload();
@@ -5024,14 +4995,6 @@
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             initFetchWorker(); // Inicializa o Worker para background timer
-            
-            const savedInvertColors = localStorage.getItem('invert_colors_state');
-            if (savedInvertColors === 'true') {
-                isColorInverted = true;
-                const toggle = document.getElementById('invertColorsToggle');
-                if (toggle) toggle.checked = true;
-            }
-
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-mode');

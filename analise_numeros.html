@@ -7,64 +7,150 @@
     <style>
         /* Estilos Base (Mesmo padrão do ciclo_mercado.html) */
         :root {
-            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
-            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
-            --color-red: #ff0055; --color-black: #222; --color-white: #fff;
+            --bg-color: #050507; 
+            --panel-bg: rgba(20, 25, 30, 0.6); 
+            --text-color: #e0e6ed; 
+            --border-color: rgba(0, 242, 255, 0.15); 
+            --input-bg: #0a0a0c;
+            --accent: #00f2ff; 
+            --accent-glow: rgba(0, 242, 255, 0.6);
+            --accent-blaze: #ff0055; 
+            --accent-jonbet: #00ff9d; 
+            --text-muted: #8899a6;
+            --color-red: #ff0055; 
+            --color-black: #111; 
+            --color-white: #fff;
         }
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-image: 
+                radial-gradient(circle at 50% 0%, #1a2c38 0%, transparent 70%),
+                linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        /* Scrollbar Futurista */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.1); border-radius: 4px; border: 1px solid rgba(0, 242, 255, 0.2); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
         .main-container { max-width: 98%; margin: 0 auto; }
-        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .layout-panel { 
+            background: transparent; 
+            border: none; 
+            padding: 10px; 
+        }
+        
         .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         h1 { margin: 0; }
-        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        .cortex-text-anim { background: linear-gradient(90deg, var(--accent), var(--accent-blaze), #ff9800, var(--accent)); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; text-shadow: 0 0 10px rgba(0, 242, 255, 0.3); }
         @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
-        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(0, 242, 255, 0.05); color: var(--accent); text-decoration: none; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid var(--border-color); transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-back:hover { background: rgba(0, 242, 255, 0.15); border-color: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow); }
         
         /* Switch Toggle */
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 2px; border: 1px solid #555; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         input:checked + .slider:before { transform: translateX(20px); }
 
         /* Estilos Específicos da Análise Numérica */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; }
-        .stat-title { font-size: 0.8rem; color: #aaa; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        
+        /* Futuristic Card Design */
+        .stat-card { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            padding: 20px; 
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: cardEntry 0.6s ease-out backwards;
+        }
+        /* Staggered Animation */
+        .stats-grid > div:nth-child(1) { animation-delay: 0.05s; }
+        .stats-grid > div:nth-child(2) { animation-delay: 0.1s; }
+        .stats-grid > div:nth-child(3) { animation-delay: 0.15s; }
+        .stats-grid > div:nth-child(4) { animation-delay: 0.2s; }
+        .stats-grid > div:nth-child(5) { animation-delay: 0.25s; }
+        .stats-grid > div:nth-child(6) { animation-delay: 0.3s; }
+        .stats-grid > div:nth-child(7) { animation-delay: 0.35s; }
+
+        @keyframes cardEntry {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stat-card:hover { 
+            transform: translateY(-5px) scale(1.02); 
+            border-color: var(--accent); 
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2), inset 0 0 20px rgba(0, 242, 255, 0.05); 
+            z-index: 10; 
+        }
+
+        /* Tech Corners */
+        .stat-card::after { content: ''; position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); transition: all 0.3s; opacity: 0.5; pointer-events: none; }
+        .stat-card::before { content: ''; position: absolute; bottom: -1px; left: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); transition: all 0.3s; opacity: 0.5; pointer-events: none; }
+        .stat-card:hover::after, .stat-card:hover::before { width: 100%; height: 100%; opacity: 1; border-color: rgba(0, 242, 255, 0.1); }
+
+        .stat-title { 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 0.8rem; 
+            letter-spacing: 1.5px; 
+            color: var(--accent); 
+            text-transform: uppercase; 
+            margin-bottom: 15px; 
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2); 
+            padding-bottom: 8px; 
+            text-shadow: 0 0 5px rgba(0, 242, 255, 0.4);
+        }
         
         .color-bar-container { display: flex; height: 25px; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         .color-bar { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #fff; transition: width 0.5s; text-shadow: 0 0 2px rgba(0,0,0,0.8); }
         .bg-red { background: var(--color-red); }
-        .bg-black { background: #333; border-right: 1px solid #444; }
+        .bg-black { background: #222; border-right: 1px solid #444; }
         .bg-white { background: #fff; color: #000; text-shadow: none; }
 
         .numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 10px; }
         .number-box { 
-            background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 6px; padding: 10px 5px; 
+            background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 2px; padding: 10px 5px; 
             text-align: center; position: relative; transition: transform 0.2s;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
         }
-        .number-box:hover { transform: translateY(-2px); border-color: #555; }
-        .number-box.hot { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.1); }
+        .number-box:hover { transform: translateY(-3px); border-color: var(--accent); background: rgba(0, 242, 255, 0.1); }
+        .number-box.hot { border-color: var(--accent-jonbet); box-shadow: 0 0 10px rgba(0,255,136,0.2); }
         .number-box.cold { border-color: #ff0055; opacity: 0.7; }
         
         .n-val { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; }
         .n-red { color: var(--color-red); }
-        .n-black { color: #aaa; }
+        .n-black { color: #8899a6; }
         .n-white { color: #fff; text-shadow: 0 0 5px #fff; }
         
-        .n-count { font-size: 0.75rem; color: #888; }
+        .n-count { font-size: 0.75rem; color: var(--text-muted); }
         .n-bar { height: 3px; background: #222; margin-top: 5px; border-radius: 2px; overflow: hidden; }
-        .n-fill { height: 100%; background: #00d2ff; }
+        .n-fill { height: 100%; background: var(--accent); box-shadow: 0 0 5px var(--accent); }
 
         .hot-cold-row { display: flex; gap: 10px; margin-top: 5px; }
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: #fff; }
-        .badge-hot { background: rgba(0, 255, 136, 0.2); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
+        .badge { padding: 4px 8px; border-radius: 2px; font-size: 0.8rem; font-weight: bold; color: #fff; clip-path: polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%); }
+        .badge-hot { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); }
         .badge-cold { background: rgba(255, 0, 85, 0.2); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.3); }
 
         /* Estilos para Sequência e Previsão */
-        .seq-badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; border: 2px solid #333; margin-right: 5px; }
+        .seq-badge { width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; border: 1px solid #333; margin-right: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .seq-red { background: var(--color-red); border-color: #ff0055; color: #fff; }
         .seq-black { background: #222; border-color: #444; color: #fff; }
         .seq-white { background: #fff; border-color: #fff; color: #000; }
@@ -83,11 +169,10 @@
                 inset 0 0 10px rgba(255, 255, 255, 0.5),
                 0 5px 15px rgba(255, 0, 85, 0.4),
                 0 0 30px rgba(255, 0, 85, 0.3);
-            animation: bubble-float 3s ease-in-out infinite;
             margin: 0 auto;
         }
         .prediction-bubble.black {
-            background: radial-gradient(circle at 30% 30%, #666, #111);
+            background: radial-gradient(circle at 30% 30%, #666, #000);
             box-shadow: 
                 inset 0 0 10px rgba(255, 255, 255, 0.2),
                 0 5px 15px rgba(0, 0, 0, 0.5),
@@ -102,27 +187,29 @@
             filter: blur(2px);
         }
         .prediction-bubble-text { font-size: 1.5rem; font-weight: bold; color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
-        @keyframes bubble-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        @keyframes blink-success {
+            0%, 100% { border-color: #444; box-shadow: none; }
+            50% { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.6); }
+        }
+        .blink-alert {
+            animation: blink-success 0.5s ease-in-out 4;
+        }
     </style>
     <style>
         /* Estilos para o filtro de giros */
         .filter-buttons { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
         .filter-btn {
-            background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.2); color: #00d2ff;
-            padding: 10px 24px; border-radius: 25px; cursor: pointer;
-            font-size: 0.9rem; font-weight: bold; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative; overflow: hidden; text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 0 5px rgba(0, 210, 255, 0.1);
+            background: rgba(255,255,255,0.05); border: 1px solid #333; color: #aaa;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-size: 0.9rem; transition: all 0.3s;
         }
         .filter-btn:hover { 
-            background: rgba(0, 210, 255, 0.2); color: #fff; 
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
-            border-color: #00d2ff; transform: translateY(-2px) scale(1.02);
+            background: rgba(0, 210, 255, 0.1); color: #00d2ff; border-color: #00d2ff;
         }
         .filter-btn:active { transform: translateY(0) scale(0.98); }
         .filter-btn.active {
             background: #00d2ff; color: #000; border-color: #00d2ff; 
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
         }
 
         /* --- MOBILE RESPONSIVE --- */
@@ -151,12 +238,6 @@
             #pie_chart_container > div {
                 margin-left: 0 !important; /* Remove a margem da legenda no mobile */
             }
-        }
-        
-        @keyframes card-pulse {
-            0% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
-            50% { border-color: rgba(0, 210, 255, 0.3); box-shadow: 0 0 15px rgba(0, 210, 255, 0.1); }
-            100% { border-color: rgba(255,255,255,0.05); box-shadow: 0 0 0 rgba(0,0,0,0); }
         }
     </style>
 </head>
@@ -194,10 +275,44 @@
                     <!-- Previsão de Padrão -->
                     <div class="stat-card">
                         <div class="stat-title">🔮 Previsão de Padrão (Últimos 5)</div>
+                        
+                        <!-- Placar Win/Loss -->
+                        <div style="display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 2px;">WIN</div>
+                                <div id="pred_wins" style="font-size: 1.1rem; font-weight: bold; color: #00ff88;">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 2px;">LOSS</div>
+                                <div id="pred_losses" style="font-size: 1.1rem; font-weight: bold; color: #ff0055;">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 2px;">ASSERTIVIDADE</div>
+                                <div id="pred_rate" style="font-size: 1.1rem; font-weight: bold; color: #fff;">0%</div>
+                            </div>
+                        </div>
+
+                                                                                                                                                                                                                                            <!-- Histórico Visual de Entradas -->
+                        <div style="margin-bottom: 15px;">
+                            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-align: center;">Últimas 10 Entradas</div>
+                            <div id="entry_history_container" style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 14px;"></div>
+                        </div>
+
+                        <!-- Indicador de Força do Sinal -->
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #aaa; margin-bottom: 4px;">
+                                <span>Força do Sinal</span>
+                                <span id="signal_strength_text" style="font-weight: bold;">--</span>
+                            </div>
+                            <div style="height: 6px; background: #222; border-radius: 3px; overflow: hidden; border: 1px solid #333;">
+                                <div id="signal_strength_bar" style="width: 0%; height: 100%; background: #444; transition: all 0.5s ease;"></div>
+                            </div>
+                        </div>
+
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; flex-wrap: wrap; gap: 10px;">
                             <div id="last_5_sequence" style="display: flex;"></div>
                             <div style="text-align: left; flex: 1;">
-                                <div style="font-size: 0.8rem; color: #aaa;">Sugestão I.A.:</div>
+                                <div style="font-size: 0.8rem; color: #aaa;">🚨 ALERTA DE ENTRADA:</div>
                                 <div id="prediction_result" style="font-size: 1.1rem; font-weight: bold; color: #fff;">Aguardando...</div>
                             </div>
                         </div>
@@ -205,10 +320,88 @@
                     <!-- Gráfico de Tendência -->
                     <div class="stat-card">
                         <div class="stat-title" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>📈 Tendência de Saldo (Vermelho vs Preto - Últimos 100)</span>
+                            <span id="trend_chart_title">📈 Tendência de Saldo (Vermelho vs Preto - Últimos 100)</span>
                             <span id="trend_strength_indicator" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);">Calculando...</span>
                         </div>
                         <div id="trend_chart_container" style="width: 100%; height: 120px; margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <!-- Simulação de Estratégia (Movido para cá - Linha Única) -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">🎮 Simulação de Estratégia (Backtest)</div>
+                        <div style="display: flex; gap: 10px; margin: 10px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <select id="sim_strategy" onchange="handleStrategyChange()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                                <option value="alternating">Alternar (Xadrez)</option>
+                                <option value="follow">Seguir a Cor (Surf)</option>
+                                <option value="majority">Maioria (Últimos 5)</option>
+                                <option value="ia_cores">IA Cores (Preditiva)</option>
+                                <option value="analise_cores">Análise Cores (Híbrida)</option>
+                                <option value="alignment">Padrão Alinhamento (Tendência 20)</option>
+                                <option value="euler">Onda de Euler (Cíclico)</option>
+                                <option value="gauss">Curva de Gauss (Últimos 7)</option>
+                                <option value="fibonacci">Fibonacci (Retração)</option>
+                                <option value="sniper">Sniper (Alta Precisão)</option>
+                            </select>
+                            <select id="sim_gale_level" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                                <option value="0">Sem Gale</option>
+                                <option value="1" selected>Gale 1</option>
+                                <option value="2">Gale 2</option>
+                                <option value="3">Gale 3</option>
+                            </select>
+                            <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Auto Melhor:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="best_strategy_toggle" checked onchange="toggleBestStrategy()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Analisar Branco:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="analyze_white_toggle" checked onchange="runSimulation()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Manter 4 Rodadas:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="persistence_toggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Gale Invertido:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="gale_invert_toggle" onchange="runSimulation()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Confirmação:</span>
+                                <button onclick="changeConfirmation(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="confirmation_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">2</span>
+                                <button onclick="changeConfirmation(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                        </div>
+                        <div id="golden_hour_results" style="margin-top: 10px;"></div>
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Wins</div><div id="sim_wins" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Losses</div><div id="sim_losses" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Assertividade</div><div id="sim_rate" style="font-size: 1.2rem; font-weight: bold; color: #fff;">0%</div></div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: #aaa;">Saldo (R$10)</div>
+                                <div id="sim_balance" style="font-size: 1.2rem; font-weight: bold; color: #00d2ff;">R$ 0</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 5px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Maior Seq. Vitórias</div><div id="sim_max_win" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Maior Seq. Derrotas</div><div id="sim_max_loss" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
+                        </div>
+                        <div id="gale_distribution_chart_container" style="width: 100%; height: 120px; margin-top: 15px;"></div>
+                        <div style="font-size: 0.7rem; color: #666; text-align: center; margin-top: 5px;">*Simulação baseada nos dados filtrados acima.</div>
                     </div>
                 </div>
 
@@ -274,40 +467,6 @@
                         </div>
                         <div id="comp_message" style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 10px;"></div>
                     </div>
-                    <!-- Simulação de Estratégia -->
-                    <div class="stat-card">
-                        <div class="stat-title">🎮 Simulação de Estratégia (Backtest)</div>
-                        <div style="display: flex; gap: 10px; margin: 10px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
-                            <select id="sim_strategy" onchange="runSimulation()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
-                                <option value="red">Sempre Vermelho</option>
-                                <option value="black">Sempre Preto</option>
-                                <option value="alternating">Alternar (Xadrez)</option>
-                                <option value="follow">Seguir a Cor (Surf)</option>
-                                <option value="majority">Maioria (Últimos 5)</option>
-                                <option value="ia_cores">IA Cores (Preditiva)</option>
-                                <option value="analise_cores">Análise Cores (Híbrida)</option>
-                                <option value="alignment">Padrão Alinhamento (Tendência 20)</option>
-                                <option value="random">Aleatório</option>
-                                <option value="euler">Onda de Euler (Cíclico)</option>
-                                <option value="gauss">Curva de Gauss (Últimos 7)</option>
-                            </select>
-                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
-                                <input type="checkbox" id="sim_gale1" onchange="runSimulation()">
-                                <label for="sim_gale1" style="font-size: 0.8rem; color: #aaa; cursor: pointer; margin: 0;">Gale 1</label>
-                            </div>
-                            <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
-                        </div>
-                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
-                            <div><div style="font-size: 0.8rem; color: #aaa;">Wins</div><div id="sim_wins" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
-                            <div><div style="font-size: 0.8rem; color: #aaa;">Losses</div><div id="sim_losses" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
-                            <div><div style="font-size: 0.8rem; color: #aaa;">Assertividade</div><div id="sim_rate" style="font-size: 1.2rem; font-weight: bold; color: #fff;">0%</div></div>
-                            <div>
-                                <div style="font-size: 0.8rem; color: #aaa;">Saldo (R$10)</div>
-                                <div id="sim_balance" style="font-size: 1.2rem; font-weight: bold; color: #00d2ff;">R$ 0</div>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.7rem; color: #666; text-align: center; margin-top: 5px;">*Simulação baseada nos dados filtrados acima.</div>
-                    </div>
                 </div>
 
                 <!-- Grupo 6: Frequência e Horários -->
@@ -332,12 +491,12 @@
                 <!-- Grupo 7: Ferramentas -->
                 <div class="stats-grid">
                     <!-- Gráfico de Dispersão -->
-                    <div class="stat-card" style="animation: card-pulse 4s infinite;">
+                    <div class="stat-card">
                         <div class="stat-title">🌌 Dispersão (Minuto vs Número)</div>
                         <div id="scatter_chart_container" style="width: 100%; height: 200px; margin-top: 10px;"></div>
                     </div>
                     <!-- Alerta de Padrão Personalizado -->
-                    <div class="stat-card" style="animation: card-pulse 4s infinite; animation-delay: 1s; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div class="stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                         <div class="stat-title">🔔 Alerta de Padrão Personalizado</div>
                         <div style="display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
                             <button class="filter-btn" onclick="addToPattern('red')" style="border-color: #ff0055; color: #ff0055;">V</button>
@@ -349,7 +508,7 @@
                         <div id="pattern_alert_status" style="text-align: center; font-weight: bold; min-height: 20px;"></div>
                     </div>
                     <!-- Controle de Tamanho (Movido) -->
-                    <div class="stat-card" style="animation: card-pulse 4s infinite; animation-delay: 2s; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="stat-card" style="display: flex; flex-direction: column; justify-content: center;">
                         <div class="stat-title">🔍 Tamanho da Vela (Zoom)</div>
                         <div class="filter-buttons" style="margin-top: 20px; justify-content: center; gap: 15px;">
                             <button class="filter-btn" onclick="changeChartScale(-0.2)">Diminuir</button>
@@ -392,6 +551,8 @@
         let hotHoursColor = 'red'; // Cor padrão para horários quentes
         let customPattern = []; // Padrão personalizado
         let chartScale = 1; // Escala dos gráficos
+        let autoStrategyCounter = 0; // Contador para persistência
+        let confirmationLevel = 2; // Nível de confirmação (velas)
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchBlazeData();
@@ -424,6 +585,14 @@
         function resetChartScale() {
             chartScale = 1;
             if (fullBlazeData.length > 0) analyzeData(fullBlazeData);
+        }
+
+        function changeConfirmation(delta) {
+            confirmationLevel += delta;
+            if (confirmationLevel < 1) confirmationLevel = 1;
+            if (confirmationLevel > 6) confirmationLevel = 6;
+            document.getElementById('confirmation_display').innerText = confirmationLevel;
+            runSimulation();
         }
 
         function toggleAutoUpdate() {
@@ -473,7 +642,7 @@
 
                 if (fullBlazeData.length === 0) throw new Error("Nenhum dado encontrado.");
 
-                analyzeData(fullBlazeData);
+                analyzeData(fullBlazeData, true);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
             } catch (error) {
@@ -482,7 +651,7 @@
             }
         }
 
-        function analyzeData(fullData) {
+        function analyzeData(fullData, isAutoUpdate = false) {
             // Corta os dados com base no limite selecionado
             const data = analysisLimit ? fullData.slice(0, analysisLimit) : fullData;
 
@@ -573,10 +742,9 @@
             }
             document.getElementById('numbers_grid').innerHTML = gridHtml;
             
-            renderTrendChart(fullData); // O gráfico de tendência sempre usa os últimos 100 do total
             updatePrediction(fullData);
             renderHotHoursChart(fullData);
-            runSimulation();
+            runSimulation(false, isAutoUpdate);
             analyzeSequences(fullData);
             renderPieChart(data);
             renderPeriodComparison(data);
@@ -584,21 +752,16 @@
             renderScatterChart(data);
         }
 
-        function renderTrendChart(data) {
+        function renderTrendChart(points, title) {
             const container = document.getElementById('trend_chart_container');
             if (!container) return;
 
-            // Pega os últimos 100 jogos e inverte para ordem cronológica
-            const trendData = data.slice(0, 100).reverse();
-            let balance = 0;
-            const points = trendData.map(game => {
-                const r = game.roll;
-                if (r >= 1 && r <= 7) balance++;      // Vermelho +1
-                else if (r >= 8 && r <= 14) balance--; // Preto -1
-                return balance;
-            });
+            if (title) {
+                const titleEl = document.getElementById('trend_chart_title');
+                if (titleEl) titleEl.innerText = title;
+            }
 
-            if (points.length === 0) return;
+            if (!points || points.length === 0) return;
 
             const width = container.clientWidth || 500;
             const height = 120 * chartScale;
@@ -657,84 +820,185 @@
         }
 
         function updatePrediction(data) {
-            if (!data || data.length < 5) return;
+            if (!data || data.length < 1) return;
+            
+            const strategy = document.getElementById('sim_strategy').value;
+            const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
             const last5 = data.slice(0, 5);
             const container = document.getElementById('last_5_sequence');
             const predictionEl = document.getElementById('prediction_result');
             
             if (!container || !predictionEl) return;
 
+            // 1. Renderiza a sequência visual (Últimos 5)
             let html = '';
-            let colors = []; // 0: white, 1: red, 2: black
-
-            // Renderiza sequência (Antigo -> Novo)
             for(let i = last5.length - 1; i >= 0; i--) {
                 const r = last5[i].roll;
                 let colorClass = 'seq-white';
                 if (r >= 1 && r <= 7) colorClass = 'seq-red';
                 else if (r >= 8 && r <= 14) colorClass = 'seq-black';
-                
                 html += `<div class="seq-badge ${colorClass}">${r}</div>`;
             }
             container.innerHTML = html;
 
-            // Lógica de Previsão (Baseada no mais recente em data[0])
-            last5.forEach(g => {
-                const r = g.roll;
-                if (r === 0) colors.push(0);
-                else if (r >= 1 && r <= 7) colors.push(1);
-                else colors.push(2);
-            });
+            // Helper: Previsão baseada na estratégia selecionada (History: Newest -> Oldest)
+            const getStratPrediction = (hist) => {
+                if (!hist || hist.length === 0) return null;
+                
+                // Funções auxiliares de cor
+                const getColorRaw = (r) => (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black');
 
-            let suggestion = 'Analisando...';
+                const getColor = (idx) => {
+                    if (idx >= hist.length) return 'white';
+                    const r = hist[idx].roll;
+                    const c = getColorRaw(r);
+                    if (c === 'white' && analyzeWhite) {
+                        let rC = 0, bC = 0;
+                        for(let k=1; k<=5; k++) {
+                            if (idx + k < hist.length) {
+                                const val = hist[idx + k].roll;
+                                if (val >= 1 && val <= 7) rC++;
+                                else if (val >= 8 && val <= 14) bC++;
+                            }
+                        }
+                        return rC >= bC ? 'red' : 'black';
+                    }
+                    return c;
+                };
+                
+                // Helper para verificar sequência
+                const checkPattern = (type, len) => {
+                    if (hist.length < len) return false;
+                    const first = getColor(0);
+                    if (first === 'white') return false;
+                    for (let k = 1; k < len; k++) {
+                        const curr = getColor(k);
+                        if (type === 'follow' && curr !== first) return false;
+                        if (type === 'alternating') {
+                            const expected = (k % 2 === 0) ? first : (first === 'red' ? 'black' : 'red');
+                            if (curr !== expected) return false;
+                        }
+                    }
+                    return true;
+                };
+
+                if (strategy === 'alternating') {
+                    if (checkPattern('alternating', confirmationLevel)) {
+                        const lastColor = getColor(0);
+                        return (lastColor === 'red' ? 'black' : 'red');
+                    }
+                } 
+                else if (strategy === 'follow') {
+                    if (checkPattern('follow', confirmationLevel)) {
+                        return getColor(0);
+                    }
+                }
+                else if (strategy === 'majority') {
+                    if (hist.length < 5) return null;
+                    let r=0, b=0;
+                    for(let i=0; i<5; i++) {
+                        const c = getColor(i);
+                        if(c === 'red') r++; else if(c === 'black') b++;
+                    }
+                    // Assertividade: Exige margem de pelo menos 2 (Ex: 4v1 ou 5v0)
+                    if (r >= b + 2) return 'red';
+                    if (b >= r + 2) return 'black';
+                }
+                else if (strategy === 'ia_cores') {
+                    if (hist.length < 5) return null;
+                    let rScore=0, bScore=0;
+                    const hColors = [];
+                    for(let i=0; i<5; i++) hColors.push(getColor(i));
+                    
+                    if(hColors[0]===hColors[1] && hColors[1]===hColors[2]) {
+                        if(hColors[0]==='red') rScore+=2; else if(hColors[0]==='black') bScore+=2;
+                    }
+                    if(hColors[0]!==hColors[1] && hColors[1]!==hColors[2]) {
+                        if(hColors[0]==='red') bScore+=2; else if(hColors[0]==='black') rScore+=2;
+                    }
+                    const rCount = hColors.filter(c=>c==='red').length;
+                    const bCount = hColors.filter(c=>c==='black').length;
+                    if(rCount > bCount) rScore++; else bScore++;
+                    
+                    if(rScore > bScore) return 'red';
+                    if(bScore > rScore) return 'black';
+                }
+                else if (strategy === 'analise_cores') {
+                    if (checkPattern('follow', confirmationLevel)) return getColor(0);
+                    else if (checkPattern('alternating', confirmationLevel)) {
+                        const last = getColor(0);
+                        return (last === 'red' ? 'black' : 'red');
+                    }
+                }
+                else if (strategy === 'alignment') {
+                    if (hist.length < 20) return null;
+                    let r=0, b=0;
+                    for(let i=0; i<20; i++) {
+                        const c = getColor(i);
+                        if(c==='red') r++; else if(c==='black') b++;
+                    }
+                    // Assertividade: Exige maioria simples mas consistente
+                    if(r > b + 2) return 'red';
+                    if(b > r + 2) return 'black';
+                }
+                else if (strategy === 'euler') {
+                    if (checkPattern('alternating', confirmationLevel)) {
+                        const last = getColor(0);
+                        return (last === 'red' ? 'black' : 'red');
+                    } else if (checkPattern('follow', confirmationLevel)) {
+                        return getColor(0);
+                    }
+                }
+                else if (strategy === 'gauss') {
+                    if (hist.length < 7) return null;
+                    let r=0, b=0;
+                    for(let i=0; i<7; i++) {
+                        const c = getColor(i);
+                        if(c==='red') r++; else if(c==='black') b++;
+                    }
+                    // Assertividade: Margem de segurança
+                    if(r >= b + 2) return 'red';
+                    if(b >= r + 2) return 'black';
+                }
+                else if (strategy === 'fibonacci') {
+                    const fibs = [1, 2, 3, 5, 8, 13];
+                    let r=0, b=0;
+                    fibs.forEach(fib => {
+                        if(hist.length > fib) {
+                            const c = getColor(fib-1); // -1 pois array começa em 0
+                            if(c==='red') r++; else if(c==='black') b++;
+                        }
+                    });
+                    // Assertividade: Margem de segurança
+                    if(r >= b + 1) return 'red';
+                    if(b >= r + 1) return 'black';
+                }
+                else if (strategy === 'sniper') {
+                    // Sniper agora usa confirmationLevel para definir o tamanho da sequência a reverter
+                    if (checkPattern('follow', confirmationLevel)) {
+                        const last = getColor(0);
+                        return (last === 'red' ? 'black' : 'red');
+                    }
+                }
+                
+                return null;
+            };
+
+            // Gera Previsão Atual (Alerta de Entrada)
+            const currentPred = getStratPrediction(data);
+            let suggestion = 'Aguardando Padrão...';
             let suggestionColor = '#aaa';
-            let useBubble = false;
-            let bubbleType = 'red';
 
-            // Lógica Simples
-            const c0 = colors[0], c1 = colors[1], c2 = colors[2];
-            
-            if (c0 !== 0 && c0 === c1 && c1 === c2) {
-                // Sequência de 3 iguais -> Quebra
-                if (c0 === 1) { suggestion = '⚫ PRETO (Quebra)'; suggestionColor = '#fff'; }
-                else { suggestion = '🔴 VERMELHO (Quebra)'; suggestionColor = '#ff0055'; }
-            } else if (c0 !== 0 && c1 !== 0 && c2 !== 0 && c0 === c2 && c0 !== c1) {
-                // Alternância (Xadrez) -> Seguir
-                if (c0 === 1) { suggestion = '⚫ PRETO (Xadrez)'; suggestionColor = '#fff'; }
-                else { suggestion = '🔴 VERMELHO (Xadrez)'; suggestionColor = '#ff0055'; }
-            } else {
-                // Maioria
-                const rCount = colors.filter(c => c === 1).length;
-                const bCount = colors.filter(c => c === 2).length;
-                if (rCount > bCount) { 
-                    suggestion = '🔴 VERMELHO (Tendência)'; 
-                    suggestionColor = '#ff0055';
-                    useBubble = true;
-                    bubbleType = 'red';
-                }
-                else if (bCount > rCount) { 
-                    suggestion = '⚫ PRETO (Tendência)'; 
-                    suggestionColor = '#fff'; 
-                    useBubble = true;
-                    bubbleType = 'black';
-                }
-                else { suggestion = '⚖️ NEUTRO'; suggestionColor = '#aaa'; }
+            if (currentPred === 'red') {
+                suggestion = '🔴 ENTRAR NO VERMELHO';
+                suggestionColor = '#ff0055';
+            } else if (currentPred === 'black') {
+                suggestion = '⚫ ENTRAR NO PRETO';
+                suggestionColor = '#fff';
             }
 
-            if (useBubble) {
-                const bClass = bubbleType === 'black' ? 'prediction-bubble black' : 'prediction-bubble';
-                const bIcon = bubbleType === 'black' ? '⚫' : '🔴';
-                const bText = bubbleType === 'black' ? 'PRETO (Tendência)' : 'VERMELHO (Tendência)';
-                const bColor = bubbleType === 'black' ? '#fff' : '#ff0055';
-
-                predictionEl.innerHTML = `
-                    <div class="${bClass}"><span class="prediction-bubble-text">${bIcon}</span></div>
-                    <div style="font-size: 0.7rem; color: ${bColor}; margin-top: 5px; font-weight: bold;">${bText}</div>
-                `;
-            } else {
-                predictionEl.innerHTML = suggestion;
-                predictionEl.style.color = suggestionColor;
-            }
+            predictionEl.innerHTML = suggestion;
+            predictionEl.style.color = suggestionColor;
         }
 
         function setHotHoursColor(color) {
@@ -802,189 +1066,412 @@
             container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">${svgContent}</svg>`;
         }
 
-        function runSimulation() {
+        function handleStrategyChange() {
+            const toggle = document.getElementById('best_strategy_toggle');
+            if (toggle && toggle.checked) toggle.checked = false;
+            runSimulation();
+            updatePrediction(fullBlazeData);
+        }
+
+        function toggleBestStrategy() {
+            const toggle = document.getElementById('best_strategy_toggle');
+            if (toggle && toggle.checked) {
+                autoStrategyCounter = 0;
+                findBestStrategy();
+            }
+        }
+
+        function findBestStrategy(isAutoUpdate = false) {
             if (!fullBlazeData || fullBlazeData.length === 0) return;
             
+            const persistenceToggle = document.getElementById('persistence_toggle');
+            if (persistenceToggle && persistenceToggle.checked) {
+                if (autoStrategyCounter > 0) {
+                    if (isAutoUpdate) autoStrategyCounter--;
+                    runSimulation(true);
+                    return;
+                }
+            }
+
             const limit = analysisLimit || fullBlazeData.length;
             const dataSlice = fullBlazeData.slice(0, limit);
-            // Inverte para ordem cronológica (Antigo -> Novo) para simular corretamente
             const simData = [...dataSlice].reverse();
+            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
+            const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
             
-            const strategy = document.getElementById('sim_strategy').value;
-            const useGale1 = document.getElementById('sim_gale1').checked;
-            let wins = 0, losses = 0, balance = 0;
-            const bet = 10; // Aposta fixa
+            const select = document.getElementById('sim_strategy');
+            const previousStrategy = select.value;
+            let bestStrategy = previousStrategy;
+            let bestRate = 0.85; // Filtro: Apenas acima de 85%
+            let bestBalance = -Infinity;
 
-            for(let i=0; i<simData.length; i++) {
-                const result = simData[i];
-                const r = result.roll;
-                let resultColor = 'white';
-                if (r >= 1 && r <= 7) resultColor = 'red';
-                else if (r >= 8 && r <= 14) resultColor = 'black';
+            for (let i = 0; i < select.options.length; i++) {
+                const strategy = select.options[i].value;
+                const result = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                
+                const total = result.wins + result.losses;
+                const rate = total > 0 ? (result.wins / total) : 0;
 
-                let targetColor = null;
-
-                if (strategy === 'red') targetColor = 'red';
-                else if (strategy === 'black') targetColor = 'black';
-                else if (strategy === 'alternating') {
-                    if (i > 0) {
-                        const prevR = simData[i-1].roll;
-                        let prevColor = (prevR >= 1 && prevR <= 7) ? 'red' : ((prevR >= 8 && prevR <= 14) ? 'black' : 'white');
-                        if (prevColor === 'red') targetColor = 'black';
-                        else if (prevColor === 'black') targetColor = 'red';
-                    }
-                } else if (strategy === 'follow') {
-                     if (i > 0) {
-                        const prevR = simData[i-1].roll;
-                        let prevColor = (prevR >= 1 && prevR <= 7) ? 'red' : ((prevR >= 8 && prevR <= 14) ? 'black' : 'white');
-                        if (prevColor !== 'white') targetColor = prevColor;
-                    }
-                } else if (strategy === 'majority') {
-                    if (i >= 5) {
-                        let rCount = 0, bCount = 0;
-                        for(let j=1; j<=5; j++) {
-                            const prevR = simData[i-j].roll;
-                            if (prevR >= 1 && prevR <= 7) rCount++;
-                            else if (prevR >= 8 && prevR <= 14) bCount++;
-                        }
-                        if (rCount > bCount) targetColor = 'red';
-                        else if (bCount > rCount) targetColor = 'black';
-                    }
-                } else if (strategy === 'ia_cores') {
-                    // Lógica baseada na Previsão I.A. (Pontuação Simplificada)
-                    if (i >= 5) {
-                        let redScore = 0, blackScore = 0;
-                        const history = [];
-                        for(let j=1; j<=5; j++) {
-                            const rVal = simData[i-j].roll;
-                            if (rVal >= 1 && rVal <= 7) history.push('red');
-                            else if (rVal >= 8 && rVal <= 14) history.push('black');
-                            else history.push('white');
-                        }
-                        // 1. Surf (3+)
-                        if (history[0] === history[1] && history[1] === history[2]) {
-                            if (history[0] === 'red') redScore += 2; else if (history[0] === 'black') blackScore += 2;
-                        }
-                        // 2. Xadrez (Alternância)
-                        if (history[0] !== history[1] && history[1] !== history[2]) {
-                            if (history[0] === 'red') blackScore += 2; else if (history[0] === 'black') redScore += 2;
-                        }
-                        // 3. Maioria Recente
-                        const rCount = history.filter(c => c === 'red').length;
-                        const bCount = history.filter(c => c === 'black').length;
-                        if (rCount > bCount) redScore += 1; else blackScore += 1;
-
-                        if (redScore > blackScore) targetColor = 'red';
-                        else if (blackScore > redScore) targetColor = 'black';
-                    }
-                } else if (strategy === 'analise_cores') {
-                    // Lógica Híbrida (Surf se tendência, Xadrez se lateral)
-                    if (i >= 2) {
-                        const last1 = simData[i-1].roll;
-                        const last2 = simData[i-2].roll;
-                        
-                        const c1 = (last1 >= 1 && last1 <= 7) ? 'red' : ((last1 >= 8 && last1 <= 14) ? 'black' : 'white');
-                        const c2 = (last2 >= 1 && last2 <= 7) ? 'red' : ((last2 >= 8 && last2 <= 14) ? 'black' : 'white');
-                        
-                        if (c1 !== 'white' && c2 !== 'white') {
-                            if (c1 === c2) targetColor = c1; // Segue o surf
-                            else targetColor = (c1 === 'red' ? 'black' : 'red'); // Segue o xadrez
-                        } else {
-                            // Se houve branco recente, aposta na maioria dos últimos 5
-                            if (i >= 5) {
-                                let rCount = 0, bCount = 0;
-                                for(let j=1; j<=5; j++) {
-                                    const rVal = simData[i-j].roll;
-                                    if (rVal >= 1 && rVal <= 7) rCount++;
-                                    else if (rVal >= 8 && rVal <= 14) bCount++;
-                                }
-                                targetColor = rCount > bCount ? 'red' : 'black';
-                            }
-                        }
-                    }
-                } else if (strategy === 'alignment') {
-                    // Padrão Alinhamento: Segue a maioria dos últimos 20 (Tendência de Médio Prazo)
-                    if (i >= 20) {
-                        let rCount = 0, bCount = 0;
-                        for(let j=1; j<=20; j++) {
-                            const rVal = simData[i-j].roll;
-                            if (rVal >= 1 && rVal <= 7) rCount++;
-                            else if (rVal >= 8 && rVal <= 14) bCount++;
-                        }
-                        if (rCount > bCount) targetColor = 'red';
-                        else if (bCount > rCount) targetColor = 'black';
-                    }
-                } else if (strategy === 'random') {
-                    // Aleatório
-                    targetColor = Math.random() < 0.5 ? 'red' : 'black';
-                } else if (strategy === 'euler') {
-                    // Onda de Euler: Tenta surfar na onda (Alternância) ou na crista (Repetição)
-                    if (i >= 2) {
-                        const last1 = simData[i-1].roll;
-                        const last2 = simData[i-2].roll;
-                        const c1 = (last1 >= 1 && last1 <= 7) ? 'red' : ((last1 >= 8 && last1 <= 14) ? 'black' : 'white');
-                        const c2 = (last2 >= 1 && last2 <= 7) ? 'red' : ((last2 >= 8 && last2 <= 14) ? 'black' : 'white');
-
-                        if (c1 !== 'white' && c2 !== 'white') {
-                            // Se está alternando (Onda), aposta na próxima alternância
-                            if (c1 !== c2) targetColor = (c1 === 'red' ? 'black' : 'red');
-                            // Se está repetindo (Crista), aposta na repetição
-                            else targetColor = c1;
-                        }
-                    }
-                } else if (strategy === 'gauss') {
-                    // Curva de Gauss: Maioria dos últimos 7 (Distribuição Local)
-                    if (i >= 7) {
-                        let rCount = 0, bCount = 0;
-                        for(let j=1; j<=7; j++) {
-                            const rVal = simData[i-j].roll;
-                            if (rVal >= 1 && rVal <= 7) rCount++;
-                            else if (rVal >= 8 && rVal <= 14) bCount++;
-                        }
-                        targetColor = rCount > bCount ? 'red' : (bCount > rCount ? 'black' : null);
-                    }
-                }
-
-                if (targetColor) {
-                    // 0 (Branco) conta como Win (Proteção)
-                    if (resultColor === targetColor || resultColor === 'white') { 
-                        wins++; 
-                        balance += bet; 
-                    } else { 
-                        if (useGale1) {
-                            // Verifica se existe próxima rodada para o Gale
-                            if (i + 1 < simData.length) {
-                                const nextResult = simData[i+1];
-                                const nextR = nextResult.roll;
-                                let nextResultColor = 'white';
-                                if (nextR >= 1 && nextR <= 7) nextResultColor = 'red';
-                                else if (nextR >= 8 && nextR <= 14) nextResultColor = 'black';
-
-                                if (nextResultColor === targetColor || nextResultColor === 'white') {
-                                    wins++;
-                                    balance += bet; // Recupera o prejuízo e ganha o lucro base
-                                } else {
-                                    losses++;
-                                    balance -= (bet * 3); // Perde a aposta inicial (10) + aposta dobrada (20)
-                                }
-                                i++; // Pula a próxima rodada pois foi usada no Gale
-                            } else {
-                                losses++; balance -= bet; // Sem histórico futuro para gale
-                            }
-                        } else {
-                            losses++; balance -= bet; 
-                        }
+                if (rate > bestRate) {
+                    bestRate = rate;
+                    bestBalance = result.balance;
+                    bestStrategy = strategy;
+                } else if (rate === bestRate && rate > 0.85) {
+                    if (result.balance > bestBalance) {
+                        bestBalance = result.balance;
+                        bestStrategy = strategy;
                     }
                 }
             }
 
-            document.getElementById('sim_wins').innerText = wins;
-            document.getElementById('sim_losses').innerText = losses;
-            const total = wins + losses;
-            document.getElementById('sim_rate').innerText = total > 0 ? ((wins/total)*100).toFixed(1) + '%' : '0%';
+            select.value = bestStrategy;
+            
+            if (persistenceToggle && persistenceToggle.checked) {
+                autoStrategyCounter = 4;
+            }
+            runSimulation(true);
+
+            if (bestStrategy !== previousStrategy) {
+                triggerStrategyChangeAlert();
+            }
+        }
+
+        function updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale) {
+            const select = document.getElementById('sim_strategy');
+            if (!select) return;
+
+            for (let i = 0; i < select.options.length; i++) {
+                const option = select.options[i];
+                if (!option.hasAttribute('data-original-text')) {
+                    option.setAttribute('data-original-text', option.text);
+                }
+                
+                const strategy = option.value;
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                const total = stats.wins + stats.losses;
+                const rate = total > 0 ? (stats.wins / total) * 100 : 0;
+                
+                const originalText = option.getAttribute('data-original-text');
+                option.text = `${originalText} (${rate.toFixed(0)}%)`;
+            }
+        }
+
+        function runSimulation(skipBestCheck = false, isAutoUpdate = false) {
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+            
+            if (!skipBestCheck) {
+                const toggle = document.getElementById('best_strategy_toggle');
+                if (toggle && toggle.checked) {
+                    findBestStrategy(isAutoUpdate);
+                    return;
+                }
+            }
+            
+            const limit = analysisLimit || fullBlazeData.length;
+            const dataSlice = fullBlazeData.slice(0, limit);
+            const simData = [...dataSlice].reverse();
+            
+            const strategy = document.getElementById('sim_strategy').value;
+            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
+            const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
+            
+            updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale);
+
+            const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+
+            document.getElementById('sim_wins').innerText = stats.wins;
+            document.getElementById('sim_losses').innerText = stats.losses;
+            const total = stats.wins + stats.losses;
+            document.getElementById('sim_rate').innerText = total > 0 ? ((stats.wins/total)*100).toFixed(1) + '%' : '0%';
             const balEl = document.getElementById('sim_balance');
-            balEl.innerText = `R$ ${balance}`;
-            balEl.style.color = balance >= 0 ? '#00ff88' : '#ff0055';
+            balEl.innerText = `R$ ${stats.balance}`;
+            balEl.style.color = stats.balance >= 0 ? '#00ff88' : '#ff0055';
+            document.getElementById('sim_max_win').innerText = stats.maxWinStreak;
+            document.getElementById('sim_max_loss').innerText = stats.maxLossStreak;
+
+            // Renderiza histórico visual de entradas
+            renderEntryHistory(stats.entryHistory);
+
+            // Atualiza também o placar da Previsão de Padrão (Vinculado ao Backtest/Gale)
+            document.getElementById('pred_wins').innerText = stats.wins;
+            document.getElementById('pred_losses').innerText = stats.losses;
+            const rateVal = total > 0 ? (stats.wins / total) * 100 : 0;
+            document.getElementById('pred_rate').innerText = Math.round(rateVal) + '%';
+
+            // Atualiza Força do Sinal
+            const strengthBar = document.getElementById('signal_strength_bar');
+            const strengthText = document.getElementById('signal_strength_text');
+            if (strengthBar && strengthText) {
+                strengthBar.style.width = `${rateVal}%`;
+                let label = 'BAIXA';
+                let color = '#ff0055';
+                if (rateVal >= 60) { label = 'EXCELENTE 🚀'; color = '#00ff88'; }
+                else if (rateVal >= 50) { label = 'ALTA 🔥'; color = '#ccff00'; }
+                else if (rateVal >= 40) { label = 'MODERADA ⚖️'; color = '#ff9800'; }
+                else { label = 'FRACA ⚠️'; color = '#ff0055'; }
+                strengthBar.style.background = color;
+                strengthBar.style.boxShadow = `0 0 10px ${color}`;
+                strengthText.innerText = label;
+                strengthText.style.color = color;
+            }
+
+            const strategySelect = document.getElementById('sim_strategy');
+            const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
+            renderTrendChart(stats.balanceHistory, `📈 Tendência de Saldo (${strategyName})`);
+            renderGaleDistributionChart(stats.winsDistribution);
+            showGoldenHourStrategies();
+        }
+
+        function calculateSimulation(strategy, galeLevel, simData, analyzeWhite = false, invertGale = false, confirmLvl = 2) {
+            if (!simData || simData.length === 0) return { wins: 0, losses: 0, balance: 0, balanceHistory: [0], winsDistribution: [0,0,0,0], maxWinStreak: 0, maxLossStreak: 0, entryHistory: [] };
+
+            let wins = 0, losses = 0, balance = 0;
+            const bet = 10; // Aposta fixa
+            const balanceHistory = [0]; // Histórico para o gráfico
+            let winsDistribution = [0, 0, 0, 0]; // G0, G1, G2, G3
+            let currentWinStreak = 0, maxWinStreak = 0;
+            let currentLossStreak = 0, maxLossStreak = 0;
+            const entryHistory = [];
+            let cooldownUntil = 0;
+
+            // Helper interno para cores
+            const getC = (r) => (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black');
+
+            // Helper para resolver cor (considerando toggle de branco)
+            const getStratColor = (idx) => {
+                if (idx < 0) return 'white';
+                const r = simData[idx].roll;
+                const c = getC(r);
+                if (c === 'white' && analyzeWhite) {
+                    let rC = 0, bC = 0;
+                    for(let k=1; k<=5; k++) {
+                        if(idx-k >= 0) {
+                            const val = simData[idx-k].roll;
+                            if(val >= 1 && val <= 7) rC++;
+                            else if(val >= 8 && val <= 14) bC++;
+                        }
+                    }
+                    return rC >= bC ? 'red' : 'black';
+                }
+                return c;
+            };
+
+            // Helper para verificar sequência no histórico de simulação
+            const checkSimPattern = (idx, type, len) => {
+                if (idx < len) return false; // Precisa de histórico anterior
+                const first = getStratColor(idx - 1);
+                if (first === 'white') return false;
+                
+                for (let k = 1; k < len; k++) {
+                    const curr = getStratColor(idx - 1 - k);
+                    if (type === 'follow' && curr !== first) return false;
+                    if (type === 'alternating') {
+                        const expected = (k % 2 === 0) ? first : (first === 'red' ? 'black' : 'red');
+                        if (curr !== expected) return false;
+                    }
+                }
+                return true;
+            };
+
+            for(let i=0; i<simData.length; i++) {
+                const result = simData[i];
+
+                let targetColor = null;
+                let isCooldown = false;
+                if (result.created_at) {
+                    const currentTime = new Date(result.created_at).getTime();
+                    if (currentTime < cooldownUntil) isCooldown = true;
+                }
+
+                if (!isCooldown) {
+                    if (strategy === 'alternating') {
+                        if (checkSimPattern(i, 'alternating', confirmLvl)) {
+                            const last = getStratColor(i-1);
+                            targetColor = (last === 'red' ? 'black' : 'red');
+                        }
+                    } else if (strategy === 'follow') {
+                        if (checkSimPattern(i, 'follow', confirmLvl)) {
+                            targetColor = getStratColor(i-1);
+                        }
+                    } else if (strategy === 'majority') {
+                        if (i >= 5) {
+                            let rCount = 0, bCount = 0;
+                            for(let j=1; j<=5; j++) {
+                                const c = getStratColor(i-j);
+                                if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                            }
+                            if (rCount >= bCount + 2) targetColor = 'red';
+                            else if (bCount >= rCount + 2) targetColor = 'black';
+                        }
+                    } else if (strategy === 'ia_cores') {
+                        // Lógica baseada na Previsão I.A. (Pontuação Simplificada)
+                        if (i >= 5) {
+                            let redScore = 0, blackScore = 0;
+                            const history = [];
+                            for(let j=1; j<=5; j++) {
+                                history.push(getStratColor(i-j));
+                            }
+                            // 1. Surf (3+)
+                            if (history[0] === history[1] && history[1] === history[2]) {
+                                if (history[0] === 'red') redScore += 2; else if (history[0] === 'black') blackScore += 2;
+                            }
+                            // 2. Xadrez (Alternância)
+                            if (history[0] !== history[1] && history[1] !== history[2]) {
+                                if (history[0] === 'red') blackScore += 2; else if (history[0] === 'black') redScore += 2;
+                            }
+                            // 3. Maioria Recente
+                            const rCount = history.filter(c => c === 'red').length;
+                            const bCount = history.filter(c => c === 'black').length;
+                            if (rCount > bCount) redScore += 1; else blackScore += 1;
+
+                            if (redScore > blackScore) targetColor = 'red';
+                            else if (blackScore > redScore) targetColor = 'black';
+                        }
+                    } else if (strategy === 'analise_cores') {
+                        // Lógica Híbrida (Surf se tendência, Xadrez se lateral)
+                        if (checkSimPattern(i, 'follow', confirmLvl)) {
+                            targetColor = getStratColor(i-1);
+                        } else if (checkSimPattern(i, 'alternating', confirmLvl)) {
+                            const last = getStratColor(i-1);
+                            targetColor = (last === 'red' ? 'black' : 'red');
+                            } else {
+                                // Se houve branco recente, aposta na maioria dos últimos 5
+                                if (i >= 5) {
+                                    let rCount = 0, bCount = 0;
+                                    for(let j=1; j<=5; j++) {
+                                        const c = getStratColor(i-j);
+                                        if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                                    }
+                                    targetColor = rCount > bCount ? 'red' : 'black';
+                                }
+                            }
+                    } else if (strategy === 'alignment') {
+                        // Padrão Alinhamento: Segue a maioria dos últimos 20 (Tendência de Médio Prazo)
+                        if (i >= 20) {
+                            let rCount = 0, bCount = 0;
+                            for(let j=1; j<=20; j++) {
+                                const c = getStratColor(i-j);
+                                if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                            }
+                            if (rCount > bCount + 2) targetColor = 'red';
+                            else if (bCount > rCount + 2) targetColor = 'black';
+                        }
+                    } else if (strategy === 'euler') {
+                        // Onda de Euler: Tenta surfar na onda (Alternância) ou na crista (Repetição)
+                        if (checkSimPattern(i, 'alternating', confirmLvl)) {
+                            const last = getStratColor(i-1);
+                            targetColor = (last === 'red' ? 'black' : 'red');
+                        } else if (checkSimPattern(i, 'follow', confirmLvl)) {
+                            targetColor = getStratColor(i-1);
+                        }
+                    } else if (strategy === 'gauss') {
+                        // Curva de Gauss: Maioria dos últimos 7 (Distribuição Local)
+                        if (i >= 7) {
+                            let rCount = 0, bCount = 0;
+                            for(let j=1; j<=7; j++) {
+                                const c = getStratColor(i-j);
+                                if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                            }
+                            if (rCount >= bCount + 2) targetColor = 'red';
+                            else if (bCount >= rCount + 2) targetColor = 'black';
+                        }
+                    } else if (strategy === 'fibonacci') {
+                        // Fibonacci: Verifica posições 1, 2, 3, 5, 8, 13 atrás
+                        const fibs = [1, 2, 3, 5, 8, 13];
+                        let rCount = 0, bCount = 0;
+                        fibs.forEach(fib => {
+                            if (i >= fib) {
+                                const c = getStratColor(i-fib);
+                                if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                            }
+                        });
+                        if (rCount >= bCount + 1) targetColor = 'red';
+                        else if (bCount >= rCount + 1) targetColor = 'black';
+                    } else if (strategy === 'sniper') {
+                        // Sniper: Reversão após sequência definida por confirmLvl
+                        if (checkSimPattern(i, 'follow', confirmLvl)) {
+                            const last = getStratColor(i-1);
+                            targetColor = (last === 'red' ? 'black' : 'red');
+                        }
+                    }
+                }
+
+                if (targetColor) {
+                    let currentBet = bet;
+                    let totalLoss = 0;
+                    let wonSequence = false;
+                    let stepsTaken = 0;
+
+                    // Loop para tentar ganhar na rodada atual ou nos gales subsequentes
+                    for (let g = 0; g <= galeLevel; g++) {
+                        // Verifica se temos dados futuros suficientes
+                        if (i + g >= simData.length) {
+                            // Sem dados para completar o gale, encerra como perda do acumulado
+                            break;
+                        }
+
+                        const stepResult = simData[i + g];
+                        const stepR = stepResult.roll;
+                        let stepColor = 'white';
+                        if (stepR >= 1 && stepR <= 7) stepColor = 'red';
+                        else if (stepR >= 8 && stepR <= 14) stepColor = 'black';
+
+                        // LÓGICA DE GALE:
+                        // Mantém a mesma cor da estratégia original (targetColor) após um Loss,
+                        // garantindo a persistência da estratégia durante o Gale.
+                        let effectiveTarget = targetColor;
+                        if (g > 0 && invertGale) {
+                            effectiveTarget = (targetColor === 'red' ? 'black' : 'red');
+                        }
+
+                        // Verifica Vitória (Cor Alvo ou Branco Proteção)
+                        if (stepColor === effectiveTarget || stepColor === 'white') {
+                            wonSequence = true;
+                            stepsTaken = g;
+                            break;
+                        }
+
+                        // Se perdeu essa etapa
+                        totalLoss += currentBet;
+                        currentBet *= 2; // Martingale: dobra a aposta
+                        stepsTaken = g;
+                    }
+
+                    if (wonSequence) {
+                        wins++;
+                        balance += bet; // Recupera perdas e lucra a aposta base
+                        if (stepsTaken < 4) winsDistribution[stepsTaken]++;
+                        
+                        currentWinStreak++;
+                        currentLossStreak = 0;
+                        if(currentWinStreak > maxWinStreak) maxWinStreak = currentWinStreak;
+                        entryHistory.push('win');
+                    } else {
+                        losses++;
+                        balance -= totalLoss;
+                        
+                        currentLossStreak++;
+                        currentWinStreak = 0;
+                        if(currentLossStreak > maxLossStreak) maxLossStreak = currentLossStreak;
+                        entryHistory.push('loss');
+                    }
+
+                    // Cooldown: 2 min para Win, 3 min para Loss
+                    const lastGameIndex = i + stepsTaken;
+                    if (lastGameIndex < simData.length && simData[lastGameIndex].created_at) {
+                        const lastGameTime = new Date(simData[lastGameIndex].created_at).getTime();
+                        cooldownUntil = lastGameTime + (wonSequence ? 2 : 3) * 60 * 1000;
+                    }
+                    
+                    // Avança o índice principal pelos passos de gale utilizados
+                    i += stepsTaken;
+                }
+                balanceHistory.push(balance);
+            }
+            
+            return { wins, losses, balance, balanceHistory, winsDistribution, maxWinStreak, maxLossStreak, entryHistory };
         }
 
         function analyzeSequences(data) {
@@ -1312,6 +1799,128 @@
             indicator.style.color = color;
             indicator.style.background = bg;
             indicator.style.border = `1px solid ${color}`;
+        }
+
+        function renderGaleDistributionChart(counts) {
+            const container = document.getElementById('gale_distribution_chart_container');
+            if (!container) return;
+
+            const labels = ['Win Direto', 'Gale 1', 'Gale 2', 'Gale 3'];
+            const colors = ['#00ff88', '#ccff00', '#ff9800', '#ff0055'];
+            const maxCount = Math.max(...counts, 1);
+            const width = container.clientWidth || 500;
+            const height = 120;
+            const barWidth = (width / 4) - 20;
+            const padding = 10;
+
+            let svgContent = '';
+
+            counts.forEach((count, index) => {
+                if (index >= 4) return;
+                
+                const barHeight = (count / maxCount) * (height - 30);
+                const x = padding + index * (width / 4) + 10;
+                const y = height - barHeight - 20;
+                
+                // Só desenha se houver contagem ou para manter o label
+                const opacity = count > 0 ? 0.8 : 0.2;
+                
+                svgContent += `
+                    <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, 2)}" fill="${colors[index]}" fill-opacity="${opacity}" rx="4">
+                        <title>${labels[index]}: ${count}</title>
+                    </rect>
+                    <text x="${x + barWidth/2}" y="${height - 5}" font-size="10" fill="#aaa" text-anchor="middle">${labels[index]}</text>
+                    ${count > 0 ? `<text x="${x + barWidth/2}" y="${y - 5}" font-size="11" fill="#fff" font-weight="bold" text-anchor="middle">${count}</text>` : ''}
+                `;
+            });
+
+            container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">${svgContent}</svg>`;
+        }
+
+        function renderEntryHistory(history) {
+            const container = document.getElementById('entry_history_container');
+            if (!container) return;
+            
+            const last10 = history ? history.slice(-10) : [];
+            
+            let html = '';
+            if (last10.length === 0) {
+                html = '<span style="color: #444; font-size: 0.8rem;">--</span>';
+            } else {
+                last10.forEach(result => {
+                    const color = result === 'win' ? '#00ff88' : '#ff0055';
+                    const shadow = result === 'win' ? '0 0 8px rgba(0, 255, 136, 0.6)' : '0 0 8px rgba(255, 0, 85, 0.6)';
+                    html += `<div style="width: 10px; height: 10px; border-radius: 50%; background: ${color}; box-shadow: ${shadow}; margin: 2px;" title="${result.toUpperCase()}"></div>`;
+                });
+            }
+            container.innerHTML = html;
+        }
+
+        function triggerStrategyChangeAlert() {
+            const select = document.getElementById('sim_strategy');
+            select.classList.remove('blink-alert');
+            void select.offsetWidth; // Trigger reflow
+            select.classList.add('blink-alert');
+        }
+
+        function showGoldenHourStrategies() {
+            const container = document.getElementById('golden_hour_results');
+            if (!container) return;
+            
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+
+            const now = new Date();
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            
+            const lastHourData = [];
+            for (const game of fullBlazeData) {
+                if (new Date(game.created_at) >= oneHourAgo) {
+                    lastHourData.push(game);
+                } else {
+                    break; 
+                }
+            }
+
+            if (lastHourData.length < 10) {
+                container.innerHTML = '<div style="text-align: center; color: #aaa; padding: 10px;">Dados insuficientes na última hora.</div>';
+                return;
+            }
+
+            const simData = [...lastHourData].reverse();
+            const galeLevel = parseInt(document.getElementById('sim_gale_level').value);
+            const select = document.getElementById('sim_strategy');
+            const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
+            const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
+            
+            let html = '<div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; padding: 10px;">';
+            html += '<div style="color: #ffd700; font-weight: bold; margin-bottom: 8px; text-align: center;">🏆 Estratégias > 80% (Última Hora)</div>';
+            html += '<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">';
+
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                const strategy = select.options[i].value;
+                const name = select.options[i].text;
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                const total = stats.wins + stats.losses;
+                
+                if (total > 0) {
+                    const rate = (stats.wins / total) * 100;
+                    if (rate >= 80) {
+                        found = true;
+                        html += `<div onclick="selectStrategy('${strategy}')" style="cursor: pointer; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 4px; border: 1px solid #ffd700; font-size: 0.8rem; color: #fff; transition: all 0.2s;">${name}: <span style="color: #00ff88; font-weight: bold;">${rate.toFixed(0)}%</span></div>`;
+                    }
+                }
+            }
+
+            if (!found) html += '<div style="color: #aaa; font-size: 0.8rem;">Nenhuma estratégia atingiu 80% na última hora.</div>';
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        function selectStrategy(val) {
+            const select = document.getElementById('sim_strategy');
+            select.value = val;
+            handleStrategyChange();
         }
     </script>
 </body>
