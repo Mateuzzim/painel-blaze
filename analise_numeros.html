@@ -294,7 +294,7 @@
 
                                                                                                                                                                                                                                             <!-- Histórico Visual de Entradas -->
                         <div style="margin-bottom: 15px;">
-                            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-align: center;">Últimas 10 Entradas</div>
+                            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-align: center;">Últimas 20 Entradas</div>
                             <div id="entry_history_container" style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 14px;"></div>
                         </div>
 
@@ -331,7 +331,7 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-title">🎮 Simulação de Estratégia (Backtest)</div>
-                        <div style="display: flex; gap: 10px; margin: 10px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 10px; margin: 10px 0 15px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
                             <select id="sim_strategy" onchange="handleStrategyChange()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
                                 <option value="alternating">Alternar (Xadrez)</option>
                                 <option value="follow">Seguir a Cor (Surf)</option>
@@ -351,6 +351,8 @@
                                 <option value="3">Gale 3</option>
                             </select>
                             <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
                                 <span style="font-size: 0.8rem; color: #aaa;">Auto Melhor:</span>
                                 <label class="switch" style="transform: scale(0.7); margin: 0;">
@@ -366,11 +368,10 @@
                                 </label>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
-                                <span style="font-size: 0.8rem; color: #aaa;">Manter 4 Rodadas:</span>
-                                <label class="switch" style="transform: scale(0.7); margin: 0;">
-                                    <input type="checkbox" id="persistence_toggle" checked>
-                                    <span class="slider"></span>
-                                </label>
+                                <span style="font-size: 0.8rem; color: #aaa;">Manter:</span>
+                                <button onclick="changePersistence(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="persistence_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">4</span>
+                                <button onclick="changePersistence(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
                                 <span style="font-size: 0.8rem; color: #aaa;">Gale Invertido:</span>
@@ -378,6 +379,18 @@
                                     <input type="checkbox" id="gale_invert_toggle" onchange="runSimulation()">
                                     <span class="slider"></span>
                                 </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Pausa Win:</span>
+                                <button onclick="changePauseWin(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="pause_win_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">0</span>
+                                <button onclick="changePauseWin(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Pausa Loss:</span>
+                                <button onclick="changePauseLoss(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="pause_loss_display" style="font-weight: bold; color: #ff0055; min-width: 15px; text-align: center;">0</span>
+                                <button onclick="changePauseLoss(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
                                 <span style="font-size: 0.8rem; color: #aaa;">Confirmação:</span>
@@ -553,6 +566,9 @@
         let chartScale = 1; // Escala dos gráficos
         let autoStrategyCounter = 0; // Contador para persistência
         let confirmationLevel = 2; // Nível de confirmação (velas)
+        let pauseWinCount = 0; // Pausa após Win (rodadas)
+        let pauseLossCount = 0; // Pausa após Loss (rodadas)
+        let persistenceCount = 4; // Manter estratégia (rodadas)
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchBlazeData();
@@ -593,6 +609,29 @@
             if (confirmationLevel > 6) confirmationLevel = 6;
             document.getElementById('confirmation_display').innerText = confirmationLevel;
             runSimulation();
+        }
+
+        function changePauseWin(delta) {
+            pauseWinCount += delta;
+            if (pauseWinCount < 0) pauseWinCount = 0;
+            if (pauseWinCount > 6) pauseWinCount = 6;
+            document.getElementById('pause_win_display').innerText = pauseWinCount;
+            runSimulation();
+        }
+
+        function changePauseLoss(delta) {
+            pauseLossCount += delta;
+            if (pauseLossCount < 0) pauseLossCount = 0;
+            if (pauseLossCount > 6) pauseLossCount = 6;
+            document.getElementById('pause_loss_display').innerText = pauseLossCount;
+            runSimulation();
+        }
+
+        function changePersistence(delta) {
+            persistenceCount += delta;
+            if (persistenceCount < 0) persistenceCount = 0;
+            if (persistenceCount > 20) persistenceCount = 20;
+            document.getElementById('persistence_display').innerText = persistenceCount;
         }
 
         function toggleAutoUpdate() {
@@ -1084,8 +1123,7 @@
         function findBestStrategy(isAutoUpdate = false) {
             if (!fullBlazeData || fullBlazeData.length === 0) return;
             
-            const persistenceToggle = document.getElementById('persistence_toggle');
-            if (persistenceToggle && persistenceToggle.checked) {
+            if (persistenceCount > 0) {
                 if (autoStrategyCounter > 0) {
                     if (isAutoUpdate) autoStrategyCounter--;
                     runSimulation(true);
@@ -1108,7 +1146,7 @@
 
             for (let i = 0; i < select.options.length; i++) {
                 const strategy = select.options[i].value;
-                const result = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                const result = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel, pauseWinCount, pauseLossCount);
                 
                 const total = result.wins + result.losses;
                 const rate = total > 0 ? (result.wins / total) : 0;
@@ -1127,8 +1165,8 @@
 
             select.value = bestStrategy;
             
-            if (persistenceToggle && persistenceToggle.checked) {
-                autoStrategyCounter = 4;
+            if (persistenceCount > 0) {
+                autoStrategyCounter = persistenceCount;
             }
             runSimulation(true);
 
@@ -1137,7 +1175,7 @@
             }
         }
 
-        function updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale) {
+        function updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale, pauseWin, pauseLoss) {
             const select = document.getElementById('sim_strategy');
             if (!select) return;
 
@@ -1148,7 +1186,7 @@
                 }
                 
                 const strategy = option.value;
-                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel, pauseWin, pauseLoss);
                 const total = stats.wins + stats.losses;
                 const rate = total > 0 ? (stats.wins / total) * 100 : 0;
                 
@@ -1177,9 +1215,9 @@
             const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
             const invertGale = document.getElementById('gale_invert_toggle')?.checked || false;
             
-            updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale);
+            updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale, pauseWinCount, pauseLossCount);
 
-            const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+            const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel, pauseWinCount, pauseLossCount);
 
             document.getElementById('sim_wins').innerText = stats.wins;
             document.getElementById('sim_losses').innerText = stats.losses;
@@ -1224,7 +1262,7 @@
             showGoldenHourStrategies();
         }
 
-        function calculateSimulation(strategy, galeLevel, simData, analyzeWhite = false, invertGale = false, confirmLvl = 2) {
+        function calculateSimulation(strategy, galeLevel, simData, analyzeWhite = false, invertGale = false, confirmLvl = 2, pauseWin = 0, pauseLoss = 0) {
             if (!simData || simData.length === 0) return { wins: 0, losses: 0, balance: 0, balanceHistory: [0], winsDistribution: [0,0,0,0], maxWinStreak: 0, maxLossStreak: 0, entryHistory: [] };
 
             let wins = 0, losses = 0, balance = 0;
@@ -1458,11 +1496,17 @@
                         entryHistory.push('loss');
                     }
 
-                    // Cooldown: 2 min para Win, 3 min para Loss
-                    const lastGameIndex = i + stepsTaken;
-                    if (lastGameIndex < simData.length && simData[lastGameIndex].created_at) {
-                        const lastGameTime = new Date(simData[lastGameIndex].created_at).getTime();
-                        cooldownUntil = lastGameTime + (wonSequence ? 2 : 3) * 60 * 1000;
+                    let appliedPause = false;
+                    if (wonSequence && pauseWin > 0) { i += pauseWin; appliedPause = true; }
+                    else if (!wonSequence && pauseLoss > 0) { i += pauseLoss; appliedPause = true; }
+
+                    if (!appliedPause) {
+                        // Cooldown: 2 min para Win, 3 min para Loss (Padrão)
+                        const lastGameIndex = i + stepsTaken;
+                        if (lastGameIndex < simData.length && simData[lastGameIndex].created_at) {
+                            const lastGameTime = new Date(simData[lastGameIndex].created_at).getTime();
+                            cooldownUntil = lastGameTime + (wonSequence ? 2 : 3) * 60 * 1000;
+                        }
                     }
                     
                     // Avança o índice principal pelos passos de gale utilizados
@@ -1841,13 +1885,13 @@
             const container = document.getElementById('entry_history_container');
             if (!container) return;
             
-            const last10 = history ? history.slice(-10) : [];
+            const last20 = history ? history.slice(-20) : [];
             
             let html = '';
-            if (last10.length === 0) {
+            if (last20.length === 0) {
                 html = '<span style="color: #444; font-size: 0.8rem;">--</span>';
             } else {
-                last10.forEach(result => {
+                last20.forEach(result => {
                     const color = result === 'win' ? '#00ff88' : '#ff0055';
                     const shadow = result === 'win' ? '0 0 8px rgba(0, 255, 136, 0.6)' : '0 0 8px rgba(255, 0, 85, 0.6)';
                     html += `<div style="width: 10px; height: 10px; border-radius: 50%; background: ${color}; box-shadow: ${shadow}; margin: 2px;" title="${result.toUpperCase()}"></div>`;
@@ -1900,7 +1944,7 @@
             for (let i = 0; i < select.options.length; i++) {
                 const strategy = select.options[i].value;
                 const name = select.options[i].text;
-                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel);
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel, pauseWinCount, pauseLossCount);
                 const total = stats.wins + stats.losses;
                 
                 if (total > 0) {
