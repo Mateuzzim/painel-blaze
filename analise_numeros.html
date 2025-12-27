@@ -274,8 +274,13 @@
                 <div class="stats-grid">
                     <!-- Previsão de Padrão -->
                     <div class="stat-card">
-                        <div class="stat-title">🔮 Previsão de Padrão (Últimos 5)</div>
-                        
+                        <div class="stat-title" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>🔮 Previsão de Padrão</span>
+                            <div style="display: flex; align-items: center; gap: 5px; font-size: 0.7rem; text-transform: none;">
+                                <span id="pred_active_source" style="color: #00d2ff; font-weight: bold;">Melhor: Calculando...</span>
+                            </div>
+                        </div>
+
                         <!-- Placar Win/Loss -->
                         <div style="display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333;">
                             <div style="text-align: center;">
@@ -330,7 +335,7 @@
                 <!-- Simulação de Estratégia (Movido para cá - Linha Única) -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-title">🎮 Simulação de Estratégia (Backtest)</div>
+                        <div class="stat-title">🎮 Simulação 1 (Filtro Dinâmico)</div>
                         <div style="display: flex; gap: 10px; margin: 10px 0 15px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
                             <select id="sim_strategy" onchange="handleStrategyChange()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
                                 <option value="alternating">Alternar (Xadrez)</option>
@@ -343,6 +348,11 @@
                                 <option value="gauss">Curva de Gauss (Últimos 7)</option>
                                 <option value="fibonacci">Fibonacci (Retração)</option>
                                 <option value="sniper">Sniper (Alta Precisão)</option>
+                                <option value="olho_de_deus">Olho de Deus (100 Pedras)</option>
+                                <option value="ciclo_lunar">Ciclo Lunar (15 Pedras)</option>
+                                <option value="espelho_magico">Espelho Mágico (10 Pedras)</option>
+                                <option value="fibonacci_sequence">Sequência de Fibonacci</option>
+                                <option value="mare_vermelha">Maré Vermelha</option>
                             </select>
                             <button class="filter-btn" onclick="runSimulation()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
                         </div>
@@ -416,6 +426,99 @@
                         </div>
                         <div id="gale_distribution_chart_container" style="width: 100%; height: 120px; margin-top: 15px;"></div>
                         <div style="font-size: 0.7rem; color: #666; text-align: center; margin-top: 5px;">*Simulação baseada nos dados filtrados acima.</div>
+                    </div>
+
+                    <!-- Simulação Secundária (Fixa 100) -->
+                    <div class="stat-card">
+                        <div class="stat-title">🎮 Simulação 2 (Fixa 100 Rodadas)</div>
+                        <div style="display: flex; gap: 10px; margin: 10px 0 15px 0; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <select id="sim2_strategy" onchange="handleStrategyChange2()" style="padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                                <option value="">-- Selecione --</option>
+                                <option value="olho_de_deus_90">Olho de Deus (90)</option>
+                                <option value="mhi_minoria">MHI (Minoria 3)</option>
+                                <option value="quebra_2x2">Quebra de Padrão 2x2</option>
+                                <option value="eco_passado">Eco do Passado (Pós-Número)</option>
+                                <option value="padrao_espelhado">Padrão Espelhado (3)</option>
+                                <option value="mare_minutos">Maré de Minutos</option>
+                                <option value="sincronia_horaria">Sincronia Horária</option>
+                                <option value="inercia_newton">Inércia (Tendência 6)</option>
+                                <option value="reacao_newton">Reação (3ª Lei)</option>
+                                <option value="entropia_caos">Entropia (Quebra Xadrez)</option>
+                                <option value="soma_dragao">Soma do Dragão (Chinês)</option>
+                                <option value="codigo_muralha">Código da Muralha (Chinês)</option>
+                                <option value="lotus_dourada">Lótus Dourada (Chinês)</option>
+                                <option value="yin_yang">Yin Yang (Histórico 100)</option>
+                                <option value="caos_ordem">Caos e Ordem (Alterna 10)</option>
+                            </select>
+                            <button class="filter-btn" onclick="runSimulation2()" style="background: #00d2ff; color: #000; border: none; padding: 6px 15px;">Recalcular</button>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Auto Melhor:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="sim2_best_strategy_toggle" checked onchange="toggleBestStrategy2()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Gale 1:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="sim2_gale_active" checked onchange="runSimulation2()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Analisar Branco:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="sim2_analyze_white" checked onchange="runSimulation2()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Manter:</span>
+                                <button onclick="changePersistence2(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="sim2_persistence_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">4</span>
+                                <button onclick="changePersistence2(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Gale Invertido:</span>
+                                <label class="switch" style="transform: scale(0.7); margin: 0;">
+                                    <input type="checkbox" id="sim2_gale_invert_toggle" onchange="runSimulation2()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Pausa Win:</span>
+                                <button onclick="changePauseWin2(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="sim2_pause_win_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">0</span>
+                                <button onclick="changePauseWin2(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Pausa Loss:</span>
+                                <button onclick="changePauseLoss2(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="sim2_pause_loss_display" style="font-weight: bold; color: #ff0055; min-width: 15px; text-align: center;">0</span>
+                                <button onclick="changePauseLoss2(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; border: 1px solid #444;">
+                                <span style="font-size: 0.8rem; color: #aaa;">Confirmação:</span>
+                                <button onclick="changeConfirmation2(-1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                                <span id="sim2_confirmation_display" style="font-weight: bold; color: #00d2ff; min-width: 15px; text-align: center;">2</span>
+                                <button onclick="changeConfirmation2(1)" style="background: transparent; border: 1px solid #666; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                            </div>
+                        </div>
+                        <div id="sim2_golden_hour_results" style="margin-top: 10px;"></div>
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Wins</div><div id="sim2_wins" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Losses</div><div id="sim2_losses" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Assertividade</div><div id="sim2_rate" style="font-size: 1.2rem; font-weight: bold; color: #fff;">0%</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Saldo</div><div id="sim2_balance" style="font-size: 1.2rem; font-weight: bold; color: #00d2ff;">R$ 0</div></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; text-align: center; margin-top: 5px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Maior Seq. Vitórias</div><div id="sim2_max_win" style="font-size: 1.2rem; font-weight: bold; color: #00ff88;">0</div></div>
+                            <div><div style="font-size: 0.8rem; color: #aaa;">Maior Seq. Derrotas</div><div id="sim2_max_loss" style="font-size: 1.2rem; font-weight: bold; color: #ff0055;">0</div></div>
+                        </div>
+                        <div id="sim2_gale_distribution_chart_container" style="width: 100%; height: 120px; margin-top: 15px;"></div>
+                        <div style="font-size: 0.7rem; color: #666; text-align: center; margin-top: 5px;">*Simulação fixa nas últimas 100 rodadas.</div>
                     </div>
                 </div>
 
@@ -554,6 +657,14 @@
                         <div id="pie_chart_container" style="display: flex; justify-content: center; align-items: center; padding: 20px; position: relative;"></div>
                     </div>
                 </div>
+
+                <!-- Grupo 8: Histórico Completo -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">📜 Histórico (Últimas 100 Pedras)</div>
+                        <div id="history_100_container" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; flex-direction: row-reverse; margin-top: 15px;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -570,6 +681,15 @@
         let pauseWinCount = 0; // Pausa após Win (rodadas)
         let pauseLossCount = 0; // Pausa após Loss (rodadas)
         let persistenceCount = 4; // Manter estratégia (rodadas)
+        let autoStrategyCounter2 = 0;
+        let confirmationLevel2 = 2;
+        let pauseWinCount2 = 0;
+        let pauseLossCount2 = 0;
+        let persistenceCount2 = 4;
+        let sim1RateVal = 0;
+        let sim2RateVal = 0;
+        let sim1Stats = null;
+        let sim2Stats = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchBlazeData();
@@ -635,11 +755,43 @@
             document.getElementById('persistence_display').innerText = persistenceCount;
         }
 
+        function changeConfirmation2(delta) {
+            confirmationLevel2 += delta;
+            if (confirmationLevel2 < 1) confirmationLevel2 = 1;
+            if (confirmationLevel2 > 6) confirmationLevel2 = 6;
+            document.getElementById('sim2_confirmation_display').innerText = confirmationLevel2;
+            runSimulation2();
+        }
+
+        function changePauseWin2(delta) {
+            pauseWinCount2 += delta;
+            if (pauseWinCount2 < 0) pauseWinCount2 = 0;
+            if (pauseWinCount2 > 6) pauseWinCount2 = 6;
+            document.getElementById('sim2_pause_win_display').innerText = pauseWinCount2;
+            runSimulation2();
+        }
+
+        function changePauseLoss2(delta) {
+            pauseLossCount2 += delta;
+            if (pauseLossCount2 < 0) pauseLossCount2 = 0;
+            if (pauseLossCount2 > 6) pauseLossCount2 = 6;
+            document.getElementById('sim2_pause_loss_display').innerText = pauseLossCount2;
+            runSimulation2();
+        }
+
+        function changePersistence2(delta) {
+            persistenceCount2 += delta;
+            if (persistenceCount2 < 0) persistenceCount2 = 0;
+            if (persistenceCount2 > 20) persistenceCount2 = 20;
+            document.getElementById('sim2_persistence_display').innerText = persistenceCount2;
+        }
+
         function toggleAutoUpdate() {
             const toggle = document.getElementById('autoUpdateToggle');
             if (toggle && toggle.checked) {
                 if (updateInterval) clearInterval(updateInterval);
                 updateInterval = setInterval(fetchBlazeData, 10000);
+                updateInterval = setInterval(fetchBlazeData, 15000);
             } else {
                 if (updateInterval) clearInterval(updateInterval);
             }
@@ -782,18 +934,19 @@
             }
             document.getElementById('numbers_grid').innerHTML = gridHtml;
             
-            updatePrediction(fullData);
             renderHotHoursChart(fullData);
             runSimulation(false, isAutoUpdate);
+            runSimulation2();
             analyzeSequences(fullData);
             renderPieChart(data);
             renderPeriodComparison(data);
             checkPattern(); // Verifica padrão ao atualizar dados
             renderScatterChart(data);
+            renderHistory100(fullData);
         }
 
-        function renderTrendChart(points, title) {
-            const container = document.getElementById('trend_chart_container');
+        function renderTrendChart(points, title, containerId = 'trend_chart_container') {
+            const container = document.getElementById(containerId);
             if (!container) return;
 
             if (title) {
@@ -859,11 +1012,71 @@
             updateTrendIndicator(points);
         }
 
+        function isPrime(num) {
+            if (num <= 1) return false;
+            if (num <= 3) return true;
+            if (num % 2 === 0 || num % 3 === 0) return false;
+            for (let i = 5; i * i <= num; i = i + 6) {
+                if (num % i === 0 || num % (i + 2) === 0) return false;
+            }
+            return true;
+        }
+
         function updatePrediction(data) {
             if (!data || data.length < 1) return;
             
-            const strategy = document.getElementById('sim_strategy').value;
-            const analyzeWhite = document.getElementById('analyze_white_toggle')?.checked || false;
+            // Determine best sim
+            const useSim2 = sim2RateVal > sim1RateVal;
+            const activeStats = useSim2 ? sim2Stats : sim1Stats;
+            const activeRate = useSim2 ? sim2RateVal : sim1RateVal;
+            
+            // Update Source Label
+            const sourceLabel = document.getElementById('pred_active_source');
+            if (sourceLabel) {
+                sourceLabel.innerText = useSim2 
+                    ? `Melhor: Sim 2 (${activeRate.toFixed(0)}%)` 
+                    : `Melhor: Sim 1 (${activeRate.toFixed(0)}%)`;
+                sourceLabel.style.color = useSim2 ? '#ff9800' : '#00d2ff';
+            }
+
+            // Update Scoreboard & Signal Strength
+            if (activeStats) {
+                document.getElementById('pred_wins').innerText = activeStats.wins;
+                document.getElementById('pred_losses').innerText = activeStats.losses;
+                document.getElementById('pred_rate').innerText = Math.round(activeRate) + '%';
+                
+                const strengthBar = document.getElementById('signal_strength_bar');
+                const strengthText = document.getElementById('signal_strength_text');
+                if (strengthBar && strengthText) {
+                    strengthBar.style.width = `${activeRate}%`;
+                    let label = 'BAIXA';
+                    let color = '#ff0055';
+                    if (activeRate >= 60) { label = 'EXCELENTE 🚀'; color = '#00ff88'; }
+                    else if (activeRate >= 50) { label = 'ALTA 🔥'; color = '#ccff00'; }
+                    else if (activeRate >= 40) { label = 'MODERADA ⚖️'; color = '#ff9800'; }
+                    else { label = 'FRACA ⚠️'; color = '#ff0055'; }
+                    strengthBar.style.background = color;
+                    strengthBar.style.boxShadow = `0 0 10px ${color}`;
+                    strengthText.innerText = label;
+                    strengthText.style.color = color;
+                }
+
+                // Atualiza o Gráfico de Tendência Principal com a melhor simulação
+                const strategySelectId = useSim2 ? 'sim2_strategy' : 'sim_strategy';
+                const select = document.getElementById(strategySelectId);
+                const strategyName = select && select.options.length > 0 ? select.options[select.selectedIndex].text : 'Desconhecida';
+                const simLabel = useSim2 ? "Sim 2" : "Sim 1";
+                renderTrendChart(activeStats.balanceHistory, `📈 Tendência de Saldo (${simLabel}: ${strategyName})`, 'trend_chart_container');
+
+                // Atualiza o Histórico Visual de Entradas com a melhor simulação
+                renderEntryHistory(activeStats.entryHistory);
+            }
+
+            const strategySelectId = useSim2 ? 'sim2_strategy' : 'sim_strategy';
+            const confirmationLvl = useSim2 ? confirmationLevel2 : confirmationLevel;
+            const strategy = document.getElementById(strategySelectId).value;
+            const analyzeWhite = useSim2 ? (document.getElementById('sim2_analyze_white')?.checked || false) : (document.getElementById('analyze_white_toggle')?.checked || false);
+
             const last5 = data.slice(0, 5);
             const container = document.getElementById('last_5_sequence');
             const predictionEl = document.getElementById('prediction_result');
@@ -882,14 +1095,14 @@
             container.innerHTML = html;
 
             // Helper: Previsão baseada na estratégia selecionada (History: Newest -> Oldest)
-            const getStratPrediction = (hist) => {
+            const getStratPrediction = (hist, strat, confirmLvlToUse) => {
                 if (!hist || hist.length === 0) return null;
                 
                 // Funções auxiliares de cor
                 const getColorRaw = (r) => (r === 0) ? 'white' : ((r >= 1 && r <= 7) ? 'red' : 'black');
 
                 const getColor = (idx) => {
-                    if (idx >= hist.length) return 'white';
+                    if (!hist || idx >= hist.length) return 'white';
                     const r = hist[idx].roll;
                     const c = getColorRaw(r);
                     if (c === 'white' && analyzeWhite) {
@@ -922,18 +1135,18 @@
                     return true;
                 };
 
-                if (strategy === 'alternating') {
-                    if (checkPattern('alternating', confirmationLevel)) {
+                if (strat === 'alternating') {
+                    if (checkPattern('alternating', confirmLvlToUse)) {
                         const lastColor = getColor(0);
                         return (lastColor === 'red' ? 'black' : 'red');
                     }
                 } 
-                else if (strategy === 'follow') {
-                    if (checkPattern('follow', confirmationLevel)) {
+                else if (strat === 'follow') {
+                    if (checkPattern('follow', confirmLvlToUse)) {
                         return getColor(0);
                     }
                 }
-                else if (strategy === 'majority') {
+                else if (strat === 'majority') {
                     if (hist.length < 5) return null;
                     let r=0, b=0;
                     for(let i=0; i<5; i++) {
@@ -944,7 +1157,7 @@
                     if (r >= b + 2) return 'red';
                     if (b >= r + 2) return 'black';
                 }
-                else if (strategy === 'ia_cores') {
+                else if (strat === 'ia_cores') {
                     if (hist.length < 5) return null;
                     let rScore=0, bScore=0;
                     const hColors = [];
@@ -963,14 +1176,14 @@
                     if(rScore > bScore) return 'red';
                     if(bScore > rScore) return 'black';
                 }
-                else if (strategy === 'analise_cores') {
-                    if (checkPattern('follow', confirmationLevel)) return getColor(0);
-                    else if (checkPattern('alternating', confirmationLevel)) {
+                else if (strat === 'analise_cores') {
+                    if (checkPattern('follow', confirmLvlToUse)) return getColor(0);
+                    else if (checkPattern('alternating', confirmLvlToUse)) {
                         const last = getColor(0);
                         return (last === 'red' ? 'black' : 'red');
                     }
                 }
-                else if (strategy === 'alignment') {
+                else if (strat === 'alignment') {
                     if (hist.length < 20) return null;
                     let r=0, b=0;
                     for(let i=0; i<20; i++) {
@@ -981,15 +1194,15 @@
                     if(r > b + 2) return 'red';
                     if(b > r + 2) return 'black';
                 }
-                else if (strategy === 'euler') {
-                    if (checkPattern('alternating', confirmationLevel)) {
+                else if (strat === 'euler') {
+                    if (checkPattern('alternating', confirmLvlToUse)) {
                         const last = getColor(0);
                         return (last === 'red' ? 'black' : 'red');
-                    } else if (checkPattern('follow', confirmationLevel)) {
+                    } else if (checkPattern('follow', confirmLvlToUse)) {
                         return getColor(0);
                     }
                 }
-                else if (strategy === 'gauss') {
+                else if (strat === 'gauss') {
                     if (hist.length < 7) return null;
                     let r=0, b=0;
                     for(let i=0; i<7; i++) {
@@ -1000,7 +1213,7 @@
                     if(r >= b + 2) return 'red';
                     if(b >= r + 2) return 'black';
                 }
-                else if (strategy === 'fibonacci') {
+                else if (strat === 'fibonacci') {
                     const fibs = [1, 2, 3, 5, 8, 13];
                     let r=0, b=0;
                     fibs.forEach(fib => {
@@ -1013,11 +1226,232 @@
                     if(r >= b + 1) return 'red';
                     if(b >= r + 1) return 'black';
                 }
-                else if (strategy === 'sniper') {
+                else if (strat === 'sniper') {
                     // Sniper agora usa confirmationLevel para definir o tamanho da sequência a reverter
-                    if (checkPattern('follow', confirmationLevel)) {
+                    if (checkPattern('follow', confirmLvlToUse)) {
                         const last = getColor(0);
                         return (last === 'red' ? 'black' : 'red');
+                    }
+                }
+                else if (strat === 'olho_de_deus') {
+                    if (hist.length < 100) return null;
+                    let rCount = 0, bCount = 0;
+                    for (let j = 0; j < 100; j++) {
+                        const c = getColor(j);
+                        if (c === 'red') rCount++;
+                        else if (c === 'black') bCount++;
+                    }
+                    const diff = rCount - bCount;
+                    if (diff >= 8) return 'black'; // Reversão de longo prazo (Vermelho dominante -> Aposta Preto)
+                    else if (diff <= -8) return 'red'; // Reversão de longo prazo (Preto dominante -> Aposta Vermelho)
+                    else {
+                        // Se equilibrado no longo prazo, segue o fluxo de curto prazo (10 pedras)
+                        let rShort = 0, bShort = 0;
+                        for (let j = 0; j < 10; j++) {
+                            const c = getColor(j);
+                            if (c === 'red') rShort++; else if (c === 'black') bShort++;
+                        }
+                        if (rShort > bShort + 2) return 'red';
+                        if (bShort > rShort + 2) return 'black';
+                    }
+                }
+                else if (strat === 'ciclo_lunar') {
+                    if (hist.length >= 15) {
+                        const target = getColor(14); // Verifica a cor de 15 pedras atrás (índice 14)
+                        if (target === 'red' || target === 'black') return target;
+                    }
+                }
+                else if (strat === 'espelho_magico') {
+                    if (hist.length >= 10) {
+                        const pastColor = getColor(9); // Pega a cor de 10 rodadas atrás (índice 9)
+                        if (pastColor === 'red') return 'black';
+                        if (pastColor === 'black') return 'red';
+                    }
+                }
+                else if (strat === 'fibonacci_sequence') {
+                    if (hist.length > 1) {
+                        const fibs = [1, 2, 3, 5, 8, 13, 21];
+                        let currentStreak = 1;
+                        const lastColor = getColor(0); // Cor mais recente
+
+                        // Conta a sequência da cor atual
+                        for (let k = 1; k < hist.length; k++) {
+                            if (getColor(k) === lastColor) {
+                                currentStreak++;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (fibs.includes(currentStreak)) return (lastColor === 'red' ? 'black' : 'red');
+                    }
+                }
+                else if (strat === 'mare_vermelha') {
+                    if (hist.length >= 3) {
+                        if (getColor(0) !== 'red' && getColor(1) !== 'red' && getColor(2) !== 'red') {
+                            return 'red';
+                        }
+                    }
+                }
+                else if (strat === 'olho_de_deus_90') {
+                    if (hist.length >= 90) {
+                        let rCount = 0, bCount = 0;
+                        for (let j = 0; j < 90; j++) {
+                            const c = getColor(j);
+                            if (c === 'red') rCount++;
+                            else if (c === 'black') bCount++;
+                        }
+                        const diff = rCount - bCount;
+                        if (diff >= 10) return 'black';
+                        else if (diff <= -10) return 'red';
+                    }
+                }
+                else if (strat === 'mhi_minoria') {
+                    if (hist.length >= 3) {
+                        let rCount = 0, bCount = 0;
+                        for (let j = 0; j < 3; j++) {
+                            const c = getColor(j);
+                            if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                        }
+                        if (rCount > bCount) return 'black';
+                        else if (bCount > rCount) return 'red';
+                    }
+                }
+                else if (strat === 'quebra_2x2') {
+                    if (hist.length >= 4) {
+                        const c1 = getColor(0); // Mais recente
+                        const c2 = getColor(1);
+                        const c3 = getColor(2);
+                        const c4 = getColor(3); // Mais antigo
+                        if (c1 === 'red' && c2 === 'red' && c3 === 'black' && c4 === 'black') { return 'red'; }
+                        else if (c1 === 'black' && c2 === 'black' && c3 === 'red' && c4 === 'red') { return 'black'; }
+                    }
+                }
+                else if (strat === 'eco_passado') {
+                    if (hist.length > 1) {
+                        const triggerNumber = hist[0].roll;
+                        let redFollowers = 0;
+                        let blackFollowers = 0;
+                        let occurrences = 0;
+
+                        for (let j = 1; j < hist.length - 1; j++) {
+                            if (hist[j].roll === triggerNumber) {
+                                occurrences++;
+                                const followerRoll = hist[j - 1].roll;
+                                const followerColor = getColorRaw(followerRoll);
+                                if (followerColor === 'red') redFollowers++;
+                                else if (followerColor === 'black') blackFollowers++;
+                            }
+                        }
+                        if (occurrences >= 3) {
+                            if (redFollowers >= blackFollowers + 2) return 'red';
+                            else if (blackFollowers >= redFollowers + 2) return 'black';
+                        }
+                    }
+                }
+                else if (strat === 'padrao_espelhado') {
+                    if (hist.length >= 3) {
+                        const c1 = getColor(0); // Mais recente
+                        const c2 = getColor(1);
+                        const c3 = getColor(2); // Mais antigo
+                        if (c1 === c3 && c1 !== c2) {
+                            return c1;
+                        }
+                    }
+                }
+                else if (strat === 'inercia_newton') {
+                    if (hist.length >= 6) {
+                        const last = getColor(0);
+                        let streak = 1;
+                        for(let k=1; k<6; k++) {
+                            if(getColor(k) === last) streak++; else break;
+                        }
+                        if(streak >= 6) return last;
+                    }
+                }
+                else if (strat === 'reacao_newton') {
+                    if (hist.length >= 20) {
+                        let r=0, b=0;
+                        for(let k=0; k<20; k++) {
+                            const c = getColor(k);
+                            if(c==='red') r++; else if(c==='black') b++;
+                        }
+                        if (r >= 15) return 'black';
+                        if (b >= 15) return 'red';
+                    }
+                }
+                else if (strat === 'entropia_caos') {
+                    if (checkPattern('alternating', 6)) {
+                        return getColor(0);
+                    }
+                }
+                else if (strat === 'soma_dragao') {
+                    if (hist.length >= 7) {
+                        let consistent = true;
+                        for (let k = 0; k < 4; k++) {
+                            let sum = 0;
+                            for (let m = 1; m <= 3; m++) sum += hist[k + m].roll;
+                            let predicted = (sum % 2 !== 0) ? 'red' : 'black';
+                            if (getColor(k) !== predicted) { consistent = false; break; }
+                        }
+                        if (consistent) {
+                            let currentSum = 0;
+                            for (let m = 0; m < 3; m++) currentSum += hist[m].roll;
+                            return (currentSum % 2 !== 0) ? 'red' : 'black';
+                        }
+                    }
+                }
+                else if (strat === 'codigo_muralha') {
+                    if (hist.length >= 6) {
+                        let consistent = true;
+                        for (let k = 0; k < 4; k++) {
+                            let sum = hist[k + 1].roll + hist[k + 2].roll;
+                            let predicted = (sum > 14) ? 'black' : 'red';
+                            if (getColor(k) !== predicted) { consistent = false; break; }
+                        }
+                        if (consistent) {
+                            let currentSum = hist[0].roll + hist[1].roll;
+                            return (currentSum > 14) ? 'black' : 'red';
+                        }
+                    }
+                }
+                else if (strat === 'lotus_dourada') {
+                    if (hist.length >= 9) {
+                        let consistent = true;
+                        for (let k = 0; k < 4; k++) {
+                            let sum = 0;
+                            for (let m = 1; m <= 5; m++) sum += hist[k + m].roll;
+                            let predicted = (sum % 10 <= 4) ? 'red' : 'black';
+                            if (getColor(k) !== predicted) { consistent = false; break; }
+                        }
+                        if (consistent) {
+                            let currentSum = 0;
+                            for (let m = 0; m < 5; m++) currentSum += hist[m].roll;
+                            return (currentSum % 10 <= 4) ? 'red' : 'black';
+                        }
+                    }
+                }
+                
+                else if (strat === 'yin_yang') {
+                    if (hist.length >= 1) {
+                        let sum = 0;
+                        const limit = Math.min(hist.length, 100);
+                        for (let k = 0; k < limit; k++) sum += hist[k].roll;
+                        if (isPrime(sum)) {
+                            const lastColor = getColor(0);
+                            if (lastColor === 'red') return 'black';
+                            if (lastColor === 'black') return 'red';
+                        }
+                    }
+                }
+                else if (strat === 'caos_ordem') {
+                    // Alterna a cada 10 rodadas. Baseado no tamanho do histórico (ex: 100).
+                    const phase = Math.floor(hist.length / 10) % 2;
+                    const lastColor = getColor(0);
+                    if (lastColor === 'white') return null;
+                    if (phase === 0) { // Ordem (Par): Segue
+                        return lastColor;
+                    } else { // Caos (Ímpar): Inverte
+                        return (lastColor === 'red' ? 'black' : 'red');
                     }
                 }
                 
@@ -1025,7 +1459,7 @@
             };
 
             // Gera Previsão Atual (Alerta de Entrada)
-            const currentPred = getStratPrediction(data);
+            const currentPred = getStratPrediction(data, strategy, confirmationLvl);
             let suggestion = 'Aguardando Padrão...';
             let suggestionColor = '#aaa';
 
@@ -1110,7 +1544,6 @@
             const toggle = document.getElementById('best_strategy_toggle');
             if (toggle && toggle.checked) toggle.checked = false;
             runSimulation();
-            updatePrediction(fullBlazeData);
         }
 
         function toggleBestStrategy() {
@@ -1219,10 +1652,13 @@
             updateStrategyLabels(simData, galeLevel, analyzeWhite, invertGale, pauseWinCount, pauseLossCount);
 
             const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel, pauseWinCount, pauseLossCount);
+            
+            sim1Stats = stats;
+            const total = stats.wins + stats.losses;
+            sim1RateVal = total > 0 ? (stats.wins / total) * 100 : 0;
 
             document.getElementById('sim_wins').innerText = stats.wins;
             document.getElementById('sim_losses').innerText = stats.losses;
-            const total = stats.wins + stats.losses;
             document.getElementById('sim_rate').innerText = total > 0 ? ((stats.wins/total)*100).toFixed(1) + '%' : '0%';
             const balEl = document.getElementById('sim_balance');
             balEl.innerText = `R$ ${stats.balance}`;
@@ -1230,36 +1666,9 @@
             document.getElementById('sim_max_win').innerText = stats.maxWinStreak;
             document.getElementById('sim_max_loss').innerText = stats.maxLossStreak;
 
-            // Renderiza histórico visual de entradas
-            renderEntryHistory(stats.entryHistory);
+            updatePrediction(fullBlazeData);
 
-            // Atualiza também o placar da Previsão de Padrão (Vinculado ao Backtest/Gale)
-            document.getElementById('pred_wins').innerText = stats.wins;
-            document.getElementById('pred_losses').innerText = stats.losses;
-            const rateVal = total > 0 ? (stats.wins / total) * 100 : 0;
-            document.getElementById('pred_rate').innerText = Math.round(rateVal) + '%';
-
-            // Atualiza Força do Sinal
-            const strengthBar = document.getElementById('signal_strength_bar');
-            const strengthText = document.getElementById('signal_strength_text');
-            if (strengthBar && strengthText) {
-                strengthBar.style.width = `${rateVal}%`;
-                let label = 'BAIXA';
-                let color = '#ff0055';
-                if (rateVal >= 60) { label = 'EXCELENTE 🚀'; color = '#00ff88'; }
-                else if (rateVal >= 50) { label = 'ALTA 🔥'; color = '#ccff00'; }
-                else if (rateVal >= 40) { label = 'MODERADA ⚖️'; color = '#ff9800'; }
-                else { label = 'FRACA ⚠️'; color = '#ff0055'; }
-                strengthBar.style.background = color;
-                strengthBar.style.boxShadow = `0 0 10px ${color}`;
-                strengthText.innerText = label;
-                strengthText.style.color = color;
-            }
-
-            const strategySelect = document.getElementById('sim_strategy');
-            const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
-            renderTrendChart(stats.balanceHistory, `📈 Tendência de Saldo (${strategyName})`);
-            renderGaleDistributionChart(stats.winsDistribution);
+            renderGaleDistributionChart(stats.winsDistribution, 'gale_distribution_chart_container');
             showGoldenHourStrategies();
         }
 
@@ -1433,6 +1842,292 @@
                         if (checkSimPattern(i, 'follow', confirmLvl)) {
                             const last = getStratColor(i-1);
                             targetColor = (last === 'red' ? 'black' : 'red');
+                        }
+                    } else if (strategy === 'olho_de_deus') {
+                        if (i >= 100) {
+                            let rCount = 0, bCount = 0;
+                            for (let j = 1; j <= 100; j++) {
+                                const c = getStratColor(i - j);
+                                if (c === 'red') rCount++; else if (c === 'black') bCount++;
+                            }
+                            const diff = rCount - bCount;
+                            if (diff >= 8) targetColor = 'black';
+                            else if (diff <= -8) targetColor = 'red';
+                            else {
+                                let rShort = 0, bShort = 0;
+                                for (let j = 1; j <= 10; j++) {
+                                    const c = getStratColor(i - j);
+                                    if (c === 'red') rShort++; else if (c === 'black') bShort++;
+                                }
+                                if (rShort > bShort + 2) targetColor = 'red';
+                                else if (bShort > rShort + 2) targetColor = 'black';
+                            }
+                        }
+                    } else if (strategy === 'ciclo_lunar') {
+                        if (i >= 15) {
+                            const pastColor = getStratColor(i - 15);
+                            if (pastColor === 'red' || pastColor === 'black') targetColor = pastColor;
+                        }
+                    } else if (strategy === 'espelho_magico') {
+                        if (i >= 10) {
+                            const pastColor = getStratColor(i - 10);
+                            if (pastColor === 'red') targetColor = 'black';
+                            else if (pastColor === 'black') targetColor = 'red';
+                        }
+                    }
+                    else if (strategy === 'fibonacci_sequence') {
+                        if (i > 0) {
+                            const fibs = [1, 2, 3, 5, 8, 13, 21];
+                            let currentStreak = 1;
+                            const lastColor = getStratColor(i - 1);
+
+                            // Conta a sequência da cor atual
+                            for (let k = 2; k <= i; k++) {
+                                if (getStratColor(i - k) === lastColor) {
+                                    currentStreak++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            // Se o tamanho da sequência for um número de Fibonacci, aposta na cor oposta
+                            if (fibs.includes(currentStreak)) targetColor = (lastColor === 'red' ? 'black' : 'red');
+                        }
+                    }
+                    else if (strategy === 'mare_vermelha') {
+                        if (i >= 3) {
+                            if (getStratColor(i - 1) !== 'red' && getStratColor(i - 2) !== 'red' && getStratColor(i - 3) !== 'red') {
+                                targetColor = 'red';
+                            }
+                        }
+                    } else if (strategy === 'olho_de_deus_90') {
+                        // Análise de reversão à média nas últimas 90 pedras
+                        if (i >= 90) {
+                            let rCount = 0, bCount = 0;
+                            for (let j = 1; j <= 90; j++) {
+                                const c = getStratColor(i - j);
+                                if (c === 'red') rCount++;
+                                else if (c === 'black') bCount++;
+                            }
+                    
+                            const diff = rCount - bCount;
+                            // Aposta na reversão se a diferença for significativa (ex: 10 ou mais)
+                            if (diff >= 10) targetColor = 'black'; // Muitos vermelhos, aposta no preto
+                            else if (diff <= -10) targetColor = 'red'; // Muitos pretos, aposta no vermelho
+                        }
+                    } else if (strategy === 'mhi_minoria') {
+                        // MHI: Analisa as últimas 3 pedras e aposta na minoria
+                        if (i >= 3) {
+                            let rCount = 0, bCount = 0;
+                            for (let j = 1; j <= 3; j++) {
+                                const c = getStratColor(i - j);
+                                if (c === 'red') rCount++;
+                                else if (c === 'black') bCount++;
+                            }
+                            // Aposta na cor que saiu menos (Minoria)
+                            if (rCount > bCount) targetColor = 'black';
+                            else if (bCount > rCount) targetColor = 'red';
+                        }
+                    } else if (strategy === 'quebra_2x2') {
+                        // Quebra de Padrão 2x2: Aposta na quebra do padrão V V P P ou P P V V
+                        if (i >= 4) {
+                            const c1 = getStratColor(i - 1); // Mais recente
+                            const c2 = getStratColor(i - 2);
+                            const c3 = getStratColor(i - 3);
+                            const c4 = getStratColor(i - 4); // Mais antigo
+
+                            // Padrão P P V V -> Aposta no V (red)
+                            if (c1 === 'red' && c2 === 'red' && c3 === 'black' && c4 === 'black') {
+                                targetColor = 'red';
+                            }
+                            // Padrão V V P P -> Aposta no P (black)
+                            else if (c1 === 'black' && c2 === 'black' && c3 === 'red' && c4 === 'red') {
+                                targetColor = 'black';
+                            }
+                        }
+                    } else if (strategy === 'eco_passado') {
+                        // Eco do Passado: Aposta na cor mais frequente que se seguiu ao último número.
+                        if (i > 0) { // Precisa de pelo menos um número anterior para ser o gatilho.
+                            const triggerNumber = simData[i-1].roll;
+
+                            let redFollowers = 0;
+                            let blackFollowers = 0;
+                            let occurrences = 0;
+
+                            // Analisa o histórico até o ponto atual (i-1)
+                            for (let j = 0; j < i - 1; j++) {
+                                if (simData[j].roll === triggerNumber) {
+                                    occurrences++;
+                                    // O roll que veio depois do gatilho no passado
+                                    const followerRoll = simData[j + 1].roll;
+                                    const followerColor = getC(followerRoll);
+                                    
+                                    if (followerColor === 'red') redFollowers++;
+                                    else if (followerColor === 'black') blackFollowers++;
+                                }
+                            }
+
+                            // Aposta apenas se houver um histórico mínimo (3) e um vencedor claro (diferença de 2)
+                            if (occurrences >= 3) {
+                                if (redFollowers >= blackFollowers + 2) targetColor = 'red';
+                                else if (blackFollowers >= redFollowers + 2) targetColor = 'black';
+                            }
+                        }
+                    } else if (strategy === 'padrao_espelhado') {
+                        // Padrão Espelhado: V P V -> aposta V, P V P -> aposta P
+                        if (i >= 3) {
+                            const c1 = getStratColor(i - 1); // Mais recente
+                            const c2 = getStratColor(i - 2);
+                            const c3 = getStratColor(i - 3); // Mais antigo
+
+                            // Verifica se o padrão é X Y X (e não X X X)
+                            if (c1 === c3 && c1 !== c2) {
+                                targetColor = c1; // Aposta na cor das pontas
+                            }
+                        }
+                    } else if (strategy === 'mare_minutos') {
+                        // Analisa os minutos dos últimos 15 rolls
+                        if (i >= 15) {
+                            let firstHalf = 0, secondHalf = 0;
+                            let redCount = 0, blackCount = 0;
+
+                            for (let j = 1; j <= 15; j++) {
+                                const game = simData[i - j];
+                                if (game && game.created_at) {
+                                    const minute = new Date(game.created_at).getMinutes();
+                                    if (minute < 30) firstHalf++;
+                                    else secondHalf++;
+                                }
+                                const c = getStratColor(i - j);
+                                if (c === 'red') redCount++;
+                                else if (c === 'black') blackCount++;
+                            }
+
+                            if (firstHalf > secondHalf + 3) { // Maioria na primeira metade da hora -> segue tendência
+                                if (redCount > blackCount) targetColor = 'red';
+                                else if (blackCount > redCount) targetColor = 'black';
+                            } 
+                            else if (secondHalf > firstHalf + 3) { // Maioria na segunda metade -> aposta na reversão
+                                if (redCount < blackCount) targetColor = 'red';
+                                else if (blackCount < redCount) targetColor = 'black';
+                            }
+                        }
+                    } else if (strategy === 'sincronia_horaria') {
+                        // Aposta na cor que mais saiu historicamente no minuto atual
+                        if (i > 0 && simData[i].created_at) {
+                            const currentMinute = new Date(simData[i].created_at).getMinutes();
+                            let redCount = 0, blackCount = 0, occurrences = 0;
+
+                            for (let j = 0; j < i; j++) {
+                                if (simData[j].created_at && new Date(simData[j].created_at).getMinutes() === currentMinute) {
+                                    occurrences++;
+                                    const c = getStratColor(j);
+                                    if (c === 'red') redCount++; else if (c === 'black') blackCount++;
+                                }
+                            }
+                            // Aposta se houver histórico (3+) e uma tendência clara (diferença de 2)
+                            if (occurrences >= 3) {
+                                if (redCount >= blackCount + 2) targetColor = 'red';
+                                else if (blackCount >= redCount + 2) targetColor = 'black';
+                            }
+                        }
+                    } else if (strategy === 'inercia_newton') {
+                        // Inércia: Se 6 cores iguais seguidas, aposta na continuação.
+                        if (i >= 6) {
+                            const last = getStratColor(i-1);
+                            let streak = 1;
+                            for(let k=2; k<=6; k++) {
+                                if(getStratColor(i-k) === last) streak++; else break;
+                            }
+                            if(streak >= 6) targetColor = last;
+                        }
+                    } else if (strategy === 'reacao_newton') {
+                        // Reação: Desequilíbrio extremo nos últimos 20 (>=15 de uma cor).
+                        if (i >= 20) {
+                            let r=0, b=0;
+                            for(let k=1; k<=20; k++) {
+                                const c = getStratColor(i-k);
+                                if(c==='red') r++; else if(c==='black') b++;
+                            }
+                            if (r >= 15) targetColor = 'black';
+                            else if (b >= 15) targetColor = 'red';
+                        }
+                    } else if (strategy === 'entropia_caos') {
+                        // Entropia: Quebra de padrão perfeito (Xadrez de 6).
+                        if (checkSimPattern(i, 'alternating', 6)) {
+                            targetColor = getStratColor(i-1); // Aposta na repetição da última
+                        }
+                    }
+                    else if (strategy === 'soma_dragao') {
+                        // Soma do Dragão: Soma 3 últimos. Ímpar=Red, Par=Black. Validação: 4 hits.
+                        if (i >= 7) {
+                            let consistent = true;
+                            for (let k = 1; k <= 4; k++) {
+                                let sum = 0;
+                                for (let m = 1; m <= 3; m++) sum += simData[i - k - m].roll;
+                                let predicted = (sum % 2 !== 0) ? 'red' : 'black';
+                                if (getStratColor(i - k) !== predicted) { consistent = false; break; }
+                            }
+                            if (consistent) {
+                                let currentSum = 0;
+                                for (let m = 1; m <= 3; m++) currentSum += simData[i - m].roll;
+                                targetColor = (currentSum % 2 !== 0) ? 'red' : 'black';
+                            }
+                        }
+                    } else if (strategy === 'codigo_muralha') {
+                        // Código da Muralha: Soma 2 últimos. >14 Black, <=14 Red. Validação: 4 hits.
+                        if (i >= 6) {
+                            let consistent = true;
+                            for (let k = 1; k <= 4; k++) {
+                                let sum = simData[i - k - 1].roll + simData[i - k - 2].roll;
+                                let predicted = (sum > 14) ? 'black' : 'red';
+                                if (getStratColor(i - k) !== predicted) { consistent = false; break; }
+                            }
+                            if (consistent) {
+                                let currentSum = simData[i - 1].roll + simData[i - 2].roll;
+                                targetColor = (currentSum > 14) ? 'black' : 'red';
+                            }
+                        }
+                    } else if (strategy === 'lotus_dourada') {
+                        // Lótus Dourada: Soma 5 últimos. Final 0-4 Red, 5-9 Black. Validação: 4 hits.
+                        if (i >= 9) {
+                            let consistent = true;
+                            for (let k = 1; k <= 4; k++) {
+                                let sum = 0;
+                                for (let m = 1; m <= 5; m++) sum += simData[i - k - m].roll;
+                                let predicted = (sum % 10 <= 4) ? 'red' : 'black';
+                                if (getStratColor(i - k) !== predicted) { consistent = false; break; }
+                            }
+                            if (consistent) {
+                                let currentSum = 0;
+                                for (let m = 1; m <= 5; m++) currentSum += simData[i - m].roll;
+                                targetColor = (currentSum % 10 <= 4) ? 'red' : 'black';
+                            }
+                        }
+                    } else if (strategy === 'yin_yang') {
+                        // Yin Yang: Soma todo o histórico disponível (até 100). Se primo, inverte.
+                        if (i >= 1) {
+                            let sum = 0;
+                            const limit = Math.min(i, 100);
+                            for (let k = 1; k <= limit; k++) {
+                                sum += simData[i - k].roll;
+                            }
+                            if (isPrime(sum)) {
+                                const lastColor = getStratColor(i - 1);
+                                if (lastColor === 'red') targetColor = 'black';
+                                else if (lastColor === 'black') targetColor = 'red';
+                            }
+                        }
+                    } else if (strategy === 'caos_ordem') {
+                        // Caos e Ordem: Alterna comportamento a cada 10 rodadas (0-9, 10-19...)
+                        if (i > 0) {
+                            const phase = Math.floor(i / 10) % 2;
+                            const lastColor = getStratColor(i - 1);
+                            if (phase === 0) {
+                                targetColor = lastColor;
+                            } else {
+                                if (lastColor === 'red') targetColor = 'black';
+                                else if (lastColor === 'black') targetColor = 'red';
+                            }
                         }
                     }
                 }
@@ -1846,9 +2541,9 @@
             indicator.style.border = `1px solid ${color}`;
         }
 
-        function renderGaleDistributionChart(counts) {
-            const container = document.getElementById('gale_distribution_chart_container');
-            if (!container) return;
+        function renderGaleDistributionChart(counts, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container || !counts) return;
 
             const labels = ['Win Direto', 'Gale 1', 'Gale 2', 'Gale 3'];
             const colors = ['#00ff88', '#ccff00', '#ff9800', '#ff0055'];
@@ -1966,6 +2661,229 @@
             const select = document.getElementById('sim_strategy');
             select.value = val;
             handleStrategyChange();
+        }
+
+        function runSimulation2(skipBestCheck = false, isAutoUpdate = false) {
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+
+            if (!skipBestCheck) {
+                const toggle = document.getElementById('sim2_best_strategy_toggle');
+                if (toggle && toggle.checked) {
+                    findBestStrategy2(isAutoUpdate);
+                    return;
+                }
+            }
+
+            // Fixa em 100 rodadas para a simulação secundária
+            const dataSlice = fullBlazeData.slice(0, 100);
+            const simData = [...dataSlice].reverse();
+
+            const strategy = document.getElementById('sim2_strategy').value;
+            const galeLevel = document.getElementById('sim2_gale_active')?.checked ? 1 : 0;
+            const analyzeWhite = document.getElementById('sim2_analyze_white')?.checked || false;
+            const invertGale = document.getElementById('sim2_gale_invert_toggle')?.checked || false;
+
+            updateStrategyLabels2(simData, galeLevel, analyzeWhite, invertGale, pauseWinCount2, pauseLossCount2);
+
+            const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel2, pauseWinCount2, pauseLossCount2);
+            
+            sim2Stats = stats;
+            const total = stats.wins + stats.losses;
+            sim2RateVal = total > 0 ? (stats.wins / total) * 100 : 0;
+
+            document.getElementById('sim2_wins').innerText = stats.wins;
+            document.getElementById('sim2_losses').innerText = stats.losses;
+            document.getElementById('sim2_rate').innerText = total > 0 ? ((stats.wins/total)*100).toFixed(1) + '%' : '0%';
+            const balEl = document.getElementById('sim2_balance');
+            balEl.innerText = `R$ ${stats.balance}`;
+            balEl.style.color = stats.balance >= 0 ? '#00ff88' : '#ff0055';
+            document.getElementById('sim2_max_win').innerText = stats.maxWinStreak;
+            document.getElementById('sim2_max_loss').innerText = stats.maxLossStreak;
+
+            renderGaleDistributionChart(stats.winsDistribution, 'sim2_gale_distribution_chart_container');
+            showGoldenHourStrategies2();
+            updatePrediction(fullBlazeData);
+        }
+
+        function handleStrategyChange2() {
+            const toggle = document.getElementById('sim2_best_strategy_toggle');
+            if (toggle && toggle.checked) toggle.checked = false;
+            runSimulation2();
+        }
+
+        function toggleBestStrategy2() {
+            const toggle = document.getElementById('sim2_best_strategy_toggle');
+            if (toggle && toggle.checked) {
+                autoStrategyCounter2 = 0;
+                findBestStrategy2();
+            }
+        }
+
+        function findBestStrategy2(isAutoUpdate = false) {
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+            
+            if (persistenceCount2 > 0) {
+                if (autoStrategyCounter2 > 0) {
+                    if (isAutoUpdate) autoStrategyCounter2--;
+                    runSimulation2(true);
+                    return;
+                }
+            }
+
+            const dataSlice = fullBlazeData.slice(0, 100);
+            const simData = [...dataSlice].reverse();
+            const galeLevel = document.getElementById('sim2_gale_active')?.checked ? 1 : 0;
+            const analyzeWhite = document.getElementById('sim2_analyze_white')?.checked || false;
+            const invertGale = document.getElementById('sim2_gale_invert_toggle')?.checked || false;
+            
+            const select = document.getElementById('sim2_strategy');
+            const previousStrategy = select.value;
+            let bestStrategy = previousStrategy;
+            let bestRate = -1; // Alterado para -1 para garantir seleção da melhor disponível
+            let bestBalance = -Infinity;
+
+            for (let i = 0; i < select.options.length; i++) {
+                const strategy = select.options[i].value;
+                if (!strategy) continue; // Pula se vazio
+                const result = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel2, pauseWinCount2, pauseLossCount2);
+                
+                const total = result.wins + result.losses;
+                const rate = total > 0 ? (result.wins / total) : 0;
+
+                if (rate > bestRate) {
+                    bestRate = rate;
+                    bestBalance = result.balance;
+                    bestStrategy = strategy;
+                } else if (rate === bestRate) {
+                    if (result.balance > bestBalance) {
+                        bestBalance = result.balance;
+                        bestStrategy = strategy;
+                    }
+                }
+            }
+            
+            // Se ainda estiver vazio (caso inicial), força a primeira estratégia válida
+            if (!bestStrategy && select.options.length > 1) {
+                for(let i=0; i<select.options.length; i++) {
+                    if(select.options[i].value) { bestStrategy = select.options[i].value; break; }
+                }
+            }
+
+            select.value = bestStrategy;
+            
+            if (persistenceCount2 > 0) {
+                autoStrategyCounter2 = persistenceCount2;
+            }
+            runSimulation2(true);
+
+            if (bestStrategy !== previousStrategy) {
+                const selectEl = document.getElementById('sim2_strategy');
+                selectEl.classList.remove('blink-alert');
+                void selectEl.offsetWidth;
+                selectEl.classList.add('blink-alert');
+            }
+        }
+
+        function updateStrategyLabels2(simData, galeLevel, analyzeWhite, invertGale, pauseWin, pauseLoss) {
+            const select = document.getElementById('sim2_strategy');
+            if (!select) return;
+
+            for (let i = 0; i < select.options.length; i++) {
+                const option = select.options[i];
+                const strategy = option.value;
+                if (!strategy) continue;
+
+                if (!option.hasAttribute('data-original-text')) {
+                    option.setAttribute('data-original-text', option.text);
+                }
+                
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel2, pauseWin, pauseLoss);
+                const total = stats.wins + stats.losses;
+                const rate = total > 0 ? (stats.wins / total) * 100 : 0;
+                
+                const originalText = option.getAttribute('data-original-text');
+                option.text = `${originalText} (${rate.toFixed(0)}%)`;
+            }
+        }
+
+        function selectStrategy2(val) {
+            const select = document.getElementById('sim2_strategy');
+            select.value = val;
+            handleStrategyChange2();
+        }
+
+        function showGoldenHourStrategies2() {
+            const container = document.getElementById('sim2_golden_hour_results');
+            if (!container) return;
+            
+            if (!fullBlazeData || fullBlazeData.length === 0) return;
+
+            const now = new Date();
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            
+            const lastHourData = [];
+            for (const game of fullBlazeData) {
+                if (new Date(game.created_at) >= oneHourAgo) {
+                    lastHourData.push(game);
+                } else {
+                    break; 
+                }
+            }
+
+            if (lastHourData.length < 10) {
+                container.innerHTML = '<div style="text-align: center; color: #aaa; padding: 10px;">Dados insuficientes na última hora.</div>';
+                return;
+            }
+
+            const simData = [...lastHourData].reverse();
+            const galeLevel = document.getElementById('sim2_gale_active')?.checked ? 1 : 0;
+            const select = document.getElementById('sim2_strategy');
+            const analyzeWhite = document.getElementById('sim2_analyze_white')?.checked || false;
+            const invertGale = document.getElementById('sim2_gale_invert_toggle')?.checked || false;
+            
+            let html = '<div style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; padding: 10px;">';
+            html += '<div style="color: #ffd700; font-weight: bold; margin-bottom: 8px; text-align: center;">🏆 Estratégias > 80% (Última Hora)</div>';
+            html += '<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">';
+
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                const strategy = select.options[i].value;
+                if (!strategy) continue;
+
+                const name = select.options[i].getAttribute('data-original-text') || select.options[i].text.split('(')[0].trim();
+                const stats = calculateSimulation(strategy, galeLevel, simData, analyzeWhite, invertGale, confirmationLevel2, pauseWinCount2, pauseLossCount2);
+                const total = stats.wins + stats.losses;
+                
+                if (total > 0) {
+                    const rate = (stats.wins / total) * 100;
+                    if (rate >= 80) {
+                        found = true;
+                        html += `<div onclick="selectStrategy2('${strategy}')" style="cursor: pointer; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 4px; border: 1px solid #ffd700; font-size: 0.8rem; color: #fff; transition: all 0.2s;">${name}: <span style="color: #00ff88; font-weight: bold;">${rate.toFixed(0)}%</span></div>`;
+                    }
+                }
+            }
+
+            if (!found) html += '<div style="color: #aaa; font-size: 0.8rem;">Nenhuma estratégia atingiu 80% na última hora.</div>';
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        function renderHistory100(data) {
+            const container = document.getElementById('history_100_container');
+            if (!container || !data) return;
+
+            const history = data.slice(0, 100); // Newest to Oldest
+            
+            let html = '';
+            history.forEach(game => {
+                const r = game.roll;
+                let colorClass = 'seq-white';
+                if (r >= 1 && r <= 7) colorClass = 'seq-red';
+                else if (r >= 8 && r <= 14) colorClass = 'seq-black';
+                
+                html += `<div class="seq-badge ${colorClass}" style="width: 25px; height: 25px; font-size: 0.75rem; margin: 0;">${r}</div>`;
+            });
+            container.innerHTML = html;
         }
     </script>
 </body>

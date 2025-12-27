@@ -1047,7 +1047,6 @@
                         <div class="nav-btn" onclick="openTool('analise_cores.html', 'Análise Cores')"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></div>
                         <div class="nav-btn" onclick="openTool('analise_branco.html', 'Análise Branco')"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></div>
                         <div class="nav-btn" onclick="openTool('analise_numeros.html', 'Análise Números')"><div class="nav-icon">🔢</div><div class="nav-title">Análise Números</div><div class="nav-desc">Estatísticas Numéricas</div></div>
-                        
                         <div class="nav-btn" onclick="openTool('corretor_cores.html', 'Corretor Cores')"><div class="nav-icon">✅</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         <div class="nav-btn" onclick="openTool('noticias_double.html', 'Notícias do Mercado')"><div class="nav-icon">📰</div><div class="nav-title">Notícias</div><div class="nav-desc">Mercado Double</div></div>
@@ -1564,6 +1563,10 @@
                             <input type="password" id="config_telegram_token" placeholder="Token secreto do bot, visível apenas para admin" value="8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc">
                             <div class="hint">Este token é global e usado para todos os envios.</div>
                         </div>
+                        <div class="control-group">
+                            <label for="config_tipminer_cookie">Cookie TipMiner (API 2):</label>
+                            <input type="text" id="config_tipminer_cookie" placeholder="Cole o cookie completo aqui">
+                        </div>
                     </div>
 
                     <h3 style="margin-bottom: 15px; color: var(--accent); text-transform: uppercase; font-size: 1rem;">Configurações de Notificação (Telegram)</h3>
@@ -1788,6 +1791,12 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h3 style="color: #ff9800; margin:0; font-size: 1rem;">🤖 Auto Busca</h3>
             <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="api-source-container" style="display: none;">
+                    <select id="dash_apiSource" style="padding: 4px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #444; font-size: 0.75rem; cursor: pointer;">
+                        <option value="primary">API 1 (Principal)</option>
+                        <option value="secondary">API 2 (Secundária)</option>
+                    </select>
+                </div>
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <label for="toggleReverseDirection" style="font-size: 0.8rem; color: #aaa; margin: 0; cursor: pointer;">Inverter:</label>
                     <label class="switch" style="transform: scale(0.8); margin: 0;">
@@ -1995,6 +2004,9 @@
             const telegramTokenInput = document.getElementById('config_telegram_token');
             if (telegramTokenInput) telegramTokenInput.value = localStorage.getItem('telegram_bot_token') || '';
 
+            const tipMinerCookieInput = document.getElementById('config_tipminer_cookie');
+            if (tipMinerCookieInput) tipMinerCookieInput.value = localStorage.getItem('tipminer_cookie') || '';
+
             // Busca os dados completos do usuário no Firebase para preencher os campos restantes
             // Se for admin, carrega as configurações do localStorage
             if (accessLevel === 'admin') {
@@ -2065,6 +2077,9 @@
 
             const telegramTokenInput = document.getElementById('config_telegram_token');
             if (telegramTokenInput) localStorage.setItem('telegram_bot_token', telegramTokenInput.value);
+
+            const tipMinerCookieInput = document.getElementById('config_tipminer_cookie');
+            if (tipMinerCookieInput) localStorage.setItem('tipminer_cookie', tipMinerCookieInput.value);
 
             // --- LÓGICA PARA SALVAR CHAT IDs POR USUÁRIO NO FIREBASE ---
             // --- LÓGICA PARA SALVAR CHAT IDs ---
@@ -2252,11 +2267,16 @@
         // Essa é a função que o botão do HTML chama.
         async function dash_autoFetchBlaze(isAuto = false) {
             const platform = document.getElementById('dash_platformSelector').value;
+            const apiSource = document.getElementById('dash_apiSource') ? document.getElementById('dash_apiSource').value : 'primary';
             
             if (platform === 'jonbet') {
                 await dash_impl_Jonbet();
             } else {
-                await dash_impl_Blaze(isAuto);
+                if (apiSource === 'secondary') {
+                    await dash_impl_Blaze_Secondary(isAuto);
+                } else {
+                    await dash_impl_Blaze(isAuto);
+                }
             }
         }
 
@@ -2433,6 +2453,94 @@
             }
         }
 
+        // 4. IMPLEMENTAÇÃO API SECUNDÁRIA (NOVA)
+        async function dash_impl_Blaze_Secondary(isAuto = false) {
+            const statusBtn = document.getElementById('dash_fetchDataBtn');
+            const originalText = statusBtn.innerText;
+            const autoTextarea = document.getElementById('dash_autoInput');
+            
+            // Recupera o cookie salvo nas configurações
+            let tipMinerCookie = localStorage.getItem('tipminer_cookie') || "";
+
+            try {
+                statusBtn.innerText = "⏳ API 2...";
+                statusBtn.disabled = true;
+
+                const url = "https://www.tipminer.com/api/v3/history/double/0194b478-7a59-73aa-96aa-2217057b286c?limit=2000";
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+
+                const response = await fetch(proxyUrl, {
+                    headers: {
+                        "accept": "*/*",
+                        "stack": "tan",
+                        "cookie": tipMinerCookie
+                    }
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
+                const dados = await response.json();
+                
+                let listaRodadas = [];
+
+                // Se o dado vier como string "Fe26", o acesso foi bloqueado
+                if (dados && (typeof dados.data === 'string' && dados.data.startsWith('Fe26'))) {
+                    console.warn("⚠️ Acesso bloqueado pela TipMiner (Criptografia detectada).");
+                    return; // Sai da função sem dar erro de 'Não é array'
+                }
+
+                // 1. Verifica se os dados vieram da Blaze (tem a chave 'records')
+                if (dados && dados.records && Array.isArray(dados.records)) {
+                    listaRodadas = dados.records;
+                } 
+                // 2. Verifica se veio da TipMiner (é um array direto)
+                else if (Array.isArray(dados)) {
+                    listaRodadas = dados;
+                } 
+                else {
+                    console.error("Dados recebidos:", dados);
+                    throw new Error("Formato inválido (não é array)");
+                }
+
+                let formattedText = "";
+                const gamesArray = listaRodadas.map((item, index) => {
+                    // Tenta usar timestamp da API ou gera um estimado
+                    let dateObj = new Date();
+                    // Se a API retornar timestamp, use-o. Caso contrário, subtrai tempo para simular histórico.
+                    if (item.updated_at || item.created_at) {
+                        dateObj = new Date(item.updated_at || item.created_at);
+                    } else {
+                        dateObj = new Date(Date.now() - (index * 30000)); 
+                    }
+
+                    const timeStr = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                    const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                    // Adaptação para ler roll (Blaze) ou value (TipMiner)
+                    const roll = item.roll !== undefined ? item.roll : item.value;
+
+                    formattedText += `${dateStr}\n${roll}\n${timeStr}\n\n`;
+
+                    return { roll: roll, created_at: dateObj.toISOString() };
+                });
+
+                autoTextarea.value = formattedText;
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+                statusBtn.innerText = `✅ ${gamesArray.length} Jogos`;
+                
+                dash_processarDados(gamesArray);
+
+            } catch (error) {
+                console.error("Erro API Secundária:", error);
+                statusBtn.innerText = "❌ Erro";
+                if (!isAuto) alert(`Erro na API Secundária: ${error.message}\nVerifique o Cookie nas configurações.`);
+            } finally {
+                setTimeout(() => {
+                    statusBtn.innerText = originalText;
+                    statusBtn.disabled = false;
+                }, 2000);
+            }
+        }
 
 
         // 3. IMPLEMENTAÇÃO JONBET
@@ -4764,6 +4872,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 populateUserList();
                 populateActivityLog();
                 setupPermissionControls();
+                
+                // Mostra seletor de API Secundária para Admin
+                const apiSourceContainer = document.getElementById('api-source-container');
+                if (apiSourceContainer) apiSourceContainer.style.display = 'block';
             }
 
         }

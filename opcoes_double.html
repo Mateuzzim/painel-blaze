@@ -725,11 +725,86 @@
         body.focus-mode #volume-container,
         body.focus-mode #macd-container,
         body.focus-mode #rsi-container,
-        body.focus-mode #stoch-container {
+        body.focus-mode #stoch-container,
+        body.focus-mode #direction-indicator {
             display: none !important;
         }
         body.focus-mode #chart-container { height: 92vh; border: none; }
         body.focus-mode .layout-panel { border: none; background: transparent; box-shadow: none; padding: 0; }
+
+        /* Direction Indicator Styles */
+        #direction-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(12, 16, 20, 0.85);
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #direction-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: scan-line 2s linear infinite;
+        }
+        .indicator-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1;
+        }
+        .indicator-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        .indicator-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px currentColor;
+            transition: all 0.3s ease;
+        }
+        .ind-up { color: #ff0055; animation: pulse-red 1s infinite alternate; }
+        .ind-down { color: #ccc; animation: pulse-gray 1s infinite alternate; }
+        .ind-center { color: #fff; animation: pulse-white 1s infinite alternate; }
+
+        @keyframes pulse-red { from { text-shadow: 0 0 5px #ff0055; transform: scale(1); } to { text-shadow: 0 0 15px #ff0055; transform: scale(1.02); } }
+        @keyframes pulse-gray { from { text-shadow: 0 0 5px #888; transform: scale(1); } to { text-shadow: 0 0 15px #fff; transform: scale(1.02); } }        
+        
+        /* Glitch effect on text change */
+        .glitch {
+            animation: glitch-anim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); opacity: 1; }
+            20% {
+                transform: translate(-3px, 3px);
+                opacity: 0.8;
+                text-shadow: 3px 0 #ff0055, -3px 0 #00d2ff;
+            }
+            40% {
+                transform: translate(3px, -3px);
+                opacity: 0.9;
+                text-shadow: -3px 0 #ff0055, 3px 0 #00d2ff;
+            }
+            60% { transform: translate(-3px, 3px); opacity: 0.8; text-shadow: 3px 0 #ff0055, -3px 0 #00d2ff; }
+            80% { transform: translate(3px, -3px); opacity: 1; text-shadow: none; }
+            100% { transform: translate(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -739,6 +814,12 @@
             <a href="index.html" class="btn-back" style="display: none;">⬅ Voltar ao Menu</a>
             <div class="main-header" style="display: none;">
                 <h1 class="cortex-text-anim">OPÇÕES DOUBLE</h1>
+            </div>
+            <div id="direction-indicator">
+                <div class="indicator-content">
+                    <span class="indicator-label">SINAL FUTURO:</span>
+                    <span id="indicator-value" class="indicator-value">AGUARDANDO...</span>
+                </div>
             </div>
             <div id="chart-container">
                 <button id="focus-btn" onclick="toggleFocusMode()" style="position: absolute; top: 10px; left: 10px; z-index: 100; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: all 0.3s;" title="Modo Foco (Ocultar Ferramentas)">👁️</button>
@@ -1592,6 +1673,7 @@
             updateMarketVolatilityRed(allCandles);
             updateMarketVolatilityBlack(allCandles);
             updateSurfProbability(allCandles);
+            updateDirectionIndicator(allCandles);
             
             // Ao atualizar os dados, sempre volta para as velas mais recentes
             resetView();
@@ -1599,6 +1681,113 @@
 
             // Verifica se deve enviar análise automática para o Telegram
             checkAndSendAutoTelegram();
+        }
+
+        function updateDirectionIndicator(candles) {
+            const indicatorValue = document.getElementById('indicator-value');
+            const indicatorContainer = document.getElementById('direction-indicator');
+            
+            if (!candles || candles.length < 30) {
+                if (indicatorValue) indicatorValue.innerHTML = "CALCULANDO...";
+                return;
+            }
+
+            // Indicadores Técnicos
+            const rsi = calculateRSI(candles, 14);
+            const sma = calculateSMA(candles, 14);
+            const macd = calculateMACD(candles, 12, 26, 9);
+            
+            const lastRSI = rsi[rsi.length - 1];
+            const lastSMA = sma[sma.length - 1];
+            const lastHist = macd.histogram[macd.histogram.length - 1];
+            const lastClose = candles[candles.length - 1].close;
+
+            let scoreRed = 0;
+            let scoreBlack = 0;
+            let mainReason = "Tendência";
+
+            // 1. RSI (Reversão tem peso alto)
+            if (lastRSI !== null) {
+                if (lastRSI <= 30) { scoreRed += 3; mainReason = "RSI Sobrevenda"; }
+                else if (lastRSI >= 70) { scoreBlack += 3; mainReason = "RSI Sobrecompra"; }
+                else if (lastRSI > 50) { scoreRed += 1; } 
+                else { scoreBlack += 1; }
+            }
+
+            // 2. Tendência (SMA)
+            if (lastSMA !== null) {
+                if (lastClose > lastSMA) { scoreRed += 2; if(scoreRed <= 2) mainReason = "Acima da SMA"; }
+                else { scoreBlack += 2; if(scoreBlack <= 2) mainReason = "Abaixo da SMA"; }
+            }
+
+            // 3. Momento (MACD)
+            if (lastHist !== null) {
+                if (lastHist > 0) { scoreRed += 2; if(scoreRed <= 4) mainReason = "MACD Positivo"; }
+                else { scoreBlack += 2; if(scoreBlack <= 4) mainReason = "MACD Negativo"; }
+            }
+
+            // --- LÓGICA BRANCO (NOVO) ---
+            let scoreWhite = 0;
+            let whiteReason = "Padrão Detectado";
+            
+            // 1. Tempo sem Branco (Acúmulo)
+            let candlesSinceWhite = 0;
+            for(let i = candles.length - 1; i >= 0; i--) {
+                if(candles[i].color === 'branco') break;
+                candlesSinceWhite++;
+            }
+            if (candlesSinceWhite > 20) { scoreWhite += 2; whiteReason = "Acúmulo (Tempo)"; }
+            if (candlesSinceWhite > 40) { scoreWhite += 2; whiteReason = "Acúmulo Crítico"; }
+
+            // 2. Indecisão (RSI Neutro + Doji)
+            if (lastRSI !== null && lastRSI >= 45 && lastRSI <= 55) { scoreWhite += 2; if(scoreWhite <= 2) whiteReason = "RSI Neutro"; }
+            const lastBody = Math.abs(candles[candles.length-1].open - candles[candles.length-1].close);
+            if (lastBody <= 2) { scoreWhite += 2; whiteReason = "Doji (Indecisão)"; }
+            
+            let text = "";
+            let className = "";
+            let borderColor = "";
+
+            if (scoreWhite >= 5) {
+                const confidence = Math.min(99, Math.round(50 + (scoreWhite / 8) * 49));
+                text = `ENTRAR: BRANCO ⚪<br><span style="font-size:0.6em; color:#aaa; font-weight:normal;">ANÁLISE: ALTA (${whiteReason}) • ${confidence}%</span>`;
+                className = "ind-center";
+                borderColor = "#fff";
+            } else if (scoreRed > scoreBlack) {
+                const strength = scoreRed >= 5 ? "FORTE" : "MODERADO";
+                const confidence = Math.min(99, Math.round(50 + (scoreRed / 7) * 49)); // Escala 50-99%
+                text = `ENTRAR: VERMELHO 🔴<br><span style="font-size:0.6em; color:#aaa; font-weight:normal;">ANÁLISE: ${strength} (${mainReason}) • ${confidence}%</span>`;
+                className = "ind-up";
+                borderColor = "#ff0055";
+            } else if (scoreBlack > scoreRed) {
+                const strength = scoreBlack >= 5 ? "FORTE" : "MODERADO";
+                const confidence = Math.min(99, Math.round(50 + (scoreBlack / 7) * 49)); // Escala 50-99%
+                text = `ENTRAR: PRETO ⚫<br><span style="font-size:0.6em; color:#aaa; font-weight:normal;">ANÁLISE: ${strength} (${mainReason}) • ${confidence}%</span>`;
+                className = "ind-down";
+                borderColor = "#888";
+            } else {
+                text = `MERCADO NEUTRO ⚖️<br><span style="font-size:0.6em; color:#aaa; font-weight:normal;">Aguardando definição...</span>`;
+                className = "ind-center";
+                borderColor = "#ff9800";
+            }
+
+            if (indicatorValue) {
+                const oldText = indicatorValue.innerHTML;
+
+                // Define a classe e o conteúdo novos
+                indicatorValue.className = "indicator-value " + className; // Define a cor base
+                indicatorValue.innerHTML = text;
+
+                // Se o texto mudou, adiciona a classe de glitch e a remove após a animação
+                if (oldText !== text) {
+                    indicatorValue.classList.add('glitch');
+                    setTimeout(() => indicatorValue.classList.remove('glitch'), 500); // Duração da animação
+                }
+            }
+            if (indicatorContainer) {
+                indicatorContainer.style.borderColor = borderColor;
+                indicatorContainer.style.boxShadow = `0 0 15px ${borderColor}40`;
+            }
         }
 
         let isFetching = false;
@@ -4226,94 +4415,6 @@
             const label = document.createElementNS(svgNS, 'text');
             label.setAttribute('x', 5); label.setAttribute('y', 15);
             label.setAttribute('fill', isLight ? '#666' : '#ccc'); label.setAttribute('font-size', '10px');
-            label.innerHTML = `<tspan fill="#00d2ff">MACD(${fastPeriod},${slowPeriod})</tspan> <tspan fill="#ff9800">Signal(${signalPeriod})</tspan>`;
-            svg.appendChild(label);
-
-            macdContainer.appendChild(svg);
-        }
-
-        function drawMACDChart(priceData) {
-            const macdContainer = document.getElementById('macd-container');
-            const showMACD = document.getElementById('macdToggle').checked;
-            
-            if (!showMACD) {
-                macdContainer.style.display = 'none';
-                return;
-            }
-            macdContainer.style.display = 'block';
-            macdContainer.innerHTML = '';
-
-            const fastInput = document.getElementById('macdFastInput');
-            const slowInput = document.getElementById('macdSlowInput');
-            const signalInput = document.getElementById('macdSignalInput');
-            
-            const fastPeriod = fastInput ? parseInt(fastInput.value) : 12;
-            const slowPeriod = slowInput ? parseInt(slowInput.value) : 26;
-            const signalPeriod = signalInput ? parseInt(signalInput.value) : 9;
-
-            const macdData = calculateMACD(priceData, fastPeriod, slowPeriod, signalPeriod);
-            
-            const svgNS = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(svgNS, 'svg');
-            const width = macdContainer.clientWidth;
-            const height = macdContainer.clientHeight;
-            const margin = { top: 10, right: 50, bottom: 20, left: 50 };
-            const plotWidth = width - margin.left - margin.right;
-            const plotHeight = height - margin.top - margin.bottom;
-
-            svg.setAttribute('width', width);
-            svg.setAttribute('height', height);
-            
-            const g = document.createElementNS(svgNS, 'g');
-            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
-            svg.appendChild(g);
-
-            const allValues = [].concat(macdData.macdLine, macdData.signalLine, macdData.histogram).filter(v => v !== null);
-            const minVal = Math.min(...allValues);
-            const maxVal = Math.max(...allValues);
-            const range = maxVal - minVal;
-
-            const y = (val) => plotHeight - ((val - minVal) / range) * plotHeight;
-
-            // Draw zero line
-            const zeroY = y(0);
-            const zeroLine = document.createElementNS(svgNS, 'line');
-            zeroLine.setAttribute('x1', 0); zeroLine.setAttribute('y1', zeroY);
-            zeroLine.setAttribute('x2', plotWidth); zeroLine.setAttribute('y2', zeroY);
-            zeroLine.setAttribute('stroke', '#555'); zeroLine.setAttribute('stroke-dasharray', '2,2');
-            g.appendChild(zeroLine);
-
-            const candleSpacing = plotWidth / priceData.length;
-            const candleWidth = Math.max(1, plotWidth / priceData.length * 0.5);
-
-            // Draw Histogram
-            macdData.histogram.forEach((val, i) => {
-                if (val !== null) {
-                    const x = i * candleSpacing;
-                    const barHeight = Math.abs(y(val) - zeroY);
-                    const barY = val > 0 ? y(val) : zeroY;
-                    
-                    const bar = document.createElementNS(svgNS, 'rect');
-                    bar.setAttribute('x', x); bar.setAttribute('y', barY);
-                    bar.setAttribute('width', candleWidth); bar.setAttribute('height', barHeight);
-                    bar.setAttribute('fill', val > 0 ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)');
-                    g.appendChild(bar);
-                }
-            });
-
-            // Helper to draw line
-            const drawLine = (data, color) => {
-                let pathD = "";
-                data.forEach((val, i) => { if (val !== null) { const x = i * candleSpacing + candleWidth / 2; const yVal = y(val); if (pathD === "") pathD = `M ${x} ${yVal}`; else pathD += ` L ${x} ${yVal}`; } });
-                if (pathD !== "") { const path = document.createElementNS(svgNS, 'path'); path.setAttribute('d', pathD); path.setAttribute('stroke', color); path.setAttribute('stroke-width', '2'); path.setAttribute('fill', 'none'); g.appendChild(path); }
-            };
-
-            drawLine(macdData.macdLine, '#00d2ff'); // MACD line in blue
-            drawLine(macdData.signalLine, '#ff9800'); // Signal line in orange
-
-            const label = document.createElementNS(svgNS, 'text');
-            label.setAttribute('x', 5); label.setAttribute('y', 15);
-            label.setAttribute('fill', '#ccc'); label.setAttribute('font-size', '10px');
             label.innerHTML = `<tspan fill="#00d2ff">MACD(${fastPeriod},${slowPeriod})</tspan> <tspan fill="#ff9800">Signal(${signalPeriod})</tspan>`;
             svg.appendChild(label);
 
