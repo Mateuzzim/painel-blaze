@@ -1047,6 +1047,7 @@
                         <div class="nav-btn" onclick="openTool('analise_cores.html', 'Análise Cores')"><div class="nav-icon">📊</div><div class="nav-title">Análise Cores</div><div class="nav-desc">Tendências</div></div>
                         <div class="nav-btn" onclick="openTool('analise_branco.html', 'Análise Branco')"><div class="nav-icon">📉</div><div class="nav-title">Análise Branco</div><div class="nav-desc">Padrões Branco</div></div>
                         <div class="nav-btn" onclick="openTool('analise_numeros.html', 'Análise Números')"><div class="nav-icon">🔢</div><div class="nav-title">Análise Números</div><div class="nav-desc">Estatísticas Numéricas</div></div>
+                        <div class="nav-btn" onclick="openTool('padroes_repetidos.htm', 'Padrões Repetidos')"><div class="nav-icon">🔁</div><div class="nav-title">Padrões Repetidos</div><div class="nav-desc">Analisador de Ciclos</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_cores.html', 'Corretor Cores')"><div class="nav-icon">✅</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">☑️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         <div class="nav-btn" onclick="openTool('noticias_double.html', 'Notícias do Mercado')"><div class="nav-icon">📰</div><div class="nav-title">Notícias</div><div class="nav-desc">Mercado Double</div></div>
@@ -3350,12 +3351,25 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // --- CONTROLE REMOTO VIA TELEGRAM ---
         let telegramPollingInterval = null;
         let telegramLastUpdateId = 0;
+        const TAB_ID = Math.random().toString(36).substr(2, 9); // ID único para esta aba
 
         function startTelegramPolling() {
             if (telegramPollingInterval) clearInterval(telegramPollingInterval);
             telegramPollingInterval = setInterval(async () => {
                 const token = localStorage.getItem('telegram_bot_token');
                 if (!token) return;
+
+                // Controle de Concorrência (Evita erro 409 com múltiplas abas)
+                const now = Date.now();
+                const lockKey = 'telegram_polling_lock';
+                const lockData = JSON.parse(localStorage.getItem(lockKey) || '{}');
+                
+                // Se o lock é antigo (> 10s) ou é nosso, assumimos a liderança
+                if (!lockData.timestamp || (now - lockData.timestamp > 10000) || lockData.owner === TAB_ID) {
+                    localStorage.setItem(lockKey, JSON.stringify({ owner: TAB_ID, timestamp: now }));
+                } else {
+                    return; // Outra aba está ativa, pula polling
+                }
 
                 try {
                     const response = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${telegramLastUpdateId + 1}&timeout=0`);
@@ -7276,6 +7290,33 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             
             preview.innerHTML = html;
         }
+
+        // Listener para mensagens de iframes (ex: padroes_repetidos.htm)
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.action === 'updatePatternsBot') {
+                const patternsText = event.data.patterns;
+                const robotTextarea = document.getElementById('patternsBotInput');
+                
+                if (robotTextarea) {
+                    const existingText = robotTextarea.value.trim();
+                    // Pequeno delay para garantir que o confirm não bloqueie a UI do iframe imediatamente
+                    setTimeout(() => {
+                        if (existingText && !confirm('Já existem padrões no Robô. Deseja substituir os padrões existentes? Clique em "Cancelar" para adicionar ao final.')) {
+                            robotTextarea.value = existingText + '\n' + patternsText;
+                        } else {
+                            robotTextarea.value = patternsText;
+                        }
+                        
+                        // Atualiza preview e salva
+                        if (typeof updatePatternsPreview === 'function') updatePatternsPreview();
+                        localStorage.setItem('patternsBot_saved_patterns', robotTextarea.value);
+
+                        suite_openTab('patterns_bot');
+                        closeTool();
+                    }, 100);
+                }
+            }
+        });
     </script>
 
     <!-- NOVO CONTAINER FLUTUANTE PARA FERRAMENTAS -->

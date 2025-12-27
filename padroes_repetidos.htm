@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador de Padrões & Probabilidades</title>
+    <style>
+        /* Copiando e adaptando os estilos de robo_padroes.html */
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; color: #ccc; }
+        .control-group input, .control-group textarea, .control-group select {
+            width: 100%; padding: 10px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 4px; box-sizing: border-box; font-family: monospace;
+        }
+        .hint { font-size: 0.8rem; color: #888; margin-top: 5px; }
+        
+        .btn-back {
+            background: transparent; border: 1px solid #444; color: #aaa;
+            padding: 5px 10px; cursor: pointer; margin-bottom: 15px; border-radius: 4px;
+        }
+        .btn-back:hover { border-color: #fff; color: #fff; }
+
+        .action-btn {
+            width: 100%; margin-top: 10px; padding: 12px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2));
+            border: 1px solid #00d2ff; color: #00d2ff; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .action-btn:hover {
+            border-color: #fff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+        .action-btn:disabled {
+            background: #222; border-color: #444; color: #666; cursor: not-allowed;
+        }
+
+        .output-area {
+            background: #111; padding: 15px; border-radius: 8px;
+            border: 1px solid #333; min-height: 150px; max-height: 500px;
+            overflow-y: auto; font-family: monospace;
+        }
+        .result-entry {
+            padding: 8px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        .result-entry:last-child { border-bottom: none; }
+        .pattern-sequence { color: #00d2ff; font-weight: bold; font-family: monospace; }
+        .pattern-count { color: #fff; font-weight: bold; }
+        .pattern-last-seen { color: #888; font-size: 0.8rem; }
+
+        /* --- Scrollbar Futurista --- */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(161, 0, 255, 0.5));
+            border-radius: 10px; border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #00d2ff, #a100ff);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+
+        /* --- Switch Toggle --- */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+
+        /* --- Estilos do Histórico --- */
+        .history-grid {
+            display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;
+            background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;
+        }
+        .badge {
+            width: 35px; height: 35px; display: flex; justify-content: center; align-items: center;
+            border-radius: 4px; font-weight: bold; font-size: 0.9rem; background: #0f0f13;
+            border: 1px solid #333; color: #fff; position: relative;
+        }
+        .badge.vermelho { border-color: #ff0055; color: #ff0055; }
+        .badge.preto { border-color: #444; color: #888; }
+        .badge.branco { border-color: #fff; background: rgba(255,255,255,0.1); color: #fff; text-shadow: 0 0 5px #fff; }
+        .badge .time-overlay {
+            position: absolute; bottom: 1px; right: 1px; font-size: 0.4rem; color: rgba(255,255,255,0.5);
+        }
+        .badge .roll-number {
+            z-index: 1;
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        /* --- Responsividade Mobile --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .config-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .control-group {
+                margin-bottom: 5px;
+            }
+            .buttons-row {
+                flex-direction: column;
+            }
+            .action-btn {
+                width: 100%;
+                margin-top: 5px;
+            }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <button class="btn-back" onclick="parent.closeTool()" style="display: none;">⬅ Voltar ao Menu</button>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 class="cortex-text-anim" style="margin: 0;">PADRÕES & PROBABILIDADES</h1>
+    </div>
+
+    <div id="config-panel">
+
+        <div class="config-grid" style="margin-bottom: 15px;">
+            <div class="control-group">
+                <label for="patternLength">Tamanho do Padrão:</label>
+                <input type="number" id="patternLength" value="3" min="2" max="10">
+            </div>
+            <div class="control-group">
+                <label for="minFrequency">Mínimo Aparições:</label>
+                <input type="number" id="minFrequency" value="1" min="1">
+            </div>
+            <div class="control-group">
+                <label for="minAccuracy">Precisão Mínima (%):</label>
+                <input type="number" id="minAccuracy" value="0" min="0" max="100">
+            </div>
+            <div class="control-group">
+                <label for="minWins">Mínimo Wins:</label>
+                <input type="number" id="minWins" value="0" min="0">
+            </div>
+            <div class="control-group">
+                <label for="analysisType">Analisar por:</label>
+                <select id="analysisType">
+                    <option value="color">Cor (V/P/B)</option>
+                    <option value="number">Número (0-14)</option>
+                    <option value="all">Todos (Cor e Número)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="timeFilter">Filtrar por Tempo:</label>
+                <select id="timeFilter">
+                    <option value="all">Desde o início</option>
+                    <option value="1">Na última hora</option>
+                    <option value="3">Nas últimas 3 horas</option>
+                    <option value="6">Nas últimas 6 horas</option>
+                    <option value="12">Nas últimas 12 horas</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="sortBy">Ordenar por:</label>
+                <select id="sortBy">
+                    <option value="frequency">Frequência Total</option>
+                    <option value="wins">Quantidade de Wins</option>
+                    <option value="accuracy">Precisão (%)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="buttons-row" style="display: flex; gap: 10px;">
+            <button id="analyzeBtn" class="action-btn" onclick="analyzePatterns()" style="flex: 2;">⚡ ANALISAR PADRÕES</button>
+            <button id="sendToBotBtn" class="action-btn" onclick="sendToPatternsBot()" style="flex: 1; background: #00ff88; color: #000; border-color: #00ff88;">➤ ENVIAR PARA ROBÔ</button>
+        </div>
+    </div>
+
+    <div id="result-panel" style="margin-top: 30px;">
+        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Resultados da Análise</h3>
+        <div id="analysisResult" class="output-area">Aguardando análise...</div>
+    </div>
+
+    <div id="history-panel" style="margin-top: 30px;">
+        <h3 style="text-align: center; text-transform: uppercase; color: #00d2ff;">Últimos Resultados Coletados <span id="historyCount" style="font-size: 0.8em; color: #aaa;"></span></h3>
+        <div id="historyGrid" class="history-grid"></div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let currentFilteredPatterns = [];
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicia atualização automática apenas do histórico
+            updateHistoryOnly();
+            setInterval(updateHistoryOnly, 15000);
+        });
+
+        // --- Funções Auxiliares ---
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'B'; // Branco
+            if (numero >= 1 && numero <= 7) return 'V'; // Vermelho
+            if (numero >= 8 && numero <= 14) return 'P'; // Preto
+            return '?';
+        }
+
+        function parseRawData() {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return [];
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                // Procura por um padrão data, número, hora
+                if (tokens[i] && tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2] && tokens[i + 2].includes(':')) {
+                    results.push({
+                        date: tokens[i],
+                        roll: parseInt(tokens[i + 1]),
+                        time: tokens[i + 2]
+                    });
+                    i += 2; // Pula os próximos 2 tokens que já foram consumidos
+                }
+            }
+            // Os resultados vêm do mais recente para o mais antigo, vamos inverter para a análise.
+            return results.reverse();
+        }
+
+        // --- Lógica de Análise ---
+        function getPatternsForType(analysisType, results, patternLength, minFrequency) {
+            const sequences = [];
+            for (let i = 0; i <= results.length - patternLength; i++) {
+                const sequenceData = results.slice(i, i + patternLength);
+                let sequenceItems;
+                if (analysisType === 'color') {
+                    sequenceItems = sequenceData.map(res => dash_identificarCor(res.roll));
+                } else { // 'number'
+                    sequenceItems = sequenceData.map(res => res.roll.toString());
+                }
+                const nextResult = results[i + patternLength];
+                sequences.push({
+                    items: sequenceItems,
+                    lastResult: sequenceData[sequenceData.length - 1],
+                    nextResult: nextResult
+                });
+            }
+
+            const patternMap = new Map();
+            for (const seq of sequences) {
+                const key = seq.items.join(',');
+                if (!patternMap.has(key)) {
+                    patternMap.set(key, {
+                        count: 0,
+                        occurrences: [],
+                        outcomes: {}
+                    });
+                }
+                const patternData = patternMap.get(key);
+                patternData.count++;
+                patternData.occurrences.push(seq.lastResult.time);
+
+                if (seq.nextResult) {
+                    let outcome = dash_identificarCor(seq.nextResult.roll);
+                    patternData.outcomes[outcome] = (patternData.outcomes[outcome] || 0) + 1;
+                }
+            }
+
+            const repeatedPatterns = [];
+            for (const [pattern, data] of patternMap.entries()) {
+                if (data.count >= minFrequency) {
+                    repeatedPatterns.push({
+                        pattern: pattern,
+                        count: data.count,
+                        lastSeen: data.occurrences[data.occurrences.length - 1],
+                        outcomes: data.outcomes
+                    });
+                }
+            }
+            return repeatedPatterns;
+        }
+
+        function updateHistoryOnly() {
+            const allResults = parseRawData();
+            displayHistory(allResults);
+        }
+
+        function analyzePatterns() {
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resultDiv = document.getElementById('analysisResult');
+            
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'ANALISANDO...';
+            resultDiv.innerHTML = 'Processando dados...';
+
+            setTimeout(() => {
+                const allResults = parseRawData();
+                if (allResults.length === 0) {
+                    resultDiv.innerHTML = 'Nenhum dado encontrado. Certifique-se de que os dados foram coletados no painel principal.';
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.textContent = '⚡ ANALISAR PADRÕES';
+                    return;
+                }
+
+                let resultsForAnalysis = [...allResults];
+                const timeFilterHours = document.getElementById('timeFilter').value;
+
+                if (timeFilterHours !== 'all') {
+                    const now = new Date();
+                    const filterMilliseconds = parseInt(timeFilterHours) * 60 * 60 * 1000;
+                    const cutoffTime = now.getTime() - filterMilliseconds;
+
+                    resultsForAnalysis = resultsForAnalysis.filter(res => {
+                        const [day, month, year] = res.date.split('/');
+                        const [hour, minute] = res.time.split(':');
+                        // Month is 0-indexed in JS Date
+                        const resultDate = new Date(year, month - 1, day, hour, minute);
+                        return resultDate.getTime() >= cutoffTime;
+                    });
+                }
+
+                const patternLength = parseInt(document.getElementById('patternLength').value);
+                const minFrequency = parseInt(document.getElementById('minFrequency').value);
+                const analysisType = document.getElementById('analysisType').value;
+                const minAccuracy = parseInt(document.getElementById('minAccuracy').value) || 0;
+                const minWins = parseInt(document.getElementById('minWins').value) || 0;
+                const sortBy = document.getElementById('sortBy').value;
+
+                let patternsToShow = [];
+                if (analysisType === 'all') {
+                    const colorPatterns = getPatternsForType('color', resultsForAnalysis, patternLength, minFrequency);
+                    const numberPatterns = getPatternsForType('number', resultsForAnalysis, patternLength, minFrequency);
+                    patternsToShow = [...colorPatterns, ...numberPatterns];
+                } else {
+                    patternsToShow = getPatternsForType(analysisType, resultsForAnalysis, patternLength, minFrequency);
+                }
+
+                // Pré-calcular wins e precisão para ordenação
+                patternsToShow.forEach(p => {
+                    let mostFrequentOutcome = '';
+                    let maxCount = 0;
+                    let totalOutcomes = 0;
+                    if (p.outcomes) {
+                        for (const outcome in p.outcomes) {
+                            totalOutcomes += p.outcomes[outcome];
+                            if (p.outcomes[outcome] > maxCount) {
+                                maxCount = p.outcomes[outcome];
+                                mostFrequentOutcome = outcome;
+                            }
+                        }
+                    }
+                    p.winCount = maxCount;
+                    p.totalOutcomes = totalOutcomes;
+                    p.mostFrequentOutcome = mostFrequentOutcome;
+                    p.accuracy = totalOutcomes > 0 ? (maxCount / totalOutcomes) * 100 : 0;
+                });
+
+                if (sortBy === 'wins') {
+                    patternsToShow.sort((a, b) => b.winCount - a.winCount);
+                } else if (sortBy === 'accuracy') {
+                    patternsToShow.sort((a, b) => b.accuracy - a.accuracy);
+                } else {
+                    patternsToShow.sort((a, b) => b.count - a.count);
+                }
+
+                currentFilteredPatterns = [...patternsToShow]; // Armazena para a função de envio
+
+                displayResults(patternsToShow, minAccuracy, minWins);
+                displayHistory(allResults);
+
+                // Restaura o botão para permitir nova análise manual
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '⚡ ANALISAR PADRÕES';
+            }, 100);
+        }
+
+        // --- Funções de Interface (UI) ---
+        function displayResults(patterns, minAccuracy, minWins) {
+            const resultDiv = document.getElementById('analysisResult');
+            if (patterns.length === 0) {
+                resultDiv.innerHTML = 'Nenhum padrão encontrado com os critérios definidos.';
+                return;
+            }
+
+            let html = '';
+            for (const p of patterns) {
+                const accuracy = p.accuracy;
+
+                if (accuracy < minAccuracy) continue;
+                if (p.winCount < minWins) continue;
+
+                const outcomeText = p.mostFrequentOutcome ? `=${p.mostFrequentOutcome}` : '';
+                const accuracyText = p.mostFrequentOutcome ? `<span style="color: ${accuracy >= 75 ? '#00ff88' : (accuracy >= 50 ? '#ffc107' : '#888')}; font-size: 0.8em; margin-left: 10px;">(${accuracy.toFixed(0)}%)</span>` : '';
+                const wins = p.winCount;
+                const losses = p.totalOutcomes - p.winCount;
+                const scoreboardText = p.mostFrequentOutcome ? `<span style="font-size: 0.8em; margin-left: 10px; color: #ccc;">[<span style="color: #00ff88;">W:${wins}</span> | <span style="color: #ff0055;">L:${losses}</span>]</span>` : '';
+                
+                let entryStyle = '';
+                let starIcon = '';
+                if (accuracy === 100 && p.totalOutcomes > 0) {
+                    entryStyle = 'border: 1px solid #00ff88; background: rgba(0, 255, 136, 0.05); box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);';
+                    starIcon = ' <span style="color: #ffd700; text-shadow: 0 0 5px #ffd700;">★</span>';
+                }
+
+                html += `
+                    <div class="result-entry" style="${entryStyle}">
+                        <div style="flex-grow: 1;">
+                            <span class="pattern-sequence">${p.pattern}${outcomeText}</span>${starIcon}
+                            ${accuracyText} ${scoreboardText}
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="pattern-count">x${p.count}</span>
+                            <div class="pattern-last-seen">Visto às ${p.lastSeen}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (html === '') {
+                resultDiv.innerHTML = 'Nenhum padrão atendeu ao filtro de precisão mínima.';
+            } else {
+                resultDiv.innerHTML = html;
+            }
+        }
+
+        function displayHistory(results) {
+            const historyDiv = document.getElementById('historyGrid');
+            const countSpan = document.getElementById('historyCount');
+            
+            if (!results || results.length === 0) {
+                historyDiv.innerHTML = '<div style="width:100%; text-align:center; color:#666;">Nenhum dado coletado. Ative a Auto-Busca no painel principal.</div>';
+                if(countSpan) countSpan.innerText = '(0)';
+                return;
+            }
+
+            // results vem do parseRawData como Antigo -> Novo. Pegamos os últimos 100 para manter a ordem (novo à direita).
+            const recent = results.slice(-100);
+            if(countSpan) countSpan.innerText = `(${results.length})`;
+            
+            let html = '';
+            for (const res of recent) {
+                const colorCode = dash_identificarCor(res.roll);
+                let cssClass = 'branco';
+                if (colorCode === 'V') cssClass = 'vermelho';
+                else if (colorCode === 'P') cssClass = 'preto';
+
+                html += `<div class="badge ${cssClass}" title="${res.time}">
+                            <span class="roll-number">${res.roll}</span>
+                            <div class="time-overlay">${res.time}</div>
+                         </div>`;
+            }
+            historyDiv.innerHTML = html;
+        }
+
+        // --- Integração com Robô ---
+        function sendToPatternsBot() {
+            if (!currentFilteredPatterns || currentFilteredPatterns.length === 0) {
+                alert('Nenhum padrão para enviar. Analise primeiro.');
+                return;
+            }
+
+            // Filtra apenas os padrões que estão sendo exibidos (respeitando minAccuracy e minWins)
+            const minAccuracy = parseInt(document.getElementById('minAccuracy').value) || 0;
+            const minWins = parseInt(document.getElementById('minWins').value) || 0;
+
+            const patternsToSend = currentFilteredPatterns.filter(p => p.mostFrequentOutcome && p.accuracy >= minAccuracy && p.winCount >= minWins);
+
+            if (patternsToSend.length === 0) {
+                alert('Nenhum dos padrões filtrados tem um resultado previsível para enviar.');
+                return;
+            }
+
+            const patternsText = patternsToSend.map(p => `${p.pattern}=${p.mostFrequentOutcome}`).join('\n');
+
+            // Envia via postMessage para evitar bloqueios de segurança (Cross-Origin/File Protocol)
+            window.parent.postMessage({
+                action: 'updatePatternsBot',
+                patterns: patternsText
+            }, '*');
+        }
+    </script>
+</body>
+</html>
