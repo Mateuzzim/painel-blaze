@@ -78,7 +78,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -288,8 +288,8 @@
             #adx-container, #macd-container, #rsi-container, #stoch-container { height: 100px; border-radius: 0; margin-top: 5px; }
             #volume-container { height: 60px; border-radius: 0; margin-top: 5px; }
             
-            #mobile-menu-btn { display: block; }
-            .controls-panel { display: none; padding: 0; gap: 0; margin-top: 10px; background: transparent; border: none; }
+            #mobile-menu-btn { display: none; }
+            .controls-panel { display: flex; padding: 0; gap: 0; margin-top: 10px; background: transparent; border: none; }
             .controls-panel.show { display: flex !important; }
             .control-row { 
                 padding: 10px 5px; 
@@ -308,14 +308,14 @@
                 padding: 8px 12px; 
                 font-size: 0.8rem; 
                 width: auto; 
-                flex-grow: 1; /* Allow buttons to grow to fill lines */
+                flex-grow: 0; /* Prevent buttons from growing to fill lines */
                 text-align: center;
             }
             .tool-group { 
                 padding: 6px 10px; 
                 justify-content: center; 
                 flex-wrap: wrap; 
-                flex-grow: 1;
+                flex-grow: 0;
                 width: auto;
             }
             
@@ -997,8 +997,11 @@
                     </div>
                     <div class="tool-group">
                         <span style="font-size: 0.8rem; color: #fff;">Velas:</span>
-                        <input type="color" id="candleUpColor" value="#ff0055" title="Cor de Alta" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
-                        <input type="color" id="candleDownColor" value="#343a40" title="Cor de Baixa" onchange="updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                        <input type="color" id="candleUpColor" value="#ff0055" title="Cor de Alta" onchange="saveCandleColors(); updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                        <input type="color" id="candleDownColor" value="#343a40" title="Cor de Baixa" onchange="saveCandleColors(); updateChart()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                        <span style="font-size: 0.8rem; color: #fff; margin-left: 5px;">Fundo:</span>
+                        <input type="color" id="chartBgColor" value="#0c1014" title="Cor de Fundo" onchange="saveChartBgColor(); updateChartBackgroundColor()" style="width: 25px; height: 25px; padding: 0; border: none; background: none; cursor: pointer;">
+                        <button onclick="resetColorDefaults()" title="Resetar Cores para Padrão" style="background: transparent; border: 1px solid #444; color: #aaa; cursor: pointer; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; line-height: 1;">🔄</button>
                     </div>
                 </div>
 
@@ -5062,6 +5065,45 @@
             localStorage.setItem('white_gale_attempts', val);
         }
 
+        function saveCandleColors() {
+            const up = document.getElementById('candleUpColor').value;
+            const down = document.getElementById('candleDownColor').value;
+            localStorage.setItem('candle_up_color', up);
+            localStorage.setItem('candle_down_color', down);
+        }
+
+        function saveChartBgColor() {
+            const bg = document.getElementById('chartBgColor').value;
+            localStorage.setItem('chart_bg_color', bg);
+        }
+
+        function updateChartBackgroundColor() {
+            const bg = document.getElementById('chartBgColor').value;
+            const containers = document.querySelectorAll('#chart-container, #adx-container, #volume-container, #macd-container, #rsi-container, #stoch-container');
+            containers.forEach(c => c.style.backgroundColor = bg);
+        }
+
+        function resetColorDefaults() {
+            // Define default values
+            const defaultUp = '#ff0055';
+            const defaultDown = '#343a40';
+            const defaultBg = '#0c1014';
+
+            // Reset color pickers
+            document.getElementById('candleUpColor').value = defaultUp;
+            document.getElementById('candleDownColor').value = defaultDown;
+            document.getElementById('chartBgColor').value = defaultBg;
+
+            // Remove from localStorage
+            localStorage.removeItem('candle_up_color');
+            localStorage.removeItem('candle_down_color');
+            localStorage.removeItem('chart_bg_color');
+
+            // Apply changes
+            updateChartBackgroundColor();
+            updateChart();
+        }
+
         function saveAutoTgConfig() {
             const minVal = document.getElementById('autoTelegramMinProbability').value;
             const maxVal = document.getElementById('autoTelegramMaxProbability').value;
@@ -5101,6 +5143,22 @@
                 document.body.classList.add('light-mode');
                 const btn = document.getElementById('themeToggleBtn');
                 if(btn) btn.innerText = '🌙 Tema';
+            }
+
+            // Load Candle Colors
+            const savedUpColor = localStorage.getItem('candle_up_color');
+            const savedDownColor = localStorage.getItem('candle_down_color');
+            if (savedUpColor) document.getElementById('candleUpColor').value = savedUpColor;
+            if (savedDownColor) document.getElementById('candleDownColor').value = savedDownColor;
+
+            // Load Background Color
+            const savedBgColor = localStorage.getItem('chart_bg_color');
+            if (savedBgColor) {
+                const bgPicker = document.getElementById('chartBgColor');
+                if (bgPicker) {
+                    bgPicker.value = savedBgColor;
+                    updateChartBackgroundColor();
+                }
             }
 
             const savedWarmup = localStorage.getItem('warmup_seconds');
