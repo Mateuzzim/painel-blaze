@@ -198,6 +198,16 @@
         .sidebar .sidebar-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .sidebar .sidebar-control:last-child { margin-bottom: 0; }
         .sidebar .sidebar-control span { font-size: 0.9rem; color: #ccc; }
+        
+        /* Grid Compacto para Controles */
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+        .sidebar .controls-grid .sidebar-control { flex-direction: column; margin-bottom: 0; background: rgba(0,0,0,0.2); padding: 8px 4px; border-radius: 6px; justify-content: space-between; align-items: center; min-height: 60px; }
+        .sidebar .controls-grid .sidebar-control span { font-size: 0.7rem; margin-bottom: 0; text-align: center; white-space: nowrap; }
+
+        /* Ocultar setas padrão do input number para usar botões personalizados */
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
         .layout-panel.suite { flex: 1; }
 
         /* Grid de Widgets para alinhar funções */
@@ -313,6 +323,17 @@
             100% { box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); transform: scale(1); }
         }
 
+        /* Paused State Animation */
+        .prediction-color-box.paused {
+            border-color: #ffc107; color: #ffc107; text-shadow: 0 0 10px #ffc107;
+            background: rgba(255, 193, 7, 0.05); animation: pulse-paused 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse-paused {
+            0% { box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(255, 193, 7, 0.5); transform: scale(1.02); }
+            100% { box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); transform: scale(1); }
+        }
+
         /* Waiting Circular Progress */
         .waiting-wrapper {
             position: relative;
@@ -412,13 +433,25 @@
             align-items: center;
             gap: 5px;
             white-space: nowrap;
-            animation: pulse-shield 2s infinite;
+            animation: pulse-shield 0.8s infinite;
         }
         @keyframes pulse-shield {
-            0% { box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
-            50% { box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); border-color: #ff45d4; }
-            100% { box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
+            0% { opacity: 1; box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
+            50% { opacity: 0.3; box-shadow: 0 0 20px rgba(255, 0, 85, 0.9); border-color: #fff; background: rgba(255, 0, 85, 0.4); }
+            100% { opacity: 1; box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
         }
+
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 20, 30, 0.95); color: #fff; padding: 12px 20px; border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 9999; font-weight: bold;
+            display: flex; align-items: center; gap: 10px; border: 1px solid #333;
+            animation: toast-slide-in 0.5s ease-out, toast-fade-out 0.5s ease-in 4.5s forwards;
+        }
+        .toast-notification.danger { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
+        @keyframes toast-slide-in { from { top: -60px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        @keyframes toast-fade-out { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
     </style>
     <style>
         /* --- Scrollbar Futurista Aprimorada --- */
@@ -473,47 +506,73 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Controles</h3>
                 <div class="sidebar-control">
-                    <span>Conexão</span>
                     <div id="ai_connection_status" class="connection-status">
                         <div class="status-dot"></div>
                         <span class="status-text">Offline</span>
                     </div>
                 </div>
-                <div class="sidebar-control">
-                    <span>Auto-Busca</span>
-                    <label class="switch"><input type="checkbox" id="ai_autoFetchToggle" checked><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Som</span>
-                    <label class="switch"><input type="checkbox" id="ai_soundToggle" onchange="ai_toggleSound()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Gale Virtual</span>
-                    <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Gale 1</span>
-                    <label class="switch"><input type="checkbox" id="ai_gale1Toggle" onchange="ai_toggleGale1()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Inverter Gale 1</span>
-                    <label class="switch"><input type="checkbox" id="ai_invertGaleToggle" onchange="ai_toggleInvertGale()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Conservador</span>
-                    <label class="switch"><input type="checkbox" id="ai_conservativeToggle" onchange="ai_toggleConservativeMode()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Horário de Ouro</span>
-                    <label class="switch"><input type="checkbox" id="ai_goldenHourToggle" onchange="ai_toggleGoldenHourMode()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Opções Double</span>
-                    <label class="switch"><input type="checkbox" id="ai_opcoesDoubleToggle" onchange="ai_showAIPrediction()"><span class="slider"></span></label>
-                </div>
-                <div class="sidebar-control">
-                    <span>Minutos 1-5</span>
-                    <label class="switch"><input type="checkbox" id="ai_minute1to5Toggle" onchange="ai_toggleMinute1to5()"><span class="slider"></span></label>
+                
+                <div class="controls-grid">
+                    <div class="sidebar-control">
+                        <span>Auto-Busca</span>
+                        <label class="switch"><input type="checkbox" id="ai_autoFetchToggle" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Som</span>
+                        <label class="switch"><input type="checkbox" id="ai_soundToggle" onchange="ai_toggleSound()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Gale Virtual</span>
+                        <label class="switch"><input type="checkbox" id="ai_virtualGaleToggle" onchange="ai_toggleVirtualGale()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Gale 1</span>
+                        <label class="switch"><input type="checkbox" id="ai_gale1Toggle" onchange="ai_toggleGale1()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Inv. Gale 1</span>
+                        <label class="switch"><input type="checkbox" id="ai_invertGaleToggle" onchange="ai_toggleInvertGale()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Conservador</span>
+                        <label class="switch"><input type="checkbox" id="ai_conservativeToggle" onchange="ai_toggleConservativeMode()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Horário Ouro</span>
+                        <label class="switch"><input type="checkbox" id="ai_goldenHourToggle" onchange="ai_toggleGoldenHourMode()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Opções Double</span>
+                        <label class="switch"><input type="checkbox" id="ai_opcoesDoubleToggle" onchange="ai_toggleOpcoesDouble()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Minutos 1-5</span>
+                        <label class="switch"><input type="checkbox" id="ai_minute1to5Toggle" onchange="ai_toggleMinute1to5()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Tempo Espera</span>
+                        <div style="display: flex; align-items: center; gap: 3px;">
+                            <button onmousedown="ai_startAdjustWaitTime(-1)" onmouseup="ai_stopAdjustWaitTime()" onmouseleave="ai_stopAdjustWaitTime()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">-</button>
+                            <input type="number" id="ai_waitTimeInput" value="4" min="1" max="300" style="width: 40px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; padding: 2px; text-align: center;" onchange="ai_updateWaitTime()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                            <button onmousedown="ai_startAdjustWaitTime(1)" onmouseup="ai_stopAdjustWaitTime()" onmouseleave="ai_stopAdjustWaitTime()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">+</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Pausa Manual</span>
+                        <label class="switch"><input type="checkbox" id="ai_manualPauseToggle" onchange="ai_toggleManualPause()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Anti-Xadrez</span>
+                        <label class="switch"><input type="checkbox" id="ai_antiChessToggle" onchange="ai_toggleAntiChessMode()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Seguir Cor</span>
+                        <label class="switch"><input type="checkbox" id="ai_followColorToggle" onchange="ai_toggleFollowColorMode()"><span class="slider"></span></label>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Sem Loss</span>
+                        <label class="switch"><input type="checkbox" id="ai_noLossToggle" onchange="ai_toggleNoLossMode()"><span class="slider"></span></label>
+                    </div>
                 </div>
             </div>
             <div class="sidebar-section">
@@ -553,27 +612,36 @@
         let ai_wins = initialStats.wins || 0;
         let ai_losses = initialStats.losses || 0;
         let ai_current_prediction = null;
+        let ai_current_prediction_shield = false;
+        let ai_last_result_shielded = false;
         let ai_balance_history = initialStats.balance || [0];
-        let ai_use_virtual_gale = false;
+        let ai_use_virtual_gale = localStorage.getItem('ai_use_virtual_gale') === 'true';
         let ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
         let ai_results_history = []; // Para o placar de 24h
         let ai_volume = 0.5;
-        let ai_sound_enabled = false; // Padrão OFF
+        let ai_sound_enabled = localStorage.getItem('ai_sound_enabled') === 'true';
         let ai_pause_until = 0; // Timestamp for pause after loss
         let ai_consecutive_wins = initialStats.consecutive_wins || 0;
         let ai_consecutive_losses = initialStats.consecutive_losses || 0;
         let ai_max_consecutive_wins = initialStats.max_consecutive_wins || 0;
         let ai_max_consecutive_losses = initialStats.max_consecutive_losses || 0;
         let ai_filter_history = false;
-        let ai_conservative_mode = false;
-        let ai_golden_hour_mode = false;
-        let ai_use_gale1 = false;
-        let ai_invert_gale = false;
+        let ai_conservative_mode = localStorage.getItem('ai_conservative_mode') === 'true';
+        let ai_golden_hour_mode = localStorage.getItem('ai_golden_hour_mode') === 'true';
+        let ai_use_gale1 = localStorage.getItem('ai_use_gale1') === 'true';
+        let ai_invert_gale = localStorage.getItem('ai_invert_gale') === 'true';
         let ai_last_prediction_on_loss = null;
         let ai_waiting_until = 0;
-        let ai_opcoes_double_mode = false;
-        let ai_minute_1_5_mode = false;
+        let ai_opcoes_double_mode = localStorage.getItem('ai_opcoes_double_mode') === 'true';
+        let ai_minute_1_5_mode = localStorage.getItem('ai_minute_1_5_mode') === 'true';
         let ai_confidence_history = [];
+        let ai_win_wait_time = parseInt(localStorage.getItem('ai_win_wait_time')) || 4;
+        let ai_manual_pause = localStorage.getItem('ai_manual_pause') === 'true';
+        let ai_anti_chess_mode = localStorage.getItem('ai_anti_chess_mode') === 'true';
+        let ai_follow_color_mode = localStorage.getItem('ai_follow_color_mode') === 'true';
+        let ai_no_loss_mode = localStorage.getItem('ai_no_loss_mode') === 'true';
+        let ai_wait_time_timer = null;
+        let ai_wait_time_timeout = null;
 
         function updateConnectionStatus(status, text) {
             const statusContainer = document.getElementById('ai_connection_status');
@@ -586,9 +654,54 @@
             }
         }
 
+        function ai_updateWaitTime() {
+            const val = parseInt(document.getElementById('ai_waitTimeInput').value);
+            if (!isNaN(val) && val >= 1) {
+                ai_win_wait_time = val;
+                localStorage.setItem('ai_win_wait_time', val);
+            }
+        }
+
+        function ai_adjustWaitTime(delta) {
+            const input = document.getElementById('ai_waitTimeInput');
+            let val = parseInt(input.value) || 0;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 300) val = 300;
+            input.value = val;
+            ai_updateWaitTime();
+        }
+
+        function ai_showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            let icon = 'ℹ️';
+            if (type === 'danger') icon = '🛡️';
+            
+            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 5000);
+        }
+
+        function ai_startAdjustWaitTime(delta) {
+            ai_adjustWaitTime(delta); // Muda 1 vez imediatamente
+            ai_wait_time_timeout = setTimeout(() => {
+                ai_wait_time_timer = setInterval(() => {
+                    ai_adjustWaitTime(delta); // Continua mudando rapidamente
+                }, 100); // Velocidade da mudança (100ms)
+            }, 500); // Espera 0.5s antes de começar a acelerar
+        }
+
+        function ai_stopAdjustWaitTime() {
+            clearTimeout(ai_wait_time_timeout);
+            clearInterval(ai_wait_time_timer);
+        }
+
         function ai_toggleSound() {
             const el = document.getElementById('ai_soundToggle');
             ai_sound_enabled = el.checked;
+            localStorage.setItem('ai_sound_enabled', ai_sound_enabled);
         }
 
         function ai_toggleHistoryFilter() {
@@ -599,37 +712,78 @@
         function ai_toggleConservativeMode() {
             const el = document.getElementById('ai_conservativeToggle');
             ai_conservative_mode = el.checked;
+            localStorage.setItem('ai_conservative_mode', ai_conservative_mode);
             ai_showAIPrediction();
         }
 
         function ai_toggleGoldenHourMode() {
             const el = document.getElementById('ai_goldenHourToggle');
             ai_golden_hour_mode = el.checked;
+            localStorage.setItem('ai_golden_hour_mode', ai_golden_hour_mode);
             ai_showAIPrediction();
         }
 
         function ai_toggleMinute1to5() {
             const el = document.getElementById('ai_minute1to5Toggle');
             ai_minute_1_5_mode = el.checked;
+            localStorage.setItem('ai_minute_1_5_mode', ai_minute_1_5_mode);
             ai_showAIPrediction();
         }
 
         function ai_toggleInvertGale() {
             const el = document.getElementById('ai_invertGaleToggle');
             ai_invert_gale = el.checked;
+            localStorage.setItem('ai_invert_gale', ai_invert_gale);
             ai_showAIPrediction();
         }
 
         function ai_toggleGale1() {
             const el = document.getElementById('ai_gale1Toggle');
             ai_use_gale1 = el.checked;
+            localStorage.setItem('ai_use_gale1', ai_use_gale1);
             ai_showAIPrediction();
         }
 
         function ai_toggleVirtualGale() {
             const el = document.getElementById('ai_virtualGaleToggle');
             ai_use_virtual_gale = el.checked;
+            localStorage.setItem('ai_use_virtual_gale', ai_use_virtual_gale);
             ai_virtual_stage = 0;
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleManualPause() {
+            const el = document.getElementById('ai_manualPauseToggle');
+            ai_manual_pause = el.checked;
+            localStorage.setItem('ai_manual_pause', ai_manual_pause);
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleAntiChessMode() {
+            const el = document.getElementById('ai_antiChessToggle');
+            ai_anti_chess_mode = el.checked;
+            localStorage.setItem('ai_anti_chess_mode', ai_anti_chess_mode);
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleFollowColorMode() {
+            const el = document.getElementById('ai_followColorToggle');
+            ai_follow_color_mode = el.checked;
+            localStorage.setItem('ai_follow_color_mode', ai_follow_color_mode);
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleNoLossMode() {
+            const el = document.getElementById('ai_noLossToggle');
+            ai_no_loss_mode = el.checked;
+            localStorage.setItem('ai_no_loss_mode', ai_no_loss_mode);
+            ai_showAIPrediction();
+        }
+
+        function ai_toggleOpcoesDouble() {
+            const el = document.getElementById('ai_opcoesDoubleToggle');
+            ai_opcoes_double_mode = el.checked;
+            localStorage.setItem('ai_opcoes_double_mode', ai_opcoes_double_mode);
             ai_showAIPrediction();
         }
 
@@ -762,7 +916,6 @@
 
                         // Atualiza o placar e histórico independentemente do Gale Virtual
                         if (isWin) {
-                            ai_wins++;
                             ai_consecutive_wins++;
                             if (ai_consecutive_wins > ai_max_consecutive_wins) {
                                 ai_max_consecutive_wins = ai_consecutive_wins;
@@ -770,20 +923,33 @@
                             ai_consecutive_losses = 0;
                             ai_last_prediction_on_loss = null; 
                             ai_playWinSound();
-                            ai_results_history.push({ timestamp: Date.now(), result: 'win' });
-                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
-                            if (ai_consecutive_wins >= 4) {
-                                ai_pause_until = Date.now() + 30000; // Pausa de 30 segundos após 4 wins
-                                ai_consecutive_wins = 0;
+                            
+                            if (!ai_current_prediction_shield) {
+                                ai_wins++;
+                                ai_results_history.push({ timestamp: Date.now(), result: 'win' });
+                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
+                                ai_last_result_shielded = false;
+                            } else {
+                                ai_last_result_shielded = true;
                             }
-                            ai_waiting_until = Date.now() + 4000; // Exibe "Aguardando..." por 4s
-                            setTimeout(() => ai_showAIPrediction(), 4000); // Atualiza após espera
+                            
+                            ai_waiting_until = Date.now() + (ai_win_wait_time * 1000); // Exibe "Aguardando..." pelo tempo configurado
+                            setTimeout(() => ai_showAIPrediction(), (ai_win_wait_time * 1000)); // Atualiza após espera
                         } else {
-                            ai_losses++;
                             ai_consecutive_losses++;
                             if (ai_consecutive_losses > ai_max_consecutive_losses) {
                                 ai_max_consecutive_losses = ai_consecutive_losses;
                             }
+                            
+                            // Ativação automática do Modo Sem Loss após 2 losses consecutivos
+                            if (ai_consecutive_losses >= 2 && !ai_no_loss_mode) {
+                                ai_no_loss_mode = true;
+                                localStorage.setItem('ai_no_loss_mode', 'true');
+                                const toggle = document.getElementById('ai_noLossToggle');
+                                if (toggle) toggle.checked = true;
+                                ai_showToast("Modo Sem Loss ativado por segurança!", "danger");
+                            }
+                            
                             ai_consecutive_wins = 0;
                             if (ai_use_gale1) {
                                 if (ai_last_prediction_on_loss) {
@@ -795,8 +961,15 @@
                                 }
                             }
                             ai_playLossSound();
-                            ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
-                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);                            
+                            
+                            if (!ai_current_prediction_shield) {
+                                ai_losses++;
+                                ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
+                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);                            
+                                ai_last_result_shielded = false;
+                            } else {
+                                ai_last_result_shielded = true;
+                            }
                             
                             // Define o tempo de espera: 5s se for Gale (para entrar rápido), 20s se for normal
                             const waitTime = (ai_last_prediction_on_loss) ? 5000 : 20000;
@@ -887,8 +1060,17 @@
                 ai_opcoes_double_mode = opcoesDoubleToggle.checked;
             }
 
+            // Verifica se está em pausa manual
+            if (ai_manual_pause) {
+                prediction = 'PAUSADO';
+                confidence = 0;
+                predictionClass = 'paused';
+                reasoning.push("<strong>⏸️ Pausa Manual:</strong> Robô pausado pelo usuário.");
+                document.body.classList.remove('white-alert-active');
+                ai_current_prediction = null;
+            }
             // Verifica se está em pausa pós-loss
-            if (Date.now() < ai_pause_until) {
+            else if (Date.now() < ai_pause_until) {
                 prediction = 'Analisando...';
                 confidence = 0;
                 predictionClass = '';
@@ -920,6 +1102,19 @@
                     }
                     reasoning.unshift(`<strong>🔄 GALE 1 (${ai_invert_gale ? 'Invertido' : 'Normal'}):</strong> Recuperação ativa -> ${galeTargetColor.toUpperCase()}.`);
                     
+                }
+
+                // Lógica "Seguir Cor" (Follow Color) pós-Loss
+                // Se ativado e houver loss, força a entrada na cor do último resultado se ela se repetiu (seq >= 2)
+                if (ai_follow_color_mode && ai_consecutive_losses >= 1 && history.length >= 2 && history[0] === history[1]) {
+                    const lastResult = history[0];
+                    if (lastResult === 'vermelho') {
+                        redScore += 2000; // Prioridade máxima (override)
+                        reasoning.unshift(`<strong>🎨 Seguir Cor:</strong> Loss detectado e repetição confirmada -> Seguindo (${lastResult.toUpperCase()}).`);
+                    } else if (lastResult === 'preto') {
+                        blackScore += 2000; // Prioridade máxima (override)
+                        reasoning.unshift(`<strong>🎨 Seguir Cor:</strong> Loss detectado e repetição confirmada -> Seguindo (${lastResult.toUpperCase()}).`);
+                    }
                 }
 
                 // --- NOVA LÓGICA DE ANÁLISE ADAPTATIVA (V2.0) ---
@@ -1219,9 +1414,14 @@
                 else if (prediction === 'POSSÍVEL BRANCO') ai_current_prediction = 'branco';
                 else ai_current_prediction = null;
 
+                ai_current_prediction_shield = isShieldActive;
             } else {
                 reasoning.push("Aguardando dados suficientes para análise...");
                 document.body.classList.remove('white-alert-active');
+            }
+            
+            if (ai_last_result_shielded) {
+                reasoning.push(`<strong>🛡️ Escudo Atuou:</strong> Resultado anterior ignorado no saldo.`);
             }
 
             // --- FILTRO DE SEGURANÇA DINÂMICO (REDUÇÃO DE LOSS) ---
@@ -1242,6 +1442,18 @@
                 }
             }
 
+            // 3. Regra: Evitar Xadrez (Alternância excessiva)
+            if (ai_anti_chess_mode && history.length >= 4 && history[0] !== history[1] && history[1] !== history[2] && history[2] !== history[3]) {
+                minConfidence += 20;
+                reasoning.push(`<strong>⚠️ Filtro Anti-Xadrez:</strong> Alternância longa detectada. Aumentando segurança.`);
+            }
+
+            // 4. Modo Sem Loss (Ultra Conservador)
+            if (ai_no_loss_mode) {
+                minConfidence = 95;
+                reasoning.push(`<strong>💎 Modo Sem Loss:</strong> Exigindo confiança extrema (> 95%) para evitar perdas.`);
+            }
+
             if (confidence < minConfidence && prediction !== 'Analisando...' && prediction !== 'Aguardando Dados...' && prediction !== 'AGUARDANDO..') { 
                 prediction = 'Sinal Fraco'; 
                 reasoning.push(`<strong>⛔ Filtro de Segurança:</strong> Entrada cancelada (Confiança < ${minConfidence}%).`);
@@ -1257,6 +1469,11 @@
                 ai_current_prediction = null;
                 // Adiciona nota ao raciocínio
                 reasoning.unshift("<strong>Filtro Ativo:</strong> Aguardando sinal com confiança > 90%.");
+            }
+
+            // Regra Visual: Se o escudo estiver ativo (bloqueio), não mostrar a cor da previsão
+            if (isShieldActive) {
+                predictionClass = '';
             }
 
             let predictionDisplayText = prediction;
@@ -1308,6 +1525,10 @@
                 outerStyle = 'border-top-color: #00d2ff; border-bottom-color: #00d2ff; animation: spin-ai 1s linear infinite;';
                 innerStyle = 'border-left-color: #00d2ff; border-right-color: #00d2ff; opacity: 0.5;';
                 coreStyle = 'background-color: #00d2ff; box-shadow: 0 0 15px #00d2ff; animation: pulse-ai 0.5s infinite;';
+            } else if (predictionClass === 'paused') {
+                outerStyle = 'border-top-color: #ffc107; border-bottom-color: #ffc107; box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);';
+                innerStyle = 'border-left-color: #ffc107; border-right-color: #ffc107; opacity: 0.5;';
+                coreStyle = 'background-color: #ffc107; box-shadow: 0 0 15px #ffc107; animation: pulse-ai 1s infinite;';
             }
 
             const aiVisualHtml = `
@@ -1797,6 +2018,7 @@
                 ai_last_prediction_on_loss = null;
                 ai_max_consecutive_wins = 0;
                 ai_max_consecutive_losses = 0;
+                ai_last_result_shielded = false;
                 
                 // Reset 1h history
                 ai_results_history = [];
@@ -1856,13 +2078,38 @@
         // Inicialização
         const autoFetch = document.getElementById('ai_autoFetchToggle');
         if (autoFetch) {
+            // Restaurar estado do Auto-Busca
+            const savedAutoFetch = localStorage.getItem('ai_autoFetch');
+            if (savedAutoFetch !== null) {
+                autoFetch.checked = (savedAutoFetch === 'true');
+            }
+
+            // Restaurar visualmente os outros botões
+            document.getElementById('ai_soundToggle').checked = ai_sound_enabled;
+            document.getElementById('ai_virtualGaleToggle').checked = ai_use_virtual_gale;
+            document.getElementById('ai_gale1Toggle').checked = ai_use_gale1;
+            document.getElementById('ai_invertGaleToggle').checked = ai_invert_gale;
+            document.getElementById('ai_conservativeToggle').checked = ai_conservative_mode;
+            document.getElementById('ai_goldenHourToggle').checked = ai_golden_hour_mode;
+            document.getElementById('ai_opcoesDoubleToggle').checked = ai_opcoes_double_mode;
+            document.getElementById('ai_minute1to5Toggle').checked = ai_minute_1_5_mode;
+            document.getElementById('ai_manualPauseToggle').checked = ai_manual_pause;
+            document.getElementById('ai_antiChessToggle').checked = ai_anti_chess_mode;
+            document.getElementById('ai_followColorToggle').checked = ai_follow_color_mode;
+            document.getElementById('ai_noLossToggle').checked = ai_no_loss_mode;
+
             autoFetch.addEventListener('change', (e) => {
+                localStorage.setItem('ai_autoFetch', e.target.checked);
                 if (e.target.checked) { ai_fetchData(); ai_interval = setInterval(ai_fetchData, 15000); } 
                 else { 
                     clearInterval(ai_interval); 
                     updateConnectionStatus('offline', 'Offline');
                 }
             });
+
+            // Restaurar Tempo de Espera salvo no input visual
+            const waitTimeInput = document.getElementById('ai_waitTimeInput');
+            if (waitTimeInput) waitTimeInput.value = ai_win_wait_time;
 
             // Carrega o histórico de 1h
             const savedResults = localStorage.getItem('ai_results_history');
