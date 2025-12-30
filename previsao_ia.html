@@ -206,7 +206,6 @@
 
         /* Ocultar setas padrão do input number para usar botões personalizados */
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
         .layout-panel.suite { flex: 1; }
 
@@ -412,46 +411,6 @@
             50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.8); border-color: #00ff88; }
             100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); border-color: #00ff88; }
         }
-        /* Shield Indicator */
-        .shield-indicator {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 15, 20, 0.95);
-            border: 1px solid #ff0055;
-            color: #ff0055;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            z-index: 10;
-            box-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-            animation: pulse-shield 0.8s infinite;
-        }
-        @keyframes pulse-shield {
-            0% { opacity: 1; box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
-            50% { opacity: 0.3; box-shadow: 0 0 20px rgba(255, 0, 85, 0.9); border-color: #fff; background: rgba(255, 0, 85, 0.4); }
-            100% { opacity: 1; box-shadow: 0 0 5px rgba(255, 0, 85, 0.3); border-color: #ff0055; }
-        }
-
-        /* Toast Notification */
-        .toast-notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(20, 20, 30, 0.95); color: #fff; padding: 12px 20px; border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 9999; font-weight: bold;
-            display: flex; align-items: center; gap: 10px; border: 1px solid #333;
-            animation: toast-slide-in 0.5s ease-out, toast-fade-out 0.5s ease-in 4.5s forwards;
-        }
-        .toast-notification.danger { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
-        @keyframes toast-slide-in { from { top: -60px; opacity: 0; } to { top: 20px; opacity: 1; } }
-        @keyframes toast-fade-out { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
     </style>
     <style>
         /* --- Scrollbar Futurista Aprimorada --- */
@@ -553,9 +512,21 @@
                         <span>Tempo Espera</span>
                         <div style="display: flex; align-items: center; gap: 3px;">
                             <button onmousedown="ai_startAdjustWaitTime(-1)" onmouseup="ai_stopAdjustWaitTime()" onmouseleave="ai_stopAdjustWaitTime()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">-</button>
-                            <input type="number" id="ai_waitTimeInput" value="4" min="1" max="300" style="width: 40px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; padding: 2px; text-align: center;" onchange="ai_updateWaitTime()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                            <input type="number" id="ai_waitTimeInput" value="4" min="1" max="300" style="width: 40px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; padding: 2px; text-align: center; -moz-appearance: textfield;" onchange="ai_updateWaitTime()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                             <button onmousedown="ai_startAdjustWaitTime(1)" onmouseup="ai_stopAdjustWaitTime()" onmouseleave="ai_stopAdjustWaitTime()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">+</button>
                         </div>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Pedras Espera</span>
+                        <div style="display: flex; align-items: center; gap: 3px;">
+                            <button onmousedown="ai_startAdjustStonesWait(-1)" onmouseup="ai_stopAdjustStonesWait()" onmouseleave="ai_stopAdjustStonesWait()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">-</button>
+                            <input type="number" id="ai_stonesWaitInput" value="1" min="1" max="100" style="width: 40px; background: #222; border: 1px solid #444; color: #fff; border-radius: 3px; padding: 2px; text-align: center; -moz-appearance: textfield;" onchange="ai_updateStonesWait()" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                            <button onmousedown="ai_startAdjustStonesWait(1)" onmouseup="ai_stopAdjustStonesWait()" onmouseleave="ai_stopAdjustStonesWait()" style="width: 20px; height: 20px; background: #333; border: 1px solid #555; color: #fff; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;">+</button>
+                        </div>
+                    </div>
+                    <div class="sidebar-control">
+                        <span>Auto Inc. Loss</span>
+                        <label class="switch"><input type="checkbox" id="ai_autoWaitLossToggle" onchange="ai_toggleAutoWaitLoss()"><span class="slider"></span></label>
                     </div>
                     <div class="sidebar-control">
                         <span>Pausa Manual</span>
@@ -564,14 +535,6 @@
                     <div class="sidebar-control">
                         <span>Anti-Xadrez</span>
                         <label class="switch"><input type="checkbox" id="ai_antiChessToggle" onchange="ai_toggleAntiChessMode()"><span class="slider"></span></label>
-                    </div>
-                    <div class="sidebar-control">
-                        <span>Seguir Cor</span>
-                        <label class="switch"><input type="checkbox" id="ai_followColorToggle" onchange="ai_toggleFollowColorMode()"><span class="slider"></span></label>
-                    </div>
-                    <div class="sidebar-control">
-                        <span>Sem Loss</span>
-                        <label class="switch"><input type="checkbox" id="ai_noLossToggle" onchange="ai_toggleNoLossMode()"><span class="slider"></span></label>
                     </div>
                 </div>
             </div>
@@ -612,8 +575,6 @@
         let ai_wins = initialStats.wins || 0;
         let ai_losses = initialStats.losses || 0;
         let ai_current_prediction = null;
-        let ai_current_prediction_shield = false;
-        let ai_last_result_shielded = false;
         let ai_balance_history = initialStats.balance || [0];
         let ai_use_virtual_gale = localStorage.getItem('ai_use_virtual_gale') === 'true';
         let ai_virtual_stage = 0; // 0 = Virtual, 1 = Real
@@ -638,10 +599,14 @@
         let ai_win_wait_time = parseInt(localStorage.getItem('ai_win_wait_time')) || 4;
         let ai_manual_pause = localStorage.getItem('ai_manual_pause') === 'true';
         let ai_anti_chess_mode = localStorage.getItem('ai_anti_chess_mode') === 'true';
-        let ai_follow_color_mode = localStorage.getItem('ai_follow_color_mode') === 'true';
-        let ai_no_loss_mode = localStorage.getItem('ai_no_loss_mode') === 'true';
         let ai_wait_time_timer = null;
         let ai_wait_time_timeout = null;
+        let ai_waiting_for_next_stone = false;
+        let ai_stones_wait_setting = parseInt(localStorage.getItem('ai_stones_wait_setting')) || 1;
+        let ai_stones_current_wait = 0;
+        let ai_stones_wait_timer = null;
+        let ai_stones_wait_timeout = null;
+        let ai_auto_wait_loss = localStorage.getItem('ai_auto_wait_loss') === 'true';
 
         function updateConnectionStatus(status, text) {
             const statusContainer = document.getElementById('ai_connection_status');
@@ -672,18 +637,6 @@
             ai_updateWaitTime();
         }
 
-        function ai_showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast-notification ${type}`;
-            let icon = 'ℹ️';
-            if (type === 'danger') icon = '🛡️';
-            
-            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 5000);
-        }
-
         function ai_startAdjustWaitTime(delta) {
             ai_adjustWaitTime(delta); // Muda 1 vez imediatamente
             ai_wait_time_timeout = setTimeout(() => {
@@ -696,6 +649,42 @@
         function ai_stopAdjustWaitTime() {
             clearTimeout(ai_wait_time_timeout);
             clearInterval(ai_wait_time_timer);
+        }
+
+        function ai_updateStonesWait() {
+            const val = parseInt(document.getElementById('ai_stonesWaitInput').value);
+            if (!isNaN(val) && val >= 1) {
+                ai_stones_wait_setting = val;
+                localStorage.setItem('ai_stones_wait_setting', val);
+            }
+        }
+
+        function ai_adjustStonesWait(delta) {
+            const input = document.getElementById('ai_stonesWaitInput');
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            if (val > 100) val = 100;
+            input.value = val;
+            ai_updateStonesWait();
+        }
+
+        function ai_startAdjustStonesWait(delta) {
+            ai_adjustStonesWait(delta);
+            ai_stones_wait_timeout = setTimeout(() => {
+                ai_stones_wait_timer = setInterval(() => { ai_adjustStonesWait(delta); }, 100);
+            }, 500);
+        }
+
+        function ai_stopAdjustStonesWait() {
+            clearTimeout(ai_stones_wait_timeout);
+            clearInterval(ai_stones_wait_timer);
+        }
+
+        function ai_toggleAutoWaitLoss() {
+            const el = document.getElementById('ai_autoWaitLossToggle');
+            ai_auto_wait_loss = el.checked;
+            localStorage.setItem('ai_auto_wait_loss', ai_auto_wait_loss);
         }
 
         function ai_toggleSound() {
@@ -766,20 +755,6 @@
             ai_showAIPrediction();
         }
 
-        function ai_toggleFollowColorMode() {
-            const el = document.getElementById('ai_followColorToggle');
-            ai_follow_color_mode = el.checked;
-            localStorage.setItem('ai_follow_color_mode', ai_follow_color_mode);
-            ai_showAIPrediction();
-        }
-
-        function ai_toggleNoLossMode() {
-            const el = document.getElementById('ai_noLossToggle');
-            ai_no_loss_mode = el.checked;
-            localStorage.setItem('ai_no_loss_mode', ai_no_loss_mode);
-            ai_showAIPrediction();
-        }
-
         function ai_toggleOpcoesDouble() {
             const el = document.getElementById('ai_opcoesDoubleToggle');
             ai_opcoes_double_mode = el.checked;
@@ -826,7 +801,7 @@
                     headers['x-access-token'] = SEU_TOKEN_BLAZE;
                 }
 
-                const pages = [1, 2, 3, 4];
+                const pages = [1, 2, 3, 4, 5, 6, 7, 8]; // Aumentado para garantir histórico de 100+
                 let allGames = [];
                 for (const page of pages) {
                     try {
@@ -910,6 +885,16 @@
                 const latest = results[0];
                 const signature = latest.date + latest.time + latest.roll;
                 if (signature !== ai_last_processed_signature) {
+                    // Só libera a espera da próxima pedra se o tempo de espera (delay) já tiver encerrado
+                    if (ai_waiting_for_next_stone && Date.now() >= ai_waiting_until) {
+                        if (ai_stones_current_wait > 0) {
+                            ai_stones_current_wait--;
+                        }
+                        if (ai_stones_current_wait <= 0) {
+                            ai_waiting_for_next_stone = false;
+                        }
+                    }
+
                     if (ai_current_prediction && ai_last_processed_signature !== '') {
                         const resultColor = ai_identificarCor(latest.roll);
                         const isWin = (resultColor === ai_current_prediction || resultColor === 'branco');
@@ -924,32 +909,27 @@
                             ai_last_prediction_on_loss = null; 
                             ai_playWinSound();
                             
-                            if (!ai_current_prediction_shield) {
-                                ai_wins++;
-                                ai_results_history.push({ timestamp: Date.now(), result: 'win' });
-                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
-                                ai_last_result_shielded = false;
-                            } else {
-                                ai_last_result_shielded = true;
-                            }
+                            ai_wins++;
+                            ai_results_history.push({ timestamp: Date.now(), result: 'win' });
+                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] + 1);
                             
-                            ai_waiting_until = Date.now() + (ai_win_wait_time * 1000); // Exibe "Aguardando..." pelo tempo configurado
-                            setTimeout(() => ai_showAIPrediction(), (ai_win_wait_time * 1000)); // Atualiza após espera
+                            ai_waiting_until = Date.now() + (ai_win_wait_time * 1000);
+                            setTimeout(() => ai_showAIPrediction(), (ai_win_wait_time * 1000));
+                            ai_waiting_for_next_stone = true;
+                            
+                            // Reset Auto Wait on Win
+                            if (ai_auto_wait_loss && ai_stones_wait_setting > 1) {
+                                ai_stones_wait_setting = 1;
+                                localStorage.setItem('ai_stones_wait_setting', ai_stones_wait_setting);
+                                const input = document.getElementById('ai_stonesWaitInput');
+                                if (input) input.value = ai_stones_wait_setting;
+                            }
+                            ai_stones_current_wait = ai_stones_wait_setting;
                         } else {
                             ai_consecutive_losses++;
                             if (ai_consecutive_losses > ai_max_consecutive_losses) {
                                 ai_max_consecutive_losses = ai_consecutive_losses;
                             }
-                            
-                            // Ativação automática do Modo Sem Loss após 2 losses consecutivos
-                            if (ai_consecutive_losses >= 2 && !ai_no_loss_mode) {
-                                ai_no_loss_mode = true;
-                                localStorage.setItem('ai_no_loss_mode', 'true');
-                                const toggle = document.getElementById('ai_noLossToggle');
-                                if (toggle) toggle.checked = true;
-                                ai_showToast("Modo Sem Loss ativado por segurança!", "danger");
-                            }
-                            
                             ai_consecutive_wins = 0;
                             if (ai_use_gale1) {
                                 if (ai_last_prediction_on_loss) {
@@ -962,20 +942,22 @@
                             }
                             ai_playLossSound();
                             
-                            if (!ai_current_prediction_shield) {
-                                ai_losses++;
-                                ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
-                                ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);                            
-                                ai_last_result_shielded = false;
-                            } else {
-                                ai_last_result_shielded = true;
+                            ai_losses++;
+                            ai_results_history.push({ timestamp: Date.now(), result: 'loss' });
+                            ai_balance_history.push(ai_balance_history[ai_balance_history.length-1] - 1);
+                            
+                            ai_waiting_until = Date.now() + (ai_win_wait_time * 1000);
+                            setTimeout(() => ai_showAIPrediction(), (ai_win_wait_time * 1000));
+                            ai_waiting_for_next_stone = true;
+
+                            // Auto Increment Wait on Loss
+                            if (ai_auto_wait_loss) {
+                                ai_stones_wait_setting++;
+                                localStorage.setItem('ai_stones_wait_setting', ai_stones_wait_setting);
+                                const input = document.getElementById('ai_stonesWaitInput');
+                                if (input) input.value = ai_stones_wait_setting;
                             }
-                            
-                            // Define o tempo de espera: 5s se for Gale (para entrar rápido), 20s se for normal
-                            const waitTime = (ai_last_prediction_on_loss) ? 5000 : 20000;
-                            
-                            ai_waiting_until = Date.now() + waitTime; 
-                            setTimeout(() => ai_showAIPrediction(), waitTime); 
+                            ai_stones_current_wait = ai_stones_wait_setting;
                         }
 
                         // Salvar placar atualizado
@@ -1034,7 +1016,6 @@
             let history = [], fullHistory = [];
             let redCount = 0, blackCount = 0;
             let marketTrend = 0, r10 = 0, b10 = 0;
-            let isShieldActive = false;
 
             // --- PARSING GLOBAL (Para garantir que gráficos funcionem sempre) ---
             if (rawData) {
@@ -1086,6 +1067,14 @@
                 reasoning.push("<span class='recalibrating-anim'>🔄 Reiniciando: Processando resultados e recalibrando I.A.</span>");
                 ai_current_prediction = null;
             }
+            // Verifica se está aguardando a próxima pedra (Nova Regra)
+            else if (ai_waiting_for_next_stone) {
+                prediction = `Aguardando Pedra (${ai_stones_current_wait})...`;
+                predictionClass = 'waiting';
+                confidence = 0;
+                reasoning.push("<span class='recalibrating-anim'>⏳ Sincronizando: Aguardando nova pedra para análise.</span>");
+                ai_current_prediction = null;
+            }
             // Executa a lógica de previsão apenas se houver dados suficientes e não estiver em pausa
             else if (fullHistory.length >= 7) {
                 
@@ -1102,19 +1091,6 @@
                     }
                     reasoning.unshift(`<strong>🔄 GALE 1 (${ai_invert_gale ? 'Invertido' : 'Normal'}):</strong> Recuperação ativa -> ${galeTargetColor.toUpperCase()}.`);
                     
-                }
-
-                // Lógica "Seguir Cor" (Follow Color) pós-Loss
-                // Se ativado e houver loss, força a entrada na cor do último resultado se ela se repetiu (seq >= 2)
-                if (ai_follow_color_mode && ai_consecutive_losses >= 1 && history.length >= 2 && history[0] === history[1]) {
-                    const lastResult = history[0];
-                    if (lastResult === 'vermelho') {
-                        redScore += 2000; // Prioridade máxima (override)
-                        reasoning.unshift(`<strong>🎨 Seguir Cor:</strong> Loss detectado e repetição confirmada -> Seguindo (${lastResult.toUpperCase()}).`);
-                    } else if (lastResult === 'preto') {
-                        blackScore += 2000; // Prioridade máxima (override)
-                        reasoning.unshift(`<strong>🎨 Seguir Cor:</strong> Loss detectado e repetição confirmada -> Seguindo (${lastResult.toUpperCase()}).`);
-                    }
                 }
 
                 // --- NOVA LÓGICA DE ANÁLISE ADAPTATIVA (V2.0) ---
@@ -1177,12 +1153,26 @@
                 }
 
                 // G. Balanceamento Global (100 rodadas)
-                if (fullHistory.length >= 50) {
+                if (fullHistory.length >= 100) {
+                    const last100 = fullHistory.slice(0, 100).filter(x => x.color !== 'branco');
+                    if (last100.length > 0) {
+                        const r100 = last100.filter(x => x.color === 'vermelho').length;
+                        const rPct = r100 / last100.length;
+                        
+                        if (rPct >= 0.56) { // > 56% Vermelho
+                            blackScore += 8;
+                            reasoning.unshift(`<strong>⚖️ Balanceamento (100):</strong> Excesso de Vermelhos (${(rPct*100).toFixed(0)}%). Correção para Preto.`);
+                        } else if (rPct <= 0.44) { // < 44% Vermelho (Excesso de Preto)
+                            redScore += 8;
+                            reasoning.unshift(`<strong>⚖️ Balanceamento (100):</strong> Excesso de Pretos (${((1-rPct)*100).toFixed(0)}%). Correção para Vermelho.`);
+                        }
+                    }
+                } else if (fullHistory.length >= 50) {
                     const last50 = fullHistory.slice(0, 50).filter(x => x.color !== 'branco');
                     const r50 = last50.filter(x => x.color === 'vermelho').length;
                     const rPct = r50 / last50.length;
-                    if (rPct > 0.60) { blackScore += 1.5; reasoning.push("<strong>⚖️ Balanceamento:</strong> Vermelho sobrecomprado (>60%)."); }
-                    if (rPct < 0.40) { redScore += 1.5; reasoning.push("<strong>⚖️ Balanceamento:</strong> Vermelho sobrevendido (<40%)."); }
+                    if (rPct > 0.60) { blackScore += 3; reasoning.push("<strong>⚖️ Balanceamento (50):</strong> Vermelho sobrecomprado (>60%)."); }
+                    if (rPct < 0.40) { redScore += 3; reasoning.push("<strong>⚖️ Balanceamento (50):</strong> Vermelho sobrevendido (<40%)."); }
                 }
 
                 // H. Padrão Diamante (Alta Precisão 95%+)
@@ -1276,7 +1266,99 @@
                         reasoning.unshift(`<strong>⚛️ Anomalia de Primos (98%):</strong> Saturação matemática detectada (${primeCount}/8 Primos).`);
                     }
                 }
+
+                // O. Indicador RSI (Relative Strength Index - 99%)
+                if (fullHistory.length >= 14) {
+                    const last14 = fullHistory.slice(0, 14).filter(x => x.color !== 'branco');
+                    if (last14.length > 0) {
+                        const redCount14 = last14.filter(x => x.color === 'vermelho').length;
+                        const rsi = (redCount14 / last14.length) * 100;
+                        
+                        if (rsi >= 80) { // Sobrecompra de Vermelho
+                            blackScore += 6;
+                            reasoning.unshift(`<strong>📉 Indicador RSI (99%):</strong> Zona de Sobrecompra (${rsi.toFixed(0)}%). Reversão para Preto.`);
+                        } else if (rsi <= 20) { // Sobrevenda de Vermelho (Sobrecompra de Preto)
+                            redScore += 6;
+                            reasoning.unshift(`<strong>📈 Indicador RSI (99%):</strong> Zona de Sobrevenda (${rsi.toFixed(0)}%). Reversão para Vermelho.`);
+                        }
+                    }
+                }
+
+                // P. Padrão Palíndromo (Espelho - 96%)
+                // Busca formação A B B ... Prever A para fechar A B B A
+                if (history.length >= 3 && history[0] === history[1] && history[1] !== history[2]) {
+                    const target = history[2]; // A cor que iniciou o padrão
+                    if (target === 'vermelho') redScore += 4.5; else blackScore += 4.5;
+                    reasoning.unshift(`<strong>🪞 Padrão Palíndromo (96%):</strong> Fechamento de simetria espelhada (A-B-B-A).`);
+                }
+
+                // Q. Ciclo de Repetição Temporal (4-Step - 97%)
+                // Verifica se o resultado atual repete o de 4 rodadas atrás (Ciclo curto)
+                if (history.length >= 5 && history[0] === history[4]) {
+                    const nextInCycle = history[3]; // O que veio depois do history[4]
+                    if (nextInCycle === 'vermelho') redScore += 5; else blackScore += 5;
+                    reasoning.unshift(`<strong>⏳ Ciclo Temporal 4-Step (97%):</strong> Repetição de fractal de curto prazo.`);
+                }
+
+                // R. Análise de Vetor de Força (Momentum - 98%)
+                // Se tivermos 3 vitórias seguidas de uma cor com números crescentes ou decrescentes (Força direcional)
+                if (fullHistory.length >= 3) {
+                    const last3 = fullHistory.slice(0, 3);
+                    if (last3[0].color === last3[1].color && last3[1].color === last3[2].color && last3[0].color !== 'branco') {
+                        // Verifica se os números estão em tendência (ex: 2 -> 5 -> 11)
+                        const val0 = last3[0].roll;
+                        const val1 = last3[1].roll;
+                        const val2 = last3[2].roll;
+                        
+                        if ((val0 > val1 && val1 > val2) || (val0 < val1 && val1 < val2)) {
+                            // Momentum forte confirmado -> Seguir a tendência
+                            if (last3[0].color === 'vermelho') redScore += 5.5; else blackScore += 5.5;
+                            reasoning.unshift(`<strong>🚀 Vetor de Força (98%):</strong> Momentum numérico confirmado. Surf de tendência.`);
+                        }
+                    }
+                }
                 
+                // S. Indicador de Soma Tripla (Reversão - 97%)
+                if (fullHistory.length >= 3) {
+                    const last3Rolls = fullHistory.slice(0, 3).map(x => x.roll);
+                    const sum3 = last3Rolls.reduce((a, b) => a + b, 0);
+                    
+                    if (sum3 <= 12) {
+                        blackScore += 5;
+                        reasoning.unshift(`<strong>🔢 Soma Tripla (97%):</strong> Soma baixa (${sum3}). Reversão para Preto.`);
+                    } else if (sum3 >= 33) {
+                        redScore += 5;
+                        reasoning.unshift(`<strong>🔢 Soma Tripla (97%):</strong> Soma alta (${sum3}). Reversão para Vermelho.`);
+                    }
+                }
+
+                // T. Paridade da Soma (Estatística - 96%)
+                if (fullHistory.length >= 3) {
+                    const last3Rolls = fullHistory.slice(0, 3).map(x => x.roll);
+                    const sum3 = last3Rolls.reduce((a, b) => a + b, 0);
+                    const isEven = sum3 % 2 === 0;
+                    
+                    if (isEven) {
+                        blackScore += 4;
+                        reasoning.unshift(`<strong>⚖️ Paridade da Soma (96%):</strong> Soma PAR (${sum3}). Probabilidade maior para Preto.`);
+                    } else {
+                        redScore += 4;
+                        reasoning.unshift(`<strong>⚖️ Paridade da Soma (96%):</strong> Soma ÍMPAR (${sum3}). Probabilidade maior para Vermelho.`);
+                    }
+                }
+
+                // U. Estratégia Pós-Loss Imediato (Seguir a Cor - 99%)
+                if (ai_consecutive_losses > 0 && history.length > 0) {
+                    const lastResult = history[0];
+                    if (lastResult === 'vermelho') {
+                        redScore += 10;
+                        reasoning.unshift(`<strong>🔄 Pós-Loss (99%):</strong> Seguindo a cor do último resultado (Vermelho).`);
+                    } else if (lastResult === 'preto') {
+                        blackScore += 10;
+                        reasoning.unshift(`<strong>🔄 Pós-Loss (99%):</strong> Seguindo a cor do último resultado (Preto).`);
+                    }
+                }
+
                 // --- LÓGICA OPÇÕES DOUBLE (PROBABILIDADE TÉCNICA) ---
                 if (ai_opcoes_double_mode) {
                     const candles = ai_od_generateCandles(rawData);
@@ -1413,55 +1495,11 @@
                 else if (prediction === 'PRETO') ai_current_prediction = 'preto';
                 else if (prediction === 'POSSÍVEL BRANCO') ai_current_prediction = 'branco';
                 else ai_current_prediction = null;
-
-                ai_current_prediction_shield = isShieldActive;
             } else {
                 reasoning.push("Aguardando dados suficientes para análise...");
                 document.body.classList.remove('white-alert-active');
             }
             
-            if (ai_last_result_shielded) {
-                reasoning.push(`<strong>🛡️ Escudo Atuou:</strong> Resultado anterior ignorado no saldo.`);
-            }
-
-            // --- FILTRO DE SEGURANÇA DINÂMICO (REDUÇÃO DE LOSS) ---
-            let minConfidence = 55;
-            
-            // 1. Proteção pós-Loss: Fica mais exigente se vier de derrota
-            if (ai_consecutive_losses >= 1) {
-                minConfidence = 70; 
-                reasoning.push(`<strong>🛡️ Modo Recuperação:</strong> Exigindo confiança > 70% após loss.`);
-            }
-
-            // 2. Proteção Contra-Tendência: Se o mercado estiver muito forte (>60%), evita ir contra
-            if (marketTrend > 0.6 && (prediction === 'VERMELHO' || prediction === 'PRETO')) {
-                const trendColor = r10 > b10 ? 'VERMELHO' : 'PRETO';
-                if (prediction !== trendColor) {
-                    minConfidence += 15; // Aumenta a régua para operar contra a maré
-                    reasoning.push(`<strong>⚠️ Contra-Tendência:</strong> Exigindo +15% de confiança para reversão.`);
-                }
-            }
-
-            // 3. Regra: Evitar Xadrez (Alternância excessiva)
-            if (ai_anti_chess_mode && history.length >= 4 && history[0] !== history[1] && history[1] !== history[2] && history[2] !== history[3]) {
-                minConfidence += 20;
-                reasoning.push(`<strong>⚠️ Filtro Anti-Xadrez:</strong> Alternância longa detectada. Aumentando segurança.`);
-            }
-
-            // 4. Modo Sem Loss (Ultra Conservador)
-            if (ai_no_loss_mode) {
-                minConfidence = 95;
-                reasoning.push(`<strong>💎 Modo Sem Loss:</strong> Exigindo confiança extrema (> 95%) para evitar perdas.`);
-            }
-
-            if (confidence < minConfidence && prediction !== 'Analisando...' && prediction !== 'Aguardando Dados...' && prediction !== 'AGUARDANDO..') { 
-                prediction = 'Sinal Fraco'; 
-                reasoning.push(`<strong>⛔ Filtro de Segurança:</strong> Entrada cancelada (Confiança < ${minConfidence}%).`);
-                ai_current_prediction = null; 
-                isShieldActive = true;
-                predictionClass = ''; // Remove a cor da caixa para indicar neutralidade
-            }
-
             // Filtro do Modo Conservador (Confiança > 90%)
             if (ai_conservative_mode && confidence <= 90 && prediction !== 'Aguardando Dados...' && prediction !== 'Analisando...') {
                 prediction = 'Modo Conservador';
@@ -1471,18 +1509,8 @@
                 reasoning.unshift("<strong>Filtro Ativo:</strong> Aguardando sinal com confiança > 90%.");
             }
 
-            // Regra Visual: Se o escudo estiver ativo (bloqueio), não mostrar a cor da previsão
-            if (isShieldActive) {
-                predictionClass = '';
-            }
-
             let predictionDisplayText = prediction;
             let gale1IndicatorHtml = '';
-
-            let shieldHtml = '';
-            if (isShieldActive) {
-                shieldHtml = `<div class="shield-indicator">🛡️ ESCUDO ATIVO</div>`;
-            }
 
             if (ai_use_gale1 && prediction !== 'Aguardando Dados...' && prediction !== 'Analisando...' && prediction !== 'Sinal Fraco' && prediction !== 'Modo Conservador' && prediction !== 'Buscando Certeira...' && prediction !== 'POSSÍVEL BRANCO' && prediction !== 'AGUARDANDO..') {
                 gale1IndicatorHtml = `<div class="gale-indicator">1x</div>`;
@@ -1985,7 +2013,7 @@
                         </div>
                     </div>`;
             } else {
-                predictionBoxHtml = `<div style="position: relative; display: inline-block;">${shieldHtml}<div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${gale1IndicatorHtml}</div>`;
+                predictionBoxHtml = `<div style="position: relative; display: inline-block;"><div class="prediction-color-box ${predictionClass}" style="${boxStyle}">${predictionDisplayText}</div>${gale1IndicatorHtml}</div>`;
             }
 
             content.innerHTML = aiVisualHtml + widgetsHtml + `<div class="prediction-display">${predictionBoxHtml}${virtualStatusHtml}${whiteHtml}<div class="confidence-label">CONFIANÇA DA PREVISÃO: <strong>${confidence.toFixed(0)}%</strong></div><div class="confidence-bar-container"><div class="confidence-bar" style="width: ${confidence.toFixed(0)}%;"></div></div></div><div class="prediction-reasoning"><h4 style="margin: 0 0 10px 0; color: #fff;">Raciocínio da I.A.:</h4><ul>${reasoning.map(r => `<li>${r}</li>`).join('')}</ul></div>` + gaussChartHtml + barChartHtml + radarChartHtml + tickerHtml + `<p style="font-size: 0.7rem; text-align: center; color: #888; margin-top: 15px;">*Esta é uma previsão estatística e não uma garantia de resultado.</p>`;
@@ -2018,7 +2046,6 @@
                 ai_last_prediction_on_loss = null;
                 ai_max_consecutive_wins = 0;
                 ai_max_consecutive_losses = 0;
-                ai_last_result_shielded = false;
                 
                 // Reset 1h history
                 ai_results_history = [];
@@ -2095,8 +2122,7 @@
             document.getElementById('ai_minute1to5Toggle').checked = ai_minute_1_5_mode;
             document.getElementById('ai_manualPauseToggle').checked = ai_manual_pause;
             document.getElementById('ai_antiChessToggle').checked = ai_anti_chess_mode;
-            document.getElementById('ai_followColorToggle').checked = ai_follow_color_mode;
-            document.getElementById('ai_noLossToggle').checked = ai_no_loss_mode;
+            document.getElementById('ai_autoWaitLossToggle').checked = ai_auto_wait_loss;
 
             autoFetch.addEventListener('change', (e) => {
                 localStorage.setItem('ai_autoFetch', e.target.checked);
@@ -2110,6 +2136,10 @@
             // Restaurar Tempo de Espera salvo no input visual
             const waitTimeInput = document.getElementById('ai_waitTimeInput');
             if (waitTimeInput) waitTimeInput.value = ai_win_wait_time;
+
+            // Restaurar Pedras Espera salvo no input visual
+            const stonesWaitInput = document.getElementById('ai_stonesWaitInput');
+            if (stonesWaitInput) stonesWaitInput.value = ai_stones_wait_setting;
 
             // Carrega o histórico de 1h
             const savedResults = localStorage.getItem('ai_results_history');
