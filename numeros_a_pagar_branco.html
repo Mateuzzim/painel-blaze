@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Números a Pagar Branco</title>
+    <style>
+        /* Estilos Base (Copiados de analise_numeros.html para consistência) */
+        :root {
+            --bg-color: #050507; 
+            --panel-bg: rgba(20, 25, 30, 0.6); 
+            --text-color: #e0e6ed; 
+            --border-color: rgba(0, 242, 255, 0.15); 
+            --accent: #00f2ff; 
+            --accent-glow: rgba(0, 242, 255, 0.6);
+            --color-red: #ff0055; 
+            --color-black: #111; 
+            --color-white: #fff;
+        }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-image: 
+                radial-gradient(circle at 50% 0%, #1a2c38 0%, transparent 70%),
+                linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background-attachment: fixed;
+        }
+
+        .main-container { max-width: 1200px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .cortex-text-anim { 
+            background: linear-gradient(90deg, var(--accent), #ff0055, #ff9800, var(--accent)); 
+            background-size: 300% 100%; 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: cortex-gradient 3s linear infinite; 
+            font-weight: bold; 
+            font-size: 2rem;
+            margin: 0;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        
+        .stat-card { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+
+        .stat-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+            padding-bottom: 5px;
+        }
+
+        .highlight-val { font-size: 2rem; font-weight: bold; color: #fff; }
+        .highlight-sub { font-size: 0.8rem; color: #888; }
+
+        /* Tabela Futurista */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .data-table th {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent);
+            padding: 12px;
+            text-align: center;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .data-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+        }
+        .data-table tr:hover { background: rgba(255,255,255,0.05); }
+
+        .badge {
+            display: inline-block;
+            width: 30px; height: 30px;
+            line-height: 30px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            font-size: 1.1rem;
+        }
+        .bg-red { background: var(--color-red); color: #fff; }
+        .bg-black { background: #222; color: #aaa; border: 1px solid #444; }
+        .bg-white { background: #fff; color: #000; }
+
+        .progress-bar {
+            height: 6px;
+            background: #222;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        /* Ajuste para badges nos cards de destaque */
+        #bestPuller .badge, #mostDue .badge {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            font-size: 1.8rem;
+        }
+
+        .progress-fill { height: 100%; transition: width 0.5s; }
+
+        .btn-action {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .btn-action:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Switch Toggle */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 2px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Estilos do Alerta */
+        .alert-box {
+            display: none;
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            animation: pulse-border 1.5s infinite;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+        }
+        @keyframes pulse-border {
+            0% { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+            50% { border-color: #fff; box-shadow: 0 0 30px rgba(0, 255, 136, 0.5); }
+            100% { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        }
+        .alert-title { font-size: 1.5rem; font-weight: bold; color: #00ff88; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .alert-info { font-size: 1.1rem; color: #fff; margin-bottom: 5px; }
+        .alert-sub { font-size: 0.9rem; color: #ccc; }
+
+        @keyframes neon-border-pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 152, 0, 0.5), inset 0 0 5px rgba(255, 152, 0, 0.1); border-color: #ff9800; }
+            50% { box-shadow: 0 0 20px rgba(255, 152, 0, 0.8), inset 0 0 10px rgba(255, 152, 0, 0.2); border-color: #fff; }
+            100% { box-shadow: 0 0 5px rgba(255, 152, 0, 0.5), inset 0 0 5px rgba(255, 152, 0, 0.1); border-color: #ff9800; }
+        }
+
+        /* Estilos para o Painel de IA */
+        @keyframes ai-pulse {
+            0% { box-shadow: 0 0 10px rgba(161, 0, 255, 0.2), inset 0 0 5px rgba(161, 0, 255, 0.1); border-color: rgba(161, 0, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(161, 0, 255, 0.5), inset 0 0 10px rgba(161, 0, 255, 0.2); border-color: #a100ff; }
+            100% { box-shadow: 0 0 10px rgba(161, 0, 255, 0.2), inset 0 0 5px rgba(161, 0, 255, 0.1); border-color: rgba(161, 0, 255, 0.5); }
+        }
+
+        #aiReasoningList li {
+            background: rgba(255,255,255,0.03);
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border-left: 3px solid #a100ff;
+            transition: all 0.3s;
+        }
+        #aiReasoningList li:hover {
+            background: rgba(161, 0, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        /* Tooltip do Gráfico */
+        .chart-tooltip {
+            position: fixed;
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .history-bar {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease-out, background-color 0.5s;
+            position: relative;
+            cursor: help;
+        }
+        .history-bar .tooltip-text {
+            visibility: hidden;
+            width: 60px;
+            background-color: #111;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -30px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            border: 1px solid #333;
+        }
+        .history-bar:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .pulse-dot {
+            width: 10px; height: 10px; background: #ff0055; border-radius: 50%;
+            box-shadow: 0 0 0 rgba(255, 0, 85, 0.4);
+            animation: pulse-red-dot 2s infinite;
+        }
+        @keyframes pulse-red-dot {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+        }
+
+        /* Estilos para o gráfico Neural Pulse */
+        #neuralPulseChartContainer svg {
+            overflow: visible;
+        }
+        .neural-pulse-line {
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: url(#neuralGlow);
+            animation: draw-line 1s ease-out forwards;
+        }
+        @keyframes draw-line { from { stroke-dasharray: 0, 1000; } to { stroke-dasharray: 1000, 1000; } }
+
+        /* Animação para estado Crítico do Neural Pulse */
+        @keyframes critical-pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+            50% { box-shadow: 0 0 25px rgba(255, 0, 85, 0.8); border-color: #ff80ab; }
+            100% { box-shadow: 0 0 5px rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+        }
+        .critical-alert {
+            animation: critical-pulse 0.8s infinite alternate;
+        }
+
+        .main-content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .column-left, .column-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) { .main-content-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .data-table th, .data-table td { padding: 8px 4px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1 class="cortex-text-anim" style="display: none;">ANÁLISE DE PUXADORES DE BRANCO</h1>
+            <div style="margin-top: 15px; display: none; justify-content: center; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <button class="btn-action" onclick="fetchData()">🔄 Atualizar Dados</button>
+                <div>
+                    <span style="font-size: 0.8rem; color: #aaa; margin-right: 5px;">Auto:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="autoUpdate" checked onchange="toggleAuto()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; color: #aaa; margin-right: 5px;">Som:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div id="loading" style="color: #888; margin-top: 10px; font-size: 0.9rem; display: none;">Aguardando...</div>
+        </div>
+
+        <!-- Alerta de Gatilho -->
+        <div id="alertBox" class="alert-box">
+            <div class="alert-title">🚨 GATILHO DETECTADO 🚨</div>
+            <div class="alert-info">O número <span id="alertNum" style="font-size: 1.8rem; color: #fff; font-weight: bold;">--</span> acabou de sair!</div>
+            <div class="alert-sub">Este número puxou <span id="alertHits" style="color: #00ff88; font-weight: bold;">--</span> brancos recentemente.</div>
+            <div style="margin-top: 15px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; display: inline-block;">
+                ENTRAR NO BRANCO ⚪
+            </div>
+        </div>
+
+        <div class="main-content-grid">
+            <!-- Coluna Esquerda: Análise Principal -->
+            <div class="column-left">
+                <!-- PAINEL DE INTELIGÊNCIA ARTIFICIAL -->
+                <div id="aiBrainPanel" class="stat-card" style="display: none; border-color: #a100ff; animation: ai-pulse 2s infinite;">
+                    <div class="stat-title" style="color: #a100ff; text-align: center; font-size: 1.1rem;">🔮 CORTEX I.A. - ANÁLISE DE GATILHO 🔮</div>
+                    <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+                        <!-- Lado Esquerdo: Predição -->
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">MELHOR CANDIDATO A PUXAR BRANCO:</div>
+                            <div id="aiPredictionNumber" class="highlight-val" style="font-size: 4.5rem; line-height: 1;">--</div>
+                        </div>
+                        <!-- Lado Direito: Fatores -->
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="font-size: 0.9rem; color: #ccc; margin-bottom: 15px;">Fatores de Análise:</div>
+                            <ul id="aiReasoningList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; line-height: 1.8;">
+                                <!-- Fatores serão inseridos via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #ccc; margin-bottom: 5px;">
+                            <span>Nível de Confiança da I.A.</span>
+                            <span id="aiConfidenceValue" style="font-weight: bold; color: #fff;">0%</span>
+                        </div>
+                        <div class="progress-bar" style="height: 8px;">
+                            <div id="aiConfidenceBar" class="progress-fill" style="background: linear-gradient(90deg, #a100ff, #ff45d4); box-shadow: 0 0 10px #a100ff; width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Classificação -->
+                <div class="stat-card">
+                    <div class="stat-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>📊 Classificação de Puxadores</span>
+                <div style="display: flex; gap: 10px;">
+                    <select id="colorFilter" onchange="renderTable()" style="background: #111; color: #fff; border: 1px solid #333; padding: 5px; border-radius: 4px;">
+                        <option value="all">Todas as Cores</option>
+                        <option value="red">🔴 Vermelhos</option>
+                        <option value="black">⚫ Pretos</option>
+                    </select>
+                    <select id="sortOrder" onchange="renderTable()" style="background: #111; color: #fff; border: 1px solid #333; padding: 5px; border-radius: 4px;">
+                        <option value="lastHit" selected>Ordenar por Último Acerto</option>
+                        <option value="gap">Ordenar por Ausência (Gap)</option>
+                        <option value="hits">Ordenar por Acertos (Hits)</option>
+                        <option value="rate">Ordenar por Taxa (%)</option>
+                    </select>
+                </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Puxou Branco</th>
+                                    <th>Taxa de Conversão</th>
+                                    <th>Ausência Atual (Gap)</th>
+                                    <th>Último Acerto</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Dados via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #666; text-align: center;">
+                        * <b>Ausência Atual (Gap):</b> Quantas vezes o número saiu recentemente sem puxar um branco logo em seguida.
+                        <br>
+                        * <b>Taxa de Conversão:</b> % das vezes que este número saiu e pagou branco.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Contexto e Sumário -->
+            <div class="column-right">
+                <!-- NOVO: Verificador de Assertividade -->
+                <div class="stat-card" id="assertivenessPanel" style="border: 1px solid #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);">
+                    <div class="stat-title" style="color: #00ff88; display: flex; justify-content: space-between;">
+                        <span>✅ Verificador de Assertividade</span>
+                        <span style="font-size: 0.7rem; background: rgba(0,255,136,0.2); padding: 2px 6px; border-radius: 4px;">BETA</span>
+                    </div>
+                    <div style="text-align: center; padding: 10px 0;">
+                        <div id="assertivenessScore" class="highlight-val" style="font-size: 3.5rem; text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);">--%</div>
+                        <div id="assertivenessStatus" style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;">Aguardando análise...</div>
+                        <div class="progress-bar" style="height: 10px; background: #222;">
+                            <div id="assertivenessBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #00ff88, #00cc6a);"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 0.8rem; color: #ccc; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; text-align: center;"><div style="color: #888; font-size: 0.7rem;">FORÇA GATILHO</div><div id="factorTrigger" style="font-weight: bold; color: #fff;">--</div></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; text-align: center;"><div style="color: #888; font-size: 0.7rem;">CICLO TEMPORAL</div><div id="factorTime" style="font-weight: bold; color: #fff;">--</div></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; text-align: center; grid-column: span 2;"><div style="color: #888; font-size: 0.7rem;">PADRÃO DE SEQUÊNCIA</div><div id="factorPattern" style="font-weight: bold; color: #fff;">--</div></div>
+                    </div>
+                    <!-- Histórico de Assertividade -->
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        <div style="font-size: 0.7rem; color: #888; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Histórico de Assertividade</div>
+                        <div id="assertivenessHistoryContainer" style="display: flex; gap: 5px; height: 40px; align-items: flex-end; padding: 0 5px;">
+                            <!-- Barras do histórico serão injetadas aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOVO: Cortex Neural Pulse -->
+                <div class="stat-card" id="neuralPulsePanel" style="border: 1px solid #333; transition: border-color 0.5s;">
+                    <div class="stat-title" style="color: #ff0055; display: flex; justify-content: space-between; align-items: center;">
+                        <span>🧠 Cortex Neural Pulse</span>
+                        <span class="pulse-dot"></span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; color: #aaa;">PROBABILIDADE</div>
+                            <div id="neuralProb" style="font-size: 1.8rem; font-weight: bold; color: #fff;">0%</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.7rem; color: #aaa;">STATUS</div>
+                            <div id="neuralStatus" style="font-size: 1rem; font-weight: bold; color: #888;">CALCULANDO</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;">
+                        <div style="font-size: 0.7rem; color: #ccc;">SUGESTÃO:</div>
+                        <div id="neuralSuggestion" style="font-size: 0.85rem; color: #fff; font-style: italic;">Analisando padrões de rede...</div>
+                    </div>
+                    <div id="neuralPulseChartContainer" style="width: 100%; height: 60px; margin-top: 15px; position: relative;">
+                        <!-- Gráfico será inserido aqui -->
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <!-- Card 1: Total de Brancos -->
+                    <div class="stat-card" style="text-align: center;">
+                        <div class="stat-title">⚪ Total de Brancos (Amostra)</div>
+                        <div id="totalWhites" class="highlight-val">0</div>
+                        <div id="totalSpins" class="highlight-sub">em 0 giros analisados</div>
+                    </div>
+        
+                    <!-- Card 2: Melhor Puxador -->
+                    <div class="stat-card" style="text-align: center;">
+                        <div class="stat-title">🔥 Melhor Puxador (Frequência)</div>
+                        <div id="bestPuller" class="highlight-val">--</div>
+                        <div id="bestPullerStats" class="highlight-sub">0 acertos</div>
+                    </div>
+        
+                    <!-- Card 3: Mais Atrasado -->
+                    <div class="stat-card" style="text-align: center;">
+                        <div class="stat-title">⏳ Mais Atrasado (Ausência)</div>
+                        <div id="mostDue" class="highlight-val" style="color: #ff9800;">--</div>
+                        <div id="mostDueStats" class="highlight-sub">0 aparições sem pagar</div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO DE TENDÊNCIA -->
+                <div class="stat-card">
+                    <div class="stat-title">📈 Tendência de Brancos (Última Hora)</div>
+                    <div id="whiteTrendChartContainer" style="width: 100%; height: 200px; position: relative;">
+                        <!-- SVG do gráfico será inserido aqui via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tooltip Container (fora do grid) -->
+        <div id="chart-tooltip" class="chart-tooltip"></div>
+    </div>
+
+    <script>
+        let rawData = [];
+        let statsData = [];
+        let updateInterval;
+        let lastProcessedRollId = null; // Para evitar alertas repetidos no mesmo giro
+        let assertivenessHistory = [];
+        let neuralPulseHistory = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            toggleAuto();
+        });
+
+        function toggleAuto() {
+            const isChecked = document.getElementById('autoUpdate').checked;
+            if (isChecked) {
+                updateInterval = setInterval(fetchData, 15000);
+            } else {
+                clearInterval(updateInterval);
+            }
+        }
+
+        async function fetchData() {
+            const loading = document.getElementById('loading');
+            loading.innerText = 'Buscando dados da API...';
+            
+            try {
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                
+                let allGames = [];
+                // Busca até 10 páginas para ter uma amostra robusta de "ausência"
+                for (let page = 1; page <= 10; page++) {
+                    const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                    const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                    const targetUrl = `${baseUrl}${params}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                    
+                    try {
+                        const response = await fetch(proxyUrl);
+                        if (response.ok) {
+                            const data = await response.json();
+                            const records = Array.isArray(data) ? data : (data.records || []);
+                            if (records.length === 0) break;
+                            allGames = allGames.concat(records);
+                        }
+                    } catch (e) { console.warn(`Erro pág ${page}`, e); }
+                }
+
+                // Remove duplicatas e ordena (Newest -> Oldest)
+                const seenIds = new Set();
+                rawData = allGames.filter(game => {
+                    if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
+                    return false;
+                }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (rawData.length > 0) {
+                    analyzeData();
+                    loading.innerText = `Atualizado: ${new Date().toLocaleTimeString()} (${rawData.length} giros)`;
+                } else {
+                    loading.innerText = 'Nenhum dado encontrado.';
+                }
+
+            } catch (error) {
+                console.error(error);
+                loading.innerText = 'Erro ao atualizar. Tente novamente.';
+            }
+        }
+
+        function analyzeData() {
+            // Inicializa estatísticas para números 1-14
+            let stats = {};
+            for(let i=1; i<=14; i++) {
+                stats[i] = {
+                    num: i,
+                    appearances: 0,
+                    whiteHits: 0,
+                    currentGap: 0,
+                    gapActive: true, // Usado para contar o gap atual (de trás pra frente)
+                    lastHitTimestamp: null // Novo campo para o último acerto
+                };
+            }
+
+            let totalWhites = 0;
+
+            // Itera do MAIS RECENTE (0) para o MAIS ANTIGO (length-1)
+            for(let i=0; i < rawData.length; i++) {
+                const currentRoll = rawData[i].roll;
+
+                if (currentRoll === 0) {
+                    totalWhites++;
+                    continue;
+                }
+
+                // Se for 1-14
+                if (stats[currentRoll]) {
+                    stats[currentRoll].appearances++;
+
+                    // Verifica se "pagou" branco (se o resultado IMEDIATAMENTE DEPOIS no tempo - índice menor - foi 0)
+                    let paidWhite = false;
+                    if (i > 0 && rawData[i-1].roll === 0) {
+                        paidWhite = true;
+                    }
+
+                    if (paidWhite) {
+                        stats[currentRoll].whiteHits++;
+                        stats[currentRoll].gapActive = false; // Encontrou um pagamento, para de contar o gap atual
+                        // Armazena o timestamp do acerto mais recente
+                        if (stats[currentRoll].lastHitTimestamp === null) {
+                            stats[currentRoll].lastHitTimestamp = rawData[i].created_at;
+                        }
+                    } else {
+                        if (stats[currentRoll].gapActive) {
+                            stats[currentRoll].currentGap++;
+                        }
+                    }
+                }
+            }
+
+            // Converte para array
+            statsData = Object.values(stats);
+
+            // Atualiza Cards
+            document.getElementById('totalWhites').innerText = totalWhites;
+            document.getElementById('totalSpins').innerText = `em ${rawData.length} giros analisados`;
+
+            // Melhor Puxador (Mais Hits)
+            const bestPuller = [...statsData].sort((a,b) => b.whiteHits - a.whiteHits)[0];
+            const bestBadgeClass = bestPuller.num <= 7 ? 'bg-red' : 'bg-black';
+            document.getElementById('bestPuller').innerHTML = `<span class="badge ${bestBadgeClass}">${bestPuller.num}</span>`;
+            document.getElementById('bestPullerStats').innerText = `${bestPuller.whiteHits} brancos puxados`;
+
+            // Mais Atrasado (Maior Gap)
+            const mostDue = [...statsData].sort((a,b) => b.currentGap - a.currentGap)[0];
+            const dueBadgeClass = mostDue.num <= 7 ? 'bg-red' : 'bg-black';
+            document.getElementById('mostDue').innerHTML = `<span class="badge ${dueBadgeClass}">${mostDue.num}</span>`;
+            document.getElementById('mostDueStats').innerText = `${mostDue.currentGap} vezes saiu s/ pagar`;
+
+            // --- NOVA LÓGICA DE INTELIGÊNCIA ARTIFICIAL ---
+            const aiPanel = document.getElementById('aiBrainPanel');
+            const aiPredictionNumber = document.getElementById('aiPredictionNumber');
+            const aiReasoningList = document.getElementById('aiReasoningList');
+            const aiConfidenceValue = document.getElementById('aiConfidenceValue');
+            const aiConfidenceBar = document.getElementById('aiConfidenceBar');
+
+            // 1. Calcular Stats Globais
+            const whiteIndices = rawData.map((game, index) => game.roll === 0 ? index : -1).filter(index => index !== -1);
+            const spinsSinceLastWhite = whiteIndices.length > 0 ? whiteIndices[0] : rawData.length;
+            let averageWhiteInterval = rawData.length / (whiteIndices.length || 1);
+
+            // 2. Calcular AI Score para cada número
+            let topAiCandidate = { num: 0, score: 0, reasons: [] };
+            const maxHits = Math.max(...statsData.map(s => s.whiteHits), 1);
+            const maxGap = Math.max(...statsData.map(s => s.currentGap), 1);
+
+            statsData.forEach(stat => {
+                const conversionRate = stat.appearances > 0 ? (stat.whiteHits / stat.appearances) : 0;
+                
+                // Ponderação dos fatores
+                const gapScore = (stat.currentGap / maxGap) * 0.45; // 45%
+                const hitsScore = (stat.whiteHits / maxHits) * 0.30; // 30%
+                const rateScore = conversionRate * 0.15; // 15%
+                const urgencyScore = Math.min(1, spinsSinceLastWhite / averageWhiteInterval) * 0.10; // 10%
+
+                const aiScore = (gapScore + hitsScore + rateScore + urgencyScore) * 100;
+
+                if (aiScore > topAiCandidate.score) {
+                    let reasons = [];
+                    if (gapScore > 0.2) reasons.push('Ausência Elevada');
+                    if (hitsScore > 0.2) reasons.push('Histórico Forte de Acertos');
+                    if (rateScore > 0.05) reasons.push('Boa Taxa de Conversão');
+                    if (urgencyScore > 0.08) reasons.push('Mercado Atrasado para Branco');
+                    
+                    topAiCandidate = { num: stat.num, score: aiScore, reasons: reasons };
+                }
+            });
+
+            // 3. Exibir a Predição da IA
+            if (topAiCandidate.score > 40) { // Limiar de confiança para mostrar o painel
+                aiPanel.style.display = 'block';
+                const badgeClass = topAiCandidate.num <= 7 ? 'bg-red' : 'bg-black';
+                aiPredictionNumber.innerHTML = `<span class="badge ${badgeClass}" style="width: 70px; height: 70px; line-height: 70px; font-size: 2.5rem;">${topAiCandidate.num}</span>`;
+                
+                aiReasoningList.innerHTML = topAiCandidate.reasons.map(r => `<li>✅ ${r}</li>`).join('');
+                
+                const confidence = Math.min(100, topAiCandidate.score).toFixed(0);
+                aiConfidenceValue.innerText = `${confidence}%`;
+                aiConfidenceBar.style.width = `${confidence}%`;
+
+                // --- LÓGICA PARA GRÁFICO DE TENDÊNCIA DE 1 HORA ---
+                const minuteCounts = {};
+                const now = new Date();
+                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+                // Inicializa os últimos 60 minutos
+                for (let i = 0; i < 60; i++) {
+                    const minuteDate = new Date(now.getTime() - i * 60 * 1000);
+                    const key = `${minuteDate.getHours().toString().padStart(2, '0')}:${minuteDate.getMinutes().toString().padStart(2, '0')}`;
+                    minuteCounts[key] = 0;
+                }
+
+                rawData.forEach(game => {
+                    if (game.roll === 0) {
+                        const gameDate = new Date(game.created_at);
+                        if (gameDate >= oneHourAgo) {
+                            const key = `${gameDate.getHours().toString().padStart(2, '0')}:${gameDate.getMinutes().toString().padStart(2, '0')}`;
+                            if (minuteCounts.hasOwnProperty(key)) {
+                                minuteCounts[key]++;
+                            }
+                        }
+                    }
+                });
+
+                const chartData = [];
+                for (let i = 59; i >= 0; i--) {
+                    const minuteDate = new Date(now.getTime() - i * 60 * 1000);
+                    const key = `${minuteDate.getHours().toString().padStart(2, '0')}:${minuteDate.getMinutes().toString().padStart(2, '0')}`;
+                    chartData.push({ label: key, count: minuteCounts[key] || 0 });
+                }
+                renderWhiteTrendChart(chartData);
+
+            } else {
+                aiPanel.style.display = 'none';
+            }
+
+            calculateAssertiveness(); // Chama a nova inteligência
+            calculateNeuralPulse(); // Chama a IA Neural Pulse
+            renderTable();
+
+            // --- LÓGICA DE ALERTA ---
+            if (rawData.length > 0) {
+                const latestGame = rawData[0];
+                const latestRoll = latestGame.roll;
+
+                // Verifica se é um novo giro para não alertar repetidamente
+                if (latestGame.id !== lastProcessedRollId) {
+                    lastProcessedRollId = latestGame.id;
+                    
+                    // Se o último número NÃO for branco, verifica se é um puxador
+                    if (latestRoll !== 0) {
+                        checkTrigger(latestRoll);
+                    } else {
+                        // Se saiu branco, esconde o alerta
+                        document.getElementById('alertBox').style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function calculateAssertiveness() {
+            if (rawData.length < 20) return;
+
+            const lastRoll = rawData[0].roll;
+            
+            // 1. Força do Gatilho (Baseado nos dados já calculados em statsData)
+            let triggerScore = 0;
+            const stat = statsData.find(s => s.num === lastRoll);
+            if (stat) {
+                const maxHits = Math.max(...statsData.map(s => s.whiteHits), 1);
+                triggerScore = (stat.whiteHits / maxHits) * 100;
+            }
+
+            // 2. Ciclo Temporal (Baseado na média de intervalos de branco)
+            let timeScore = 0;
+            const whiteIndices = rawData.map((g, i) => g.roll === 0 ? i : -1).filter(i => i !== -1);
+            let avgInterval = 0;
+            let currentGap = whiteIndices.length > 0 ? whiteIndices[0] : rawData.length;
+
+            if (whiteIndices.length >= 2) {
+                let intervals = [];
+                for(let i=0; i<whiteIndices.length-1; i++) {
+                    intervals.push(whiteIndices[i+1] - whiteIndices[i]);
+                }
+                avgInterval = intervals.reduce((a,b)=>a+b,0) / intervals.length;
+                
+                if (avgInterval > 0) {
+                    const ratio = currentGap / avgInterval;
+                    const deviation = Math.abs(ratio - Math.round(ratio)); // Proximidade de múltiplos da média
+                    
+                    if (currentGap >= avgInterval * 0.8) {
+                        timeScore = 50;
+                        if (deviation < 0.2) timeScore += (1 - deviation/0.2) * 40; // Bônus de precisão
+                        if (currentGap > avgInterval * 1.5) timeScore += 10; // Bônus de atraso
+                    } else {
+                        timeScore = (currentGap / avgInterval) * 40;
+                    }
+                }
+            }
+
+            // 3. Análise de Padrão (Sequência de cores)
+            let patternScore = 0;
+            let patternDesc = "Neutro";
+            if (rawData.length >= 5) {
+                const getColor = (n) => (n === 0 ? 'white' : (n <= 7 ? 'red' : 'black'));
+                const c1 = getColor(rawData[0].roll);
+                const c2 = getColor(rawData[1].roll);
+                const c3 = getColor(rawData[2].roll);
+                
+                if (c1 !== c2 && c2 !== c3) { patternScore = 80; patternDesc = "Alternância (Xadrez)"; }
+                else if (c1 === c2 && c2 === c3) { patternScore = 40; patternDesc = "Surf (Tendência)"; }
+                else if (c1 === c2 && c2 !== c3) { patternScore = 60; patternDesc = "Quebra de Dupla"; }
+                
+                const recentWhites = rawData.slice(0, 20).filter(g => g.roll === 0).length;
+                if (recentWhites >= 2) { patternScore += 10; patternDesc += " + Alta Freq."; }
+            }
+
+            const totalScore = Math.min(100, (triggerScore * 0.4) + (timeScore * 0.35) + (patternScore * 0.25));
+            
+            // Adiciona ao histórico
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            assertivenessHistory.push({ score: totalScore, time: timeStr });
+            if (assertivenessHistory.length > 5) {
+                assertivenessHistory.shift(); // Mantém apenas os últimos 5
+            }
+            renderAssertivenessHistory();
+
+            const scoreEl = document.getElementById('assertivenessScore');
+            const statusEl = document.getElementById('assertivenessStatus');
+            const barEl = document.getElementById('assertivenessBar');
+            
+            if (scoreEl) scoreEl.innerText = totalScore.toFixed(0) + '%';
+            if (barEl) barEl.style.width = totalScore + '%';
+            
+            let statusText = "Baixa Probabilidade";
+            let statusColor = "#555";
+            if (totalScore >= 80) { statusText = "MUITO ALTA 🔥"; statusColor = "#ff0055"; }
+            else if (totalScore >= 60) { statusText = "ALTA 🚀"; statusColor = "#00ff88"; }
+            else if (totalScore >= 40) { statusText = "MODERADA ⚖️"; statusColor = "#ff9800"; }
+            
+            if (statusEl) { statusEl.innerText = statusText; statusEl.style.color = statusColor; }
+            
+            document.getElementById('factorTrigger').innerText = triggerScore.toFixed(0) + '%';
+            document.getElementById('factorTime').innerText = timeScore.toFixed(0) + '%';
+            document.getElementById('factorPattern').innerText = patternDesc;
+        }
+
+        function calculateNeuralPulse() {
+            if (rawData.length < 50) return;
+
+            // 1. Momentum (Brancos nos últimos 20 vs últimos 50)
+            const last20 = rawData.slice(0, 20).filter(g => g.roll === 0).length;
+            // Expectativa ~1.4 brancos em 20 rodadas (1/14)
+            // Se tiver mais que a média, momentum é alto.
+            const momentumScore = Math.min(100, (last20 / 1.4) * 50);
+            
+            // 2. Volatilidade (Desvio Padrão dos Intervalos)
+            const whiteIndices = rawData.map((g, i) => g.roll === 0 ? i : -1).filter(i => i !== -1);
+            let volatilityScore = 50;
+            
+            if (whiteIndices.length >= 3) {
+                let intervals = [];
+                for(let i=0; i<whiteIndices.length-1; i++) {
+                    intervals.push(whiteIndices[i+1] - whiteIndices[i]);
+                }
+                const mean = intervals.reduce((a,b)=>a+b,0) / intervals.length;
+                const sqDiffs = intervals.map(v => (v - mean) * (v - mean));
+                const avgSqDiff = sqDiffs.reduce((a,b)=>a+b,0) / sqDiffs.length;
+                const stdDev = Math.sqrt(avgSqDiff);
+                
+                // Menor desvio padrão = mais previsível = maior score
+                volatilityScore = Math.max(0, 100 - (stdDev * 5));
+            }
+
+            // 3. Pressão do Gap Atual
+            const currentGap = whiteIndices.length > 0 ? whiteIndices[0] : rawData.length;
+            let pressureScore = 0;
+            if (currentGap > 14) pressureScore = Math.min(100, (currentGap - 14) * 2.5);
+            
+            // Score Final (Ponderado)
+            const neuralScore = (momentumScore * 0.25) + (volatilityScore * 0.25) + (pressureScore * 0.5);
+            
+            // Adiciona ao histórico do gráfico
+            neuralPulseHistory.push(neuralScore);
+            if (neuralPulseHistory.length > 10) {
+                neuralPulseHistory.shift(); // Mantém apenas os últimos 10
+            }
+
+            const probEl = document.getElementById('neuralProb');
+            const statusEl = document.getElementById('neuralStatus');
+            const suggEl = document.getElementById('neuralSuggestion');
+            const panel = document.getElementById('neuralPulsePanel');
+            
+            if (probEl) probEl.innerText = neuralScore.toFixed(0) + '%';
+            
+            let status = "NEUTRO", color = "#888", suggestion = "Aguardando definição.";
+            if (neuralScore >= 80) { status = "CRÍTICO 🔥"; color = "#ff0055"; suggestion = "Alta pressão. Branco iminente."; }
+            else if (neuralScore >= 60) { status = "ALTA ⚡"; color = "#ff9800"; suggestion = "Momentum favorável."; }
+            else if (neuralScore >= 40) { status = "MODERADO 💧"; color = "#00d2ff"; suggestion = "Mercado estável."; }
+            
+            if (statusEl) { statusEl.innerText = status; statusEl.style.color = color; }
+            if (suggEl) suggEl.innerText = suggestion;
+            if (panel) {
+                if (neuralScore >= 80) {
+                    panel.classList.add('critical-alert');
+                } else {
+                    panel.classList.remove('critical-alert');
+                    panel.style.borderColor = color;
+                }
+            }
+
+            renderNeuralPulseChart();
+        }
+
+        function renderAssertivenessHistory() {
+            const container = document.getElementById('assertivenessHistoryContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const historyToRender = [...assertivenessHistory];
+            // Preenche com nulos se o histórico for menor que 5
+            while (historyToRender.length < 5) {
+                historyToRender.unshift(null);
+            }
+
+            historyToRender.forEach(item => {
+                const bar = document.createElement('div');
+                bar.className = 'history-bar';
+
+                if (item !== null) {
+                    const score = item.score;
+                    const time = item.time;
+                    const height = (score / 100) * 100; // Altura como porcentagem
+                    let background = 'linear-gradient(to top, #444, #666)';
+                    let boxShadow = 'none'; // Efeito de brilho
+                    if (score >= 80) {
+                        background = 'linear-gradient(to top, #ff0055, #ff4081)';
+                        boxShadow = '0 0 8px rgba(255, 0, 85, 0.6)';
+                    } else if (score >= 60) {
+                        background = 'linear-gradient(to top, #00b894, #00ff88)';
+                        boxShadow = '0 0 8px rgba(0, 255, 136, 0.6)';
+                    } else if (score >= 40) {
+                        background = 'linear-gradient(to top, #ff6b00, #ff9800)';
+                        boxShadow = '0 0 8px rgba(255, 107, 0, 0.5)';
+                    }
+
+                    bar.style.height = `${height}%`;
+                    bar.style.background = background;
+                    bar.style.boxShadow = boxShadow;
+                    bar.innerHTML = `<span class="tooltip-text" style="width: 80px; margin-left: -40px;">${score.toFixed(0)}%<br><span style="font-size:0.7em; color:#ccc;">${time}</span></span>`;
+                } else {
+                    bar.style.height = '10%'; // Altura mínima para barras vazias
+                }
+                container.appendChild(bar);
+            });
+        }
+
+        function renderNeuralPulseChart() {
+            const container = document.getElementById('neuralPulseChartContainer');
+            if (!container) return;
+
+            if (neuralPulseHistory.length < 2) {
+                container.innerHTML = '<div style="text-align:center; font-size:0.7rem; color:#666; padding-top:20px;">Aguardando mais dados para o gráfico...</div>';
+                return;
+            }
+            container.innerHTML = '';
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+            const getX = (i) => (i / (neuralPulseHistory.length - 1)) * width;
+            const getY = (score) => height - (Math.max(0, score) / 100) * height;
+
+            // Gradiente e Filtro de Brilho
+            const defs = document.createElementNS(svgNS, 'defs');
+            defs.innerHTML = `
+                <linearGradient id="neuralPulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#0055ff" />
+                    <stop offset="100%" stop-color="#00d2ff" />
+                </linearGradient>
+                <filter id="neuralGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            `;
+            svg.prepend(defs);
+
+            let linePathD = '';
+            neuralPulseHistory.forEach((score, i) => {
+                const x = getX(i);
+                const y = getY(score);
+                if (i === 0) linePathD += `M ${x} ${y}`;
+                else linePathD += ` L ${x} ${y}`;
+            });
+
+            const line = document.createElementNS(svgNS, 'path');
+            line.setAttribute('d', linePathD);
+            line.setAttribute('stroke', 'url(#neuralPulseGradient)');
+            line.setAttribute('stroke-width', '2.5');
+            line.setAttribute('fill', 'none');
+            line.classList.add('neural-pulse-line');
+            svg.appendChild(line);
+
+            // Ponto final para destaque
+            const lastScore = neuralPulseHistory[neuralPulseHistory.length - 1];
+            const endDot = document.createElementNS(svgNS, 'circle');
+            endDot.setAttribute('cx', getX(neuralPulseHistory.length - 1)); endDot.setAttribute('cy', getY(lastScore));
+            endDot.setAttribute('r', '4'); endDot.setAttribute('fill', '#fff'); endDot.setAttribute('stroke', '#00d2ff'); endDot.setAttribute('stroke-width', '1.5');
+            svg.appendChild(endDot);
+
+            container.appendChild(svg);
+        }
+
+         function renderWhiteTrendChart(chartData) {
+            const container = document.getElementById('whiteTrendChartContainer');
+            if (!container) return;
+            container.innerHTML = ''; // Limpa o gráfico anterior
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = { top: 20, right: 20, bottom: 30, left: 30 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(g);
+
+            const maxCount = Math.max(...chartData.map(d => d.count), 1);
+
+            const getX = (i) => (i / (chartData.length - 1)) * plotWidth;
+            const getY = (count) => plotHeight - (count / maxCount) * plotHeight;
+
+            // Área sob a linha
+            let areaPathD = `M ${getX(0)} ${plotHeight}`;
+            chartData.forEach((d, i) => { areaPathD += ` L ${getX(i)} ${getY(d.count)}`; });
+            areaPathD += ` L ${getX(chartData.length - 1)} ${plotHeight} Z`;
+            const area = document.createElementNS(svgNS, 'path');
+            area.setAttribute('d', areaPathD);
+            area.setAttribute('fill', 'url(#trendGradient)');
+            g.appendChild(area);
+
+            // Linha principal e pontos
+            let linePathD = '';
+            chartData.forEach((d, i) => {
+                const x = getX(i); const y = getY(d.count);
+                if (i === 0) linePathD += `M ${x} ${y}`; else linePathD += ` L ${x} ${y}`;
+                
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', '3');
+                circle.setAttribute('fill', '#fff'); circle.setAttribute('stroke', 'var(--accent)'); circle.setAttribute('stroke-width', '1.5');
+                
+                // Eventos de Tooltip
+                circle.style.cursor = 'pointer';
+                circle.addEventListener('mouseover', () => {
+                    const tooltip = document.getElementById('chart-tooltip');
+                    tooltip.style.display = 'block';
+                    tooltip.innerHTML = `<div style="font-weight:bold; color:var(--accent); margin-bottom:2px;">${d.label}</div><div>Brancos: <span style="color:#fff; font-weight:bold;">${d.count}</span></div>`;
+                    circle.setAttribute('r', '5'); // Enlarge on hover
+                });
+                circle.addEventListener('mousemove', (e) => {
+                    const tooltip = document.getElementById('chart-tooltip');
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                });
+                circle.addEventListener('mouseout', () => {
+                    document.getElementById('chart-tooltip').style.display = 'none';
+                    circle.setAttribute('r', '3'); // Reset size
+                });
+
+                g.appendChild(circle);
+
+                // Eixo X (Minutos) - mostra a cada 10 minutos para não poluir
+                if (i % 10 === 0) {
+                    const text = document.createElementNS(svgNS, 'text');
+                    text.setAttribute('x', x); text.setAttribute('y', plotHeight + 15);
+                    text.setAttribute('fill', '#888'); text.setAttribute('font-size', '10px'); text.setAttribute('text-anchor', 'middle');
+                    text.textContent = d.label;
+                    g.appendChild(text);
+                }
+            });
+            const line = document.createElementNS(svgNS, 'path');
+            line.setAttribute('d', linePathD); line.setAttribute('stroke', 'var(--accent)'); line.setAttribute('stroke-width', '2');
+            line.setAttribute('fill', 'none'); line.style.filter = 'drop-shadow(0 0 5px var(--accent-glow))';
+            g.appendChild(line);
+
+            // Eixo Y (Contagem)
+            for (let i = 0; i <= maxCount; i += Math.ceil(maxCount / 4) || 1) {
+                const y = getY(i); const text = document.createElementNS(svgNS, 'text');
+                text.setAttribute('x', -5); text.setAttribute('y', y + 4); text.setAttribute('fill', '#888');
+                text.setAttribute('font-size', '10px'); text.setAttribute('text-anchor', 'end'); text.textContent = i; g.appendChild(text);
+            }
+            
+            const defs = document.createElementNS(svgNS, 'defs');
+            defs.innerHTML = `<linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient>`;
+            svg.prepend(defs);
+            container.appendChild(svg);
+        }
+
+        function checkTrigger(latestRoll) {
+            const alertBox = document.getElementById('alertBox');
+            const stat = statsData.find(s => s.num === latestRoll);
+            
+            // Critério: Ser um dos Top 3 Puxadores (Mais Hits) E ter puxado pelo menos 2 vezes
+            const sortedByHits = [...statsData].sort((a,b) => b.whiteHits - a.whiteHits);
+            const rank = sortedByHits.findIndex(s => s.num === latestRoll);
+            
+            // Se estiver no Top 3 e tiver histórico relevante
+            if (stat && rank < 3 && stat.whiteHits >= 2) {
+                document.getElementById('alertNum').innerText = latestRoll;
+                document.getElementById('alertHits').innerText = stat.whiteHits;
+                alertBox.style.display = 'block';
+                playAlertSound();
+            } else {
+                alertBox.style.display = 'none';
+            }
+        }
+
+        function playAlertSound() {
+            const soundToggle = document.getElementById('soundToggle');
+            if (soundToggle && !soundToggle.checked) return;
+
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5); // Beep de 0.5s
+            } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        function renderTable() {
+            const sortMode = document.getElementById('sortOrder').value;
+            const colorFilter = document.getElementById('colorFilter').value;
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            // Ordenação
+            statsData.sort((a, b) => {
+                if (sortMode === 'gap') return b.currentGap - a.currentGap;
+                if (sortMode === 'hits') return b.whiteHits - a.whiteHits;
+                if (sortMode === 'rate') {
+                    const rateA = a.appearances > 0 ? (a.whiteHits / a.appearances) : 0;
+                    const rateB = b.appearances > 0 ? (b.whiteHits / b.appearances) : 0;
+                    return rateB - rateA;
+                }
+                if (sortMode === 'lastHit') {
+                    const timeA = a.lastHitTimestamp ? new Date(a.lastHitTimestamp).getTime() : 0;
+                    const timeB = b.lastHitTimestamp ? new Date(b.lastHitTimestamp).getTime() : 0;
+                    return timeB - timeA;
+                }
+                return 0;
+            });
+
+            statsData.forEach(item => {
+                // Filtro de Cor
+                if (colorFilter === 'red' && (item.num < 1 || item.num > 7)) return;
+                if (colorFilter === 'black' && (item.num < 8 || item.num > 14)) return;
+
+                const badgeClass = item.num <= 7 ? 'bg-red' : 'bg-black';
+                const rate = item.appearances > 0 ? ((item.whiteHits / item.appearances) * 100).toFixed(1) : '0.0';
+                
+                // Barra de progresso visual para o Gap (Arbitrário: 20 é alto)
+                const gapPercent = Math.min((item.currentGap / 30) * 100, 100);
+                let gapColor = '#00ff88';
+                if (item.currentGap > 10) gapColor = '#ff9800';
+                if (item.currentGap > 20) gapColor = '#ff0055';
+
+                const lastHitDate = item.lastHitTimestamp ? new Date(item.lastHitTimestamp) : null;
+                const lastHitStr = lastHitDate 
+                    ? `<span style="font-size: 0.8em;">${lastHitDate.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})}<br>${lastHitDate.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>`
+                    : '<span style="color:#666">--</span>';
+
+                const row = `
+                    <tr>
+                        <td><span class="badge ${badgeClass}">${item.num}</span></td>
+                        <td><span style="color: #fff; font-weight: bold;">${item.whiteHits}</span> <span style="color: #666; font-size: 0.8em;">/ ${item.appearances}</span></td>
+                        <td>${rate}%</td>
+                        <td>
+                            <div style="font-weight: bold; color: ${gapColor};">${item.currentGap}</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${gapPercent}%; background: ${gapColor};"></div></div>
+                        </td>
+                        <td>${lastHitStr}</td>
+                        <td>
+                            ${item.currentGap > 15 ? '<span style="color: #ff0055; font-weight: bold;">ATRASADO ⚠️</span>' : 
+                              (item.whiteHits > 5 ? '<span style="color: #00ff88;">QUENTE 🔥</span>' : '<span style="color: #888;">NORMAL</span>')}
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+    </script>
+</body>
+</html>
