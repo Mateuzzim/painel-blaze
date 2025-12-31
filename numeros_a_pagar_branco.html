@@ -344,6 +344,16 @@
             100% { width: 400px; height: 400px; opacity: 0; border-width: 0; }
         }
 
+        /* Animação para a barra líder no gráfico comparativo */
+        @keyframes bar-pulse {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.5); box-shadow: 0 0 15px currentColor; }
+            100% { filter: brightness(1); }
+        }
+        .leading-bar {
+            animation: bar-pulse 1.5s infinite;
+        }
+
         .main-content-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -1678,6 +1688,18 @@
             const qVal = getVal('quantumPercentage');
             const aVal = getVal('assertivenessScore');
 
+            // Determinar qual IA está liderando
+            const vals = { 's': sVal, 'n': nVal, 'q': qVal, 'a': aVal };
+            let maxKey = null;
+            let maxV = 0;
+            for(let k in vals) {
+                if(vals[k] > maxV) {
+                    maxV = vals[k];
+                    maxKey = k;
+                }
+            }
+            const getCls = (k) => (k === maxKey && maxV > 0) ? 'leading-bar' : '';
+
             alertBox.className = 'alert-box waiting';
             alertBox.innerHTML = `
                 <div class="alert-title" style="color: #888;">⏳ AGUARDANDO...</div>
@@ -1694,28 +1716,28 @@
                     <!-- Sentinel -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
                         <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
-                            <div style="width: 100%; height: ${sVal}%; background: #00d2ff; border-radius: 2px; transition: height 0.5s;"></div>
+                            <div class="${getCls('s')}" style="width: 100%; height: ${sVal}%; background: #00d2ff; color: #00d2ff; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #00d2ff; font-weight: bold;">SEN</div>
                     </div>
                     <!-- Neural -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
                         <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
-                            <div style="width: 100%; height: ${nVal}%; background: #ff0055; border-radius: 2px; transition: height 0.5s;"></div>
+                            <div class="${getCls('n')}" style="width: 100%; height: ${nVal}%; background: #ff0055; color: #ff0055; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #ff0055; font-weight: bold;">NEU</div>
                     </div>
                     <!-- Quantum -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
                         <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
-                            <div style="width: 100%; height: ${qVal}%; background: #ffd700; border-radius: 2px; transition: height 0.5s;"></div>
+                            <div class="${getCls('q')}" style="width: 100%; height: ${qVal}%; background: #ffd700; color: #ffd700; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #ffd700; font-weight: bold;">QTM</div>
                     </div>
                     <!-- Assertiveness -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
                         <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
-                            <div style="width: 100%; height: ${aVal}%; background: #00ff88; border-radius: 2px; transition: height 0.5s;"></div>
+                            <div class="${getCls('a')}" style="width: 100%; height: ${aVal}%; background: #00ff88; color: #00ff88; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #00ff88; font-weight: bold;">AST</div>
                     </div>
