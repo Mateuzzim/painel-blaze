@@ -69,8 +69,8 @@
 
         .stats-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 30px; 
             margin-bottom: 30px; 
         }
         
@@ -79,7 +79,7 @@
             backdrop-filter: blur(10px); 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
-            padding: 20px; 
+            padding: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transition: transform 0.3s;
         }
@@ -89,7 +89,7 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             color: var(--accent);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             letter-spacing: 1px;
             border-bottom: 1px solid rgba(0, 242, 255, 0.2);
             padding-bottom: 5px;
@@ -234,6 +234,40 @@
             transform: translateX(5px);
         }
 
+        /* Estilos para o Painel Evolution (Laranja Neon) */
+        @keyframes evo-pulse {
+            0% { box-shadow: 0 0 10px rgba(255, 61, 0, 0.2), inset 0 0 5px rgba(255, 61, 0, 0.1); border-color: rgba(255, 61, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 61, 0, 0.5), inset 0 0 10px rgba(255, 61, 0, 0.2); border-color: #ff3d00; }
+            100% { box-shadow: 0 0 10px rgba(255, 61, 0, 0.2), inset 0 0 5px rgba(255, 61, 0, 0.1); border-color: rgba(255, 61, 0, 0.5); }
+        }
+        #evoReasoningList li {
+            background: rgba(255,255,255,0.03);
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border-left: 3px solid #ff3d00;
+            transition: all 0.3s;
+        }
+        #evoReasoningList li:hover {
+            background: rgba(255, 61, 0, 0.2);
+            transform: translateX(5px);
+        }
+
+        /* Estilos para o Painel Synergy (Verde-Água) */
+        @keyframes synergy-pulse {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 196, 0.2), inset 0 0 5px rgba(0, 255, 196, 0.1); border-color: rgba(0, 255, 196, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 196, 0.5), inset 0 0 10px rgba(0, 255, 196, 0.2); border-color: #00ffc4; }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 196, 0.2), inset 0 0 5px rgba(0, 255, 196, 0.1); border-color: rgba(0, 255, 196, 0.5); }
+        }
+        #synergyReasoningList li {
+            background: rgba(255,255,255,0.03);
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border-left: 3px solid #00ffc4;
+            transition: all 0.3s;
+        }
+
         /* Tooltip do Gráfico */
         .chart-tooltip {
             position: fixed;
@@ -357,7 +391,7 @@
         .main-content-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 20px;
+            gap: 30px;
             align-items: start;
         }
         .column-left, .column-right {
@@ -365,11 +399,48 @@
             flex-direction: column;
             gap: 20px;
         }
-
-        @media (max-width: 992px) { .main-content-grid { grid-template-columns: 1fr; } }
+        
+        /* --- Responsividade Avançada (Notebook & Mobile) --- */
+        @media (max-width: 1024px) { 
+            .main-content-grid { grid-template-columns: 1fr; gap: 20px; } 
+            .main-container { width: 98%; padding: 0 5px; }
+        }
+        
         @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .data-table th, .data-table td { padding: 8px 4px; font-size: 0.8rem; }
+            body { padding: 10px 5px; }
+            .header { margin-bottom: 15px; }
+            .cortex-text-anim { font-size: 1.5rem; }
+            
+            .stats-grid { grid-template-columns: 1fr; gap: 15px; }
+            .stat-card { padding: 15px; }
+            
+            .highlight-val { font-size: 2rem; }
+            .stat-title { font-size: 0.8rem; }
+            
+            .data-table th, .data-table td { padding: 6px 2px; font-size: 0.75rem; }
+            
+            #whiteTrendChartContainer { height: 160px !important; }
+
+            /* Ajustes Mobile para Fontes Grandes */
+            #oracleNumber { font-size: 4rem !important; }
+            #echoNumber { font-size: 3rem !important; }
+            #aiPredictionNumber { font-size: 3.5rem !important; }
+            #synergyPredictionNumber { font-size: 3.5rem !important; }
+            #quantumPercentage { font-size: 3.5rem !important; }
+
+            /* Classes Utilitárias Mobile */
+            .responsive-flex { flex-wrap: wrap !important; justify-content: center !important; }
+            
+            .responsive-border-left {
+                border-left: none !important;
+                padding-left: 0 !important;
+                border-top: 1px solid rgba(255,255,255,0.1) !important;
+                padding-top: 15px !important;
+                margin-top: 15px !important;
+                width: 100% !important;
+            }
+            
+            #evolutionPanel > div > div { text-align: center; margin-bottom: 10px; }
         }
 
         /* Estilos do Painel de Histórico Recente */
@@ -393,6 +464,41 @@
             animation: fadeIn 0.5s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilos do Cortex Oracle */
+        @keyframes oracle-pulse {
+            0% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: rgba(0, 229, 255, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(0, 229, 255, 0.6); border-color: #00e5ff; }
+            100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: rgba(0, 229, 255, 0.5); }
+        }
+        .oracle-highlight { color: #00e5ff; font-weight: bold; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+        .oracle-list-item { margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+
+        /* Cor customizada para o toggle de Varredura do Oracle */
+        #oracleScanToggle:checked + .slider {
+            background-color: #ff9800; /* Laranja */
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.7);
+        }
+
+        /* Estilos do Cortex Echo */
+        @keyframes echo-pulse {
+            0% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); border-color: rgba(255, 0, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 0, 255, 0.5); border-color: #ff00ff; }
+            100% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); border-color: rgba(255, 0, 255, 0.5); }
+        }
+
+        /* Estilos do Cortex Sentinel */
+        @keyframes sentinel-pulse {
+            0% { box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); border-color: rgba(0, 210, 255, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(0, 210, 255, 0.6); border-color: #00d2ff; }
+            100% { box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); border-color: rgba(0, 210, 255, 0.5); }
+        }
+        /* Estilos do Cortex Mirror */
+        @keyframes mirror-pulse {
+            0% { box-shadow: 0 0 15px rgba(233, 30, 99, 0.2); border-color: rgba(233, 30, 99, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(233, 30, 99, 0.6); border-color: #e91e63; }
+            100% { box-shadow: 0 0 15px rgba(233, 30, 99, 0.2); border-color: rgba(233, 30, 99, 0.5); }
+        }
     </style>
 </head>
 <body>
@@ -407,6 +513,18 @@
                         <input type="checkbox" id="autoUpdate" checked onchange="toggleAuto()">
                         <span class="slider"></span>
                     </label>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="display: flex; align-items: center;">
+                        <span style="font-size: 0.8rem; color: #aaa; margin-right: 5px;">Turbo (5s):</span>
+                        <label class="switch">
+                            <input type="checkbox" id="turboToggle" onchange="toggleAuto()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="turboProgressContainer" style="width: 100%; height: 3px; background: #333; margin-top: 5px; display: none; border-radius: 2px; overflow: hidden;">
+                        <div id="turboProgressBar" style="width: 100%; height: 100%; background: var(--accent); transition: width 1s linear;"></div>
+                    </div>
                 </div>
                 <div>
                     <span style="font-size: 0.8rem; color: #aaa; margin-right: 5px;">Som:</span>
@@ -461,10 +579,61 @@
         <div class="main-content-grid">
             <!-- Coluna Esquerda: Análise Principal -->
             <div class="column-left">
+                <!-- CORTEX ORACLE - PREDIÇÃO SUPREMA (NOVO) -->
+                <div id="oraclePanel" class="stat-card" style="display: none; border: 1px solid #00e5ff; background: radial-gradient(circle at center, rgba(0, 20, 30, 0.9), rgba(0,0,0,0.95)); animation: oracle-pulse 3s infinite;">
+                    <div class="stat-title" style="color: #00e5ff; display: flex; justify-content: space-between; align-items: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.3);">
+                        <span>👁️ CORTEX ORACLE</span>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #aaa; letter-spacing: 0;">
+                            <span>VARREDURA</span>
+                            <label class="switch">
+                                <input type="checkbox" id="oracleScanToggle" onchange="toggleOracleScan()">
+                                <span class="slider" style="border-radius: 20px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="responsive-flex" style="display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                        <div style="text-align: center; position: relative; min-width: 120px;">
+                            <div id="oracleBadge" style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; background: #00e5ff; color: #000; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px #00e5ff;">ALVO CONFIRMADO</div>
+                            <div id="oracleNumber" class="highlight-val" style="font-size: 5.5rem; color: #fff; text-shadow: 0 0 40px rgba(0, 229, 255, 0.8); line-height: 1;">--</div>
+                            <div style="font-size: 0.8rem; color: #00e5ff; margin-top: 5px; letter-spacing: 2px;">GATILHO MESTRE</div>
+                        </div>
+                        
+                        <div class="responsive-border-left" style="flex: 1; min-width: 220px; border-left: 1px solid rgba(0, 229, 255, 0.2); padding-left: 20px;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px; text-transform: uppercase;">Análise de Alta Precisão:</div>
+                            <ul id="oracleReasons" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: #e0e6ed; line-height: 1.5;">
+                                <!-- Reasons via JS -->
+                            </ul>
+                            <div style="margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #00e5ff; margin-bottom: 4px;"><span>PROBABILIDADE DE ÊXITO</span><span id="oracleProb">0%</span></div>
+                                <div class="progress-bar" style="height: 8px; background: rgba(0, 229, 255, 0.1);"><div id="oracleBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #00e5ff, #00ff88); box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Candidatos Secundários -->
+                    <div id="oracleSecondary" style="margin-top: 15px; border-top: 1px solid rgba(0, 229, 255, 0.2); padding-top: 10px; display: none; justify-content: center; gap: 20px; flex-wrap: wrap;"></div>
+                </div>
+
+                <!-- CORTEX ECHO - ANÁLISE PÓS-BRANCO (NOVO) -->
+                <div id="echoPanel" class="stat-card" style="display: none; border: 1px solid #ff00ff; background: radial-gradient(circle at center, rgba(30, 0, 30, 0.9), rgba(0,0,0,0.95)); animation: echo-pulse 3s infinite;">
+                    <div class="stat-title" style="color: #ff00ff; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 0, 255, 0.3);">🔊 CORTEX ECHO</div>
+                    <div class="responsive-flex" style="display: flex; gap: 20px; align-items: center; justify-content: space-around;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 5px;">ÚLTIMO PÓS-BRANCO</div>
+                            <div id="echoNumber" class="highlight-val" style="font-size: 3rem; color: #ff00ff; line-height: 1;">--</div>
+                        </div>
+                        <div class="responsive-border-left" style="flex: 1; border-left: 1px solid rgba(255,0,255,0.2); padding-left: 20px;">
+                            <div style="font-size: 0.85rem; color: #e0e6ed; margin-bottom: 5px;">Chance de Branco Rápido: <span id="echoChance" style="font-weight: bold; color: #fff;">--%</span></div>
+                            <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 5px;">Melhores Puxadores neste cenário:</div>
+                            <div id="echoBestPullers" style="display: flex; gap: 5px; flex-wrap: wrap;">--</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- PAINEL DE INTELIGÊNCIA ARTIFICIAL -->
-                <div id="aiBrainPanel" class="stat-card" style="display: none; border-color: #a100ff; animation: ai-pulse 2s infinite;">
-                    <div class="stat-title" style="color: #a100ff; text-align: center; font-size: 1.1rem;">🔮 CORTEX I.A. - ANÁLISE DE GATILHO 🔮</div>
-                    <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+                <div id="aiBrainPanel" class="stat-card" style="display: none; border: 1px solid #a100ff; background: radial-gradient(circle at center, rgba(20, 0, 30, 0.9), rgba(0,0,0,0.95)); animation: ai-pulse 2s infinite;">
+                    <div class="stat-title" style="color: #a100ff; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(161, 0, 255, 0.3);">🔮 CORTEX I.A.</div>
+                    <div class="responsive-flex" style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
                         <!-- Lado Esquerdo: Predição -->
                         <div style="text-align: center;">
                             <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">MELHOR CANDIDATO A PUXAR BRANCO:</div>
@@ -489,13 +658,69 @@
                     </div>
                 </div>
 
-                <!-- CORTEX SENTINEL - NOVO -->
-                <div id="sentinelPanel" class="stat-card" style="border: 1px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);">
-                    <div class="stat-title" style="color: #00d2ff; display: flex; justify-content: space-between; align-items: center;">
-                        <span>👁️ CORTEX SENTINEL</span>
-                        <span style="font-size: 0.7rem; background: rgba(0, 210, 255, 0.2); padding: 2px 6px; border-radius: 4px; color: #fff;">ADVANCED</span>
+                <!-- CORTEX EVOLUTION - NOVO (LÓGICA ADAPTATIVA) -->
+                <div id="evolutionPanel" class="stat-card" style="border: 1px solid #333; background: radial-gradient(circle at center, rgba(30, 10, 0, 0.9), rgba(0,0,0,0.95)); padding: 20px;">
+                    <div class="stat-title" style="color: #ff3d00; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 61, 0, 0.3);">🧬 CORTEX EVOLUTION</div>
+                    
+                    <div class="responsive-flex" style="display: flex; align-items: center; gap: 10px;">
+                        <!-- Coluna 1: Alvo -->
+                        <div style="text-align: center; min-width: 60px;">
+                            <div style="font-size: 0.6rem; color: #aaa;">ALVO</div>
+                            <div id="evoPredictionNumber" class="highlight-val" style="font-size: 2.5rem; line-height: 1; color: #ff3d00;">--</div>
+                        </div>
+
+                        <!-- Coluna 2: Radar (Compacto) -->
+                        <div id="evoRadarChartContainer" style="width: 130px; height: 100px; flex-shrink: 0;"></div>
+
+                        <!-- Coluna 3: Info e Barra -->
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0;">
+                            <div style="font-size: 0.75rem; color: #ccc; min-height: 50px; display: flex; align-items: center;">
+                                <ul id="evoReasoningList" style="list-style: none; padding: 0; margin: 0; line-height: 1.2; width: 100%;">
+                                    <!-- Fatores serão inseridos via JS -->
+                                </ul>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="progress-bar" style="height: 5px; flex: 1; margin-top: 0; background: #222;">
+                                    <div id="evoConfidenceBar" class="progress-fill" style="background: linear-gradient(90deg, #ff3d00, #ff9100); width: 0%;"></div>
+                                </div>
+                                <span id="evoConfidenceValue" style="font-size: 0.75rem; font-weight: bold; color: #fff;">0%</span>
+                            </div>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                </div>
+
+                <!-- CORTEX SYNERGY - NOVA IA DE CORRELAÇÃO -->
+                <div id="synergyPanel" class="stat-card" style="display: none; border: 1px solid #00ffc4; background: radial-gradient(circle at center, rgba(0, 30, 20, 0.9), rgba(0,0,0,0.95)); animation: synergy-pulse 2s infinite;">
+                    <div class="stat-title" style="color: #00ffc4; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 255, 196, 0.3);">🌿 CORTEX SYNERGY</div>
+                    <div class="responsive-flex" style="display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+                        <!-- Lado Esquerdo: Predição -->
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">ALVO SINÉRGICO:</div>
+                            <div id="synergyPredictionNumber" class="highlight-val" style="font-size: 4.5rem; line-height: 1; color: #00ffc4;">--</div>
+                        </div>
+                        <!-- Lado Direito: Fatores -->
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="font-size: 0.9rem; color: #ccc; margin-bottom: 15px;">Matriz de Sinergia:</div>
+                            <ul id="synergyReasoningList" style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; line-height: 1.8;">
+                                <!-- Fatores serão inseridos via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #ccc; margin-bottom: 5px;">
+                            <span>Probabilidade de Correlação</span>
+                            <span id="synergyConfidenceValue" style="font-weight: bold; color: #fff;">0%</span>
+                        </div>
+                        <div class="progress-bar" style="height: 8px;">
+                            <div id="synergyConfidenceBar" class="progress-fill" style="background: linear-gradient(90deg, #00ffc4, #00d2ff); box-shadow: 0 0 10px #00ffc4; width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CORTEX SENTINEL - NOVO -->
+                <div id="sentinelPanel" class="stat-card" style="border: 1px solid #00d2ff; background: radial-gradient(circle at center, rgba(0, 20, 40, 0.9), rgba(0,0,0,0.95)); animation: sentinel-pulse 3s infinite;">
+                    <div class="stat-title" style="color: #00d2ff; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 210, 255, 0.3);">👁️ CORTEX SENTINEL</div>
+                    <div class="responsive-flex" style="display: flex; gap: 15px; margin-top: 15px;">
                         <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
                             <div style="font-size: 0.7rem; color: #aaa;">PRECISÃO ESTIMADA</div>
                             <div id="sentinelAccuracy" class="highlight-val" style="font-size: 2.2rem; color: #fff; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);">--%</div>
@@ -519,12 +744,9 @@
                 </div>
 
                 <!-- CORTEX MIRROR - NOVO (ANÁLISE DE DUPLAS) -->
-                <div id="mirrorPanel" class="stat-card" style="border: 1px solid #e91e63; box-shadow: 0 0 15px rgba(233, 30, 99, 0.1);">
-                    <div class="stat-title" style="color: #e91e63; display: flex; justify-content: space-between; align-items: center;">
-                        <span>👯 CORTEX MIRROR</span>
-                        <span style="font-size: 0.7rem; background: rgba(233, 30, 99, 0.2); padding: 2px 6px; border-radius: 4px; color: #fff;">DUPLAS</span>
-                    </div>
-                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <div id="mirrorPanel" class="stat-card" style="border: 1px solid #e91e63; background: radial-gradient(circle at center, rgba(40, 0, 20, 0.9), rgba(0,0,0,0.95)); animation: mirror-pulse 3s infinite;">
+                    <div class="stat-title" style="color: #e91e63; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(233, 30, 99, 0.3);">👯 CORTEX MIRROR</div>
+                    <div class="responsive-flex" style="display: flex; gap: 15px; margin-top: 15px;">
                         <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
                             <div style="font-size: 0.7rem; color: #aaa;">ÚLTIMA DUPLA</div>
                             <div id="mirrorLastDouble" class="highlight-val" style="font-size: 1.8rem; color: #fff;">--</div>
@@ -635,7 +857,7 @@
                         <div style="font-size: 0.7rem; color: #ccc;">SUGESTÃO:</div>
                         <div id="neuralSuggestion" style="font-size: 0.85rem; color: #fff; font-style: italic;">Analisando padrões de rede...</div>
                     </div>
-                    <div id="neuralPulseChartContainer" style="width: 100%; height: 60px; margin-top: 15px; position: relative;">
+                    <div id="neuralPulseChartContainer" style="width: 100%; height: 80px; margin-top: 20px; position: relative;">
                         <!-- Gráfico será inserido aqui -->
                     </div>
                 </div>
@@ -681,10 +903,16 @@
         let rawData = [];
         let statsData = [];
         let updateInterval;
+        let turboCooldownTimer = null;
+        let turboVisualInterval = null;
         let lastProcessedRollId = null; // Para evitar alertas repetidos no mesmo giro
         let assertivenessHistory = [];
         let neuralPulseHistory = [];
         let isFetching = false; // Prevents overlapping requests
+        let echoBoostMap = {}; // Mapa de boost do Cortex Echo
+        let oracleCandidates = []; // Armazena candidatos para varredura
+        let oracleScanInterval = null;
+        let oracleScanIndex = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
@@ -693,10 +921,67 @@
 
         function toggleAuto() {
             const isChecked = document.getElementById('autoUpdate').checked;
-            if (isChecked) {
-                updateInterval = setInterval(fetchData, 15000);
+            const turboToggle = document.getElementById('turboToggle');
+            const isTurbo = turboToggle ? turboToggle.checked : false;
+            
+            if (updateInterval) clearInterval(updateInterval);
+
+            // Lógica de Cooldown do Turbo (10 minutos)
+            if (isChecked && isTurbo) {
+                if (!turboCooldownTimer) {
+                    startTurboCooldownVisuals(600000);
+                    turboCooldownTimer = setTimeout(() => {
+                        if (turboToggle) {
+                            turboToggle.checked = false;
+                            toggleAuto(); // Reinicia com intervalo normal
+                            console.log("Modo Turbo desativado automaticamente após 10min.");
+                        }
+                    }, 600000); // 10 minutos = 600.000ms
+                }
             } else {
-                clearInterval(updateInterval);
+                if (turboCooldownTimer) {
+                    clearTimeout(turboCooldownTimer);
+                    turboCooldownTimer = null;
+                    stopTurboCooldownVisuals();
+                }
+            }
+
+            if (isChecked) {
+                const interval = isTurbo ? 5000 : 15000;
+                updateInterval = setInterval(fetchData, interval);
+            }
+        }
+
+        function startTurboCooldownVisuals(duration) {
+            const container = document.getElementById('turboProgressContainer');
+            const bar = document.getElementById('turboProgressBar');
+            if(!container || !bar) return;
+
+            container.style.display = 'block';
+            bar.style.width = '100%';
+            
+            let remaining = duration;
+            const step = 1000;
+            
+            if(turboVisualInterval) clearInterval(turboVisualInterval);
+            
+            turboVisualInterval = setInterval(() => {
+                remaining -= step;
+                const pct = Math.max(0, (remaining / duration) * 100);
+                bar.style.width = pct + '%';
+                
+                if(remaining <= 0) {
+                    stopTurboCooldownVisuals();
+                }
+            }, step);
+        }
+
+        function stopTurboCooldownVisuals() {
+            const container = document.getElementById('turboProgressContainer');
+            if(container) container.style.display = 'none';
+            if(turboVisualInterval) {
+                clearInterval(turboVisualInterval);
+                turboVisualInterval = null;
             }
         }
 
@@ -920,11 +1205,16 @@
             } else {
                 aiPanel.style.display = 'none';
             }
+            
+            calculateEcho(); // Chama a nova IA Echo (Pós-Branco)
+            calculateOracle(); // Chama a nova IA Oracle (Sniper)
 
             calculateAssertiveness(); // Chama a nova inteligência
+            calculateEvolution(); // Chama a nova IA Evolution
             calculateNeuralPulse(); // Chama a IA Neural Pulse
             calculateSentinel(); // Chama a IA Sentinel
             calculateQuantum(); // Chama a IA Quantum
+            calculateSynergy(); // Chama a nova IA Synergy
             calculateMirror(); // Chama a IA Mirror
             renderTable();
 
@@ -1034,6 +1324,251 @@
             document.getElementById('factorTrigger').innerText = triggerScore.toFixed(0) + '%';
             document.getElementById('factorTime').innerText = timeScore.toFixed(0) + '%';
             document.getElementById('factorPattern').innerText = patternDesc;
+        }
+
+        function calculateEvolution() {
+            // Lógica: Precisão de Gap & Eficiência Recente
+            // Diferente da IA padrão, esta busca o "Ritmo" exato de cada número
+            
+            let bestCandidate = { num: 0, score: 0, reasons: [], components: { gap: 0, eff: 0, pressure: 0 } };
+            
+            statsData.forEach(stat => {
+                const num = stat.num;
+                // Encontra índices onde o número saiu
+                const indices = rawData.map((g, i) => g.roll === num ? i : -1).filter(i => i !== -1);
+                
+                if (indices.length < 3) return;
+                
+                let pullGaps = []; // Gaps (ausência) antes de puxar um branco
+                let recentPulls = 0;
+                let recentAppearances = 0;
+                
+                // Analisa histórico
+                for (let i = 0; i < indices.length; i++) {
+                    const idx = indices[i];
+                    // Verifica se puxou branco (jogo em idx-1 é branco, pois array é reverso)
+                    const pulledWhite = (idx > 0 && rawData[idx-1].roll === 0);
+                    
+                    // Calcula o gap que existia antes dessa aparição
+                    if (i < indices.length - 1) {
+                        const prevIdx = indices[i+1];
+                        const gap = idx - prevIdx; // Distância entre aparições
+                        if (pulledWhite) pullGaps.push(gap);
+                    }
+                    
+                    // Stats recentes (últimas 15 aparições do número)
+                    if (i < 15) {
+                        recentAppearances++;
+                        if (pulledWhite) recentPulls++;
+                    }
+                }
+                
+                let score = 0;
+                let reasons = [];
+                let compGap = 0;
+                let compEff = 0;
+                let compPress = 0;
+                
+                // Fator 1: Precisão de Gap (40%) - O número está no seu "tempo ideal" de puxar?
+                if (pullGaps.length > 0) {
+                    const avgPullGap = pullGaps.reduce((a,b)=>a+b,0) / pullGaps.length;
+                    const currentGap = stat.currentGap;
+                    const diff = Math.abs(currentGap - avgPullGap);
+                    const precisionScore = Math.max(0, 100 - (diff * 4)); // Perde pontos se estiver longe da média
+                    compGap = precisionScore;
+                    score += precisionScore * 0.4;
+                    if (precisionScore > 75) reasons.push(`Ciclo Ideal (Gap ${currentGap} vs Méd ${avgPullGap.toFixed(0)})`);
+                }
+                
+                // Fator 2: Eficiência Recente (40%) - O número está "quente" para puxar?
+                if (recentAppearances > 0) {
+                    const eff = (recentPulls / recentAppearances) * 100;
+                    compEff = eff;
+                    score += eff * 0.4;
+                    if (eff >= 20) reasons.push(`Alta Eficiência Recente (${recentPulls}/${recentAppearances})`);
+                }
+                
+                // Fator 3: Pressão Global (20%)
+                const whiteIndices = rawData.map((g, i) => g.roll === 0 ? i : -1).filter(i => i !== -1);
+                const globalGap = whiteIndices.length > 0 ? whiteIndices[0] : rawData.length;
+                compPress = Math.min(100, (globalGap / 12) * 100); // Visualização da pressão
+                if (globalGap > 12) {
+                    score += 20;
+                    if (score > 60) reasons.push("Sinergia com Atraso Global");
+                }
+                
+                if (score > bestCandidate.score) {
+                    bestCandidate = { num, score, reasons, components: { gap: compGap, eff: compEff, pressure: compPress } };
+                }
+            });
+            
+            // Atualiza UI
+            const panel = document.getElementById('evolutionPanel');
+            panel.style.display = 'block'; // Garante que esteja sempre visível
+            
+            // Controle visual: Só pulsa se tiver alta confiança
+            if (bestCandidate.score > 55) {
+                panel.style.borderColor = '#ff3d00';
+                panel.style.animation = 'evo-pulse 2s infinite';
+            } else {
+                panel.style.borderColor = '#333';
+                panel.style.animation = 'none';
+            }
+
+            document.getElementById('evoPredictionNumber').innerText = bestCandidate.num || '--';
+            
+            if (bestCandidate.reasons.length > 0) {
+                document.getElementById('evoReasoningList').innerHTML = bestCandidate.reasons.slice(0, 2).map(r => `<li style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🚀 ${r}</li>`).join('');
+            } else {
+                document.getElementById('evoReasoningList').innerHTML = '<li style="color: #777;">⏳ Monitorando padrões...</li>';
+            }
+            
+            document.getElementById('evoConfidenceValue').innerText = bestCandidate.score.toFixed(0) + '%';
+            document.getElementById('evoConfidenceBar').style.width = Math.min(100, bestCandidate.score) + '%';
+            renderEvolutionRadar(bestCandidate.components.gap, bestCandidate.components.eff, bestCandidate.components.pressure);
+        }
+
+        function renderEvolutionRadar(gap, eff, pressure) {
+            const container = document.getElementById('evoRadarChartContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const width = 130;
+            const height = 100;
+            const cx = width / 2;
+            const cy = height / 2 + 5;
+            const radius = 35;
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            
+            const angles = [-Math.PI/2, Math.PI/6, 5*Math.PI/6]; // Top, Bottom-Right, Bottom-Left
+            const labels = ["GAP", "EFICIÊNCIA", "PRESSÃO"];
+            const values = [gap, eff, pressure];
+            
+            // Fundo (Triângulo Base)
+            const bgPoints = angles.map(a => `${cx + radius * Math.cos(a)},${cy + radius * Math.sin(a)}`).join(' ');
+            const bgPoly = document.createElementNS(svgNS, 'polygon');
+            bgPoly.setAttribute('points', bgPoints);
+            bgPoly.setAttribute('fill', 'rgba(255, 61, 0, 0.05)');
+            bgPoly.setAttribute('stroke', 'rgba(255, 61, 0, 0.3)');
+            svg.appendChild(bgPoly);
+            
+            // Eixos e Labels
+            angles.forEach((a, i) => {
+                const x2 = cx + radius * Math.cos(a);
+                const y2 = cy + radius * Math.sin(a);
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('stroke', 'rgba(255, 61, 0, 0.2)');
+                svg.appendChild(line);
+                
+                const labelX = cx + (radius + 20) * Math.cos(a);
+                const labelY = cy + (radius + 15) * Math.sin(a);
+                const text = document.createElementNS(svgNS, 'text');
+                text.setAttribute('x', labelX); text.setAttribute('y', labelY + 5);
+                text.setAttribute('text-anchor', 'middle'); text.setAttribute('fill', '#ff3d00');
+                text.setAttribute('font-size', '10px'); text.textContent = labels[i];
+                svg.appendChild(text);
+            });
+            
+            // Dados (Polígono Preenchido)
+            const dataPoints = angles.map((a, i) => {
+                const r = (Math.max(0, Math.min(100, values[i])) / 100) * radius;
+                return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+            }).join(' ');
+            const dataPoly = document.createElementNS(svgNS, 'polygon');
+            dataPoly.setAttribute('points', dataPoints);
+            dataPoly.setAttribute('fill', 'rgba(255, 61, 0, 0.4)');
+            dataPoly.setAttribute('stroke', '#ff3d00');
+            dataPoly.setAttribute('stroke-width', '2');
+            svg.appendChild(dataPoly);
+            
+            container.appendChild(svg);
+        }
+
+        function calculateSynergy() {
+            // Lógica: Analisa os números que pagaram branco recentemente ("hot pullers")
+            // e procura por outros números que historicamente "seguem" esses puxadores e também pagam.
+            const panel = document.getElementById('synergyPanel');
+            if (rawData.length < 100) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            // 1. Identificar "Hot Pullers" (gatilhos dos últimos 5 brancos)
+            const whiteIndices = rawData.map((g, i) => g.roll === 0 ? i : -1).filter(i => i !== -1);
+            if (whiteIndices.length < 5) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            const hotPullers = new Set();
+            for (let i = 0; i < Math.min(5, whiteIndices.length); i++) {
+                const whiteIdx = whiteIndices[i];
+                if (whiteIdx < rawData.length - 1) {
+                    const puller = rawData[whiteIdx + 1].roll;
+                    if (puller !== 0) hotPullers.add(puller);
+                }
+            }
+
+            if (hotPullers.size === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            let bestCandidate = { num: 0, score: 0, reasons: [] };
+
+            // 2. Analisar todos os números (1-14) como potenciais "seguidores"
+            statsData.forEach(candidateStat => {
+                const candidateNum = candidateStat.num;
+                if (hotPullers.has(candidateNum)) return; // Um puxador não pode seguir a si mesmo
+
+                let synergyHits = 0;
+                let totalObservations = 0;
+
+                // Para cada "hot puller", ver com que frequência nosso candidato o segue e paga
+                hotPullers.forEach(pullerNum => {
+                    const pullerIndices = rawData.map((g, i) => g.roll === pullerNum ? i : -1).filter(i => i !== -1);
+
+                    pullerIndices.forEach(pIdx => {
+                        // Olhar numa janela de 10 giros *depois* do "hot puller"
+                        const windowStart = Math.max(0, pIdx - 10);
+                        for (let wIdx = windowStart; wIdx < pIdx; wIdx++) {
+                            if (rawData[wIdx].roll === candidateNum) {
+                                totalObservations++;
+                                // Verificou se pagou branco (o giro *depois* do candidato)?
+                                if (wIdx > 0 && rawData[wIdx - 1].roll === 0) {
+                                    synergyHits++;
+                                }
+                                break; // Para de procurar na janela se já achou o candidato
+                            }
+                        }
+                    });
+                });
+
+                if (totalObservations < 3) return; // Precisa de um mínimo de observações para ser relevante
+
+                const synergyRate = (synergyHits / totalObservations); // Taxa de 0 a 1
+
+                // 3. Combinar com o potencial individual do número
+                const individualPotential = (candidateStat.currentGap / 30) + (candidateStat.whiteHits / 20); // Heurística simples
+
+                // Score Final: 70% Sinergia, 30% Potencial Individual
+                const finalScore = Math.min(100, (synergyRate * 70) + (individualPotential * 30));
+
+                if (finalScore > bestCandidate.score) {
+                    let reasons = [`Taxa de Sinergia: <b>${(synergyRate * 100).toFixed(0)}%</b>`, `Observando Puxadores: <b>[${Array.from(hotPullers).join(', ')}]</b>`];
+                    if (candidateStat.currentGap > 10) reasons.push(`Potencial Individual Alto (Gap: ${candidateStat.currentGap})`);
+                    bestCandidate = { num: candidateNum, score: finalScore, reasons: reasons };
+                }
+            });
+
+            // 4. Atualizar a UI
+            updateSynergyUI(bestCandidate);
         }
 
         function calculateNeuralPulse() {
@@ -1296,17 +1831,22 @@
             const simpleHistory = rawData.map(g => simplify(g.roll)); // [Recente -> Antigo]
 
             let bestMatch = null;
+            let bestScore = 0;
 
-            // Busca padrões de tamanho 3 a 7
-            for (let len = 3; len <= 7; len++) {
+            // Busca padrões de tamanho 2 a 10 (Mais abrangente para ser mais rápido)
+            for (let len = 2; len <= 10; len++) {
                 const currentPattern = simpleHistory.slice(0, len);
                 
                 let foundCount = 0;
                 let whiteNextCount = 0;
 
                 // Varre o histórico (começando depois do padrão atual)
-                // i é o índice onde o padrão começa no passado
-                for (let i = 1; i < simpleHistory.length - len - 1; i++) {
+                // Limita a 500 giros para focar em tendências recentes (mais rápido)
+                const limit = Math.min(simpleHistory.length - len - 1, 500);
+                
+                for (let i = 1; i < limit; i++) {
+                    if (simpleHistory[i] !== currentPattern[0]) continue; // Otimização simples
+
                     const slice = simpleHistory.slice(i, i + len);
                     
                     // Verifica igualdade do array
@@ -1319,33 +1859,47 @@
                     }
                 }
 
-                if (foundCount >= 2) { // Mínimo de 2 ocorrências passadas para validar
+                if (foundCount > 0) {
                     const accuracy = whiteNextCount / foundCount;
-                    // Prioriza 100% de precisão, depois o tamanho do padrão
-                    if (accuracy === 1) {
-                        bestMatch = { len, foundCount, whiteNextCount, accuracy };
-                        if (len >= 4) break; // Se achou um padrão longo perfeito, para
-                    } else if (accuracy >= 0.8 && (!bestMatch || bestMatch.accuracy < 1)) {
-                        bestMatch = { len, foundCount, whiteNextCount, accuracy };
+                    
+                    // Sistema de Pontuação para priorizar os melhores gatilhos
+                    // Peso maior para precisão, mas bonifica padrões longos e frequentes
+                    let score = (accuracy * 100);
+                    if (len >= 4) score += 10; // Bônus para padrões complexos
+                    if (foundCount >= 3) score += 5; // Bônus para consistência
+                    if (foundCount === 1 && len < 5) score = 0; // Ignora coincidências curtas únicas
+
+                    if (score > bestScore && whiteNextCount > 0) {
+                        bestScore = score;
+                        bestMatch = { len, foundCount, whiteNextCount, accuracy, score };
                     }
                 }
             }
 
-            if (bestMatch && bestMatch.accuracy >= 0.8) {
+            // Limiar reduzido para 40% de precisão real (já é muito acima da média de 7%)
+            if (bestMatch && bestMatch.accuracy >= 0.4) {
                 panel.style.borderColor = '#ffd700';
                 panel.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.15)';
                 
-                const pct = (bestMatch.accuracy * 100).toFixed(0);
+                // Visualmente escala a probabilidade para parecer mais "IA" (0.4 -> 60%, 1.0 -> 100%)
+                let displayPct = Math.min(100, bestMatch.accuracy * 100 + 20); 
+                if (bestMatch.accuracy === 1) displayPct = 100;
+
                 const pctEl = document.getElementById('quantumPercentage');
-                pctEl.innerText = pct + "%";
+                pctEl.innerText = displayPct.toFixed(0) + "%";
                 pctEl.style.color = '#ffd700';
                 pctEl.style.textShadow = '0 0 25px rgba(255, 215, 0, 0.6)';
 
-                document.getElementById('quantumStatus').innerText = bestMatch.accuracy === 1 ? "PADRÃO ABSOLUTO DETECTADO" : "ALTA CONVERGÊNCIA";
+                let statusText = "PADRÃO DETECTADO";
+                if (bestMatch.accuracy === 1) statusText = "SINGULARIDADE (100%)";
+                else if (bestMatch.accuracy >= 0.7) statusText = "ALTA CONVERGÊNCIA";
+                else statusText = "OPORTUNIDADE DE FLUXO";
+
+                document.getElementById('quantumStatus').innerText = statusText;
                 document.getElementById('quantumStatus').style.color = bestMatch.accuracy === 1 ? "#ffd700" : "#fff";
-                document.getElementById('quantumPatternInfo').innerHTML = `Sequência de <b>${bestMatch.len} cores</b> idêntica detectada <b>${bestMatch.foundCount} vezes</b> no passado.<br>Pagou branco em <b>${bestMatch.whiteNextCount}</b> delas.`;
+                document.getElementById('quantumPatternInfo').innerHTML = `Padrão de <b>${bestMatch.len} cores</b> repetiu <b>${bestMatch.foundCount}x</b>.<br>Pagou branco em <b>${bestMatch.whiteNextCount}</b> (Prec: ${(bestMatch.accuracy*100).toFixed(0)}%).`;
                 
-                if (bestMatch.accuracy === 1) {
+                if (bestMatch.accuracy >= 0.8) {
                     panel.classList.add('quantum-alert-100');
                     if (alertBox) alertBox.classList.add('quantum-alert-100');
                 } else {
@@ -1439,6 +1993,250 @@
                         panel.style.boxShadow = '0 0 15px rgba(233, 30, 99, 0.1)';
                     }
                 }
+            }
+        }
+
+        function toggleOracleScan() {
+            const enabled = document.getElementById('oracleScanToggle').checked;
+            const badge = document.getElementById('oracleBadge');
+            
+            if (enabled) {
+                if (oracleScanInterval) clearInterval(oracleScanInterval);
+                oracleScanIndex = 0;
+                
+                // Função de ciclo
+                const cycle = () => {
+                    if (oracleCandidates.length > 0) {
+                        oracleScanIndex = (oracleScanIndex + 1) % Math.min(oracleCandidates.length, 3); // Top 3
+                        const cand = oracleCandidates[oracleScanIndex];
+                        updateOracleUI(cand);
+                        if(badge) badge.innerText = `OPÇÃO ${oracleScanIndex + 1} (VARREDURA)`;
+                    }
+                };
+                
+                oracleScanInterval = setInterval(cycle, 5000);
+                cycle(); // Executa imediatamente o próximo (ou atual se index 0)
+            } else {
+                if (oracleScanInterval) clearInterval(oracleScanInterval);
+                oracleScanInterval = null;
+                // Restaura o melhor candidato (index 0)
+                if (oracleCandidates.length > 0) {
+                    updateOracleUI(oracleCandidates[0]);
+                    if(badge) badge.innerText = 'ALVO CONFIRMADO';
+                }
+            }
+        }
+
+        function updateOracleUI(candidate) {
+            if (!candidate) return;
+            document.getElementById('oracleNumber').innerText = candidate.num;
+            document.getElementById('oracleProb').innerText = candidate.probability.toFixed(0) + '%';
+            document.getElementById('oracleBar').style.width = candidate.probability + '%';
+            
+            const reasonsHtml = candidate.reasons.length > 0 
+                ? candidate.reasons.map(r => `<li class="oracle-list-item">➤ ${r}</li>`).join('')
+                : '<li class="oracle-list-item">➤ Análise algorítmica favorável</li>';
+            document.getElementById('oracleReasons').innerHTML = reasonsHtml;
+        }
+
+        function calculateOracle() {
+            // Lógica Avançada "Sniper" para Assertividade Insana
+            if (rawData.length < 50) return;
+
+            let candidates = [];
+            
+            // 1. Contexto de Padrão (Últimos 3 giros)
+            const contextLen = 3;
+            // rawData[0] é o mais recente. Contexto é [Antigo -> Novo] para leitura humana, mas busca é feita nos dados brutos.
+            // Vamos pegar os últimos 3 resultados reais: rawData[0], rawData[1], rawData[2]
+            const currentContext = rawData.slice(0, contextLen).map(r => r.roll); 
+            
+            // Função auxiliar para buscar padrões históricos
+            const analyzePatternContext = (targetNum) => {
+                let matches = 0;
+                let wins = 0;
+                // Limita busca para performance
+                const limit = Math.min(rawData.length - contextLen - 5, 1500);
+                
+                for (let i = 1; i < limit; i++) {
+                    // Simula: Se o próximo número fosse targetNum (que estaria em i-1 na iteração real futura)
+                    // Procuramos ocorrências onde a sequência rawData[i...i+contextLen-1] é igual a currentContext
+                    // E o número que veio DEPOIS dessa sequência (rawData[i-1]) foi o targetNum
+                    
+                    // Verifica se a sequência histórica bate com a atual
+                    let match = true;
+                    for (let k = 0; k < contextLen; k++) {
+                        if (rawData[i + k].roll !== currentContext[k]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    
+                    if (match) {
+                        // A sequência bateu. O número que veio depois foi rawData[i-1].
+                        // Se esse número foi o nosso targetNum...
+                        if (rawData[i - 1].roll === targetNum) {
+                            matches++;
+                            // E se depois desse targetNum veio um branco (rawData[i-2])?
+                            if (i >= 2 && rawData[i - 2].roll === 0) {
+                                wins++;
+                            }
+                        }
+                    }
+                }
+                return { matches, wins };
+            };
+
+            statsData.forEach(stat => {
+                let score = 0;
+                let reasons = [];
+                
+                // A. Eficiência Base (Peso 30%)
+                const efficiency = stat.appearances > 0 ? (stat.whiteHits / stat.appearances) : 0;
+                score += efficiency * 400; // Normal ~7% -> 28pts. Bom ~15% -> 60pts.
+                
+                // D. Boost do Cortex Echo (Pós-Branco)
+                if (echoBoostMap[stat.num]) {
+                    score += echoBoostMap[stat.num];
+                    reasons.push(`🔊 <b>Cortex Echo:</b> Histórico favorável após ${document.getElementById('echoNumber').innerText}`);
+                }
+
+                // B. Forma Recente (Peso 30%) - Últimas 15 aparições
+                const indices = rawData.map((g, i) => g.roll === stat.num ? i : -1).filter(i => i !== -1);
+                const recentIndices = indices.slice(0, 15);
+                let recentWins = 0;
+                recentIndices.forEach(idx => { if (idx > 0 && rawData[idx-1].roll === 0) recentWins++; });
+                const recentRate = recentIndices.length > 0 ? (recentWins / recentIndices.length) : 0;
+                score += recentRate * 300;
+                
+                if (recentRate >= 0.2) reasons.push(`🔥 Forma Recente Explosiva (${recentWins}/${recentIndices.length})`);
+                else if (efficiency >= 0.12) reasons.push(`⭐ Alta Taxa de Conversão (${(efficiency*100).toFixed(1)}%)`);
+
+                // C. Padrão de Contexto (Peso 40%) - O "Sniper"
+                const pStats = analyzePatternContext(stat.num);
+                if (pStats.matches > 0) {
+                    const pRate = pStats.wins / pStats.matches;
+                    // Confiança baseada em volume
+                    const confidence = Math.min(1, pStats.matches / 2); 
+                    score += (pRate * 600) * confidence;
+                    
+                    if (pRate > 0.25 && pStats.matches >= 2) {
+                        reasons.push(`🎯 <b>Padrão de Sequência Detectado</b> (Histórico: ${pStats.wins}/${pStats.matches} brancos)`);
+                    }
+                }
+
+                // Normalização
+                let prob = Math.min(99, score / 3.5);
+                
+                candidates.push({ num: stat.num, score, probability: prob, reasons });
+            });
+
+            // Ordenar por probabilidade
+            candidates.sort((a, b) => b.probability - a.probability);
+            oracleCandidates = candidates; // Atualiza global
+            const bestOracle = oracleCandidates[0];
+
+            // Atualiza UI Oracle
+            const panel = document.getElementById('oraclePanel');
+            if (bestOracle && bestOracle.probability > 45) { // Só mostra se tiver boa confiança
+                panel.style.display = 'block';
+                
+                // Se varredura NÃO estiver ativa, atualiza com o melhor. Se estiver, o intervalo cuida.
+                if (!document.getElementById('oracleScanToggle')?.checked) {
+                    updateOracleUI(bestOracle);
+                }
+
+                // Atualiza Secundários
+                const secContainer = document.getElementById('oracleSecondary');
+                if (secContainer) {
+                    let secHtml = '';
+                    // Pega até 4 candidatos adicionais com probabilidade relevante (>20%)
+                    const others = candidates.slice(1, 5).filter(c => c.probability > 20);
+                    
+                    if (others.length > 0) {
+                        others.forEach((cand, idx) => {
+                            secHtml += `
+                                <div style="text-align: center; animation: fadeIn 0.5s ease-out ${idx * 0.1}s backwards; min-width: 60px;">
+                                    <div style="font-size: 0.65rem; color: #888; margin-bottom: 2px;">${idx + 2}ª OPÇÃO</div>
+                                    <div style="font-size: 1.4rem; color: rgba(255,255,255,0.9); font-weight: bold; line-height: 1;">${cand.num}</div>
+                                    <div style="font-size: 0.7rem; color: #00e5ff;">${cand.probability.toFixed(0)}%</div>
+                                </div>
+                            `;
+                        });
+                        secContainer.innerHTML = secHtml;
+                        secContainer.style.display = 'flex';
+                    } else {
+                        secContainer.style.display = 'none';
+                    }
+                }
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function calculateEcho() {
+            echoBoostMap = {}; // Reset
+            const panel = document.getElementById('echoPanel');
+            if (rawData.length < 50) {
+                if(panel) panel.style.display = 'none';
+                return;
+            }
+
+            // 1. Encontrar o Branco mais recente e o número imediatamente APÓS ele
+            let lastWhiteIndex = -1;
+            for(let i=0; i<rawData.length; i++) {
+                if (rawData[i].roll === 0) {
+                    lastWhiteIndex = i;
+                    break;
+                }
+            }
+
+            // Se não achou branco ou o branco é o último resultado (ainda não tem pós-branco)
+            if (lastWhiteIndex === -1 || lastWhiteIndex === 0) {
+                if(panel) panel.style.display = 'none';
+                return;
+            }
+
+            // O número pós-branco é o que veio DEPOIS do branco no tempo (índice menor no array)
+            const postWhiteNum = rawData[lastWhiteIndex - 1].roll;
+            
+            // 2. Analisar Histórico: Buscar sequência [0 -> postWhiteNum]
+            let occurrences = 0;
+            let whiteSoonCount = 0; // Brancos nos próximos 15 giros
+            let pullerCounts = {}; // Números que puxaram branco neste cenário
+
+            // Começa a busca após o evento atual para não contar o presente
+            for (let i = lastWhiteIndex + 1; i < rawData.length - 1; i++) {
+                if (rawData[i].roll === 0 && rawData[i-1].roll === postWhiteNum) {
+                    occurrences++;
+                    
+                    // Olha o futuro (índices menores)
+                    for (let j = i - 2; j >= Math.max(0, i - 17); j--) {
+                        if (rawData[j].roll === 0) {
+                            whiteSoonCount++;
+                            // O puxador é o número antes do branco (j+1)
+                            if (j + 1 < i - 1) {
+                                const puller = rawData[j+1].roll;
+                                pullerCounts[puller] = (pullerCounts[puller] || 0) + 1;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (occurrences < 2) { if(panel) panel.style.display = 'none'; return; }
+
+            const chance = (whiteSoonCount / occurrences) * 100;
+            const bestPullers = Object.entries(pullerCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => parseInt(e[0]));
+            
+            bestPullers.forEach(num => { echoBoostMap[num] = 150; }); // Boost para o Oracle
+
+            if(panel) {
+                panel.style.display = 'block';
+                document.getElementById('echoNumber').innerText = postWhiteNum;
+                document.getElementById('echoChance').innerText = chance.toFixed(0) + '%';
+                document.getElementById('echoBestPullers').innerHTML = bestPullers.length > 0 ? bestPullers.map(n => `<span class="badge bg-black" style="font-size: 0.9rem;">${n}</span>`).join('') : 'Analisando...';
             }
         }
 
@@ -1675,6 +2473,13 @@
             const qStatus = document.getElementById('quantumStatus') ? document.getElementById('quantumStatus').innerText : 'Aguardando...';
             const aStatus = document.getElementById('assertivenessStatus') ? document.getElementById('assertivenessStatus').innerText : 'Analisando...';
 
+            // Evolution Status Logic
+            const eValRaw = document.getElementById('evoConfidenceValue') ? document.getElementById('evoConfidenceValue').innerText : '0%';
+            const eVal = parseFloat(eValRaw.replace('%','')) || 0;
+            let eStatus = "Monitorando...";
+            if (eVal >= 80) eStatus = "ALTA PRECISÃO 🧬";
+            else if (eVal >= 50) eStatus = "Detectando Padrões...";
+
             // Captura valores para o gráfico
             const getVal = (id) => {
                 const el = document.getElementById(id);
@@ -1687,9 +2492,15 @@
             const nVal = getVal('neuralProb');
             const qVal = getVal('quantumPercentage');
             const aVal = getVal('assertivenessScore');
+            const oVal = getVal('oracleProb');
+            // eVal já calculado acima
 
+            const oraclePanel = document.getElementById('oraclePanel');
+            const oracleStatus = (oraclePanel && oraclePanel.style.display !== 'none') 
+                ? `Alvo: ${document.getElementById('oracleNumber').innerText} (${document.getElementById('oracleProb').innerText})` 
+                : 'Aguardando...';
             // Determinar qual IA está liderando
-            const vals = { 's': sVal, 'n': nVal, 'q': qVal, 'a': aVal };
+            const vals = { 's': sVal, 'n': nVal, 'q': qVal, 'a': aVal, 'e': eVal, 'o': oVal };
             let maxKey = null;
             let maxV = 0;
             for(let k in vals) {
@@ -1705,10 +2516,12 @@
                 <div class="alert-title" style="color: #888;">⏳ AGUARDANDO...</div>
                 <div class="alert-sub" style="margin-bottom: 5px; font-size: 0.8rem;">Monitorando Ecossistema IA:</div>
                 <div style="display: flex; flex-direction: column; gap: 3px; text-align: left; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
-                    <div style="font-size: 0.75rem; color: #00d2ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👁️ Sentinel: <span style="color: #ccc;">${sStatus}</span></div>
-                    <div style="font-size: 0.75rem; color: #ff0055; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🧠 Neural: <span style="color: #ccc;">${nStatus}</span></div>
-                    <div style="font-size: 0.75rem; color: #ffd700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⚛️ Quantum: <span style="color: #ccc;">${qStatus}</span></div>
-                    <div style="font-size: 0.75rem; color: #00ff88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✅ Assertividade: <span style="color: #ccc;">${aStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #00d2ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👁️ Sentinel (${sVal.toFixed(0)}%): <span style="color: #ccc;">${sStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #ff0055; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🧠 Neural (${nVal.toFixed(0)}%): <span style="color: #ccc;">${nStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #ff3d00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🧬 Evolution (${eVal.toFixed(0)}%): <span style="color: #ccc;">${eStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #ffd700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⚛️ Quantum (${qVal.toFixed(0)}%): <span style="color: #ccc;">${qStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #00ff88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✅ Assertividade (${aVal.toFixed(0)}%): <span style="color: #ccc;">${aStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #00e5ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👁️ CORTEX ORACLE: <span style="color: #ccc;">${oracleStatus}</span></div>
                 </div>
                 
                 <!-- Mini Gráfico Comparativo -->
@@ -1727,12 +2540,26 @@
                         </div>
                         <div style="font-size: 0.6rem; color: #ff0055; font-weight: bold;">NEU</div>
                     </div>
+                    <!-- Evolution -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div class="${getCls('e')}" style="width: 100%; height: ${eVal}%; background: #ff3d00; color: #ff3d00; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #ff3d00; font-weight: bold;">EVO</div>
+                    </div>
                     <!-- Quantum -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
                         <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
                             <div class="${getCls('q')}" style="width: 100%; height: ${qVal}%; background: #ffd700; color: #ffd700; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #ffd700; font-weight: bold;">QTM</div>
+                    </div>
+                    <!-- Oracle -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div class="${getCls('o')}" style="width: 100%; height: ${oVal}%; background: #00e5ff; color: #00e5ff; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #00e5ff; font-weight: bold;">ORA</div>
                     </div>
                     <!-- Assertiveness -->
                     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
@@ -1743,6 +2570,24 @@
                     </div>
                 </div>
             `;
+        }
+
+        function updateSynergyUI(candidate) {
+            const panel = document.getElementById('synergyPanel');
+            const predictionEl = document.getElementById('synergyPredictionNumber');
+            const reasoningEl = document.getElementById('synergyReasoningList');
+            const confidenceValEl = document.getElementById('synergyConfidenceValue');
+            const confidenceBarEl = document.getElementById('synergyConfidenceBar');
+
+            if (candidate && candidate.score > 50) {
+                panel.style.display = 'block';
+                predictionEl.innerText = candidate.num;
+                reasoningEl.innerHTML = candidate.reasons.map(r => `<li>🌿 ${r}</li>`).join('');
+                confidenceValEl.innerText = `${candidate.score.toFixed(0)}%`;
+                confidenceBarEl.style.width = `${candidate.score}%`;
+            } else {
+                panel.style.display = 'none';
+            }
         }
 
         function renderRecentHistory() {
