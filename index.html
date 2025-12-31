@@ -3352,11 +3352,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
         // --- CONTROLE REMOTO VIA TELEGRAM ---
         let telegramPollingInterval = null;
         let telegramLastUpdateId = 0;
-        const TAB_ID = Math.random().toString(36).substr(2, 9); // ID único para esta aba
+        const TAB_ID = Math.random().toString(36).substring(2, 9); // ID único para esta aba
+        let isPollingTelegram = false; // Flag para prevenir requisições sobrepostas
 
         function startTelegramPolling() {
             if (telegramPollingInterval) clearInterval(telegramPollingInterval);
             telegramPollingInterval = setInterval(async () => {
+                if (isPollingTelegram) return; // Se uma requisição já está em andamento, pula esta iteração
+
                 const token = localStorage.getItem('telegram_bot_token');
                 if (!token) return;
 
@@ -3373,6 +3376,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 }
 
                 try {
+                    isPollingTelegram = true; // Trava para a próxima iteração
                     const response = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${telegramLastUpdateId + 1}&timeout=0`);
                     const data = await response.json();
 
@@ -3384,8 +3388,14 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                             }
                         }
                     }
-                } catch (e) { /* Ignora erros de rede no polling */ }
-            }, 5000);
+                    // Se ainda receber 409, pode ser um webhook ou outro processo. Parar para evitar spam.
+                    if (!data.ok && data.error_code === 409) {
+                        console.warn("Conflito (409) no polling do Telegram. Um webhook pode estar ativo ou outra instância do bot está rodando em outro lugar. Polling desativado.");
+                        clearInterval(telegramPollingInterval);
+                    }
+                } catch (e) { /* Ignora erros de rede no polling */ } 
+                finally { isPollingTelegram = false; } // Libera a trava, independentemente do resultado
+            }, 5000); // Verifica a cada 5 segundos
         }
 
         async function processTelegramCommand(text, chatId) {

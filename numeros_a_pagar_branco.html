@@ -183,7 +183,7 @@
 
         /* Estilos do Alerta */
         .alert-box {
-            display: none;
+            display: block;
             background: rgba(0, 255, 136, 0.15);
             border: 2px solid #00ff88;
             border-radius: 12px;
@@ -192,6 +192,12 @@
             margin-bottom: 30px;
             animation: pulse-border 1.5s infinite;
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+        }
+        .alert-box.waiting {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: #333;
+            animation: none;
+            box-shadow: none;
         }
         @keyframes pulse-border {
             0% { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
@@ -309,6 +315,35 @@
             animation: critical-pulse 0.8s infinite alternate;
         }
 
+        @keyframes quantum-flash {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); border-color: #ffd700; }
+            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8); border-color: #fff; background: rgba(255, 215, 0, 0.1); }
+            100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); border-color: #ffd700; }
+        }
+        .quantum-alert-100 {
+            animation: quantum-flash 1s infinite alternate !important;
+        }
+
+        /* Efeito Radar Quantum */
+        .radar-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; pointer-events: none; z-index: 0;
+        }
+        .radar-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 50%;
+            opacity: 0;
+            animation: radar-wave 4s infinite linear;
+        }
+        .radar-ring:nth-child(1) { animation-delay: 0s; }
+        .radar-ring:nth-child(2) { animation-delay: 1.3s; }
+        .radar-ring:nth-child(3) { animation-delay: 2.6s; }
+        @keyframes radar-wave {
+            0% { width: 0; height: 0; opacity: 0.5; border-width: 2px; }
+            100% { width: 400px; height: 400px; opacity: 0; border-width: 0; }
+        }
+
         .main-content-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -326,6 +361,28 @@
             .stats-grid { grid-template-columns: 1fr; }
             .data-table th, .data-table td { padding: 8px 4px; font-size: 0.8rem; }
         }
+
+        /* Estilos do Painel de Histórico Recente */
+        .recent-history-panel {
+            display: flex;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(20, 25, 30, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .history-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -352,14 +409,43 @@
             <div id="loading" style="color: #888; margin-top: 10px; font-size: 0.9rem; display: none;">Aguardando...</div>
         </div>
 
-        <!-- Alerta de Gatilho -->
-        <div id="alertBox" class="alert-box">
-            <div class="alert-title">🚨 GATILHO DETECTADO 🚨</div>
-            <div class="alert-info">O número <span id="alertNum" style="font-size: 1.8rem; color: #fff; font-weight: bold;">--</span> acabou de sair!</div>
-            <div class="alert-sub">Este número puxou <span id="alertHits" style="color: #00ff88; font-weight: bold;">--</span> brancos recentemente.</div>
-            <div style="margin-top: 15px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; display: inline-block;">
-                ENTRAR NO BRANCO ⚪
+        <!-- Painel Superior: Alerta e Quantum -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <!-- Alerta de Gatilho -->
+            <div id="alertBox" class="alert-box waiting" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; height: 100%; box-sizing: border-box;">
+                <div class="alert-title" style="color: #888;">⏳ AGUARDANDO...</div>
+                <div class="alert-sub">Monitorando padrões de puxadores...</div>
             </div>
+
+            <!-- CORTEX QUANTUM - NOVO (IA FUTURISTA 100%) -->
+            <div id="quantumPanel" class="stat-card" style="position: relative; overflow: hidden; border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: none; background: linear-gradient(135deg, rgba(20,20,20,0.9), rgba(40,30,10,0.8)); height: 100%; box-sizing: border-box;">
+                <!-- Fundo Radar -->
+                <div class="radar-bg">
+                    <div class="radar-ring"></div>
+                    <div class="radar-ring"></div>
+                    <div class="radar-ring"></div>
+                </div>
+                
+                <div style="position: relative; z-index: 2;">
+                    <div class="stat-title" style="color: #ffd700; display: flex; justify-content: space-between; align-items: center; border-bottom-color: rgba(255, 215, 0, 0.3);">
+                        <span>⚛️ CORTEX QUANTUM</span>
+                        <span class="pulse-dot" style="background: #ffd700; box-shadow: 0 0 10px #ffd700;"></span>
+                    </div>
+                    <div style="text-align: center; padding: 15px;">
+                        <div style="font-size: 0.7rem; color: #aaa; letter-spacing: 2px; margin-bottom: 5px;">PROBABILIDADE DE SINGULARIDADE</div>
+                        <div id="quantumPercentage" class="highlight-val" style="font-size: 4rem; color: #555; text-shadow: none; line-height: 1;">--%</div>
+                        <div id="quantumStatus" style="font-size: 1.1rem; font-weight: bold; color: #888; margin-top: 10px; text-transform: uppercase;">AGUARDANDO...</div>
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid rgba(255, 215, 0, 0.2);">
+                        <div id="quantumPatternInfo" style="font-size: 0.85rem; color: #eee; text-align: center;">Monitorando fluxo temporal...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel de Histórico Recente -->
+        <div id="recentHistoryContainer" class="recent-history-panel">
+            <!-- Histórico será injetado via JS -->
         </div>
 
         <div class="main-content-grid">
@@ -391,6 +477,60 @@
                             <div id="aiConfidenceBar" class="progress-fill" style="background: linear-gradient(90deg, #a100ff, #ff45d4); box-shadow: 0 0 10px #a100ff; width: 0%;"></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- CORTEX SENTINEL - NOVO -->
+                <div id="sentinelPanel" class="stat-card" style="border: 1px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);">
+                    <div class="stat-title" style="color: #00d2ff; display: flex; justify-content: space-between; align-items: center;">
+                        <span>👁️ CORTEX SENTINEL</span>
+                        <span style="font-size: 0.7rem; background: rgba(0, 210, 255, 0.2); padding: 2px 6px; border-radius: 4px; color: #fff;">ADVANCED</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">PRECISÃO ESTIMADA</div>
+                            <div id="sentinelAccuracy" class="highlight-val" style="font-size: 2.2rem; color: #fff; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);">--%</div>
+                        </div>
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">PRÓXIMO ALVO (TETO)</div>
+                            <div id="sentinelTarget" style="font-size: 1.8rem; font-weight: bold; color: #ff9800;">--</div>
+                            <div style="font-size: 0.6rem; color: #666;">GIROS RESTANTES</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-bottom: 5px;"><span>Estabilidade do Ciclo</span><span>Volatilidade</span></div>
+                        <div class="progress-bar" style="height: 6px; background: #222;"><div id="sentinelBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #00d2ff, #0055ff);"></div></div>
+                        <div id="sentinelStatus" style="margin-top: 10px; font-size: 0.85rem; color: #fff; text-align: center; font-style: italic;">Calibrando sensores...</div>
+                    </div>
+                    <!-- Gráfico de Dispersão Sentinel -->
+                    <div style="margin-top: 15px; border-top: 1px solid rgba(0, 210, 255, 0.2); padding-top: 10px;">
+                        <div style="font-size: 0.7rem; color: #00d2ff; margin-bottom: 5px; text-align: center;">DISPERSÃO DE INTERVALOS</div>
+                        <div id="sentinelChartContainer" style="width: 100%; height: 60px;"></div>
+                    </div>
+                </div>
+
+                <!-- CORTEX MIRROR - NOVO (ANÁLISE DE DUPLAS) -->
+                <div id="mirrorPanel" class="stat-card" style="border: 1px solid #e91e63; box-shadow: 0 0 15px rgba(233, 30, 99, 0.1);">
+                    <div class="stat-title" style="color: #e91e63; display: flex; justify-content: space-between; align-items: center;">
+                        <span>👯 CORTEX MIRROR</span>
+                        <span style="font-size: 0.7rem; background: rgba(233, 30, 99, 0.2); padding: 2px 6px; border-radius: 4px; color: #fff;">DUPLAS</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">ÚLTIMA DUPLA</div>
+                            <div id="mirrorLastDouble" class="highlight-val" style="font-size: 1.8rem; color: #fff;">--</div>
+                            <div id="mirrorTimeAgo" style="font-size: 0.6rem; color: #888;">--</div>
+                        </div>
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">CONVERSÃO EM BRANCO</div>
+                            <div id="mirrorConversion" style="font-size: 1.8rem; font-weight: bold; color: #e91e63;">--%</div>
+                            <div id="mirrorStats" style="font-size: 0.6rem; color: #666;">0/0</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                         <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 5px;">ASSERTIVIDADE DA ESTRATÉGIA</div>
+                         <div class="progress-bar" style="height: 6px; background: #222;"><div id="mirrorBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #e91e63, #ff6090);"></div></div>
+                    </div>
+                    <div id="mirrorAlert" style="margin-top: 15px; text-align: center; font-weight: bold; color: #fff; display: none; background: rgba(233, 30, 99, 0.3); padding: 8px; border-radius: 4px; animation: pulse-red-dot 1s infinite;">⚠️ DUPLA DETECTADA: POSSÍVEL GATILHO!</div>
                 </div>
 
                 <!-- Tabela de Classificação -->
@@ -534,6 +674,7 @@
         let lastProcessedRollId = null; // Para evitar alertas repetidos no mesmo giro
         let assertivenessHistory = [];
         let neuralPulseHistory = [];
+        let isFetching = false; // Prevents overlapping requests
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
@@ -550,6 +691,9 @@
         }
 
         async function fetchData() {
+            if (isFetching) return; // Skip if a request is already in progress
+            isFetching = true;
+
             const loading = document.getElementById('loading');
             loading.innerText = 'Buscando dados da API...';
             
@@ -582,25 +726,36 @@
 
                 // Remove duplicatas e ordena (Newest -> Oldest)
                 const seenIds = new Set();
-                rawData = allGames.filter(game => {
+                const newRawData = allGames.filter(game => {
                     if (game.id && !seenIds.has(game.id)) { seenIds.add(game.id); return true; }
                     return false;
                 }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                if (rawData.length > 0) {
+                if (newRawData.length > 0) {
+                    rawData = newRawData;
                     analyzeData();
                     loading.innerText = `Atualizado: ${new Date().toLocaleTimeString()} (${rawData.length} giros)`;
                 } else {
-                    loading.innerText = 'Nenhum dado encontrado.';
+                    if (rawData.length === 0) {
+                        loading.innerText = 'Nenhum dado encontrado.';
+                        renderRecentHistory(); // Atualiza para mostrar vazio
+                    } else {
+                        loading.innerText = 'Falha na conexão. Mantendo dados antigos.';
+                        console.warn('API retornou 0 dados. Mantendo cache.');
+                    }
                 }
 
             } catch (error) {
                 console.error(error);
                 loading.innerText = 'Erro ao atualizar. Tente novamente.';
+            } finally {
+                isFetching = false; // Release lock
             }
         }
 
         function analyzeData() {
+            renderRecentHistory(); // Atualiza o histórico visualmente primeiro
+
             // Inicializa estatísticas para números 1-14
             let stats = {};
             for(let i=1; i<=14; i++) {
@@ -758,6 +913,9 @@
 
             calculateAssertiveness(); // Chama a nova inteligência
             calculateNeuralPulse(); // Chama a IA Neural Pulse
+            calculateSentinel(); // Chama a IA Sentinel
+            calculateQuantum(); // Chama a IA Quantum
+            calculateMirror(); // Chama a IA Mirror
             renderTable();
 
             // --- LÓGICA DE ALERTA ---
@@ -773,8 +931,8 @@
                     if (latestRoll !== 0) {
                         checkTrigger(latestRoll);
                     } else {
-                        // Se saiu branco, esconde o alerta
-                        document.getElementById('alertBox').style.display = 'none';
+                        // Se saiu branco, volta para aguardando
+                        setWaitingState();
                     }
                 }
             }
@@ -933,6 +1091,345 @@
             }
 
             renderNeuralPulseChart();
+        }
+
+        function calculateSentinel() {
+            if (rawData.length < 20) return;
+
+            // Encontrar índices dos brancos (0 é o mais recente)
+            const whiteIndices = rawData.map((g, i) => g.roll === 0 ? i : -1).filter(i => i !== -1);
+            
+            if (whiteIndices.length < 2) {
+                updateSentinelUI(0, '--', 'Dados insuficientes para cálculo', 0);
+                return;
+            }
+
+            // Calcular intervalos entre brancos
+            let intervals = [];
+            for(let i = 0; i < whiteIndices.length - 1; i++) {
+                intervals.push(whiteIndices[i+1] - whiteIndices[i]);
+            }
+
+            // Média e Desvio Padrão
+            const sum = intervals.reduce((a, b) => a + b, 0);
+            const avg = sum / intervals.length;
+            const squareDiffs = intervals.map(v => Math.pow(v - avg, 2));
+            const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / squareDiffs.length;
+            const stdDev = Math.sqrt(avgSquareDiff);
+
+            // Gap Atual (quantos giros desde o último branco)
+            const currentGap = whiteIndices[0];
+
+            // --- CÁLCULO DE ASSERTIVIDADE SENTINEL ---
+            // 1. Fator de Proximidade: Quão perto estamos da média histórica?
+            const distFromAvg = Math.abs(currentGap - avg);
+            // Se stdDev for baixo, a tolerância é menor.
+            let proximityScore = 0;
+            if (stdDev > 0) {
+                // Score diminui conforme nos afastamos da média, ponderado pelo desvio padrão
+                proximityScore = Math.max(0, 100 - (distFromAvg / (stdDev || 1)) * 25);
+            } else {
+                proximityScore = currentGap >= avg ? 100 : (currentGap/avg)*100;
+            }
+
+            // 2. Fator de Consistência: O ciclo é estável? (Desvio padrão baixo em relação à média)
+            const cv = stdDev / avg; // Coeficiente de Variação
+            const consistencyScore = Math.max(0, 100 - (cv * 100));
+
+            // Score Final Ponderado
+            let sentinelScore = (proximityScore * 0.5) + (consistencyScore * 0.5);
+            
+            // Bônus se já passou da média (Overdue), mas o ciclo é consistente
+            if (currentGap > avg && consistencyScore > 50) {
+                sentinelScore += 10;
+            }
+
+            sentinelScore = Math.min(99, sentinelScore);
+
+            // Estimativa de Teto (Target)
+            const remaining = Math.round(avg - currentGap);
+            const targetText = remaining <= 0 ? "AGORA" : remaining;
+            
+            // Status
+            let status = "Aguardando ciclo...";
+            if (sentinelScore > 80) status = "ALTA PRECISÃO: Ciclo fechando!";
+            else if (sentinelScore > 60) status = "Monitorando aproximação...";
+            else if (sentinelScore > 40) status = "Instabilidade nos intervalos.";
+            else status = "Ruído elevado. Cautela.";
+
+            updateSentinelUI(sentinelScore, targetText, status, consistencyScore);
+            renderSentinelChart(intervals);
+        }
+
+        function updateSentinelUI(score, target, status, consistency) {
+            const scoreEl = document.getElementById('sentinelAccuracy');
+            const targetEl = document.getElementById('sentinelTarget');
+            const statusEl = document.getElementById('sentinelStatus');
+            const barEl = document.getElementById('sentinelBar');
+            const panel = document.getElementById('sentinelPanel');
+
+            if (scoreEl) scoreEl.innerText = score.toFixed(1) + '%';
+            if (targetEl) targetEl.innerText = target;
+            if (statusEl) statusEl.innerText = status;
+            
+            if (barEl) {
+                barEl.style.width = consistency ? consistency.toFixed(0) + '%' : '0%';
+            }
+            
+            if (panel) {
+                 if (score > 80) {
+                    panel.style.borderColor = '#00ff88';
+                    panel.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.3)';
+                 } else {
+                    panel.style.borderColor = '#00d2ff';
+                    panel.style.boxShadow = '0 0 15px rgba(0, 210, 255, 0.1)';
+                 }
+            }
+        }
+
+        function renderSentinelChart(intervals) {
+            const container = document.getElementById('sentinelChartContainer');
+            if (!container) return;
+            
+            if (intervals.length < 2) {
+                container.innerHTML = '<div style="text-align:center; font-size:0.6rem; color:#666; padding-top:20px;">Dados insuficientes</div>';
+                return;
+            }
+            container.innerHTML = '';
+
+            // Inverter para ordem cronológica (Antigo -> Novo) para o gráfico
+            const data = [...intervals].reverse();
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const padding = 5;
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+
+            const maxVal = Math.max(...data, 1);
+            // Média para linha de referência
+            const avg = data.reduce((a,b)=>a+b,0) / data.length;
+
+            const getX = (i) => padding + (i / (data.length - 1)) * (width - 2 * padding);
+            const getY = (val) => height - padding - ((val / maxVal) * (height - 2 * padding));
+
+            // Linha da Média (Tracejada)
+            const avgY = getY(avg);
+            const avgLine = document.createElementNS(svgNS, 'line');
+            avgLine.setAttribute('x1', 0); avgLine.setAttribute('y1', avgY);
+            avgLine.setAttribute('x2', width); avgLine.setAttribute('y2', avgY);
+            avgLine.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+            avgLine.setAttribute('stroke-dasharray', '3');
+            svg.appendChild(avgLine);
+
+            // --- Regressão Linear (Linha de Tendência) ---
+            const n = data.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += data[i];
+                sumXY += i * data[i];
+                sumXX += i * i;
+            }
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            const y1 = intercept;
+            const y2 = slope * (n - 1) + intercept;
+            
+            const trendLine = document.createElementNS(svgNS, 'line');
+            trendLine.setAttribute('x1', getX(0)); trendLine.setAttribute('y1', getY(y1));
+            trendLine.setAttribute('x2', getX(n - 1)); trendLine.setAttribute('y2', getY(y2));
+            // Cor: Verde se diminuindo (aquecendo), Laranja se aumentando (esfriando)
+            trendLine.setAttribute('stroke', slope < 0 ? '#00ff88' : '#ff9800');
+            trendLine.setAttribute('stroke-width', '2');
+            trendLine.setAttribute('stroke-opacity', '0.6');
+            svg.appendChild(trendLine);
+
+            // Pontos de Dispersão
+            data.forEach((val, i) => {
+                const cx = getX(i);
+                const cy = getY(val);
+                
+                const color = val < avg ? '#00ff88' : '#ff0055';
+
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+                circle.setAttribute('r', 2.5); circle.setAttribute('fill', color);
+                
+                // Tooltip nativo simples
+                const title = document.createElementNS(svgNS, 'title');
+                title.textContent = `Intervalo: ${val}`;
+                circle.appendChild(title);
+                
+                svg.appendChild(circle);
+            });
+
+            container.appendChild(svg);
+        }
+
+        function calculateQuantum() {
+            const panel = document.getElementById('quantumPanel');
+            const alertBox = document.getElementById('alertBox');
+            if (!panel || rawData.length < 50) {
+                if(panel) {
+                    document.getElementById('quantumStatus').innerText = "COLETANDO DADOS...";
+                }
+                return;
+            }
+
+            // Simplificar histórico: 0=Branco, 1=Vermelho, 2=Preto
+            const simplify = (r) => (r === 0 ? 0 : (r <= 7 ? 1 : 2));
+            const simpleHistory = rawData.map(g => simplify(g.roll)); // [Recente -> Antigo]
+
+            let bestMatch = null;
+
+            // Busca padrões de tamanho 3 a 7
+            for (let len = 3; len <= 7; len++) {
+                const currentPattern = simpleHistory.slice(0, len);
+                
+                let foundCount = 0;
+                let whiteNextCount = 0;
+
+                // Varre o histórico (começando depois do padrão atual)
+                // i é o índice onde o padrão começa no passado
+                for (let i = 1; i < simpleHistory.length - len - 1; i++) {
+                    const slice = simpleHistory.slice(i, i + len);
+                    
+                    // Verifica igualdade do array
+                    if (slice.every((val, idx) => val === currentPattern[idx])) {
+                        foundCount++;
+                        // O resultado SEGUINTE no tempo é o índice i-1 (pois array é reverso)
+                        if (simpleHistory[i - 1] === 0) {
+                            whiteNextCount++;
+                        }
+                    }
+                }
+
+                if (foundCount >= 2) { // Mínimo de 2 ocorrências passadas para validar
+                    const accuracy = whiteNextCount / foundCount;
+                    // Prioriza 100% de precisão, depois o tamanho do padrão
+                    if (accuracy === 1) {
+                        bestMatch = { len, foundCount, whiteNextCount, accuracy };
+                        if (len >= 4) break; // Se achou um padrão longo perfeito, para
+                    } else if (accuracy >= 0.8 && (!bestMatch || bestMatch.accuracy < 1)) {
+                        bestMatch = { len, foundCount, whiteNextCount, accuracy };
+                    }
+                }
+            }
+
+            if (bestMatch && bestMatch.accuracy >= 0.8) {
+                panel.style.borderColor = '#ffd700';
+                panel.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.15)';
+                
+                const pct = (bestMatch.accuracy * 100).toFixed(0);
+                const pctEl = document.getElementById('quantumPercentage');
+                pctEl.innerText = pct + "%";
+                pctEl.style.color = '#ffd700';
+                pctEl.style.textShadow = '0 0 25px rgba(255, 215, 0, 0.6)';
+
+                document.getElementById('quantumStatus').innerText = bestMatch.accuracy === 1 ? "PADRÃO ABSOLUTO DETECTADO" : "ALTA CONVERGÊNCIA";
+                document.getElementById('quantumStatus').style.color = bestMatch.accuracy === 1 ? "#ffd700" : "#fff";
+                document.getElementById('quantumPatternInfo').innerHTML = `Sequência de <b>${bestMatch.len} cores</b> idêntica detectada <b>${bestMatch.foundCount} vezes</b> no passado.<br>Pagou branco em <b>${bestMatch.whiteNextCount}</b> delas.`;
+                
+                if (bestMatch.accuracy === 1) {
+                    panel.classList.add('quantum-alert-100');
+                    if (alertBox) alertBox.classList.add('quantum-alert-100');
+                } else {
+                    panel.classList.remove('quantum-alert-100');
+                    if (alertBox) alertBox.classList.remove('quantum-alert-100');
+                }
+            } else {
+                // Estado de Espera (Waiting)
+                panel.style.borderColor = 'rgba(255, 215, 0, 0.3)';
+                panel.style.boxShadow = 'none';
+                panel.classList.remove('quantum-alert-100');
+                if (alertBox) alertBox.classList.remove('quantum-alert-100');
+
+                const pctEl = document.getElementById('quantumPercentage');
+                pctEl.innerText = "--%";
+                pctEl.style.color = '#555';
+                pctEl.style.textShadow = 'none';
+
+                document.getElementById('quantumStatus').innerText = "AGUARDANDO...";
+                document.getElementById('quantumStatus').style.color = "#888";
+                document.getElementById('quantumPatternInfo').innerHTML = "Nenhuma singularidade detectada no momento.";
+            }
+        }
+
+        function calculateMirror() {
+            if (rawData.length < 20) return;
+
+            let doubleCount = 0;
+            let whiteAfterDouble = 0;
+            let lastDoubleText = "--";
+            let lastDoubleTime = "";
+            let foundLast = false;
+
+            // Varre histórico procurando duplas (i e i+1 iguais)
+            // Começa de 1 pois precisamos verificar o resultado DEPOIS da dupla (que está em i-1)
+            for (let i = 1; i < rawData.length - 1; i++) {
+                const current = rawData[i].roll;
+                const previous = rawData[i+1].roll; // Mais antigo
+                
+                if (current === previous && current !== 0) { // Ignora duplas de brancos (raro)
+                    doubleCount++;
+                    
+                    // O resultado que veio DEPOIS da dupla é rawData[i-1]
+                    if (rawData[i-1].roll === 0) {
+                        whiteAfterDouble++;
+                    }
+
+                    if (!foundLast) {
+                        lastDoubleText = `${current} = ${previous}`;
+                        lastDoubleTime = `${i} giros atrás`;
+                        foundLast = true;
+                    }
+                }
+            }
+
+            const conversion = doubleCount > 0 ? (whiteAfterDouble / doubleCount) * 100 : 0;
+
+            // UI Updates
+            const lastEl = document.getElementById('mirrorLastDouble');
+            const timeEl = document.getElementById('mirrorTimeAgo');
+            const convEl = document.getElementById('mirrorConversion');
+            const statsEl = document.getElementById('mirrorStats');
+            const barEl = document.getElementById('mirrorBar');
+            const alertEl = document.getElementById('mirrorAlert');
+            const panel = document.getElementById('mirrorPanel');
+
+            if(lastEl) lastEl.innerText = lastDoubleText;
+            if(timeEl) timeEl.innerText = lastDoubleTime;
+            if(convEl) convEl.innerText = conversion.toFixed(1) + '%';
+            if(statsEl) statsEl.innerText = `${whiteAfterDouble} acertos em ${doubleCount} duplas`;
+            if(barEl) barEl.style.width = `${conversion}%`;
+
+            // Verifica gatilho ATUAL (Indices 0 e 1 são iguais?)
+            if (rawData.length >= 2) {
+                const r0 = rawData[0].roll;
+                const r1 = rawData[1].roll;
+                
+                if (r0 === r1 && r0 !== 0) {
+                    if(alertEl) {
+                        alertEl.style.display = 'block';
+                        alertEl.innerHTML = `⚠️ DUPLA [${r0}-${r1}] DETECTADA!<br>Histórico: ${conversion.toFixed(0)}% de chance de Branco.`;
+                    }
+                    if(panel) {
+                        panel.style.borderColor = '#fff';
+                        panel.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+                    }
+                } else {
+                    if(alertEl) alertEl.style.display = 'none';
+                    if(panel) {
+                        panel.style.borderColor = '#e91e63';
+                        panel.style.boxShadow = '0 0 15px rgba(233, 30, 99, 0.1)';
+                    }
+                }
+            }
         }
 
         function renderAssertivenessHistory() {
@@ -1144,13 +1641,123 @@
             
             // Se estiver no Top 3 e tiver histórico relevante
             if (stat && rank < 3 && stat.whiteHits >= 2) {
-                document.getElementById('alertNum').innerText = latestRoll;
-                document.getElementById('alertHits').innerText = stat.whiteHits;
-                alertBox.style.display = 'block';
+                alertBox.classList.remove('waiting');
+                alertBox.innerHTML = `
+                    <div class="alert-title">🚨 GATILHO DETECTADO 🚨</div>
+                    <div class="alert-info">O número <span style="font-size: 1.8rem; color: #fff; font-weight: bold;">${latestRoll}</span> acabou de sair!</div>
+                    <div class="alert-sub">Este número puxou <span style="color: #00ff88; font-weight: bold;">${stat.whiteHits}</span> brancos recentemente.</div>
+                    <div style="margin-top: 15px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; display: inline-block;">
+                        ENTRAR NO BRANCO ⚪
+                    </div>
+                `;
                 playAlertSound();
             } else {
-                alertBox.style.display = 'none';
+                setWaitingState();
             }
+        }
+
+        function setWaitingState() {
+            const alertBox = document.getElementById('alertBox');
+            
+            // Captura o status das outras IAs para exibir no painel central
+            const sStatus = document.getElementById('sentinelStatus') ? document.getElementById('sentinelStatus').innerText : 'Calibrando...';
+            const nStatus = document.getElementById('neuralStatus') ? document.getElementById('neuralStatus').innerText : 'Calculando...';
+            const qStatus = document.getElementById('quantumStatus') ? document.getElementById('quantumStatus').innerText : 'Aguardando...';
+            const aStatus = document.getElementById('assertivenessStatus') ? document.getElementById('assertivenessStatus').innerText : 'Analisando...';
+
+            // Captura valores para o gráfico
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                if(!el) return 0;
+                const v = el.innerText.replace('%','').trim();
+                return (v === '--' || isNaN(parseFloat(v))) ? 0 : parseFloat(v);
+            };
+
+            const sVal = getVal('sentinelAccuracy');
+            const nVal = getVal('neuralProb');
+            const qVal = getVal('quantumPercentage');
+            const aVal = getVal('assertivenessScore');
+
+            alertBox.className = 'alert-box waiting';
+            alertBox.innerHTML = `
+                <div class="alert-title" style="color: #888;">⏳ AGUARDANDO...</div>
+                <div class="alert-sub" style="margin-bottom: 5px; font-size: 0.8rem;">Monitorando Ecossistema IA:</div>
+                <div style="display: flex; flex-direction: column; gap: 3px; text-align: left; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+                    <div style="font-size: 0.75rem; color: #00d2ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👁️ Sentinel: <span style="color: #ccc;">${sStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #ff0055; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🧠 Neural: <span style="color: #ccc;">${nStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #ffd700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⚛️ Quantum: <span style="color: #ccc;">${qStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #00ff88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✅ Assertividade: <span style="color: #ccc;">${aStatus}</span></div>
+                </div>
+                
+                <!-- Mini Gráfico Comparativo -->
+                <div style="display: flex; align-items: flex-end; height: 50px; gap: 8px; padding: 0 5px;">
+                    <!-- Sentinel -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div style="width: 100%; height: ${sVal}%; background: #00d2ff; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #00d2ff; font-weight: bold;">SEN</div>
+                    </div>
+                    <!-- Neural -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div style="width: 100%; height: ${nVal}%; background: #ff0055; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #ff0055; font-weight: bold;">NEU</div>
+                    </div>
+                    <!-- Quantum -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div style="width: 100%; height: ${qVal}%; background: #ffd700; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #ffd700; font-weight: bold;">QTM</div>
+                    </div>
+                    <!-- Assertiveness -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div style="width: 100%; height: ${aVal}%; background: #00ff88; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #00ff88; font-weight: bold;">AST</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRecentHistory() {
+            const container = document.getElementById('recentHistoryContainer');
+            if (!container) return;
+
+            if (!rawData || rawData.length === 0) {
+                container.innerHTML = '<div style="color: #888; font-size: 0.8rem; width: 100%; text-align: center; padding: 10px;">Aguardando dados...</div>';
+                return;
+            }
+            
+            let html = '';
+            // Mostra os últimos 20 resultados
+            const recent = rawData.slice(0, 20).reverse(); 
+            
+            recent.forEach(game => {
+                let badgeClass = 'bg-white';
+                const roll = game.roll !== undefined ? game.roll : '?';
+                if (roll >= 1 && roll <= 7) badgeClass = 'bg-red';
+                if (roll >= 8 && roll <= 14) badgeClass = 'bg-black';
+                
+                let time = '--:--';
+                try {
+                    if (game.created_at) {
+                        time = new Date(game.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    }
+                } catch(e) {}
+                
+                html += `
+                    <div class="history-item">
+                        <span class="badge ${badgeClass}">${roll}</span>
+                        <span style="font-size: 0.65rem; color: #888; margin-top: 5px;">${time}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            container.scrollLeft = container.scrollWidth;
         }
 
         function playAlertSound() {
