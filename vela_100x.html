@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hunter 100x - Legendary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --bg-core: #050b14;
+            --bg-card: #120f1f;
+            --neon-gold: #ffd700;
+            --neon-purple: #bc13fe;
+            --text-main: #e0e6ed;
+        }
+
+        body {
+            background-color: var(--bg-core);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Fundo Estelar */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            z-index: -1;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--neon-gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            letter-spacing: 2px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        .btn-back:hover {
+            background: var(--neon-purple);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        /* Núcleo da IA (Dourado) */
+        .ai-core-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .ai-circle { position: absolute; border-radius: 50%; border: 2px solid transparent; }
+
+        .ai-outer {
+            width: 100%; height: 100%;
+            border-top-color: var(--neon-gold);
+            border-bottom-color: var(--neon-purple);
+            animation: spin 4s linear infinite;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
+        }
+
+        .ai-inner {
+            width: 70%; height: 70%;
+            border-left-color: var(--neon-gold);
+            border-right-color: var(--neon-gold);
+            animation: spin-reverse 3s linear infinite;
+            opacity: 0.8;
+        }
+
+        .ai-center {
+            width: 40%; height: 40%;
+            background: radial-gradient(circle, var(--neon-gold), transparent);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .ai-status-text {
+            position: absolute;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #000;
+            z-index: 2;
+        }
+
+        /* Cartão Principal */
+        .prediction-card {
+            background: rgba(18, 15, 31, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-meter {
+            font-size: 4rem;
+            font-family: 'Orbitron', sans-serif;
+            margin: 15px 0;
+            color: var(--neon-gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .prediction-message {
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .stat-val { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: var(--neon-purple); }
+
+        /* Histórico */
+        .history-container { width: 100%; max-width: 600px; }
+        .history-list {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .history-list::-webkit-scrollbar { height: 6px; }
+        .history-list::-webkit-scrollbar-track { background: #0f1923; border-radius: 3px; }
+        .history-list::-webkit-scrollbar-thumb { 
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-gold)); 
+            border-radius: 3px; 
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); 
+        }
+        .history-item {
+            background: #1a1a2e;
+            min-width: 60px;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+        }
+        .history-item.legendary { 
+            background: linear-gradient(135deg, #ffd700, #bc13fe); 
+            color: #000; 
+            border: none;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>HUNTER <span style="color: #fff;">100X</span></h1>
+        <a href="index.html" class="btn-back">Voltar</a>
+    </div>
+
+    <div class="ai-core-container">
+        <div class="ai-circle ai-outer"></div>
+        <div class="ai-circle ai-inner"></div>
+        <div class="ai-center"></div>
+        <div class="ai-status-text" id="ai-status">DEEP SCAN</div>
+    </div>
+
+    <div class="prediction-card">
+        <div style="color: #888; font-size: 0.9rem; text-transform: uppercase;">Probabilidade de Vela Lendária</div>
+        <div class="confidence-meter" id="confidence-value">--%</div>
+        <div class="prediction-message" id="prediction-msg">ANALISANDO...</div>
+        
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-label">Jogos sem 100x</div>
+                <div class="stat-val" id="games-since">--</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Status</div>
+                <div class="stat-val" id="status-text">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="width: 100%; max-width: 600px; margin-bottom: 30px; background: rgba(18, 15, 31, 0.9); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 215, 0, 0.2); box-sizing: border-box;">
+        <div style="color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; text-align: center; font-family: 'Orbitron';">Pressão de Acumulação (Últimas 100 Rodadas)</div>
+        <div id="pressure-chart"></div>
+    </div>
+
+    <div style="width: 100%; max-width: 600px; margin-bottom: 30px; background: rgba(18, 15, 31, 0.9); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 215, 0, 0.2); box-sizing: border-box;">
+        <div style="color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; text-align: center; font-family: 'Orbitron';">Últimas Velas Lendárias (100x+)</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #bc13fe;">
+                    <th style="padding: 8px; text-align: left;">Vela</th>
+                    <th style="padding: 8px; text-align: center;">Horário</th>
+                    <th style="padding: 8px; text-align: right;">Intervalo</th>
+                </tr>
+            </thead>
+            <tbody id="legendary-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="history-container">
+        <div style="color: #888; margin-bottom: 10px; font-family: 'Orbitron';">HISTÓRICO RECENTE</div>
+        <div class="history-list" id="history-list"></div>
+    </div>
+
+    <script>
+        const SEU_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+        const API_URL = 'https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=';
+        const PROXY = 'https://corsproxy.io/?';
+
+        const elConf = document.getElementById('confidence-value');
+        const elMsg = document.getElementById('prediction-msg');
+        const elSince = document.getElementById('games-since');
+        const elStatus = document.getElementById('status-text');
+        const elHistory = document.getElementById('history-list');
+        const elTableBody = document.getElementById('legendary-table-body');
+
+        // Configuração do Gráfico
+        var options = {
+            series: [{ name: 'Pressão', data: [] }],
+            chart: {
+                type: 'area',
+                height: 180,
+                toolbar: { show: false },
+                background: 'transparent',
+                animations: { enabled: false }
+            },
+            stroke: { curve: 'smooth', width: 2, colors: ['#ffd700'] },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shade: 'dark',
+                    type: 'vertical',
+                    shadeIntensity: 0.5,
+                    gradientToColors: ['#bc13fe'],
+                    inverseColors: true,
+                    opacityFrom: 0.6,
+                    opacityTo: 0.1,
+                    stops: [0, 100]
+                }
+            },
+            dataLabels: { enabled: false },
+            xaxis: {
+                labels: { show: false },
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                tooltip: { enabled: false }
+            },
+            yaxis: {
+                min: 0, max: 100, tickAmount: 4,
+                labels: { style: { colors: '#888', fontFamily: 'Rajdhani' } }
+            },
+            grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 3 },
+            theme: { mode: 'dark' }
+        };
+        var chart = new ApexCharts(document.querySelector("#pressure-chart"), options);
+        chart.render();
+
+        async function fetchDeepHistory() {
+            let allRecords = [];
+            // Busca 5 páginas para ter profundidade
+            for(let i=1; i<=5; i++) {
+                try {
+                    const res = await fetch(`${PROXY}${API_URL}${i}&t=${Date.now()}`, {
+                        headers: { 'Authorization': `Bearer ${SEU_TOKEN}` }
+                    });
+                    if(res.ok) {
+                        const data = await res.json();
+                        allRecords = allRecords.concat(data.records || data);
+                    }
+                } catch(e) { console.error(e); }
+            }
+            
+            // Ordena: mais recente primeiro
+            allRecords.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            analyze100x(allRecords);
+            updateChart(allRecords);
+            renderHistory(allRecords);
+            renderLegendaryTable(allRecords);
+        }
+
+        function analyze100x(history) {
+            if(!history.length) return;
+
+            let gamesSince = 0;
+            let found = false;
+
+            for(let game of history) {
+                if(parseFloat(game.crash_point) >= 100.00) {
+                    found = true;
+                    break;
+                }
+                gamesSince++;
+            }
+
+            elSince.innerText = found ? gamesSince : `+${gamesSince}`;
+
+            // Lógica de Probabilidade para 100x (Baseada em acumulação)
+            // Quanto mais tempo sem sair, maior a "pressão" teórica
+            let prob = 10; // Base
+            if (gamesSince > 100) prob += 20;
+            if (gamesSince > 300) prob += 30;
+            if (gamesSince > 500) prob += 35;
+
+            // Fator de correção: Se houver muitas velas baixas recentes, aumenta chance de estouro
+            const recent = history.slice(0, 20);
+            const lowCandles = recent.filter(g => parseFloat(g.crash_point) < 2.00).length;
+            if(lowCandles > 12) prob += 15; // Acumulação de baixa
+
+            if(prob > 99) prob = 99;
+
+            elConf.innerText = `${prob}%`;
+            
+            if(prob > 80) {
+                elConf.style.color = "var(--neon-gold)";
+                elMsg.innerText = "MOMENTO LENDÁRIO";
+                elMsg.style.color = "var(--neon-gold)";
+                elStatus.innerText = "ENTRADA";
+                elStatus.style.color = "var(--neon-gold)";
+            } else if(prob > 50) {
+                elConf.style.color = "var(--neon-purple)";
+                elMsg.innerText = "ACUMULANDO";
+                elMsg.style.color = "var(--neon-purple)";
+                elStatus.innerText = "OBSERVAR";
+                elStatus.style.color = "var(--neon-purple)";
+            } else {
+                elConf.style.color = "#555";
+                elMsg.innerText = "AGUARDANDO CICLO";
+                elMsg.style.color = "#888";
+                elStatus.innerText = "ESPERA";
+                elStatus.style.color = "#888";
+            }
+        }
+
+        function calculatePressure(historySegment) {
+            if(historySegment.length < 20) return 10;
+            
+            let gamesSince = 0;
+            for(let game of historySegment) {
+                if(parseFloat(game.crash_point) >= 100.00) break;
+                gamesSince++;
+            }
+
+            let prob = 10;
+            if (gamesSince > 100) prob += 20;
+            if (gamesSince > 300) prob += 30;
+            if (gamesSince > 500) prob += 35;
+
+            const recent = historySegment.slice(0, 20);
+            const lowCandles = recent.filter(g => parseFloat(g.crash_point) < 2.00).length;
+            if(lowCandles > 12) prob += 15;
+
+            return Math.min(prob, 99);
+        }
+
+        function updateChart(history) {
+            // Calcula a pressão para as últimas 100 rodadas
+            // Itera do passado (index 99) para o presente (index 0)
+            const dataPoints = [];
+            const limit = Math.min(history.length - 50, 100);
+            
+            for(let i = limit - 1; i >= 0; i--) {
+                // Passa o histórico "como se estivesse naquele momento"
+                dataPoints.push(calculatePressure(history.slice(i)));
+            }
+            
+            chart.updateSeries([{ data: dataPoints }]);
+        }
+
+        function renderLegendaryTable(history) {
+            elTableBody.innerHTML = '';
+            const indices = [];
+            
+            // Encontra os índices das velas 100x
+            history.forEach((game, index) => {
+                if (parseFloat(game.crash_point) >= 100.00) {
+                    indices.push(index);
+                }
+            });
+
+            const displayCount = Math.min(indices.length, 5);
+            
+            if (displayCount === 0) {
+                elTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 15px; color: #555;">Nenhuma vela 100x encontrada no histórico carregado</td></tr>';
+                return;
+            }
+
+            for(let i = 0; i < displayCount; i++) {
+                const currentIndex = indices[i];
+                const game = history[currentIndex];
+                const val = parseFloat(game.crash_point).toFixed(2);
+                const time = new Date(game.created_at).toLocaleTimeString();
+                
+                // Calcula intervalo com a próxima vela encontrada (mais antiga)
+                let interval = (i + 1 < indices.length) ? (indices[i+1] - currentIndex) : "Calculando...";
+
+                const row = `<tr><td style="padding: 8px; text-align: left;"><span style="color: #ffd700; font-weight: bold;">${val}x</span></td><td style="padding: 8px; text-align: center; color: #aaa;">${time}</td><td style="padding: 8px; text-align: right; color: #fff;">${interval}</td></tr>`;
+                elTableBody.innerHTML += row;
+            }
+        }
+
+        function renderHistory(history) {
+            elHistory.innerHTML = '';
+            history.slice(0, 50).forEach(game => {
+                const val = parseFloat(game.crash_point);
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = val.toFixed(2) + 'x';
+                
+                if(val >= 100.00) div.classList.add('legendary');
+                else if(val >= 10.00) div.style.color = "var(--neon-purple)";
+                else if(val >= 2.00) div.style.color = "#00ff9d";
+                else div.style.color = "#ff0055";
+
+                elHistory.appendChild(div);
+            });
+        }
+
+        fetchDeepHistory();
+        setInterval(fetchDeepHistory, 15000); // Atualiza a cada 15s (Deep Scan é pesado)
+    </script>
+</body>
+</html>

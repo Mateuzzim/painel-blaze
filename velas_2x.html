@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hunter 2x - Crash</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-core: #050b14;
+            --bg-card: #0f1923;
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff9d;
+            --neon-red: #ff0055;
+            --text-main: #e0e6ed;
+        }
+
+        body {
+            background-color: var(--bg-core);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Efeito de Grade no Fundo */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        .btn-back:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 15px var(--neon-red);
+        }
+
+        /* Visualização do Núcleo da IA */
+        .ai-core-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .ai-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+
+        .ai-outer {
+            width: 100%; height: 100%;
+            border-top-color: var(--neon-blue);
+            border-bottom-color: var(--neon-blue);
+            animation: spin 3s linear infinite;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        .ai-inner {
+            width: 70%; height: 70%;
+            border-left-color: var(--neon-green);
+            border-right-color: var(--neon-green);
+            animation: spin-reverse 2s linear infinite;
+        }
+
+        .ai-center {
+            width: 40%; height: 40%;
+            background: radial-gradient(circle, var(--neon-blue), transparent);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .ai-status-text {
+            position: absolute;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #000;
+            z-index: 2;
+        }
+
+        /* Cartão de Previsão */
+        .prediction-card {
+            background: rgba(15, 25, 35, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prediction-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        .confidence-meter {
+            font-size: 3.5rem;
+            font-family: 'Orbitron', sans-serif;
+            margin: 10px 0;
+            color: var(--neon-blue);
+        }
+
+        .prediction-message {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.1);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Histórico */
+        .history-container {
+            width: 100%;
+            max-width: 600px;
+        }
+        .history-title {
+            font-family: 'Orbitron', sans-serif;
+            color: #8899a6;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .history-list {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            /* Máscara para suavizar as bordas do scroll */
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
+        .history-list::-webkit-scrollbar { height: 4px; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 2px; }
+
+        .history-item {
+            background: #1a2733;
+            min-width: 60px;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .history-item.win { color: var(--neon-green); border-color: rgba(0, 255, 157, 0.3); box-shadow: 0 0 10px rgba(0, 255, 157, 0.1); }
+        .history-item.loss { color: var(--neon-red); border-color: rgba(255, 0, 85, 0.3); }
+        .history-item.doji { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+        .history-item.pink { color: #ff00de; border-color: rgba(255, 0, 222, 0.5); box-shadow: 0 0 15px rgba(255, 0, 222, 0.2); background: rgba(255, 0, 222, 0.05); }
+
+        /* Animações */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.5; } }
+
+        /* Cards Extras (5x e 10x) */
+        .extra-predictions {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+        .mini-card {
+            flex: 1;
+            background: rgba(15, 25, 35, 0.8);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+        .mini-title {
+            color: #8899a6;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .mini-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>AI HUNTER <span style="font-size: 0.8em; color: #fff;">2X</span></h1>
+        <a href="index.html" class="btn-back">Voltar</a>
+    </div>
+
+    <div class="ai-core-container">
+        <div class="ai-circle ai-outer"></div>
+        <div class="ai-circle ai-inner"></div>
+        <div class="ai-center"></div>
+        <div class="ai-status-text" id="ai-status">SCANNING</div>
+    </div>
+
+    <div class="prediction-card">
+        <div style="color: #8899a6; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px;">Probabilidade de Vela 2.00x+</div>
+        <div class="confidence-meter" id="confidence-value">--%</div>
+        <div class="prediction-message" id="prediction-msg">AGUARDANDO DADOS...</div>
+        <div class="status-badge" id="action-badge" style="background: #333; color: #aaa;">INICIANDO</div>
+    </div>
+
+    <div class="extra-predictions">
+        <div class="mini-card">
+             <div class="mini-title">Vela 5.00x+</div>
+             <div class="mini-value" id="conf-5x">--%</div>
+        </div>
+        <div class="mini-card">
+             <div class="mini-title">Vela 10.00x+</div>
+             <div class="mini-value" id="conf-10x">--%</div>
+        </div>
+        <div class="mini-card">
+             <div class="mini-title">Próxima Rosa</div>
+             <div class="mini-value" id="pink-estimation">--</div>
+             <div style="font-size: 0.7rem; color: #8899a6; margin-top: 5px;" id="pink-avg-info">Média: --</div>
+        </div>
+    </div>
+
+    <div class="history-container" style="margin-bottom: 20px;">
+        <div class="history-title">
+            <span style="color: #ff00de; text-shadow: 0 0 5px rgba(255, 0, 222, 0.5);">HISTÓRICO 10X+ (VELAS ROSAS)</span>
+        </div>
+        <div class="history-list" id="pink-history-list"></div>
+    </div>
+
+    <div class="history-container">
+        <div class="history-title">
+            <span>HISTÓRICO RECENTE</span>
+            <span id="last-update">Atualizando...</span>
+        </div>
+        <div class="history-list" id="history-list">
+            <!-- Items injected via JS -->
+        </div>
+    </div>
+
+    <script>
+        // Configurações da API
+        const SEU_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+        const API_URL = 'https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=1';
+        const PROXY = 'https://corsproxy.io/?';
+
+        let isFetching = false;
+
+        // Elementos DOM
+        const elConfidence = document.getElementById('confidence-value');
+        const elMsg = document.getElementById('prediction-msg');
+        const elBadge = document.getElementById('action-badge');
+        const elHistory = document.getElementById('history-list');
+        const elStatus = document.getElementById('ai-status');
+        const elLastUpdate = document.getElementById('last-update');
+        const elConf5x = document.getElementById('conf-5x');
+        const elConf10x = document.getElementById('conf-10x');
+        const elPinkHistory = document.getElementById('pink-history-list');
+        const elPinkEst = document.getElementById('pink-estimation');
+        const elPinkAvg = document.getElementById('pink-avg-info');
+
+        // Função auxiliar para calcular probabilidade de um segmento
+        function calculateProbability(segment) {
+            if (!segment || segment.length < 10) return 45;
+
+            let consecutiveLosses = 0;
+            for (let game of segment) {
+                const val = parseFloat(game.crash_point);
+                if (val < 2.00) consecutiveLosses++;
+                else break;
+            }
+
+            let probability = 45;
+            if (consecutiveLosses > 0) {
+                probability += (consecutiveLosses * 12);
+            } else {
+                const lastVal = parseFloat(segment[0].crash_point);
+                if (lastVal > 10.00) probability = 25;
+                else probability = 48;
+            }
+
+            if (probability > 98) probability = 98;
+            if (probability < 10) probability = 10;
+            
+            return probability;
+        }
+
+        // Função para calcular probabilidade de velas altas (5x, 10x)
+        function calculateHighProbability(history, target) {
+            if (!history || history.length === 0) return 10;
+            
+            let gamesSince = 0;
+            for (let game of history) {
+                if (parseFloat(game.crash_point) >= target) break;
+                gamesSince++;
+            }
+
+            // Lógica: quanto mais tempo sem sair, maior a chance (Teoria da Compensação)
+            // Base 5x: 10% + 2.5% por jogo sem sair.
+            // Base 10x: 5% + 1.2% por jogo sem sair.
+            let base = target === 5 ? 10 : 5;
+            let multiplier = target === 5 ? 2.5 : 1.2;
+            
+            let prob = base + (gamesSince * multiplier);
+            return Math.min(prob, 95).toFixed(0);
+        }
+
+        // Calcula estimativa para próxima vela rosa
+        function calculatePinkEstimation(history) {
+            let pinkIndices = [];
+            for(let i = 0; i < history.length; i++) {
+                if (parseFloat(history[i].crash_point) >= 10.00) {
+                    pinkIndices.push(i);
+                }
+            }
+
+            if (pinkIndices.length < 2) {
+                elPinkEst.innerText = "--";
+                elPinkAvg.innerText = "Dados insuficientes";
+                return;
+            }
+
+            // Calcula intervalos entre velas rosas
+            let intervals = [];
+            for (let i = 0; i < pinkIndices.length - 1; i++) {
+                intervals.push(pinkIndices[i+1] - pinkIndices[i]);
+            }
+            
+            // Média Ponderada (Dando mais peso para os intervalos recentes)
+            let weightedSum = 0;
+            let weightTotal = 0;
+            const recentIntervals = intervals.slice(0, 5); // Analisa os últimos 5 intervalos
+
+            recentIntervals.forEach((interval, index) => {
+                const weight = recentIntervals.length - index; // Ex: 5, 4, 3...
+                weightedSum += interval * weight;
+                weightTotal += weight;
+            });
+
+            const avg = Math.round(weightedSum / weightTotal);
+            const gamesSince = pinkIndices[0];
+            const remaining = avg - gamesSince;
+            
+            // Indicador de Tendência
+            let trendHtml = '';
+            if (intervals.length >= 2) {
+                if (intervals[0] > intervals[1]) {
+                    trendHtml = '<span style="color: var(--neon-red); margin-left: 5px;">▲</span>'; 
+                } else if (intervals[0] < intervals[1]) {
+                    trendHtml = '<span style="color: var(--neon-green); margin-left: 5px;">▼</span>';
+                } else {
+                    trendHtml = '<span style="color: #8899a6; margin-left: 5px;">=</span>';
+                }
+            }
+
+            elPinkAvg.innerHTML = `Média Dinâmica: ${avg}${trendHtml}`;
+
+            if (remaining > 0) {
+                elPinkEst.innerText = remaining;
+                elPinkEst.style.color = "var(--text-main)";
+                elPinkEst.classList.remove('blink');
+            } else {
+                elPinkEst.innerText = `+${Math.abs(remaining)}`;
+                elPinkEst.style.color = "var(--neon-red)";
+                elPinkEst.classList.add('blink');
+            }
+        }
+
+        // Função de Análise da "IA"
+        function analyzePattern(history) {
+            if (!history || history.length < 10) return;
+
+            // Previsão Atual
+            const recent = history.slice(0, 20); 
+            const probability = calculateProbability(recent);
+            
+            // Previsões Altas (5x e 10x)
+            const prob5x = calculateHighProbability(history, 5.00);
+            const prob10x = calculateHighProbability(history, 10.00);
+
+            updateInterface(probability);
+            
+            // Atualiza UI 5x/10x
+            elConf5x.innerText = `${prob5x}%`;
+            elConf5x.style.color = prob5x > 70 ? "var(--neon-green)" : (prob5x > 40 ? "var(--neon-blue)" : "var(--text-main)");
+            
+            elConf10x.innerText = `${prob10x}%`;
+            elConf10x.style.color = prob10x > 60 ? "var(--neon-green)" : (prob10x > 30 ? "var(--neon-blue)" : "var(--text-main)");
+
+            calculatePinkEstimation(history);
+        }
+
+        function updateInterface(prob) {
+            elConfidence.innerText = `${prob}%`;
+            
+            // Cores e Mensagens baseadas na probabilidade
+            if (prob >= 85) {
+                // Alta Confiança
+                elConfidence.style.color = "var(--neon-green)";
+                elConfidence.style.textShadow = "0 0 20px var(--neon-green)";
+                
+                elMsg.innerText = "ALTA PROBABILIDADE";
+                elMsg.style.color = "var(--neon-green)";
+                
+                elBadge.innerText = "ENTRADA CONFIRMADA";
+                elBadge.style.background = "rgba(0, 255, 157, 0.2)";
+                elBadge.style.color = "var(--neon-green)";
+                elBadge.style.border = "1px solid var(--neon-green)";
+                elBadge.classList.add('blink');
+                
+                elStatus.innerText = "TARGET FOUND";
+                elStatus.style.color = "var(--neon-green)";
+            } else if (prob >= 60) {
+                // Média Confiança
+                elConfidence.style.color = "var(--neon-blue)";
+                elConfidence.style.textShadow = "0 0 20px var(--neon-blue)";
+                
+                elMsg.innerText = "PADRÃO EM ANÁLISE";
+                elMsg.style.color = "var(--neon-blue)";
+                
+                elBadge.innerText = "OBSERVAR";
+                elBadge.style.background = "rgba(0, 243, 255, 0.2)";
+                elBadge.style.color = "var(--neon-blue)";
+                elBadge.style.border = "1px solid var(--neon-blue)";
+                elBadge.classList.remove('blink');
+                
+                elStatus.innerText = "CALCULATING";
+                elStatus.style.color = "var(--neon-blue)";
+            } else {
+                // Baixa Confiança
+                elConfidence.style.color = "var(--neon-red)";
+                elConfidence.style.textShadow = "0 0 20px var(--neon-red)";
+                
+                elMsg.innerText = "MERCADO INSTÁVEL";
+                elMsg.style.color = "var(--neon-red)";
+                
+                elBadge.innerText = "AGUARDAR";
+                elBadge.style.background = "rgba(255, 0, 85, 0.2)";
+                elBadge.style.color = "var(--neon-red)";
+                elBadge.style.border = "1px solid var(--neon-red)";
+                elBadge.classList.remove('blink');
+                
+                elStatus.innerText = "SCANNING";
+                elStatus.style.color = "#fff";
+            }
+        }
+
+        function renderHistory(history) {
+            elHistory.innerHTML = '';
+            // Mostra os últimos 30
+            const displayList = history.slice(0, 30);
+            
+            displayList.forEach(game => {
+                const val = parseFloat(game.crash_point);
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = val.toFixed(2) + 'x';
+                
+                if (val >= 2.00) div.classList.add('win');
+                else if (val <= 1.00) div.classList.add('doji');
+                else div.classList.add('loss');
+                
+                elHistory.appendChild(div);
+            });
+        }
+
+        function renderPinkHistory(history) {
+            elPinkHistory.innerHTML = '';
+            // Filtra apenas velas acima de 10x
+            const pinks = history.filter(g => parseFloat(g.crash_point) >= 10.00);
+            // Pega as últimas 20 encontradas
+            const displayList = pinks.slice(0, 20);
+            
+            if (displayList.length === 0) {
+                elPinkHistory.innerHTML = '<div style="padding:10px; color:#555; font-size:0.8rem; width:100%; text-align:center;">Nenhuma vela rosa recente</div>';
+                return;
+            }
+
+            displayList.forEach(game => {
+                const val = parseFloat(game.crash_point);
+                const div = document.createElement('div');
+                div.className = 'history-item pink';
+                div.innerText = val.toFixed(2) + 'x';
+                elPinkHistory.appendChild(div);
+            });
+        }
+
+        async function fetchData() {
+            if (isFetching) return;
+            isFetching = true;
+            
+            try {
+                const response = await fetch(`${PROXY}${API_URL}&t=${Date.now()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${SEU_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const records = data.records || data;
+                    
+                    // Garante ordenação: Mais recente primeiro
+                    records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                    renderHistory(records);
+                    renderPinkHistory(records);
+                    analyzePattern(records);
+                    
+                    const now = new Date();
+                    elLastUpdate.innerText = `Atualizado: ${now.toLocaleTimeString()}`;
+                } else {
+                    console.warn("Erro na API");
+                    elLastUpdate.innerText = "Erro de conexão";
+                }
+
+            } catch (error) {
+                console.error("Erro:", error);
+                elLastUpdate.innerText = "Erro interno";
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        // Inicialização
+        fetchData();
+        setInterval(fetchData, 5000); // Atualiza a cada 5 segundos
+
+    </script>
+</body>
+</html>

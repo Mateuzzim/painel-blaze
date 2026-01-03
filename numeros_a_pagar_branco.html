@@ -499,6 +499,12 @@
             50% { box-shadow: 0 0 30px rgba(233, 30, 99, 0.6); border-color: #e91e63; }
             100% { box-shadow: 0 0 15px rgba(233, 30, 99, 0.2); border-color: rgba(233, 30, 99, 0.5); }
         }
+        /* Estilos do Cortex Matrix */
+        @keyframes matrix-pulse {
+            0% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); border-color: rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+            100% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); border-color: rgba(0, 255, 0, 0.5); }
+        }
     </style>
 </head>
 <body>
@@ -580,7 +586,7 @@
             <!-- Coluna Esquerda: Análise Principal -->
             <div class="column-left">
                 <!-- CORTEX ORACLE - PREDIÇÃO SUPREMA (NOVO) -->
-                <div id="oraclePanel" class="stat-card" style="display: none; border: 1px solid #00e5ff; background: radial-gradient(circle at center, rgba(0, 20, 30, 0.9), rgba(0,0,0,0.95)); animation: oracle-pulse 3s infinite;">
+                <div id="oraclePanel" class="stat-card" style="display: block; border: 1px solid #00e5ff; background: radial-gradient(circle at center, rgba(0, 20, 30, 0.9), rgba(0,0,0,0.95)); animation: oracle-pulse 3s infinite;">
                     <div class="stat-title" style="color: #00e5ff; display: flex; justify-content: space-between; align-items: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 229, 255, 0.3);">
                         <span>👁️ CORTEX ORACLE</span>
                         <div style="display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #aaa; letter-spacing: 0;">
@@ -763,6 +769,24 @@
                          <div class="progress-bar" style="height: 6px; background: #222;"><div id="mirrorBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #e91e63, #ff6090);"></div></div>
                     </div>
                     <div id="mirrorAlert" style="margin-top: 15px; text-align: center; font-weight: bold; color: #fff; display: none; background: rgba(233, 30, 99, 0.3); padding: 8px; border-radius: 4px; animation: pulse-red-dot 1s infinite;">⚠️ DUPLA DETECTADA: POSSÍVEL GATILHO!</div>
+                </div>
+
+                <!-- CORTEX MATRIX - ANÁLISE DE COMBOS (NOVO) -->
+                <div id="matrixPanel" class="stat-card" style="border: 1px solid #333; background: radial-gradient(circle at center, rgba(0, 20, 0, 0.9), rgba(0,0,0,0.95));">
+                    <div class="stat-title" style="color: #00ff00; text-align: center; font-size: 1.3rem; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 255, 0, 0.3);">🧩 CORTEX MATRIX</div>
+                    <div class="responsive-flex" style="display: flex; gap: 15px; margin-top: 15px;">
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">COMBO ATUAL</div>
+                            <div id="matrixCombo" class="highlight-val" style="font-size: 1.8rem; color: #fff;">--</div>
+                        </div>
+                        <div style="flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: #aaa;">PROBABILIDADE</div>
+                            <div id="matrixProb" class="highlight-val" style="font-size: 1.8rem; color: #00ff00;">--%</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center;">
+                         <div id="matrixStats" style="font-size: 0.75rem; color: #ccc;">Analisando histórico de combos...</div>
+                    </div>
                 </div>
 
                 <!-- Tabela de Classificação -->
@@ -1216,6 +1240,7 @@
             calculateQuantum(); // Chama a IA Quantum
             calculateSynergy(); // Chama a nova IA Synergy
             calculateMirror(); // Chama a IA Mirror
+            calculateMatrix(); // Chama a IA Matrix
             renderTable();
 
             // --- LÓGICA DE ALERTA ---
@@ -1996,6 +2021,46 @@
             }
         }
 
+        function calculateMatrix() {
+            if (rawData.length < 50) return;
+
+            // Pega os últimos 2 números (Combo Gatilho)
+            const r1 = rawData[0].roll;
+            const r2 = rawData[1].roll;
+            
+            let occurrences = 0;
+            let whiteHits = 0;
+            
+            // Varre histórico em busca do padrão [r2, r1] -> ?
+            for (let i = 0; i < rawData.length - 2; i++) {
+                if (rawData[i+1].roll === r1 && rawData[i+2].roll === r2) {
+                    occurrences++;
+                    if (rawData[i].roll === 0) {
+                        whiteHits++;
+                    }
+                }
+            }
+            
+            const prob = occurrences > 0 ? (whiteHits / occurrences) * 100 : 0;
+            
+            document.getElementById('matrixCombo').innerText = `[${r2}, ${r1}]`;
+            document.getElementById('matrixProb').innerText = prob.toFixed(0) + '%';
+            document.getElementById('matrixStats').innerText = `Histórico: ${whiteHits} brancos em ${occurrences} ocorrências deste combo.`;
+            
+            const panel = document.getElementById('matrixPanel');
+            if (panel) {
+                if (prob >= 20 && occurrences >= 3) {
+                    panel.style.borderColor = '#00ff00';
+                    panel.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.3)';
+                    panel.style.animation = 'matrix-pulse 3s infinite';
+                } else {
+                    panel.style.borderColor = '#333';
+                    panel.style.boxShadow = 'none';
+                    panel.style.animation = 'none';
+                }
+            }
+        }
+
         function toggleOracleScan() {
             const enabled = document.getElementById('oracleScanToggle').checked;
             const badge = document.getElementById('oracleBadge');
@@ -2138,8 +2203,9 @@
 
             // Atualiza UI Oracle
             const panel = document.getElementById('oraclePanel');
+            panel.style.display = 'block'; // Sempre visível (Fixo)
+
             if (bestOracle && bestOracle.probability > 45) { // Só mostra se tiver boa confiança
-                panel.style.display = 'block';
                 
                 // Se varredura NÃO estiver ativa, atualiza com o melhor. Se estiver, o intervalo cuida.
                 if (!document.getElementById('oracleScanToggle')?.checked) {
@@ -2170,7 +2236,13 @@
                     }
                 }
             } else {
-                panel.style.display = 'none';
+                // Estado de espera se não houver candidato forte
+                document.getElementById('oracleNumber').innerText = "--";
+                document.getElementById('oracleProb').innerText = "0%";
+                document.getElementById('oracleBar').style.width = "0%";
+                document.getElementById('oracleReasons').innerHTML = '<li class="oracle-list-item">➤ Aguardando padrão de alta precisão...</li>';
+                const secContainer = document.getElementById('oracleSecondary');
+                if (secContainer) secContainer.style.display = 'none';
             }
         }
 
@@ -2493,6 +2565,7 @@
             const qVal = getVal('quantumPercentage');
             const aVal = getVal('assertivenessScore');
             const oVal = getVal('oracleProb');
+            const mVal = getVal('matrixProb');
             // eVal já calculado acima
 
             const oraclePanel = document.getElementById('oraclePanel');
@@ -2500,7 +2573,7 @@
                 ? `Alvo: ${document.getElementById('oracleNumber').innerText} (${document.getElementById('oracleProb').innerText})` 
                 : 'Aguardando...';
             // Determinar qual IA está liderando
-            const vals = { 's': sVal, 'n': nVal, 'q': qVal, 'a': aVal, 'e': eVal, 'o': oVal };
+            const vals = { 's': sVal, 'n': nVal, 'q': qVal, 'a': aVal, 'e': eVal, 'o': oVal, 'm': mVal };
             let maxKey = null;
             let maxV = 0;
             for(let k in vals) {
@@ -2522,6 +2595,7 @@
                     <div style="font-size: 0.75rem; color: #ffd700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⚛️ Quantum (${qVal.toFixed(0)}%): <span style="color: #ccc;">${qStatus}</span></div>
                     <div style="font-size: 0.75rem; color: #00ff88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✅ Assertividade (${aVal.toFixed(0)}%): <span style="color: #ccc;">${aStatus}</span></div>
                     <div style="font-size: 0.75rem; color: #00e5ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👁️ CORTEX ORACLE: <span style="color: #ccc;">${oracleStatus}</span></div>
+                    <div style="font-size: 0.75rem; color: #00ff00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🧩 CORTEX MATRIX (${mVal.toFixed(0)}%): <span style="color: #ccc;">Monitorando</span></div>
                 </div>
                 
                 <!-- Mini Gráfico Comparativo -->
@@ -2567,6 +2641,13 @@
                             <div class="${getCls('a')}" style="width: 100%; height: ${aVal}%; background: #00ff88; color: #00ff88; border-radius: 2px; transition: height 0.5s;"></div>
                         </div>
                         <div style="font-size: 0.6rem; color: #00ff88; font-weight: bold;">AST</div>
+                    </div>
+                    <!-- Matrix -->
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%;">
+                        <div style="width: 100%; flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; position: relative; display: flex; align-items: flex-end;">
+                            <div class="${getCls('m')}" style="width: 100%; height: ${mVal}%; background: #00ff00; color: #00ff00; border-radius: 2px; transition: height 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 0.6rem; color: #00ff00; font-weight: bold;">MTX</div>
                     </div>
                 </div>
             `;

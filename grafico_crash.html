@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Trade - Crash</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --bg-card: rgba(20, 25, 40, 0.7);
+            --neon-green: #39ff14;
+            --neon-red: #ff003c;
+            --neon-blue: #00f3ff;
+            --text: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 2px; color: var(--neon-blue); text-shadow: 0 0 5px rgba(0, 243, 255, 0.5); }
+
+        .btn-back {
+            background: transparent;
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            box-shadow: 0 0 5px rgba(255, 0, 60, 0.2);
+        }
+        .btn-back:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 15px var(--neon-red); }
+
+        .chart-back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        select.btn-back option {
+            background: var(--bg-dark);
+            color: var(--text);
+        }
+
+        .chart-wrapper {
+            display: flex;
+            flex-grow: 1;
+            gap: 10px;
+            min-height: 0;
+        }
+
+        #chart-container {
+            flex-grow: 1;
+            background: var(--bg-card);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #oscillator-container {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60%;
+            width: 50px;
+            background: rgba(5, 10, 15, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 243, 255, 0.05);
+            z-index: 10;
+        }
+
+        /* Detalhes futuristas (Bordas Neon) */
+        #oscillator-container::before, #oscillator-container::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        #oscillator-container::before { top: 0; }
+        #oscillator-container::after { bottom: 0; }
+
+        .oscillator-bar-bg {
+            flex-grow: 1;
+            width: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            margin: 10px 0;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        .oscillator-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, #ff003c, #39ff14);
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .oscillator-value { font-size: 0.9rem; font-weight: bold; color: #fff; font-family: 'Rajdhani'; }
+        .oscillator-label { font-size: 0.7rem; color: #666; writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 2px; font-weight: bold; }
+
+        #chart { width: 100%; height: 100%; }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .stat-box {
+            padding: 5px 12px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-win { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 8px rgba(57, 255, 20, 0.2); text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+        .stat-loss { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 8px rgba(255, 0, 60, 0.2); text-shadow: 0 0 5px rgba(255, 0, 60, 0.5); }
+        .stat-doji { color: #fff; border-color: #fff; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+
+        #last-results-container {
+            margin-top: 15px;
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        #last-results-list {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-direction: row-reverse;
+            padding-bottom: 5px;
+        }
+        #last-results-list::-webkit-scrollbar { height: 6px; }
+        #last-results-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 3px; }
+        #last-results-list::-webkit-scrollbar-thumb { 
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); 
+            border-radius: 3px; 
+            box-shadow: 0 0 10px var(--neon-blue); 
+        }
+
+        .result-badge {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .badge-win { background: rgba(57, 255, 20, 0.1); color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 5px rgba(57, 255, 20, 0.2); }
+        .badge-loss { background: rgba(255, 0, 60, 0.1); color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 5px rgba(255, 0, 60, 0.2); }
+        .badge-doji { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: #fff; }
+
+        /* Animação de oscilação para a linha atual (segunda anotação) */
+        .pulsing-annotation line,
+        .pulsing-annotation rect,
+        .pulsing-annotation text,
+        .apexcharts-yaxis-annotations > g:last-child line,
+        .apexcharts-yaxis-annotations > g:last-child rect,
+        .apexcharts-yaxis-annotations > g:last-child text {
+            animation: oscillate 2s ease-in-out infinite;
+        }
+        @keyframes oscillate {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Painel Lateral */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: rgba(5, 5, 10, 0.95);
+            backdrop-filter: blur(15px);
+            border-left: 1px solid var(--neon-blue);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .side-panel.open { right: 0; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(0, 243, 255, 0.3); padding-bottom: 15px; }
+        .panel-header h3 { margin: 0; color: var(--neon-blue); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .close-btn { background: none; border: none; color: var(--text); font-size: 2rem; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); }
+        
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .stat-label { color: #aaa; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.2rem; font-weight: bold; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1500;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .overlay.active { opacity: 1; pointer-events: all; }
+
+        #alert-overlay {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 60, 0.9);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: 'Rajdhani';
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 50;
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.6);
+            display: none;
+            animation: pulse-alert 1s infinite;
+            pointer-events: none;
+        }
+        @keyframes pulse-alert { 0% { opacity: 1; transform: translateX(-50%) scale(1); } 50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
+
+        #reversal-indicator {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            background: rgba(5, 10, 15, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            min-width: 120px;
+        }
+        .reversal-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .reversal-value { font-size: 1.5rem; font-weight: bold; color: #ffd700; font-family: 'Rajdhani'; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+        .reversal-bar-bg { width: 100%; height: 4px; background: #333; margin-top: 5px; border-radius: 2px; }
+        .reversal-bar-fill { height: 100%; background: #ffd700; width: 0%; transition: width 0.5s; border-radius: 2px; box-shadow: 0 0 5px #ffd700; }
+
+        /* AI Alert 20x Styles */
+        #ai-alert-20x {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(10, 20, 30, 0.95);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 15px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+            z-index: 100;
+            animation: slideInRight 0.5s ease-out;
+            min-width: 140px;
+            backdrop-filter: blur(10px);
+        }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .ai-icon { font-size: 2rem; margin-bottom: 5px; animation: pulse-ai 1.5s infinite; text-shadow: 0 0 15px var(--neon-blue); }
+        @keyframes pulse-ai { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .ai-title { color: var(--neon-blue); font-weight: bold; font-size: 1.1rem; margin-bottom: 2px; font-family: 'Rajdhani'; letter-spacing: 1px; }
+        .ai-desc { color: #aaa; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .ai-conf-box { background: rgba(0, 243, 255, 0.15); border: 1px solid var(--neon-blue); color: #fff; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 1.3rem; font-family: 'Rajdhani'; text-shadow: 0 0 10px var(--neon-blue); box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2); }
+
+        /* AI History Styles */
+        .ai-history {
+            margin-top: 10px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 8px;
+        }
+        .ai-hist-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #ccc;
+        }
+        .ai-hist-item:hover {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-blue);
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Painel Lateral -->
+    <div id="overlay" class="overlay"></div>
+    <div id="side-panel" class="side-panel">
+        <div class="panel-header">
+            <h3>Estatísticas Pro</h3>
+            <button id="btn-close-panel" class="close-btn">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="stat-row"><span class="stat-label">Média (Crash)</span><span id="stat-avg" class="stat-value">0.00x</span></div>
+            <div class="stat-row"><span class="stat-label">Tendência (10)</span><span id="stat-trend" class="stat-value">---</span></div>
+            <div class="stat-row"><span class="stat-label">RTP (Est. 2x)</span><span id="stat-rtp" class="stat-value">0.00%</span></div>
+            <div class="stat-row"><span class="stat-label">Maior Crash</span><span id="stat-max" class="stat-value">0.00x</span></div>
+            <div class="stat-row"><span class="stat-label">Sequência Atual</span><span id="stat-streak" class="stat-value">---</span></div>
+            <div class="stat-row"><span class="stat-label">Total Jogos</span><span id="stat-total" class="stat-value">0</span></div>
+            <div id="pie-chart" style="margin-top: 20px; display: flex; justify-content: center;"></div>
+        </div>
+    </div>
+
+    <div class="chart-wrapper">
+        <div id="chart-container">
+            <a href="index.html" class="btn-back chart-back-btn">Voltar</a>
+            <div id="alert-overlay">⚠️ ALERTA DE LOSS ⚠️</div>
+            <div id="reversal-indicator">
+                <div class="reversal-label">Reversão</div>
+                <div class="reversal-value" id="rev-val">--%</div>
+                <div class="reversal-bar-bg"><div class="reversal-bar-fill" id="rev-fill"></div></div>
+            </div>
+            <div id="ai-alert-20x">
+                <div class="ai-icon">🤖</div>
+                <div class="ai-title">SINAL 20X</div>
+                <div class="ai-desc" id="ai-reason">PADRÃO DETECTADO</div>
+                <div class="ai-conf-box" id="ai-conf">--%</div>
+                <div id="ai-history" class="ai-history"></div>
+            </div>
+            <div id="chart"></div>
+            <div id="oscillator-container">
+                <div class="oscillator-value" id="osc-val">--%</div>
+                <div class="oscillator-bar-bg"><div class="oscillator-fill" id="osc-fill" style="height: 50%"></div></div>
+                <div class="oscillator-label">MOMENTUM</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="last-results-container">
+        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--neon-blue); text-transform: uppercase; letter-spacing: 1px;">Últimos 24 Resultados</h3>
+        <div id="last-results-list"></div>
+    </div>
+
+    <script>
+        // Configuração do Gráfico (Estilo Trade)
+        var options = {
+            series: [],
+            chart: {
+                type: 'line',
+                height: '100%',
+                background: 'transparent',
+                animations: { enabled: false },
+                toolbar: { show: true, tools: { download: false } }
+            },
+            annotations: {
+                yaxis: [{
+                    y: 100,
+                    borderColor: '#00f3ff',
+                    strokeDashArray: 4,
+                    label: {
+                        borderColor: '#00f3ff',
+                        style: { color: '#000', background: '#00f3ff', fontFamily: 'Rajdhani' },
+                        text: 'Início (100.00)'
+                    }
+                }]
+            },
+            stroke: {
+                width: [1, 2],
+                curve: 'smooth'
+            },
+            colors: ['#00f3ff', '#ffd700'],
+            plotOptions: {
+                candlestick: {
+                    colors: {
+                        upward: '#39ff14',   // Neon Green
+                        downward: '#ff003c'  // Neon Red
+                    },
+                    wick: { useFillColor: true }
+                }
+            },
+            xaxis: {
+                labels: { show: false },
+                tooltip: { enabled: false }
+            },
+            yaxis: {
+                tooltip: { enabled: true },
+                labels: { style: { colors: '#00f3ff', fontFamily: 'Rajdhani' }, formatter: (val) => val.toFixed(2) },
+                opposite: true // Eixo de preço na direita (padrão trade)
+            },
+            tooltip: {
+                theme: 'dark',
+                custom: function({series, seriesIndex, dataPointIndex, w}) {
+                    const seriesObj = w.config.series[seriesIndex];
+                    const data = seriesObj.data[dataPointIndex];
+
+                    const val = data.crashValue;
+                    const valFloat = parseFloat(val);
+                    let color = '#ff003c'; // Vermelho (Padrão/Loss)
+                    if (valFloat <= 1.00) color = '#ffffff'; // Branco (Doji/0x)
+                    else if (valFloat >= 2.00) color = '#39ff14'; // Verde (Win)
+                    return `<div style="padding: 8px; background: rgba(0,0,0,0.8); border: 1px solid ${color}; box-shadow: 0 0 5px ${color}; color: #fff; font-family: 'Rajdhani';">
+                        <div>CRASH: <strong>${val}x</strong></div>
+                    </div>`;
+                }
+            },
+            grid: {
+                borderColor: 'rgba(0, 243, 255, 0.1)',
+                strokeDashArray: 3
+            },
+            theme: { mode: 'dark' }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+
+        // Configuração do Gráfico de Pizza (Win/Loss/Doji)
+        var pieOptions = {
+            series: [0, 0, 0],
+            labels: ['Win', 'Loss', 'Doji'],
+            colors: ['#39ff14', '#ff003c', '#ffffff'],
+            chart: {
+                type: 'donut',
+                height: 220,
+                background: 'transparent',
+                animations: { enabled: true }
+            },
+            stroke: { show: false },
+            dataLabels: { enabled: false },
+            legend: { 
+                show: true, 
+                position: 'bottom',
+                labels: { colors: '#e0e0e0', fontFamily: 'Rajdhani' },
+                markers: { width: 10, height: 10 }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            name: { show: false },
+                            value: { color: '#fff', fontSize: '18px', fontFamily: 'Rajdhani', fontWeight: 'bold', offsetY: 5 },
+                            total: {
+                                show: true, showAlways: true, label: 'Total', color: '#aaa', fontSize: '12px', fontFamily: 'Rajdhani',
+                                formatter: function (w) { return w.globals.seriesTotals.reduce((a, b) => a + b, 0); }
+                            }
+                        }
+                    }
+                }
+            },
+            tooltip: { theme: 'dark', style: { fontFamily: 'Rajdhani' } }
+        };
+        var pieChart = new ApexCharts(document.querySelector("#pie-chart"), pieOptions);
+        pieChart.render();
+
+        // Controle do Painel Lateral
+        const sidePanel = document.getElementById('side-panel');
+        const overlay = document.getElementById('overlay');
+        const btnClose = document.getElementById('btn-close-panel');
+
+        // Controle de Visualização (Velas/Linha)
+        let isCandleView = true;
+        let displayLimit = 100;
+
+        function togglePanel() {
+            sidePanel.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+        btnClose.addEventListener('click', togglePanel);
+        overlay.addEventListener('click', togglePanel);
+
+        // Lógica de Dados
+        // Token e API iguais ao do Histórico para garantir os mesmos resultados
+        const SEU_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+        const API_URL = 'https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=';
+        const PROXY = 'https://corsproxy.io/?';
+
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+        let isFetching = false;
+        let globalRecords = []; // Armazena o histórico para não precisar baixar tudo de novo
+        let firstLoad = true;   // Controla se é a primeira carga (10 páginas) ou atualização (1 página)
+
+        // Função para atualizar o visual (permite atualização progressiva)
+        function updateChartVisuals(records) {
+            if (!records || !Array.isArray(records)) return;
+
+            // Ordena do mais antigo para o mais novo e pega os últimos 100
+            const sorted = records
+                .filter(r => r && r.crash_point && r.created_at) // Filtra registros inválidos/corrompidos
+                .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+                .slice(-displayLimit);
+            
+            // Simulação de Preço (Começa em 100.00)
+            let currentPrice = 100.00;
+            const candleSize = 15.00; 
+            const wickSize = 4.50;   
+
+            // Contadores
+            let wins = 0, losses = 0, dojis = 0;
+
+            const seriesData = sorted.map((game, index) => {
+                const val = parseFloat(game.crash_point);
+                
+                // Define o tipo de vela: Win, Loss ou Doji (0x/1.00x)
+                let type = 'LOSS';
+                if (val <= 1.00) { type = 'DOJI'; dojis++; }
+                else if (val >= 2.00) { type = 'WIN'; wins++; }
+                else { losses++; }
+
+                let open = currentPrice;
+
+                // Lógica para evitar que fiquem na mesma linha na reversão (Degrau)
+                // Ignora Doji na lógica de degrau para manter simplicidade
+                if (index > 0 && type !== 'DOJI') {
+                    const prevGame = sorted[index - 1];
+                    const prevVal = parseFloat(prevGame.crash_point);
+                    let prevType = 'LOSS';
+                    if (prevVal <= 1.00) prevType = 'DOJI';
+                    else if (prevVal >= 2.00) prevType = 'WIN';
+
+                    if (prevType !== 'DOJI' && type !== prevType) {
+                        open = (type === 'WIN') ? currentPrice + candleSize : currentPrice - candleSize;
+                    }
+                }
+
+                let close, high, low;
+                const dataPoint = { x: index, crashValue: val.toFixed(2) };
+
+                if (type === 'DOJI') {
+                    close = open; // Abertura igual ao fechamento
+                    high = open + wickSize;
+                    low = open - wickSize;
+                    // Força a cor branca para Doji
+                    dataPoint.fillColor = '#ffffff';
+                    dataPoint.strokeColor = '#ffffff';
+                } else {
+                    const isWin = (type === 'WIN');
+                    close = isWin ? open + candleSize : open - candleSize;
+                    high = Math.max(open, close) + wickSize;
+                    low = Math.min(open, close) - wickSize;
+                }
+
+                currentPrice = close; 
+                
+                dataPoint.y = [open, high, low, close];
+                return dataPoint;
+            });
+
+            let mainSeriesConfig;
+            if (isCandleView) {
+                mainSeriesConfig = { name: 'Preço', type: 'candlestick', data: seriesData };
+            } else {
+                // Converte para formato de Linha (apenas preço de fechamento)
+                const lineData = seriesData.map(d => ({
+                    x: d.x, y: d.y[3], crashValue: d.crashValue
+                }));
+                mainSeriesConfig = { name: 'Preço', type: 'line', data: lineData };
+            }
+
+            chart.updateSeries([
+                mainSeriesConfig
+            ]);
+
+            // Atualiza o Placar (Gráfico Pizza)
+            pieChart.updateSeries([wins, losses, dojis]);
+
+            // --- Atualiza Estatísticas Avançadas ---
+            const totalGames = sorted.length;
+            const sumCrash = sorted.reduce((acc, curr) => acc + parseFloat(curr.crash_point), 0);
+            const avgCrash = totalGames > 0 ? (sumCrash / totalGames).toFixed(2) : "0.00";
+            
+            // Tendência de Mercado (Comparação Média Móvel 10 vs Anterior)
+            let trendHtml = '---';
+            if (totalGames >= 20) {
+                const last10 = sorted.slice(-10);
+                const prev10 = sorted.slice(-20, -10);
+                const avgLast10 = last10.reduce((a, b) => a + parseFloat(b.crash_point), 0) / 10;
+                const avgPrev10 = prev10.reduce((a, b) => a + parseFloat(b.crash_point), 0) / 10;
+                
+                if (avgLast10 >= avgPrev10) {
+                    trendHtml = '<span style="color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green)">ALTA ↗</span>';
+                } else {
+                    trendHtml = '<span style="color: var(--neon-red); text-shadow: 0 0 8px var(--neon-red)">BAIXA ↘</span>';
+                }
+            }
+            document.getElementById('stat-trend').innerHTML = trendHtml;
+
+            // RTP Estimado (Baseado em estratégia fixa de 2.00x)
+            // Se ganhar, retorna 2x. Se perder, 0x. Média disso / 1 (aposta) * 100
+            const winRate = totalGames > 0 ? wins / totalGames : 0;
+            const rtp2x = (winRate * 2 * 100).toFixed(2);
+
+            const maxCrash = totalGames > 0 ? Math.max(...sorted.map(g => parseFloat(g.crash_point))).toFixed(2) : "0.00";
+
+            // Sequência Atual
+            let currentStreak = 0;
+            let streakType = '---';
+            if (totalGames > 0) {
+                const lastVal = parseFloat(sorted[sorted.length - 1].crash_point);
+                streakType = lastVal >= 2.00 ? 'WIN' : 'LOSS';
+                // Conta de trás pra frente
+                for (let i = sorted.length - 1; i >= 0; i--) {
+                    const val = parseFloat(sorted[i].crash_point);
+                    const type = val >= 2.00 ? 'WIN' : 'LOSS';
+                    if (type === streakType) currentStreak++;
+                    else break;
+                }
+            }
+
+            document.getElementById('stat-avg').innerText = avgCrash + 'x';
+            document.getElementById('stat-rtp').innerText = rtp2x + '%';
+            document.getElementById('stat-rtp').style.color = parseFloat(rtp2x) >= 100 ? 'var(--neon-green)' : 'var(--neon-red)';
+            document.getElementById('stat-max').innerText = maxCrash + 'x';
+            document.getElementById('stat-total').innerText = totalGames;
+            
+            const streakEl = document.getElementById('stat-streak');
+            streakEl.innerText = `${currentStreak} ${streakType}`;
+            streakEl.style.color = streakType === 'WIN' ? 'var(--neon-green)' : (streakType === 'LOSS' ? 'var(--neon-red)' : '#fff');
+            streakEl.style.textShadow = streakType === 'WIN' ? '0 0 10px var(--neon-green)' : (streakType === 'LOSS' ? '0 0 10px var(--neon-red)' : 'none');
+            // ---------------------------------------
+
+            // --- Alerta Visual de Loss Consecutivo ---
+            const alertEl = document.getElementById('alert-overlay');
+            if (streakType === 'LOSS' && currentStreak >= 3) {
+                alertEl.style.display = 'block';
+                alertEl.innerText = `⚠️ ALERTA: ${currentStreak} LOSS SEGUIDOS ⚠️`;
+            } else {
+                alertEl.style.display = 'none';
+            }
+
+            // --- Indicador de Probabilidade de Reversão ---
+            let reversalProb = 45; // Base
+            if (streakType === 'LOSS') {
+                reversalProb = 45 + (currentStreak * 12); // Aumenta 12% a cada loss consecutivo
+                if (reversalProb > 98) reversalProb = 98;
+            } else {
+                reversalProb = 30; // Probabilidade base se estiver ganhando
+            }
+            
+            const revVal = document.getElementById('rev-val');
+            const revFill = document.getElementById('rev-fill');
+            if (revVal) {
+                revVal.innerText = `${reversalProb}%`;
+                const revColor = reversalProb > 80 ? '#39ff14' : (reversalProb > 50 ? '#ffd700' : '#ff003c');
+                revVal.style.color = revColor;
+                if (revFill) {
+                    revFill.style.width = `${reversalProb}%`;
+                    revFill.style.background = revColor;
+                    revFill.style.boxShadow = `0 0 10px ${revColor}`;
+                }
+            }
+
+            // --- AI Hunter 20x (Lógica Inteligente) ---
+            // 1. Calcula distância da última vela 20x
+            const last20xIndex = sorted.slice().reverse().findIndex(r => parseFloat(r.crash_point) >= 20.00);
+            const gamesSince20x = last20xIndex === -1 ? sorted.length : last20xIndex;
+            
+            // 2. Analisa acumulação recente (velas baixas)
+            const recentGames = sorted.slice(-15);
+            const lowCandles = recentGames.filter(r => parseFloat(r.crash_point) < 2.00).length;
+            
+            let aiConfidence = 0;
+            let aiReason = "";
+            
+            // Lógica de Detecção
+            if (gamesSince20x > 50 && lowCandles >= 10) {
+                aiConfidence = 88 + Math.min((gamesSince20x - 50) * 0.2, 11); // Acumulação forte
+                aiReason = "ACUMULAÇÃO CRÍTICA";
+            } else if (sorted.length > 0 && parseFloat(sorted[sorted.length-1].crash_point) === 1.00) {
+                aiConfidence = 82; // Rebote de crash instantâneo
+                aiReason = "REBOTE DE 1.00X";
+            } else if (gamesSince20x > 80) {
+                aiConfidence = 85 + Math.min((gamesSince20x - 80) * 0.5, 14); // Ciclo longo sem pagar
+                aiReason = "CICLO TEMPORAL";
+            }
+
+            const aiAlert = document.getElementById('ai-alert-20x');
+            const aiHistory = document.getElementById('ai-history');
+            if (aiConfidence >= 80) {
+                aiAlert.style.display = 'flex';
+                document.getElementById('ai-conf').innerText = `${aiConfidence.toFixed(0)}%`;
+                document.getElementById('ai-reason').innerText = aiReason;
+                
+                // Efeito visual extra se a confiança for muito alta
+                if (aiConfidence > 90) {
+                    aiAlert.style.borderColor = '#39ff14';
+                    aiAlert.style.boxShadow = '0 0 30px rgba(57, 255, 20, 0.5)';
+                    document.querySelector('.ai-title').style.color = '#39ff14';
+                    document.querySelector('.ai-conf-box').style.borderColor = '#39ff14';
+                    document.querySelector('.ai-conf-box').style.color = '#39ff14';
+                } else {
+                    // Reset estilo padrão (Azul Neon)
+                    aiAlert.style.borderColor = 'var(--neon-blue)';
+                    aiAlert.style.boxShadow = '0 0 25px rgba(0, 243, 255, 0.4)';
+                    document.querySelector('.ai-title').style.color = 'var(--neon-blue)';
+                    document.querySelector('.ai-conf-box').style.borderColor = 'var(--neon-blue)';
+                    document.querySelector('.ai-conf-box').style.color = '#fff';
+                }
+
+                // --- Busca Histórico do Padrão (Últimas 3 vezes que funcionou) ---
+                // Usa o histórico completo (records) em vez do fatiado (sorted)
+                const fullSorted = records
+                    .filter(r => r && r.crash_point && r.created_at)
+                    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+                let patternMatches = [];
+                // Itera do fim para o começo procurando velas 20x que atendam ao critério do padrão atual
+                for (let i = fullSorted.length - 1; i >= 10; i--) {
+                    const game = fullSorted[i];
+                    const val = parseFloat(game.crash_point);
+                    
+                    if (val >= 20.00) {
+                        let match = false;
+                        if (aiReason === "REBOTE DE 1.00X") {
+                            const prev = parseFloat(fullSorted[i-1].crash_point);
+                            if (prev <= 1.05) match = true; 
+                        } else if (aiReason === "ACUMULAÇÃO CRÍTICA") {
+                            const slice = fullSorted.slice(i-10, i);
+                            const lows = slice.filter(g => parseFloat(g.crash_point) < 2.00).length;
+                            if (lows >= 6) match = true;
+                        } else {
+                            match = true; // Ciclo ou outros
+                        }
+
+                        if (match) {
+                            patternMatches.push(game);
+                            if (patternMatches.length >= 3) break;
+                        }
+                    }
+                }
+
+                aiHistory.innerHTML = '';
+                patternMatches.forEach(m => {
+                    const d = new Date(m.created_at);
+                    const timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const div = document.createElement('div');
+                    div.className = 'ai-hist-item';
+                    div.innerHTML = `<span>${timeStr}</span> <span style="color:var(--neon-green); font-weight:bold;">${parseFloat(m.crash_point).toFixed(2)}x</span>`;
+                    div.onclick = () => alert(`Detalhes do Padrão:\nHorário: ${d.toLocaleString()}\nResultado: ${m.crash_point}x\nMotivo: ${aiReason}`);
+                    aiHistory.appendChild(div);
+                });
+
+            } else {
+                aiAlert.style.display = 'none';
+            }
+
+            // --- Atualiza Oscilador de Cores (Baseado nos últimos 20 jogos) ---
+            const oscSlice = sorted.slice(-20);
+            const oscWins = oscSlice.filter(r => parseFloat(r.crash_point) >= 2.00).length;
+            const oscPct = oscSlice.length > 0 ? (oscWins / oscSlice.length) * 100 : 50;
+            
+            const oscFill = document.getElementById('osc-fill');
+            const oscVal = document.getElementById('osc-val');
+            if(oscFill) oscFill.style.height = `${oscPct}%`;
+            if(oscVal) {
+                oscVal.innerText = `${oscPct.toFixed(0)}%`;
+                oscVal.style.color = oscPct >= 50 ? 'var(--neon-green)' : 'var(--neon-red)';
+                oscVal.style.textShadow = oscPct >= 50 ? '0 0 10px var(--neon-green)' : '0 0 10px var(--neon-red)';
+            }
+
+            // Atualiza a linha para acompanhar o preço atual
+            if (seriesData.length > 0) {
+                const lastClose = seriesData[seriesData.length - 1].y[3];
+                const lastCrashValue = seriesData[seriesData.length - 1].crashValue;
+                const lastX = seriesData[seriesData.length - 1].x;
+                chart.updateOptions({
+                    annotations: {
+                        yaxis: [
+                            {
+                                y: 100,
+                                borderColor: '#00f3ff',
+                                strokeDashArray: 4,
+                                label: {
+                                    borderColor: '#00f3ff',
+                                    style: { color: '#000', background: '#00f3ff', fontFamily: 'Rajdhani' },
+                                    text: 'Início (100.00)'
+                                }
+                            },
+                            {
+                                y: lastClose,
+                                borderColor: '#ffffff',
+                                cssClass: 'pulsing-annotation',
+                                label: {
+                                    borderColor: '#ffffff',
+                                    style: { color: '#000', background: '#ffffff' },
+                                    text: `${lastCrashValue}x`
+                                }
+                            }
+                        ],
+                        xaxis: aiConfidence >= 80 ? [{
+                            x: lastX,
+                            borderColor: '#39ff14',
+                            strokeDashArray: 0,
+                            label: {
+                                borderColor: '#39ff14',
+                                style: { color: '#000', background: '#39ff14', fontFamily: 'Rajdhani', fontWeight: 'bold' },
+                                text: '⚠️ SINAL 20X'
+                            }
+                        }] : []
+                    }
+                });
+            }
+
+            // Atualiza as últimas 24 pedras
+            const last24 = sorted.slice(-24).reverse(); // Pega as 24 últimas e inverte (mais recente primeiro)
+            const resultsList = document.getElementById('last-results-list');
+            resultsList.innerHTML = '';
+
+            last24.forEach(game => {
+                const val = parseFloat(game.crash_point);
+                let badgeClass = 'badge-loss';
+                if (val <= 1.00) badgeClass = 'badge-doji';
+                else if (val >= 2.00) badgeClass = 'badge-win';
+
+                const div = document.createElement('div');
+                div.className = `result-badge ${badgeClass}`;
+                div.innerText = `${val.toFixed(2)}x`;
+                resultsList.appendChild(div);
+            });
+        }
+
+        async function fetchData() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                let newRecords = [];
+                // Se for a primeira vez, busca 10 páginas. Nas próximas, busca apenas a página 1.
+                const pagesToFetch = firstLoad ? 10 : 1;
+
+                for (let i = 1; i <= pagesToFetch; i++) {
+                    const response = await fetch(`${PROXY}${API_URL}${i}&t=${Date.now()}`, {
+                        headers: {
+                            'Authorization': `Bearer ${SEU_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.warn(`Erro HTTP: ${response.status} na página ${i}`);
+                        break; // Para a busca se houver erro (ex: 429) para não travar
+                    }
+
+                    const data = await response.json();
+                    let records = data.records || data;
+                    
+                    // Validação estrita: garante que records é um array antes de prosseguir
+                    if (!Array.isArray(records)) records = [];
+
+                    if (records.length === 0) break;
+                    newRecords = newRecords.concat(records);
+                    
+                    // Se for a primeira carga, atualiza visualmente a cada página para dar feedback
+                    if (firstLoad) {
+                        updateChartVisuals([...newRecords, ...globalRecords]);
+                    }
+
+                    await delay(1000); 
+                }
+
+                // Mescla os novos registros com os globais e remove duplicatas
+                const combined = [...newRecords, ...globalRecords];
+                const uniqueMap = new Map(combined.map(item => [item.id, item]));
+                globalRecords = Array.from(uniqueMap.values());
+
+                updateChartVisuals(globalRecords);
+                firstLoad = false; // Marca que a carga inicial terminou
+
+            } catch (error) {
+                console.error("Erro ao atualizar gráfico:", error);
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        fetchData();
+        setInterval(fetchData, 15000); // Atualiza a cada 15s
+    </script>
+</body>
+</html>

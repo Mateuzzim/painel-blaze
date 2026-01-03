@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor em Tempo Real - Blaze</title>
+    <style>
+        :root {
+            --bg-dark: #0f1923;
+            --bg-card: #1a242d;
+            --blaze-red: #f12c4c;
+            --win-green: #00e701;
+            --text-gray: #94a3b8;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 98%;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 5px;
+        }
+
+        /* Container das Bolhas (Histórico Rápido) */
+        #history-bubbles {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row-reverse;
+            gap: 10px;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .bubble {
+            min-width: 60px;
+            padding: 5px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .bubble .time {
+            font-size: 0.65rem;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+
+        /* Cores dinâmicas */
+        .green { background: rgba(0, 231, 1, 0.2); color: var(--win-green); border: 1px solid var(--win-green); }
+        .red { background: rgba(241, 44, 76, 0.2); color: var(--blaze-red); border: 1px solid var(--blaze-red); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2d3843;
+        }
+
+        th { color: var(--text-gray); font-size: 0.8rem; text-transform: uppercase; }
+
+        .loading { text-align: center; padding: 20px; color: var(--text-gray); }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-back {
+            background-color: var(--blaze-red);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <header class="header-container">
+        <h1>CRASH HISTORY REAL-TIME</h1>
+        <a href="index.html" class="btn-back">Voltar</a>
+    </header>
+
+    <div class="status-bar" style="display: none;">
+        <span>API Status: <strong style="color: var(--win-green)">Online</strong></span>
+        <span id="update-time">Aguardando...</span>
+    </div>
+
+    <div id="history-bubbles">
+        <div class="loading">Carregando dados da Blaze...</div>
+    </div>
+
+</div>
+
+<script>
+    // Seu token (crachá de acesso)
+    const SEU_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+
+    // Base da API (sem o número da página)
+    const API_BASE = 'https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=';
+
+    // Proxy para evitar o erro de CORS (Bloqueio do Navegador)
+    const PROXY = 'https://corsproxy.io/?';
+
+    // Função auxiliar para dar uma pausa (evita erro 429 - Too Many Requests)
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Armazena o histórico globalmente para otimizar requisições
+    let globalRecords = [];
+    let isFetching = false;
+
+    async function fetchBlazeData() {
+        if (isFetching) return;
+        isFetching = true;
+
+        try {
+            let newFetchedRecords = [];
+            // Na primeira vez busca 6 páginas, nas próximas apenas a página 1
+            const pagesToFetch = globalRecords.length > 0 ? 1 : 6;
+
+            // Buscamos as páginas sequencialmente com pausa para não bloquear o IP
+            for (let i = 1; i <= pagesToFetch; i++) {
+                try {
+                    // Adiciona timestamp (&t=...) para evitar que o proxy/navegador entregue dados velhos (Cache)
+                    const url = `${PROXY}${API_BASE}${i}&t=${Date.now()}`;
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${SEU_TOKEN}`,
+                            'Content-Type': 'application/json',
+                            'Origin': 'https://blaze.bet.br'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.warn(`Página ${i} ignorada (Status ${response.status})`);
+                        if (response.status === 429) {
+                            console.warn("Limite de requisições atingido (429). Parando busca para evitar bloqueio.");
+                            break;
+                        }
+                        continue;
+                    }
+
+                    const data = await response.json();
+                    const records = data.records || data;
+                    if (Array.isArray(records)) {
+                        newFetchedRecords = newFetchedRecords.concat(records);
+
+                        // Atualiza a tela imediatamente com o que já foi baixado
+                        const currentIds = new Set(globalRecords.map(r => r.id));
+                        const currentUnique = newFetchedRecords.filter(r => !currentIds.has(r.id));
+                        renderBubbles([...currentUnique, ...globalRecords].slice(0, 200));
+                    }
+
+                    // Delay para evitar erro 429 (Too Many Requests). Reduzido para 1s para uma carga inicial mais rápida.
+                    await delay(1000);
+                } catch (err) {
+                    console.warn(`Erro ao buscar página ${i}`, err);
+                }
+            }
+
+            if (newFetchedRecords.length === 0 && globalRecords.length === 0) {
+                throw new Error("Falha ao carregar dados (Bloqueio 429 ou API offline)");
+            }
+
+            // Mescla novos dados com o histórico existente (evitando duplicatas)
+            const existingIds = new Set(globalRecords.map(r => r.id));
+            const uniqueNew = newFetchedRecords.filter(r => !existingIds.has(r.id));
+            
+            // Atualiza a lista global mantendo no máximo 200 itens
+            globalRecords = [...uniqueNew, ...globalRecords].slice(0, 200);
+
+            // Chamas as funções de desenho (render) que criamos no HTML anterior
+            renderBubbles(globalRecords);
+            
+        } catch (error) {
+            console.error("Erro:", error);
+            // Exibindo erro no painel (evitando alert em loop)
+            document.getElementById('history-bubbles').innerHTML = 
+                `<span style="color:orange; font-size: 12px;">
+                    Erro: ${error.message}. <br>
+                </span>`;
+        } finally {
+            isFetching = false;
+            // Atualiza o horário de "Última atualização" mesmo se houver erro na busca
+            document.getElementById('update-time').innerText = 'Última atualização: ' + new Date().toLocaleTimeString();
+        }
+    }
+
+    function renderBubbles(records) {
+        const container = document.getElementById('history-bubbles');
+        container.innerHTML = ''; 
+
+        // Pega os últimos 200 resultados (ou o total disponível)
+        records.slice(0, 200).forEach(game => {
+            const val = parseFloat(game.crash_point);
+            const div = document.createElement('div');
+            div.className = `bubble ${val >= 2 ? 'green' : 'red'}`;
+            
+            // Garante o horário de Brasília (UTC-3) para evitar confusão de fuso
+            const time = new Date(game.created_at).toLocaleTimeString('pt-BR', {
+                timeZone: 'America/Sao_Paulo'
+            });
+            div.innerHTML = `
+                <span>${val.toFixed(2)}x</span>
+                <span class="time">${time}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Inicia e define intervalo de 15 segundos (para não ser bloqueado por excesso de acessos)
+    fetchBlazeData();
+    setInterval(fetchBlazeData, 15000);
+</script>
+
+</body>
+</html>

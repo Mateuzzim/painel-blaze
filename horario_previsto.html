@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão de Horário - Double</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050b14;
+            --panel-bg: rgba(10, 15, 20, 0.85);
+            --text-color: #e0e6ed;
+            --border-color: rgba(0, 243, 255, 0.3);
+            --accent: #00f3ff;
+            --accent-glow: rgba(0, 243, 255, 0.6);
+            --accent-secondary: #bc13fe;
+            --danger: #ff0055;
+            --success: #00ff9d;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .main-container { width: 100%; max-width: 600px; position: relative; z-index: 1; }
+
+        .layout-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Cybernetic Corners */
+        .layout-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+        .layout-panel::after { content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+        /* Scanline */
+        .scan-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: scan 3s linear infinite; opacity: 0.5; pointer-events: none;
+        }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+        .cortex-text-anim {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, var(--accent), #fff, var(--accent));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+        
+        .control-group { margin-bottom: 25px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: var(--accent); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        select {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 1.1rem;
+            font-family: 'Rajdhani', sans-serif;
+            outline: none;
+            transition: 0.3s;
+            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+        select:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), rgba(0, 243, 255, 0.3));
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-action:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: none;
+            animation: hologram 0.5s ease-out;
+            position: relative;
+        }
+        @keyframes hologram { 
+            0% { opacity: 0; transform: scaleY(0); } 
+            100% { opacity: 1; transform: scaleY(1); } 
+        }
+        
+        .result-time {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 20px var(--accent);
+            margin: 10px 0;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+        }
+        
+        .result-prob { font-size: 1.2rem; color: var(--success); font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .result-details { font-size: 0.9rem; color: #aaa; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px; text-align: left; }
+        
+        .loading-spinner {
+            width: 50px; height: 50px;
+            border: 3px solid transparent;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .btn-back {
+            display: inline-flex; align-items: center; margin-bottom: 20px;
+            color: var(--accent); text-decoration: none;
+            border: 1px solid var(--border-color); padding: 8px 20px;
+            border-radius: 4px; font-size: 0.9rem; font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s; text-transform: uppercase;
+        }
+        .btn-back:hover { background: rgba(0, 243, 255, 0.2); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* Cores para o resultado */
+        .res-red { color: var(--danger); text-shadow: 0 0 20px var(--danger); }
+        .res-black { color: #fff; text-shadow: 0 0 20px #fff; }
+        .res-white { color: #fff; text-shadow: 0 0 20px #fff; animation: pulse-white 1s infinite; }
+        @keyframes pulse-white { 0% { text-shadow: 0 0 10px #fff; } 100% { text-shadow: 0 0 30px #fff, 0 0 10px #fff; } }
+
+        /* Estilos do Histórico */
+        .history-section { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: left; }
+        .history-list { max-height: 200px; overflow-y: auto; margin-top: 10px; padding-right: 5px; }
+        .history-list::-webkit-scrollbar { width: 4px; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 8px; animation: slideIn 0.3s ease-out; border-left: 3px solid transparent; }
+        .history-item.red { border-left-color: var(--danger); }
+        .history-item.black { border-left-color: #fff; }
+        .history-item.white { border-left-color: #fff; box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        .h-time { font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 1.1rem; color: #fff; }
+        .h-info { font-size: 0.75rem; color: #aaa; text-transform: uppercase; margin-top: 2px; }
+        .h-conf { font-family: 'Rajdhani', sans-serif; font-weight: bold; color: var(--success); font-size: 1rem; }
+        .h-countdown { font-size: 0.8rem; color: #ff9800; font-family: 'Orbitron', sans-serif; margin-top: 4px; }
+
+        @keyframes pulse-red-text {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); text-shadow: 0 0 8px #ff4444; }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .btn-clear { background: transparent; border: 1px solid #444; color: #666; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-top: 10px; width: 100%; transition: 0.3s; font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
+        .btn-clear:hover { border-color: var(--danger); color: var(--danger); background: rgba(255, 0, 85, 0.1); }
+        
+        /* Filtros do Histórico */
+        .history-filters { display: flex; gap: 5px; margin: 10px 0; }
+        .filter-btn { background: transparent; border: 1px solid #333; color: #666; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.65rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; flex: 1; transition: all 0.3s; }
+        .filter-btn:hover { background: rgba(255,255,255,0.05); }
+        .filter-btn.active { background: rgba(0, 243, 255, 0.1); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+        .filter-btn[data-filter="vermelho"].active { border-color: var(--danger); color: var(--danger); background: rgba(255, 0, 85, 0.1); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
+        .filter-btn[data-filter="preto"].active { border-color: #aaa; color: #fff; background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
+        .filter-btn[data-filter="branco"].active { border-color: #fff; color: #fff; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        
+        <div class="layout-panel">
+            <div class="scan-line"></div>
+            <h1 class="cortex-text-anim">PREVISÃO TEMPORAL I.A.</h1>
+            <p style="color: #8899a6; font-size: 0.9rem; margin-bottom: 30px; letter-spacing: 1px;">
+                ALGORITMO PREDITIVO DE ALTA PRECISÃO
+            </p>
+            
+            <div class="control-group">
+                <label for="targetColor">Selecione o Alvo:</label>
+                <select id="targetColor">
+                    <option value="branco">⚪ Branco (14x)</option>
+                    <option value="vermelho">🔴 Vermelho (2x)</option>
+                    <option value="preto">⚫ Preto (2x)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="calculationMode">Método de Cálculo:</label>
+                <select id="calculationMode">
+                    <option value="simple">Média Simples</option>
+                    <option value="weighted">Média Ponderada (Recentes têm mais peso)</option>
+                </select>
+            </div>
+
+            <button class="btn-action" onclick="calculatePrediction()">🔮 CALCULAR HORÁRIO</button>
+            
+            <div id="loader" class="loading-spinner"></div>
+            
+            <div id="result" class="result-box">
+                <div style="font-size: 0.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">Horário Estimado</div>
+                <div id="predictionTime" class="result-time">--:--</div>
+                <div id="mainCountdown" class="h-countdown" style="font-size: 1.2rem; margin-top: -10px; margin-bottom: 10px;">Aguardando cálculo...</div>
+                <div id="predictionProb" class="result-prob">Confiança: --%</div>
+                <div id="lastOccurrences" style="margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; display: none;"></div>
+                <div id="predictionReason" class="result-details"></div>
+            </div>
+
+            <div class="history-section">
+                <h3 style="color: var(--accent); font-size: 0.9rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-family: 'Orbitron', sans-serif;">Histórico de Previsões</h3>
+                <div class="history-filters">
+                    <button class="filter-btn active" data-filter="all" onclick="setHistoryFilter('all')">Todos</button>
+                    <button class="filter-btn" data-filter="vermelho" onclick="setHistoryFilter('vermelho')">Vermelho</button>
+                    <button class="filter-btn" data-filter="preto" onclick="setHistoryFilter('preto')">Preto</button>
+                    <button class="filter-btn" data-filter="branco" onclick="setHistoryFilter('branco')">Branco</button>
+                </div>
+                <div id="predictionHistoryList" class="history-list"></div>
+                <button class="btn-clear" onclick="clearPredictionHistory()">Limpar Histórico</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Token de fallback (caso não tenha no localStorage)
+        const FALLBACK_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYjUyMzY3NzUtNmFlMC00NDMzLWI1M2MtYzFmNmY4ZDZmNjJlIiwiaWF0IjoxNzY2NDkwNzAwLCJleHAiOjE3NjY1MzM5MDB9.tuWLmU6u9Gv1JBkYDQTkuVlKAjDFMB_uA6KIxmejpt0";
+
+        async function fetchBlazeHistory() {
+            let token = localStorage.getItem('blaze_token') || FALLBACK_TOKEN;
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                headers['x-access-token'] = token;
+            }
+
+            const agora = new Date();
+            const ontem = new Date();
+            ontem.setHours(ontem.getHours() - 24);
+            
+            const endDate = agora.toISOString();
+            const startDate = ontem.toISOString();
+            
+            // Busca 2 páginas para ter uma boa amostra de intervalos
+            let allGames = [];
+            for (let page = 1; page <= 2; page++) {
+                try {
+                    const url = `https://corsproxy.io/?https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                    const response = await fetch(url, { headers });
+                    if (response.ok) {
+                        const data = await response.json();
+                        const records = Array.isArray(data) ? data : (data.records || []);
+                        allGames = allGames.concat(records);
+                    }
+                } catch (e) { console.error(e); }
+            }
+            
+            // Remove duplicatas e ordena (Mais recente primeiro)
+            const uniqueGames = allGames.filter((game, index, self) =>
+                index === self.findIndex((t) => (t.id === game.id))
+            ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            return uniqueGames;
+        }
+
+        function identifyColor(roll) {
+            if (roll === 0) return 'branco';
+            if (roll >= 1 && roll <= 7) return 'vermelho';
+            if (roll >= 8 && roll <= 14) return 'preto';
+            return null;
+        }
+
+        async function calculatePrediction() {
+            const btn = document.querySelector('.btn-action');
+            const loader = document.getElementById('loader');
+            const resultBox = document.getElementById('result');
+            const targetColor = document.getElementById('targetColor').value;
+
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.innerText = 'ANALISANDO...';
+            loader.style.display = 'block';
+            resultBox.style.display = 'none';
+
+            // Reseta o contador principal
+            const mainCountdownEl = document.getElementById('mainCountdown');
+            if (mainCountdownEl) {
+                mainCountdownEl.textContent = 'Calculando...';
+                mainCountdownEl.style.color = '#666';
+                mainCountdownEl.style.animation = 'none';
+                delete mainCountdownEl.dataset.timestamp;
+            }
+
+            try {
+                const history = await fetchBlazeHistory();
+                
+                if (!history || history.length < 10) {
+                    throw new Error("Dados insuficientes.");
+                }
+
+                // Filtra ocorrências da cor alvo
+                const occurrences = history.filter(g => identifyColor(g.roll) === targetColor);
+                
+                if (occurrences.length < 2) {
+                    throw new Error("Poucas ocorrências recentes desta cor para prever.");
+                }
+
+                // Mostrar últimos 3 horários
+                const last3 = occurrences.slice(0, 3).map(g => {
+                    const d = new Date(g.created_at);
+                    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                });
+                const lastOccurrencesEl = document.getElementById('lastOccurrences');
+                lastOccurrencesEl.style.display = 'block';
+                lastOccurrencesEl.innerHTML = `<div style="color: #aaa; font-size: 0.7rem; margin-bottom: 5px; text-transform: uppercase;">Últimas Aparições</div><div style="font-family: 'Orbitron', sans-serif; font-size: 1rem; color: #fff; letter-spacing: 2px;">${last3.join(' &nbsp;•&nbsp; ')}</div>`;
+
+                // Calcula intervalos entre ocorrências (em minutos)
+                const intervals = [];
+                for (let i = 0; i < occurrences.length - 1; i++) {
+                    const t1 = new Date(occurrences[i].created_at).getTime();
+                    const t2 = new Date(occurrences[i+1].created_at).getTime();
+                    const diffMins = (t1 - t2) / 60000;
+                    intervals.push(diffMins);
+                }
+
+                const calculationMode = document.getElementById('calculationMode').value;
+                let avgInterval;
+
+                if (calculationMode === 'weighted') {
+                    // Média Ponderada (Recentes valem mais)
+                    let weightedSum = 0;
+                    let weightTotal = 0;
+                    intervals.slice(0, 10).forEach((val, idx) => {
+                        const weight = 10 - idx;
+                        weightedSum += val * weight;
+                        weightTotal += weight;
+                    });
+                    avgInterval = weightTotal > 0 ? weightedSum / weightTotal : 0;
+                } else { // 'simple'
+                    // Média Simples (dos últimos 10 intervalos para consistência)
+                    const recentIntervals = intervals.slice(0, 10);
+                    const sumOfIntervals = recentIntervals.reduce((a, b) => a + b, 0);
+                    avgInterval = recentIntervals.length > 0 ? sumOfIntervals / recentIntervals.length : 0;
+                }
+
+                // Tempo desde a última ocorrência
+                const lastOccurrenceTime = new Date(occurrences[0].created_at).getTime();
+                const now = Date.now();
+                const timeSinceLast = (now - lastOccurrenceTime) / 60000;
+
+                // Projeção do próximo horário
+                let nextTime = new Date(lastOccurrenceTime + (avgInterval * 60000));
+                
+                // Se o horário projetado já passou, projeta o próximo ciclo
+                while (nextTime.getTime() <= now) {
+                    nextTime = new Date(nextTime.getTime() + (avgInterval * 60000));
+                }
+
+                // Adiciona um "tempero" de IA (Análise de Minuto Quente)
+                // Verifica qual final de minuto (0-9) essa cor mais sai
+                const minuteCounts = Array(10).fill(0);
+                occurrences.forEach(g => {
+                    const m = new Date(g.created_at).getMinutes() % 10;
+                    minuteCounts[m]++;
+                });
+                const hotMinuteDigit = minuteCounts.indexOf(Math.max(...minuteCounts));
+                
+                // Ajusta o minuto projetado para o final quente mais próximo
+                let projectedMinute = nextTime.getMinutes();
+                const digitDiff = hotMinuteDigit - (projectedMinute % 10);
+                nextTime.setMinutes(projectedMinute + digitDiff);
+                
+                // Se o ajuste jogou para o passado, joga 10 min pra frente
+                if (nextTime.getTime() <= now) {
+                    nextTime.setMinutes(nextTime.getMinutes() + 10);
+                }
+
+                const hh = String(nextTime.getHours()).padStart(2, '0');
+                const mm = String(nextTime.getMinutes()).padStart(2, '0');
+                
+                // Cálculo de Confiança (Baseado na regularidade dos intervalos)
+                const stdDev = Math.sqrt(intervals.map(x => Math.pow(x - avgInterval, 2)).reduce((a, b) => a + b) / intervals.length);
+                const cv = stdDev / avgInterval; // Coeficiente de variação
+                let confidence = Math.max(10, Math.min(99, (1 - cv) * 100));
+                
+                // Ajuste visual
+                if (targetColor === 'branco') confidence = Math.min(confidence, 85); // Branco é mais difícil
+                
+                // Exibição
+                const timeEl = document.getElementById('predictionTime');
+                timeEl.innerText = `${hh}:${mm}`;
+                
+                // Estilização baseada na cor
+                if (targetColor === 'vermelho') timeEl.className = 'result-time res-red';
+                else if (targetColor === 'preto') timeEl.className = 'result-time res-black';
+                else timeEl.className = 'result-time res-white';
+
+                // Define o timestamp para o contador principal
+                if (mainCountdownEl) mainCountdownEl.dataset.timestamp = nextTime.getTime();
+
+                document.getElementById('predictionProb').innerText = `Confiança I.A.: ${confidence.toFixed(0)}%`;
+                
+                const minutesLeft = Math.ceil((nextTime.getTime() - now) / 60000);
+                document.getElementById('predictionReason').innerHTML = 
+                    `<strong>Análise:</strong> Média de intervalo detectada de <b>${avgInterval.toFixed(1)} min</b>.<br>` +
+                    `Última ocorrência há <b>${timeSinceLast.toFixed(1)} min</b>.<br>` +
+                    `Padrão de minuto final <b>${hotMinuteDigit}</b> identificado.<br>` +
+                    `Previsão de entrada em aproximadamente <b>${minutesLeft} minutos</b>.`;
+
+                resultBox.style.display = 'block';
+                
+                // Salva no histórico
+                savePredictionToHistory(`${hh}:${mm}`, targetColor, confidence.toFixed(0), nextTime.getTime());
+
+            } catch (error) {
+                alert("Erro na análise: " + error.message);
+            } finally {
+                loader.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerText = '🔮 CALCULAR HORÁRIO';
+            }
+        }
+
+        // Funções do Histórico
+        let currentHistoryFilter = 'all';
+
+        function setHistoryFilter(filter) {
+            currentHistoryFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filter));
+            renderHistory();
+        }
+
+        function savePredictionToHistory(time, color, confidence, predictionTimestamp) {
+            const history = JSON.parse(localStorage.getItem('prediction_history_log') || '[]');
+            history.unshift({ time, color, confidence, timestamp: Date.now(), predictionTimestamp, result: null });
+            if (history.length > 20) history.pop(); // Mantém os últimos 20
+            localStorage.setItem('prediction_history_log', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('predictionHistoryList');
+            const history = JSON.parse(localStorage.getItem('prediction_history_log') || '[]');
+            list.innerHTML = '';
+            
+            const filtered = history.filter(h => currentHistoryFilter === 'all' || h.color === currentHistoryFilter);
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:#444; font-size:0.8rem; padding:10px; font-style:italic;">Nenhuma previsão encontrada.</div>';
+                return;
+            }
+
+            filtered.forEach(h => {
+                const item = document.createElement('div');
+                let colorClass = 'white';
+                let colorLabel = '⚪ Branco';
+                if (h.color === 'vermelho') { colorClass = 'red'; colorLabel = '🔴 Vermelho'; }
+                if (h.color === 'preto') { colorClass = 'black'; colorLabel = '⚫ Preto'; }
+                
+                let statusHtml = '';
+                if (h.result === 'win') {
+                    statusHtml = '<span style="color: var(--success); font-weight: bold; font-size: 0.9rem; margin-right: 8px;">WIN</span>';
+                } else if (h.result === 'loss') {
+                    statusHtml = '<span style="color: var(--danger); font-weight: bold; font-size: 0.9rem; margin-right: 8px;">LOSS</span>';
+                }
+
+                item.className = `history-item ${colorClass}`;
+                item.innerHTML = `
+                    <div>
+                        <div class="h-time">${h.time}</div>
+                        <div class="h-info">${colorLabel}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="display: flex; align-items: center; justify-content: flex-end;">
+                            ${statusHtml}
+                            <div class="h-conf">${h.confidence}%</div>
+                        </div>
+                        <div class="h-countdown" data-timestamp="${h.predictionTimestamp || 0}">--:--</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function clearPredictionHistory() {
+            if(confirm('Deseja limpar todo o histórico de previsões?')) {
+                localStorage.removeItem('prediction_history_log');
+                renderHistory();
+            }
+        }
+
+        function checkPredictionResults(games) {
+            const history = JSON.parse(localStorage.getItem('prediction_history_log') || '[]');
+            let changed = false;
+
+            history.forEach(h => {
+                if (h.result) return; // Já tem resultado
+
+                const predTime = h.predictionTimestamp;
+                // Verifica jogos no minuto previsto (janela de 1 minuto)
+                const gamesInWindow = games.filter(g => {
+                    const t = new Date(g.created_at).getTime();
+                    return t >= predTime && t < predTime + 60000;
+                });
+
+                if (gamesInWindow.length > 0) {
+                    // Se houver qualquer jogo no minuto com a cor prevista ou branco -> WIN
+                    const win = gamesInWindow.some(g => {
+                        const c = identifyColor(g.roll);
+                        return c === h.color || c === 'branco';
+                    });
+                    
+                    h.result = win ? 'win' : 'loss';
+                    changed = true;
+                } else if (Date.now() > predTime + 120000) {
+                    // Se passou 2 minutos e não achou jogo na janela, marca como loss (ou não encontrado)
+                    h.result = 'loss'; 
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                localStorage.setItem('prediction_history_log', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function updateMainCountdown() {
+            const el = document.getElementById('mainCountdown');
+            if (!el || !el.dataset.timestamp) {
+                return;
+            }
+
+            const predictionTs = parseInt(el.dataset.timestamp);
+            if (isNaN(predictionTs) || predictionTs === 0) {
+                el.textContent = "Aguardando cálculo...";
+                el.style.color = '#666';
+                return;
+            }
+
+            const now = Date.now();
+            const diff = predictionTs - now;
+
+            if (diff <= 0) {
+                el.textContent = "HORÁRIO DA ENTRADA!";
+                el.style.color = 'var(--success)';
+                el.style.animation = 'pulse-red-text 1s infinite';
+            } else {
+                const minutes = Math.floor((diff / 1000 / 60));
+                const seconds = Math.floor((diff / 1000) % 60);
+                el.textContent = `-${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                el.style.color = diff < 60000 ? 'var(--danger)' : '#ff9800';
+                el.style.animation = diff < 60000 ? 'pulse-red-text 1s infinite' : 'none';
+            }
+        }
+
+        function updateCountdowns() {
+            const countdownElements = document.querySelectorAll('.h-countdown');
+            const now = Date.now();
+
+            countdownElements.forEach(el => {
+                const predictionTs = parseInt(el.dataset.timestamp);
+                if (isNaN(predictionTs) || predictionTs === 0) {
+                    el.textContent = "--:--";
+                    el.style.color = '#666';
+                    return;
+                }
+
+                const diff = predictionTs - now;
+
+                if (diff <= 0) {
+                    el.textContent = "Finalizado";
+                    el.style.color = '#666';
+                    el.style.animation = 'none';
+                } else {
+                    const minutes = Math.floor((diff / 1000 / 60));
+                    const seconds = Math.floor((diff / 1000) % 60);
+                    el.textContent = `-${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    el.style.color = '#ff9800';
+                    el.style.animation = 'none';
+                    if (diff < 60000) {
+                        el.style.color = 'var(--danger)';
+                        el.style.animation = 'pulse-red-text 1s infinite';
+                    }
+                }
+            });
+        }
+
+        async function updateResultsBackground() {
+             const games = await fetchBlazeHistory();
+             if(games && games.length > 0) {
+                 checkPredictionResults(games);
+             }
+        }
+
+        // Inicializa o histórico ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedMode = localStorage.getItem('prediction_calc_mode');
+            const modeSelect = document.getElementById('calculationMode');
+            if (savedMode && modeSelect) {
+                modeSelect.value = savedMode;
+            }
+            if (modeSelect) {
+                modeSelect.addEventListener('change', () => {
+                    localStorage.setItem('prediction_calc_mode', modeSelect.value);
+                });
+            }
+            renderHistory();
+            updateResultsBackground(); // Checa resultados ao carregar
+            setInterval(updateResultsBackground, 30000); // Checa a cada 30s
+            setInterval(() => {
+                updateCountdowns();
+                updateMainCountdown();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

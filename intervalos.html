@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA de Intervalos - Cortex Virtual</title>
+    <style>
+        /* Reusing styles from ciclo_mercado.html for consistency */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 98%; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        .futuristic-scoreboard { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; padding: 15px; background: rgba(10, 10, 15, 0.6); border: 1px solid #333; border-radius: 12px; }
+        .score-card { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+        .score-label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+        .score-value { font-size: 1.8rem; font-weight: 800; font-family: monospace; }
+        
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .chart-container {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .chart-title {
+            color: #ccc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;
+        }
+
+        /* Estilos da IA QUANTUM */
+        @keyframes quantum-pulse {
+            0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); border-color: #ffd700; }
+            100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 0.5); }
+        }
+        
+        /* Layout Grids */
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .charts-grid .chart-container, .analysis-grid .chart-container { margin-top: 0; }
+        
+        @media (max-width: 768px) {
+            .analysis-grid, .charts-grid { grid-template-columns: 1fr; }
+        }
+
+        .confidence-bar-container { width: 100%; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px; border: 1px solid #444; box-sizing: border-box; }
+        .confidence-bar { height: 12px; border-radius: 4px; transition: width 0.5s ease-out; }
+        .prediction-bubble {
+            width: 60px; height: 60px; border-radius: 50%; position: relative;
+            display: inline-flex; align-items: center; justify-content: center; margin: 0 auto;
+        }
+        .prediction-bubble::before {
+            content: ''; position: absolute; top: 10%; left: 20%; width: 15px; height: 15px;
+            background: rgba(255, 255, 255, 0.8); border-radius: 50%; filter: blur(2px);
+        }
+        .prediction-bubble-text { font-size: 1.5rem; font-weight: bold; color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5); z-index: 1; }
+        .prediction-bubble.red { background: radial-gradient(circle at 30% 30%, #ff8a8a, #ff0055); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 5px 15px rgba(255, 0, 85, 0.4), 0 0 30px rgba(255, 0, 85, 0.3); }
+        .prediction-bubble.black { background: radial-gradient(circle at 30% 30%, #666, #000); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2), 0 5px 15px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 255, 255, 0.1); }
+
+        /* Estilos para o seletor de modo */
+        .mode-btn {
+            padding: 8px 15px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .mode-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent-glow); }
+
+
+        /* Tabela Futurista */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        .data-table th {
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--accent);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .data-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .data-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .data-table tbody tr:hover { background: rgba(0, 210, 255, 0.08); }
+        .data-table tbody tr.active { background: rgba(0, 210, 255, 0.15); border-left: 3px solid var(--accent); }
+
+        .progress-bar-container { height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin: 5px auto 0 auto; width: 80%; border: 1px solid #444; }
+        .progress-fill { height: 100%; transition: width 0.5s; }
+        
+        /* Estilos do Histórico de Pedras */
+        .badge {
+            width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;
+            border-radius: 4px; font-weight: bold; font-size: 0.8rem; background: #0f0f13;
+            border: 1px solid #333; color: #fff; position: relative;
+        }
+        .badge.vermelho { border-color: #ff0055; color: #ff0055; }
+        .badge.preto { border-color: #444; color: #888; }
+        .badge.branco { border-color: #fff; background: rgba(255,255,255,0.1); color: #fff; text-shadow: 0 0 5px #fff; }
+        .badge .time-overlay {
+            position: absolute; bottom: 1px; right: 1px; font-size: 0.4rem; color: rgba(255,255,255,0.5);
+        }
+
+        /* --- Scrollbar Futurista --- */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(161, 0, 255, 0.5));
+            border-radius: 10px; border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #00d2ff, #a100ff);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <a href="#" onclick="parent.closeTool()" class="btn-back" style="display: none;">⬅ Voltar ao Menu</a>
+        <div class="layout-panel">
+            <div class="main-header" style="display: none;">
+                <h1 class="cortex-text-anim">IA ANÁLISE DE INTERVALOS</h1>
+                <button onclick="fetchBlazeData()" style="padding: 5px 10px; background: rgba(0, 210, 255, 0.1); border: 1px solid #00d2ff; color: #00d2ff; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                    🔄 Atualizar Dados
+                </button>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 0.8rem; color: #aaa;">Auto-Atualizar (15s):</span>
+                    <label class="switch" style="transform: scale(0.8);">
+                        <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdate()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- NOVO: Seletor de Modo de Análise -->
+            <div class="control-group" style="text-align: center; margin-bottom: 20px;">
+                <div id="analysisModeToggle" style="display: inline-flex; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+                    <button class="mode-btn active" onclick="setAnalysisMode('number')">Análise por Pedra</button>
+                    <button class="mode-btn" onclick="setAnalysisMode('color')">Análise por Cor</button>
+                </div>
+            </div>
+
+            <div id="interval_content">
+                <div id="loading" style="text-align: center; color: #888; padding: 20px;">Aguardando dados para análise...</div>
+                <div id="analysis-content" style="display: none;">
+                    
+                    <!-- Placar Cortex Quantum -->
+                    <div class="futuristic-scoreboard" style="margin-bottom: 20px;">
+                        <div class="score-card" style="border-bottom: 2px solid #ffd700;">
+                            <span class="score-label">WINS (Q)</span>
+                            <span id="quantum_wins" class="score-value" style="color: #ffd700;">0</span>
+                        </div>
+                        <div class="score-card" style="border-bottom: 2px solid #ff0055;">
+                            <span class="score-label">LOSSES (Q)</span>
+                            <span id="quantum_losses" class="score-value" style="color: #ff0055;">0</span>
+                        </div>
+                        <div class="score-card" style="border-bottom: 2px solid #fff;">
+                            <span class="score-label">PRECISÃO (Q)</span>
+                            <span id="quantum_accuracy" class="score-value" style="color: #fff;">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- CORTEX QUANTUM - IA AVANÇADA -->
+                    <div class="chart-container" style="border-color: #ffd700; animation: quantum-pulse 3s infinite; margin-bottom: 20px;">
+                        <div class="stat-title" style="color: #ffd700; border-bottom-color: rgba(255, 215, 0, 0.3); text-align: center; font-size: 1.1rem;">
+                            ⚛️ CORTEX QUANTUM (ANÁLISE PROFUNDA)
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-around; gap: 15px; padding-top: 15px;">
+                            <div style="text-align: center;">
+                                <div id="quantum_prediction_result" class="prediction-bubble black">
+                                    <span class="prediction-bubble-text">--</span>
+                                </div>
+                                <div id="quantum_prediction_label" style="margin-top: 10px; font-weight: bold; color: #888;">Calibrando...</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">Probabilidade Quântica:</div>
+                                <div class="confidence-bar-container" style="margin-bottom: 10px; border-color: #ffd700;">
+                                    <div id="quantum_confidence_bar" class="confidence-bar" style="width: 0%; background: linear-gradient(90deg, #ffd700, #ffeb3b); box-shadow: 0 0 10px #ffd700;"></div>
+                                </div>
+                                <div id="quantum_reasoning" style="font-size: 0.75rem; color: #ccc; line-height: 1.4;">
+                                    Processando variáveis complexas...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Evolução Quantum -->
+                    <div class="chart-container">
+                        <h4 class="chart-title">Evolução da Assertividade (Quantum)</h4>
+                        <div id="quantum_evolution_chart_container" style="width: 100%; height: 150px;"></div>
+                    </div>
+
+                    <!-- Grid de Análises Específicas -->
+                    <div class="analysis-grid">
+                        <!-- Análise Específica Vermelho -->
+                        <div class="chart-container" style="border-left: 3px solid #ff0055;">
+                            <h4 class="chart-title" style="color: #ff0055;">🔴 ANÁLISE VERMELHO</h4>
+                            <div style="display: flex; justify-content: space-around; text-align: center; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Atual</div>
+                                    <div id="red_current_gap" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Média</div>
+                                    <div id="red_avg_gap" style="font-size: 1.4rem; font-weight: bold; color: #00d2ff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Chance</div>
+                                    <div id="red_prob" style="font-size: 1.4rem; font-weight: bold; color: #ff0055;">0%</div>
+                                </div>
+                            </div>
+                            <div id="red_status" style="text-align: center; margin-top: 5px; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;">AGUARDANDO...</div>
+                        </div>
+
+                        <!-- Análise Específica Preto -->
+                        <div class="chart-container" style="border-left: 3px solid #ccc;">
+                            <h4 class="chart-title" style="color: #ccc;">⚫ ANÁLISE PRETO</h4>
+                            <div style="display: flex; justify-content: space-around; text-align: center; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Atual</div>
+                                    <div id="black_current_gap" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Média</div>
+                                    <div id="black_avg_gap" style="font-size: 1.4rem; font-weight: bold; color: #00d2ff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Chance</div>
+                                    <div id="black_prob" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0%</div>
+                                </div>
+                            </div>
+                            <div id="black_status" style="text-align: center; margin-top: 5px; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;">AGUARDANDO...</div>
+                        </div>
+
+                        <!-- Análise Específica Branco -->
+                        <div class="chart-container" style="border-left: 3px solid #fff;">
+                            <h4 class="chart-title" style="color: #fff;">⚪ ANÁLISE BRANCO</h4>
+                            <div style="display: flex; justify-content: space-around; text-align: center; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Atual</div>
+                                    <div id="white_current_gap" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Média</div>
+                                    <div id="white_avg_gap" style="font-size: 1.4rem; font-weight: bold; color: #00d2ff;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: #aaa; text-transform: uppercase;">Chance</div>
+                                    <div id="white_prob" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0%</div>
+                                </div>
+                            </div>
+                            <div id="white_status" style="text-align: center; margin-top: 5px; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;">AGUARDANDO...</div>
+                        </div>
+                    </div>
+
+                    <!-- Grid de Gráficos 1 -->
+                    <div class="charts-grid">
+                        <!-- Gráfico de Dispersão -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h4 class="chart-title" style="margin: 0;">Dispersão: Atual vs Anterior</h4>
+                                <label style="font-size: 0.7rem; color: #ccc; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="checkbox" id="scatter_filter_avg" onchange="updateChartsForItem(selectedItemForChart)">
+                                    > Média
+                                </label>
+                            </div>
+                            <div id="scatter_chart_container" style="width: 100%; height: 150px;"></div>
+                        </div>
+
+                        <!-- Gráfico Média de Intervalos por Cor -->
+                        <div class="chart-container">
+                            <h4 class="chart-title">Média de Intervalos por Cor</h4>
+                            <div id="color_avg_chart_container" style="width: 100%; height: 150px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Análise Por Pedra -->
+                    <div class="chart-container">
+                        <h4 class="chart-title">Análise de Intervalo Por Pedra</h4>
+                        <div style="overflow-x: auto;">
+                            <table id="all_numbers_table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th id="table-header-item">Pedra</th>
+                                        <th>Intervalo Atual</th>
+                                        <th>Intervalo Médio</th>
+                                        <th>Intervalo Máximo</th>
+                                        <th>Repetição Cor</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="all_numbers_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Grid de Gráficos 2 -->
+                    <div class="charts-grid">
+                        <!-- Gráfico de Histórico de Intervalos -->
+                        <div class="chart-container">
+                            <h4 class="chart-title">Histórico de Intervalos (100)</h4>
+                            <div id="history_chart_container" style="width: 100%; height: 150px;"></div>
+                        </div>
+
+                        <!-- Gráfico de Frequência -->
+                        <div class="chart-container">
+                            <h4 class="chart-title">Frequência de Intervalos</h4>
+                            <div id="frequency_chart_container" style="width: 100%; height: 150px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico de Pedras -->
+                    <div class="chart-container">
+                        <h4 class="chart-title">Histórico Recente (Últimas 100)</h4>
+                        <div id="stones_history_container" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let updateInterval;
+        let currentAnalysisStats = [];
+        let selectedItemForChart = 0; // Pode ser número ou string (cor)
+        let analysisMode = 'number'; // 'number' ou 'color'
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!sessionStorage.getItem('raw_blaze_data')) {
+                fetchBlazeData();
+            } else {
+                analyzeIntervals();
+            }
+            if(document.getElementById('autoUpdateToggle').checked) toggleAutoUpdate();
+        });
+
+        function setAnalysisMode(mode) {
+            if (analysisMode === mode) return;
+            analysisMode = mode;
+            document.querySelector('.mode-btn.active').classList.remove('active');
+            document.querySelector(`.mode-btn[onclick="setAnalysisMode('${mode}')"]`).classList.add('active');
+            
+            document.getElementById('table-header-item').innerText = (mode === 'number') ? 'Pedra' : 'Cor';
+
+            selectedItemForChart = (mode === 'number') ? 0 : 'vermelho';
+            analyzeIntervals();
+        }
+
+        function toggleAutoUpdate() {
+            const toggle = document.getElementById('autoUpdateToggle');
+            if (toggle && toggle.checked) {
+                if (updateInterval) clearInterval(updateInterval);
+                analyzeIntervals(); // Roda uma vez imediatamente
+                updateInterval = setInterval(fetchBlazeData, 15000); // Busca dados novos
+            } else {
+                if (updateInterval) clearInterval(updateInterval);
+            }
+        }
+
+        function analyzeIntervals() {
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('analysis-content');
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            
+            if (!rawData) {
+                loadingDiv.style.display = 'block';
+                contentDiv.style.display = 'none';
+                return;
+            }
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+
+            if (results.length < 2) {
+                loadingDiv.innerText = 'Dados insuficientes.';
+                loadingDiv.style.display = 'block';
+                contentDiv.style.display = 'none';
+                return;
+            }
+
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+
+            requestAnimationFrame(() => {
+                if (analysisMode === 'number') {
+                    currentAnalysisStats = calculateNumberStats(results);
+                    renderAnalysisTable(currentAnalysisStats, 'number');
+                    updateChartsForItem(selectedItemForChart);
+                } else { // color mode
+                    currentAnalysisStats = calculateColorStats(results);
+                    renderAnalysisTable(currentAnalysisStats, 'color');
+                    updateChartsForItem(selectedItemForChart);
+                }
+                
+                // Atualiza o gráfico de média de cores independentemente do modo da tabela
+                const colorStatsForChart = calculateColorStats(results);
+                renderColorAvgChart(colorStatsForChart);
+                renderWhiteAnalysis(colorStatsForChart);
+                renderBlackAnalysis(colorStatsForChart);
+                renderRedAnalysis(colorStatsForChart);
+
+                calculateQuantumPrediction(results);
+                calculateQuantumScoreboard(results);
+                renderStonesHistory(rawData);
+            });
+        }
+
+        function calculateNumberStats(results) {
+            const numberStats = [];
+            const getColor = (r) => (r === 0 ? 'branco' : (r >= 1 && r <= 7 ? 'vermelho' : 'preto'));
+
+            for (let num = 0; num <= 14; num++) {
+                const indices = [];
+                let sameColorCount = 0;
+                let totalFollowed = 0;
+                const myColor = getColor(num);
+
+                results.forEach((res, index) => {
+                    if (res.roll === num) {
+                        indices.push(index);
+                        if (index > 0) {
+                            const nextRoll = results[index - 1].roll;
+                            if (getColor(nextRoll) === myColor) sameColorCount++;
+                            totalFollowed++;
+                        }
+                    }
+                });
+                if (indices.length === 0) {
+                    numberStats.push({ item: num, currentInterval: results.length, avgInterval: 'N/A', maxInterval: 'N/A', intervals: [], sameColorPct: 0 });
+                    continue;
+                }
+                const intervalsHistory = [indices[0]];
+                for (let i = 1; i < indices.length; i++) intervalsHistory.push(indices[i] - indices[i - 1]);
+                const currentInterval = indices[0];
+                const avgInterval = intervalsHistory.length > 0 ? intervalsHistory.reduce((a, b) => a + b, 0) / intervalsHistory.length : currentInterval;
+                const maxInterval = intervalsHistory.length > 0 ? Math.max(...intervalsHistory) : currentInterval;
+                const sameColorPct = totalFollowed > 0 ? Math.round((sameColorCount / totalFollowed) * 100) : 0;
+                numberStats.push({ item: num, currentInterval, avgInterval: Math.round(avgInterval), maxInterval, intervals: intervalsHistory.reverse(), sameColorPct });
+            }
+            return numberStats;
+        }
+
+        function calculateColorStats(results) {
+            const colorStats = [];
+            const colorsToAnalyze = ['vermelho', 'preto', 'branco'];
+            const getColor = (roll) => {
+                if (roll === 0) return 'branco';
+                if (roll >= 1 && roll <= 7) return 'vermelho';
+                if (roll >= 8 && roll <= 14) return 'preto';
+                return null;
+            };
+            colorsToAnalyze.forEach(color => {
+                const indices = [];
+                let sameColorCount = 0;
+                let totalFollowed = 0;
+
+                results.forEach((res, index) => { 
+                    if (getColor(res.roll) === color) {
+                        indices.push(index);
+                        if (index > 0) {
+                            if (getColor(results[index - 1].roll) === color) sameColorCount++;
+                            totalFollowed++;
+                        }
+                    } 
+                });
+                if (indices.length === 0) {
+                    colorStats.push({ item: color, currentInterval: results.length, avgInterval: 'N/A', maxInterval: 'N/A', intervals: [], sameColorPct: 0 });
+                    return;
+                }
+                const intervalsHistory = [indices[0]];
+                for (let i = 1; i < indices.length; i++) intervalsHistory.push(indices[i] - indices[i - 1]);
+                const currentInterval = indices[0];
+                const avgInterval = intervalsHistory.length > 0 ? intervalsHistory.reduce((a, b) => a + b, 0) / intervalsHistory.length : currentInterval;
+                const maxInterval = intervalsHistory.length > 0 ? Math.max(...intervalsHistory) : currentInterval;
+                const sameColorPct = totalFollowed > 0 ? Math.round((sameColorCount / totalFollowed) * 100) : 0;
+                colorStats.push({ item: color, currentInterval, avgInterval: Math.round(avgInterval), maxInterval, intervals: intervalsHistory.reverse(), sameColorPct });
+            });
+            return colorStats;
+        }
+
+        function renderAnalysisTable(stats, mode) {
+            const tbody = document.getElementById('all_numbers_tbody');
+            if (!tbody) return;
+            let html = '';
+            stats.forEach(stat => {
+                const isSelected = stat.item === selectedItemForChart;
+                const colorClass = (mode === 'number') ? (stat.item === 0 ? 'branco' : (stat.item <= 7 ? 'vermelho' : 'preto')) : stat.item;
+                let statusText = 'Normal';
+                let statusColor = '#888';
+                let progressPercent = 0;
+                let progressColor = '#00d2ff';
+                if (stat.avgInterval !== 'N/A') {
+                    progressPercent = Math.min(100, (stat.currentInterval / stat.maxInterval) * 100);
+                    if (stat.currentInterval > stat.avgInterval * 1.5) { statusText = 'Atrasado'; statusColor = '#ff9800'; progressColor = '#ff9800'; }
+                    if (stat.currentInterval > stat.avgInterval * 2.5) { statusText = 'MUITO ATRASADO'; statusColor = '#ff0055'; progressColor = '#ff0055'; }
+                }
+                const itemIdentifier = (typeof stat.item === 'string') ? `'${stat.item}'` : stat.item;
+                const badgeContent = (mode === 'number') ? stat.item : stat.item.charAt(0).toUpperCase();
+                html += `<tr onclick="selectItem(${itemIdentifier})" class="${isSelected ? 'active' : ''}" id="row-item-${stat.item}">
+                            <td><div class="badge ${colorClass}" style="margin: 0 auto;">${badgeContent}</div></td>
+                            <td>${stat.currentInterval}</td>
+                            <td>${stat.avgInterval}</td>
+                            <td>${stat.maxInterval}</td>
+                            <td>${stat.sameColorPct}%</td>
+                            <td>
+                                <div style="font-weight: bold; color: ${statusColor};">${statusText}</div>
+                                <div class="progress-bar-container"><div class="progress-fill" style="width: ${progressPercent}%; background: ${progressColor};"></div></div>
+                            </td>
+                        </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function selectItem(item) {
+            selectedItemForChart = item;
+            renderAnalysisTable(currentAnalysisStats, analysisMode); // Re-render to update active class
+            updateChartsForItem(item);
+        }
+
+        function renderHistoryChart(data, color = '#a100ff') {
+            const container = document.getElementById('history_chart_container');
+            container.innerHTML = '';
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth || container.getBoundingClientRect().width || 500;
+            const height = 150;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#888; padding-top: 60px;">Dados insuficientes para o gráfico.</div>';
+                return;
+            }
+
+            const maxVal = Math.max(...data, 1);
+            const avg = data.reduce((a,b)=>a+b,0) / data.length;
+
+            const getX = (i) => data.length > 1 ? (i / (data.length - 1)) * width : width / 2;
+            const getY = (val) => height - (val / maxVal) * (height - 20);
+
+            // Linha da Média
+            const avgY = getY(avg);
+            const avgLine = `<line x1="0" y1="${avgY}" x2="${width}" y2="${avgY}" stroke="${color}" stroke-width="1" stroke-dasharray="4,4" opacity="0.5" />`;
+
+            let trendLine = '';
+            // --- CÁLCULO DA LINHA DE TENDÊNCIA (REGRESSÃO LINEAR) ---
+            if (data.length >= 2) {
+                let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                const n = data.length;
+                data.forEach((y, x) => {
+                    sumX += x; sumY += y; sumXY += x * y; sumX2 += x * x;
+                });
+                const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+                const yStart = intercept;
+                const yEnd = slope * (n - 1) + intercept;
+                const trendLineColor = slope < 0 ? '#00ff88' : '#ff0055'; // Verde para diminuindo, Vermelho para aumentando
+                trendLine = `<line x1="${getX(0)}" y1="${getY(yStart)}" x2="${getX(n-1)}" y2="${getY(yEnd)}" stroke="${trendLineColor}" stroke-width="2" stroke-dasharray="5,5" opacity="0.8" />`;
+            }
+            // --- FIM DO CÁLCULO ---
+
+            let pathD = `M ${getX(0)} ${getY(data[0])}`;
+            let circles = '';
+            const circleRadius = data.length > 50 ? 2 : 3; // Pontos menores se houver muitos dados
+            data.forEach((val, i) => {
+                const x = getX(i);
+                const y = getY(val);
+                if (i > 0) {
+                    pathD += ` L ${x} ${y}`;
+                }
+                circles += `<circle cx="${x}" cy="${y}" r="${circleRadius}" fill="${val > avg ? '#ff0055' : '#fff'}"><title>${val}</title></circle>`;
+            });
+
+            const linePath = data.length > 1 ? pathD : '';
+            const areaFillPath = data.length > 1 ? `${pathD} L ${width} ${height} L 0 ${height} Z` : `M ${getX(0)} ${getY(data[0])} L ${getX(0)} ${height} L ${getX(0)} ${height} Z`;
+            const strokeWidth = data.length > 50 ? 1.5 : 2; // Linha mais fina se houver muitos dados
+
+            svg.innerHTML = `<defs><linearGradient id="gradHistory" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.3"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>${avgLine}${trendLine}<path d="${areaFillPath}" fill="url(#gradHistory)" /><path d="${linePath}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" />${circles}`;
+            container.appendChild(svg);
+        }
+
+        function renderScatterChart(intervals, color) {
+            const container = document.getElementById('scatter_chart_container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (!intervals || intervals.length < 2) {
+                container.innerHTML = '<div style="text-align:center; color:#666; padding-top: 80px;">Dados insuficientes.</div>';
+                return;
+            }
+
+            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+            const filterAboveAvg = document.getElementById('scatter_filter_avg')?.checked;
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth || 500;
+            const height = 200;
+            const padding = 30;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+
+            let points = [];
+            for (let i = 1; i < intervals.length; i++) {
+                points.push({ x: intervals[i-1], y: intervals[i] });
+            }
+
+            const maxX = Math.max(...points.map(p => p.x), 1);
+            const maxY = Math.max(...points.map(p => p.y), 1);
+
+            if (filterAboveAvg) {
+                points = points.filter(p => p.y > avgInterval);
+            }
+
+            const xAxisY = height - padding;
+            
+            // Eixos
+            const axisPath = `M ${padding} ${padding} L ${padding} ${xAxisY} L ${width - padding} ${xAxisY}`;
+            const axis = document.createElementNS(svgNS, 'path');
+            axis.setAttribute('d', axisPath);
+            axis.setAttribute('stroke', '#444');
+            axis.setAttribute('fill', 'none');
+            svg.appendChild(axis);
+
+            // Pontos
+            points.forEach(p => {
+                const cx = padding + (p.x / maxX) * (width - 2 * padding);
+                const cy = xAxisY - (p.y / maxY) * (height - 2 * padding);
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+                circle.setAttribute('r', 3); circle.setAttribute('fill', color); circle.setAttribute('opacity', 0.6);
+                const title = document.createElementNS(svgNS, 'title');
+                title.textContent = `Ant: ${p.x}, Atual: ${p.y}`;
+                circle.appendChild(title);
+                svg.appendChild(circle);
+            });
+
+            // Linha de Tendência (Regressão Linear)
+            if (points.length >= 2) {
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                const n = points.length;
+                points.forEach(p => {
+                    sumX += p.x; sumY += p.y;
+                    sumXY += p.x * p.y; sumXX += p.x * p.x;
+                });
+                
+                const denominator = (n * sumXX - sumX * sumX);
+                if (denominator !== 0) {
+                    const slope = (n * sumXY - sumX * sumY) / denominator;
+                    const intercept = (sumY - slope * sumX) / n;
+
+                    const x1 = 0; const y1 = intercept;
+                    const x2 = maxX; const y2 = slope * maxX + intercept;
+
+                    const cx1 = padding + (x1 / maxX) * (width - 2 * padding);
+                    const cy1 = xAxisY - (y1 / maxY) * (height - 2 * padding);
+                    const cx2 = padding + (x2 / maxX) * (width - 2 * padding);
+                    const cy2 = xAxisY - (y2 / maxY) * (height - 2 * padding);
+
+                    const trendLine = document.createElementNS(svgNS, 'line');
+                    trendLine.setAttribute('x1', cx1); trendLine.setAttribute('y1', cy1);
+                    trendLine.setAttribute('x2', cx2); trendLine.setAttribute('y2', cy2);
+                    trendLine.setAttribute('stroke', '#ffeb3b'); trendLine.setAttribute('stroke-width', '2');
+                    trendLine.setAttribute('stroke-dasharray', '5,5'); trendLine.setAttribute('opacity', '0.8');
+                    const title = document.createElementNS(svgNS, 'title');
+                    title.textContent = `Tendência: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
+                    trendLine.appendChild(title);
+                    svg.appendChild(trendLine);
+                }
+            }
+
+            container.appendChild(svg);
+        }
+
+        function renderColorAvgChart(stats) {
+            const container = document.getElementById('color_avg_chart_container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth || 500;
+            const height = 150;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+
+            const validStats = stats.filter(s => s.avgInterval !== 'N/A');
+            // Escala baseada no maior valor entre média e atual para evitar corte
+            const maxVal = Math.max(...validStats.map(s => Math.max(s.avgInterval, s.currentInterval)), 1);
+            
+            const barWidth = (width / stats.length) - 40;
+            const colors = { 'vermelho': '#ff0055', 'preto': '#888', 'branco': '#fff' };
+            const labels = { 'vermelho': 'Vermelho', 'preto': 'Preto', 'branco': 'Branco' };
+
+            let bars = '';
+            stats.forEach((stat, index) => {
+                const avg = stat.avgInterval === 'N/A' ? 0 : stat.avgInterval;
+                const current = stat.currentInterval;
+                
+                const barHeight = (avg / maxVal) * (height - 40);
+                const x = index * (width / stats.length) + 20;
+                const y = height - barHeight - 20;
+                const color = colors[stat.item] || '#ccc';
+                
+                bars += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" fill="${color}" opacity="0.6" rx="4"><title>${labels[stat.item]} Média: ${avg.toFixed(1)}</title></rect>`;
+                
+                const currentH = (current / maxVal) * (height - 40);
+                const currentY = height - currentH - 20;
+                
+                bars += `<line x1="${x - 5}" y1="${currentY}" x2="${x + barWidth + 5}" y2="${currentY}" stroke="#00d2ff" stroke-width="2" stroke-dasharray="4,2" />`;
+                
+                bars += `<text x="${x + barWidth/2}" y="${y - 5}" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">Avg: ${avg.toFixed(0)}</text>`;
+                
+                // Ajusta posição do label atual para não sobrepor se estiver muito perto da média
+                let labelY = currentY - 5;
+                if (Math.abs(currentY - y) < 15) labelY = currentY - 15;
+                
+                bars += `<text x="${x + barWidth/2}" y="${labelY}" font-size="10" fill="#00d2ff" text-anchor="middle" font-weight="bold">Cur: ${current}</text>`;
+                
+                bars += `<text x="${x + barWidth/2}" y="${height - 5}" font-size="10" fill="#aaa" text-anchor="middle">${labels[stat.item]}</text>`;
+            });
+            svg.innerHTML = bars;
+            container.appendChild(svg);
+        }
+
+        function updateChartsForItem(item) {
+            const stat = currentAnalysisStats.find(s => s.item === item);
+            if (!stat) return;
+            
+            let color = '#00d2ff';
+            if (typeof item === 'number') {
+                if (item === 0) color = '#ffffff';
+                else if (item >= 1 && item <= 7) color = '#ff0055';
+                else if (item >= 8 && item <= 14) color = '#888888';
+            } else {
+                if (item === 'branco') color = '#ffffff';
+                else if (item === 'vermelho') color = '#ff0055';
+                else if (item === 'preto') color = '#888888';
+            }
+
+            renderHistoryChart(stat.intervals.slice(0, 30), color);
+            renderFrequencyChart(stat.intervals, color);
+            renderScatterChart(stat.intervals, color);
+        }
+
+        function calculateFusionPrediction(data) {
+            const getColor = (r) => (r === 0 ? 'branco' : (r >= 1 && r <= 7 ? 'vermelho' : 'preto'));
+
+            if (!data || data.length < 10) {
+                const bubble = document.getElementById('fusion_prediction_result');
+                if (bubble) { bubble.className = 'prediction-bubble black'; bubble.querySelector('.prediction-bubble-text').innerText = '--'; }
+                document.getElementById('fusion_prediction_label').innerText = 'Aguardando Dados...';
+                document.getElementById('fusion_confidence_bar').style.width = '0%';
+                document.getElementById('fusion_reasoning').innerText = 'Dados insuficientes para análise de fusão.';
+                return;
+            }
+
+            let redScore = 0;
+            let blackScore = 0;
+            let reasoning = [];
+            const history = data.slice(0, 20).map(g => getColor(g.roll));
+
+            // 1. Trend/Surf (Peso 3)
+            if (history.length >= 3 && history[0] === history[1] && history[1] === history[2] && history[0] !== 'branco') {
+                if (history[0] === 'vermelho') redScore += 3; else blackScore += 3;
+                reasoning.push({ text: `Tendência Forte (${history[0]})`, score: 3 });
+            }
+
+            // 2. Alternating/Xadrez (Peso 2.5)
+            if (history.length >= 3 && history[0] !== history[1] && history[1] !== history[2]) {
+                if (history[0] === 'vermelho') blackScore += 2.5; else redScore += 2.5;
+                reasoning.push({ text: 'Padrão de Alternância', score: 2.5 });
+            }
+
+            // 3. Reversal/Quebra (Peso 4)
+            let streak = 1;
+            for (let i = 1; i < history.length; i++) {
+                if (history[i] === history[0]) streak++; else break;
+            }
+            if (streak >= 5) {
+                if (history[0] === 'vermelho') blackScore += 4; else redScore += 4;
+                reasoning.push({ text: `Quebra de Sequência (${streak}x)`, score: 4 });
+            }
+
+            // 4. Majority (Peso 1.5)
+            const last10 = history.slice(0, 10);
+            const redCount = last10.filter(c => c === 'vermelho').length;
+            const blackCount = last10.filter(c => c === 'preto').length;
+            if (redCount > blackCount + 3) { redScore += 1.5; reasoning.push({ text: `Maioria Vermelha Recente`, score: 1.5 }); } 
+            else if (blackCount > redCount + 3) { blackScore += 1.5; reasoning.push({ text: `Maioria Preta Recente`, score: 1.5 }); }
+
+            // 5. Post-White Analysis (Peso 2)
+            if (data.length > 1 && data[1].roll === 0) {
+                const lastColor = getColor(data[0].roll);
+                if (lastColor === 'vermelho') redScore += 2; else if (lastColor === 'preto') blackScore += 2;
+                reasoning.push({ text: `Análise Pós-Branco`, score: 2 });
+            }
+
+            // 6. Global Balance (Peso 2) - Análise de Todas as Pedras
+            let totalRed = 0;
+            let totalBlack = 0;
+            data.forEach(g => {
+                const c = getColor(g.roll);
+                if (c === 'vermelho') totalRed++;
+                else if (c === 'preto') totalBlack++;
+            });
+            const total = totalRed + totalBlack;
+            if (total > 0) {
+                const redPct = totalRed / total;
+                if (redPct > 0.55) { // Red dominance > 55%, expect correction to Black
+                    blackScore += 2;
+                    reasoning.push({ text: `Correção Global (Excesso Vermelho ${(redPct*100).toFixed(0)}%)`, score: 2 });
+                } else if (redPct < 0.45) { // Red scarcity < 45%, expect correction to Red
+                    redScore += 2;
+                    reasoning.push({ text: `Correção Global (Escassez Vermelho ${(redPct*100).toFixed(0)}%)`, score: 2 });
+                }
+            }
+
+            let prediction = 'Aguardando...', predictionClass = 'black', confidence = 0;
+            const totalScore = redScore + blackScore;
+
+            if (totalScore > 0) {
+                if (redScore > blackScore) { prediction = 'VERMELHO'; predictionClass = 'red'; confidence = (redScore / totalScore) * 100; } 
+                else if (blackScore > redScore) { prediction = 'PRETO'; predictionClass = 'black'; confidence = (blackScore / totalScore) * 100; } 
+                else { prediction = 'EQUILÍBRIO'; predictionClass = 'black'; confidence = 50; }
+            }
+            if (Math.abs(redScore - blackScore) > 3) confidence = Math.min(98, confidence + 15);
+
+            const resultBubble = document.getElementById('fusion_prediction_result');
+            resultBubble.className = `prediction-bubble ${predictionClass}`;
+            resultBubble.querySelector('.prediction-bubble-text').innerText = prediction === 'Aguardando...' ? '--' : prediction.charAt(0);
+            document.getElementById('fusion_prediction_label').innerText = prediction;
+            document.getElementById('fusion_prediction_label').style.color = predictionClass === 'red' ? 'var(--accent-blaze)' : '#fff';
+            document.getElementById('fusion_confidence_bar').style.width = `${confidence}%`;
+            document.getElementById('fusion_confidence_bar').style.background = `linear-gradient(90deg, ${predictionClass === 'red' ? '#ff0055' : '#555'}, ${predictionClass === 'red' ? '#ff45d4' : '#ccc'})`;
+            
+            const reasoningEl = document.getElementById('fusion_reasoning');
+            if (reasoning.length > 0) {
+                reasoning.sort((a, b) => b.score - a.score);
+                reasoningEl.innerHTML = '<strong>Fatores Dominantes:</strong><br>' + reasoning.slice(0, 2).map(r => `<span>- ${r.text}</span>`).join('<br>');
+            } else { reasoningEl.innerText = 'Nenhum padrão forte detectado. Aguardando...'; }
+        }
+
+        function calculateQuantumPrediction(data) {
+            const getColor = (r) => (r === 0 ? 'branco' : (r >= 1 && r <= 7 ? 'vermelho' : 'preto'));
+
+            if (!data || data.length < 10) return;
+
+            let redProb = 0;
+            let blackProb = 0;
+            let reasoning = [];
+            const history = data.slice(0, 30).map(g => getColor(g.roll));
+
+            // 1. Pattern Matching (Deep)
+            if (history.length >= 3) {
+                const pat3 = history.slice(0, 3).join(',');
+                let rCount = 0, bCount = 0;
+                // Busca padrão nos últimos 100 jogos
+                const limit = Math.min(data.length, 100);
+                for (let i = 3; i < limit - 3; i++) {
+                    const slice = data.slice(i, i + 3).map(g => getColor(g.roll)).join(',');
+                    if (slice === pat3) {
+                        const next = getColor(data[i - 1].roll);
+                        if (next === 'vermelho') rCount++;
+                        else if (next === 'preto') bCount++;
+                    }
+                }
+                if (rCount > bCount) { redProb += 25; reasoning.push({text: `Padrão Histórico (${rCount}v${bCount})`, score: 25}); }
+                else if (bCount > rCount) { blackProb += 25; reasoning.push({text: `Padrão Histórico (${bCount}v${rCount})`, score: 25}); }
+            }
+
+            // 2. Volatility / Entropy
+            let switches = 0;
+            for(let i=0; i<10; i++) {
+                if(history[i] !== history[i+1]) switches++;
+            }
+            if (switches > 7) {
+                const last = history[0];
+                if (last === 'vermelho') blackProb += 15; else redProb += 15;
+                reasoning.push({text: 'Alta Volatilidade (Correção)', score: 15});
+            } else if (switches < 3) {
+                const last = history[0];
+                if (last === 'vermelho') redProb += 15; else blackProb += 15;
+                reasoning.push({text: 'Baixa Volatilidade (Fluxo)', score: 15});
+            }
+
+            // 3. Balance (Short term)
+            const last10 = history.slice(0, 10);
+            const r10 = last10.filter(c => c === 'vermelho').length;
+            const b10 = last10.filter(c => c === 'preto').length;
+            if (r10 > 7) { blackProb += 20; reasoning.push({text: 'Saturação Vermelha', score: 20}); }
+            if (b10 > 7) { redProb += 20; reasoning.push({text: 'Saturação Preta', score: 20}); }
+
+            let prediction = 'Aguardando...';
+            let predictionClass = 'black';
+            let confidence = 50;
+
+            if (redProb > blackProb) {
+                prediction = 'VERMELHO';
+                predictionClass = 'red';
+                confidence = 50 + (redProb - blackProb);
+            } else if (blackProb > redProb) {
+                prediction = 'PRETO';
+                predictionClass = 'black';
+                confidence = 50 + (blackProb - redProb);
+            }
+
+            confidence = Math.min(99, confidence);
+
+            const bubble = document.getElementById('quantum_prediction_result');
+            if (bubble) {
+                bubble.className = `prediction-bubble ${predictionClass}`;
+                bubble.querySelector('.prediction-bubble-text').innerText = prediction === 'Aguardando...' ? '--' : prediction[0];
+            }
+            document.getElementById('quantum_prediction_label').innerText = prediction;
+            document.getElementById('quantum_prediction_label').style.color = predictionClass === 'red' ? '#ff0055' : (predictionClass === 'black' ? '#fff' : '#888');
+            
+            const bar = document.getElementById('quantum_confidence_bar');
+            if (bar) {
+                bar.style.width = `${confidence}%`;
+                bar.style.background = `linear-gradient(90deg, #ffd700, ${predictionClass === 'red' ? '#ff0055' : '#333'})`;
+            }
+
+            const reasonEl = document.getElementById('quantum_reasoning');
+            if (reasonEl && reasoning.length > 0) {
+                reasoning.sort((a,b) => b.score - a.score);
+                reasonEl.innerHTML = reasoning.slice(0, 2).map(r => `<div>• ${r.text}</div>`).join('');
+            }
+        }
+
+        function calculateQuantumScoreboard(data) {
+             let wins = 0;
+             let losses = 0;
+             let resultsHistory = [];
+             const getColor = (r) => (r === 0 ? 'branco' : (r >= 1 && r <= 7 ? 'vermelho' : 'preto'));
+             const limit = Math.min(data.length - 20, 200); 
+
+             for(let i=0; i<limit; i++) {
+                 const target = data[i];
+                 if (i < data.length - 1 && data[i+1].time === target.time) continue;
+
+                 const historySlice = data.slice(i+1);
+                 const history = historySlice.slice(0, 30).map(g => getColor(g.roll));
+                 
+                 let rScore = 0, bScore = 0;
+                 
+                 if (history.length >= 3) {
+                     const p = history.slice(0,3).join(',');
+                     if (p === 'vermelho,vermelho,vermelho') bScore += 20;
+                     else if (p === 'preto,preto,preto') rScore += 20;
+                     else if (p === 'vermelho,preto,vermelho') bScore += 15;
+                     else if (p === 'preto,vermelho,preto') rScore += 15;
+                 }
+                 
+                 const last10 = history.slice(0, 10);
+                 const r10 = last10.filter(c => c === 'vermelho').length;
+                 if (r10 >= 7) bScore += 20;
+                 if (r10 <= 3) rScore += 20;
+
+                 let pred = null;
+                 if (rScore > bScore) pred = 'vermelho';
+                 else if (bScore > rScore) pred = 'preto';
+                 
+                 if (pred) {
+                     const actual = getColor(target.roll);
+                     if (actual === pred || actual === 'branco') {
+                         wins++;
+                         resultsHistory.push({ result: 'win', time: target.time });
+                     } else {
+                         losses++;
+                         resultsHistory.push({ result: 'loss', time: target.time });
+                     }
+                 }
+             }
+             
+             document.getElementById('quantum_wins').innerText = wins;
+             document.getElementById('quantum_losses').innerText = losses;
+             const total = wins + losses;
+             const acc = total > 0 ? ((wins/total)*100).toFixed(0) : 0;
+             document.getElementById('quantum_accuracy').innerText = acc + '%';
+
+             // Renderiza o gráfico de evolução (inverte para cronológico: Antigo -> Novo)
+             renderQuantumEvolutionChart(resultsHistory.reverse());
+        }
+
+        function renderQuantumEvolutionChart(history) {
+            const container = document.getElementById('quantum_evolution_chart_container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (history.length < 2) {
+                container.innerHTML = '<div style="text-align:center; color:#666; padding-top: 60px;">Dados insuficientes para gráfico de evolução.</div>';
+                return;
+            }
+
+            const width = container.clientWidth || 500;
+            const height = 150;
+            const padding = 20;
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+
+            let cumulativeWins = 0;
+            const points = history.map((item, index) => {
+                if (item.result === 'win') cumulativeWins++;
+                return { 
+                    x: index, 
+                    y: (cumulativeWins / (index + 1)) * 100 
+                };
+            });
+
+            const minVal = 0; // Escala fixa de 0 a 100 para consistência
+            const maxVal = 100;
+
+            const getX = (i) => padding + (i / (points.length - 1)) * (width - 2 * padding);
+            const getY = (v) => height - padding - ((v - minVal) / (maxVal - minVal)) * (height - 2 * padding);
+
+            // Linhas de Grade (0%, 50%, 100%)
+            [0, 50, 100].forEach(val => {
+                const y = getY(val);
+                const line = document.createElementNS(svgNS, 'line');
+                line.setAttribute('x1', padding); line.setAttribute('y1', y);
+                line.setAttribute('x2', width - padding); line.setAttribute('y2', y);
+                line.setAttribute('stroke', '#333'); line.setAttribute('stroke-dasharray', '4');
+                svg.appendChild(line);
+            });
+
+            let d = `M ${getX(0)} ${getY(points[0].y)}`;
+            points.forEach((p, i) => { if (i > 0) d += ` L ${getX(i)} ${getY(p.y)}`; });
+
+            const path = document.createElementNS(svgNS, 'path');
+            path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#ffd700'); path.setAttribute('stroke-width', '2');
+            svg.appendChild(path);
+            container.appendChild(svg);
+        }
+
+        function renderRedAnalysis(stats) {
+            const redStat = stats.find(s => s.item === 'vermelho');
+            if (!redStat) return;
+
+            document.getElementById('red_current_gap').innerText = redStat.currentInterval;
+            document.getElementById('red_avg_gap').innerText = redStat.avgInterval;
+            
+            let prob = 0;
+            const avg = redStat.avgInterval === 'N/A' ? 0 : redStat.avgInterval;
+            
+            if (avg > 0) {
+                const ratio = redStat.currentInterval / avg;
+                prob = Math.min(99, ratio * 50);
+                if (ratio > 1.5) prob = Math.min(99, 75 + (ratio - 1.5) * 10);
+            }
+            
+            document.getElementById('red_prob').innerText = prob.toFixed(0) + '%';
+            
+            let status = "NORMAL";
+            let color = "#ccc";
+            
+            if (prob >= 85) { status = "ENTRADA IMINENTE 🔥"; color = "#ff0055"; }
+            else if (prob >= 60) { status = "ATENÇÃO ⚠️"; color = "#ff9800"; }
+            else if (prob <= 20) { status = "RESFRIAMENTO ❄️"; color = "#00d2ff"; }
+            
+            const statusEl = document.getElementById('red_status');
+            statusEl.innerText = status;
+            statusEl.style.color = color;
+        }
+
+        function renderBlackAnalysis(stats) {
+            const blackStat = stats.find(s => s.item === 'preto');
+            if (!blackStat) return;
+
+            document.getElementById('black_current_gap').innerText = blackStat.currentInterval;
+            document.getElementById('black_avg_gap').innerText = blackStat.avgInterval;
+            
+            let prob = 0;
+            const avg = blackStat.avgInterval === 'N/A' ? 0 : blackStat.avgInterval;
+            
+            if (avg > 0) {
+                const ratio = blackStat.currentInterval / avg;
+                prob = Math.min(99, ratio * 50);
+                if (ratio > 1.5) prob = Math.min(99, 75 + (ratio - 1.5) * 10);
+            }
+            
+            document.getElementById('black_prob').innerText = prob.toFixed(0) + '%';
+            
+            let status = "NORMAL";
+            let color = "#ccc";
+            
+            if (prob >= 85) { status = "ENTRADA IMINENTE 🔥"; color = "#fff"; }
+            else if (prob >= 60) { status = "ATENÇÃO ⚠️"; color = "#ff9800"; }
+            else if (prob <= 20) { status = "RESFRIAMENTO ❄️"; color = "#00d2ff"; }
+            
+            const statusEl = document.getElementById('black_status');
+            statusEl.innerText = status;
+            statusEl.style.color = color;
+        }
+
+        function renderWhiteAnalysis(stats) {
+            const whiteStat = stats.find(s => s.item === 'branco');
+            if (!whiteStat) return;
+
+            document.getElementById('white_current_gap').innerText = whiteStat.currentInterval;
+            document.getElementById('white_avg_gap').innerText = whiteStat.avgInterval;
+            
+            let prob = 0;
+            const avg = whiteStat.avgInterval === 'N/A' ? 0 : whiteStat.avgInterval;
+            
+            if (avg > 0) {
+                const ratio = whiteStat.currentInterval / avg;
+                prob = Math.min(99, ratio * 50);
+                if (ratio > 1.5) prob = Math.min(99, 75 + (ratio - 1.5) * 10);
+            }
+            
+            document.getElementById('white_prob').innerText = prob.toFixed(0) + '%';
+            
+            let status = "NORMAL";
+            let color = "#ccc";
+            
+            if (prob >= 85) { status = "ENTRADA IMINENTE 🔥"; color = "#fff"; }
+            else if (prob >= 60) { status = "ATENÇÃO ⚠️"; color = "#ff9800"; }
+            else if (prob <= 20) { status = "RESFRIAMENTO ❄️"; color = "#00d2ff"; }
+            
+            const statusEl = document.getElementById('white_status');
+            statusEl.innerText = status;
+            statusEl.style.color = color;
+        }
+
+        function renderFrequencyChart(data, color = '#ffeb3b') {
+            const container = document.getElementById('frequency_chart_container');
+            container.innerHTML = '';
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, 'svg');
+            const width = container.clientWidth || container.getBoundingClientRect().width || 500;
+            const height = 150;
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+
+            const freqMap = {};
+            data.forEach(val => { freqMap[val] = (freqMap[val] || 0) + 1; });
+            
+            const sortedFreq = Object.entries(freqMap).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+            const maxCount = Math.max(...Object.values(freqMap), 1);
+
+            let bars = '';
+            sortedFreq.forEach(([interval, count]) => {
+                const barHeight = (count / maxCount) * (height - 20);
+                const x = (parseInt(interval) / Math.max(...data)) * width;
+                const y = height - barHeight - 15;
+                bars += `<rect x="${x}" y="${y}" width="5" height="${barHeight}" fill="${color}" opacity="0.8"><title>Intervalo ${interval}: ${count}x</title></rect><text x="${x+2.5}" y="${height-5}" font-size="8" fill="#888" text-anchor="middle">${interval}</text>`;
+            });
+
+            svg.innerHTML = bars;
+            container.appendChild(svg);
+        }
+
+        function renderStonesHistory(rawData) {
+            const container = document.getElementById('stones_history_container');
+            if (!container) return;
+            if (!rawData) return;
+            
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            // Proteção: Garante que i+2 existe antes de acessar para evitar erro
+            for (let i = 0; i < tokens.length - 2; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            
+            const recent = results.slice(0, 100);
+            let html = '';
+            recent.forEach(res => {
+                let colorClass = 'branco';
+                if (res.roll >= 1 && res.roll <= 7) colorClass = 'vermelho';
+                else if (res.roll >= 8 && res.roll <= 14) colorClass = 'preto';
+                html += `<div class="badge ${colorClass}" title="${res.time}">${res.roll}<div class="time-overlay">${res.time}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function fetchBlazeData() {
+            const loadingDiv = document.getElementById('loading');
+            if(loadingDiv) {
+                loadingDiv.innerText = 'Buscando dados da API...';
+                loadingDiv.style.display = 'block';
+            }
+
+            try {
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                
+                let allGames = [];
+                for (let page = 1; page <= 3; page++) {
+                    const baseUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/${page}`;
+                    const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=${page}&_nc=${Date.now()}`;
+                    const targetUrl = `${baseUrl}${params}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                    
+                    try {
+                        const response = await fetch(proxyUrl);
+                        if (response.ok) {
+                            const data = await response.json();
+                            const records = Array.isArray(data) ? data : (data.records || []);
+                            if (records.length === 0) break;
+                            allGames = allGames.concat(records);
+                        }
+                    } catch (e) { console.warn(`Erro pág ${page}`, e); }
+                    await new Promise(r => setTimeout(r, 500));
+                }
+
+                const uniqueGames = allGames.filter((game, index, self) =>
+                    index === self.findIndex((t) => (t.id === game.id))
+                ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                if (uniqueGames.length === 0) throw new Error("Nenhum dado encontrado.");
+
+                const formattedData = uniqueGames.map(game => {
+                    const date = new Date(game.created_at);
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const y = date.getFullYear();
+                    const h = String(date.getHours()).padStart(2, '0');
+                    const min = String(date.getMinutes()).padStart(2, '0');
+                    return `${d}/${m}/${y} ${game.roll} ${h}:${min}`;
+                }).join('\n');
+
+                sessionStorage.setItem('raw_blaze_data', formattedData);
+                analyzeIntervals();
+
+            } catch (error) {
+                console.error(error);
+                if(loadingDiv) loadingDiv.innerText = 'Erro ao buscar dados. Tente novamente.';
+            }
+        }
+    </script>
+</body>
+</html>

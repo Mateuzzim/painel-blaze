@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estratégias - Nexus Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #bc13fe;
+            --accent: #f12c4c;
+            --gold: #ffd700;
+            --green: #39ff14;
+            --bg-dark: #050b14;
+            --card-bg: rgba(20, 25, 40, 0.7);
+            --text-main: #e0e6ed;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* Background Grid */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(188, 19, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(188, 19, 254, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(188, 19, 254, 0.3);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        .btn-back:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+
+        .strategies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .strategy-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .strategy-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0, 243, 255, 0.15); }
+
+        .card-icon { font-size: 1.5rem; margin-bottom: 10px; display: inline-block; padding: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); }
+        .card-title { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: #fff; margin-bottom: 8px; text-transform: uppercase; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .card-desc { color: #aaa; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; display: none; }
+
+        .difficulty { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .diff-easy { background: rgba(0, 231, 1, 0.2); color: #00e701; }
+        .diff-med { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+        .diff-hard { background: rgba(241, 44, 76, 0.2); color: #f12c4c; }
+
+        .step-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px; display: none; }
+        .step-list li { margin-bottom: 8px; display: flex; align-items: start; gap: 10px; font-size: 0.9rem; }
+        .step-list li::before { content: "▹"; color: var(--primary); }
+
+        /* Cores específicas */
+        .card-blue .card-icon { color: var(--primary); border: 1px solid var(--primary); }
+        .card-purple .card-icon { color: var(--secondary); border: 1px solid var(--secondary); }
+        .card-gold .card-icon { color: var(--gold); border: 1px solid var(--gold); }
+        .card-red .card-icon { color: var(--accent); border: 1px solid var(--accent); }
+        .card-green .card-icon { color: var(--green); border: 1px solid var(--green); }
+
+        /* --- AI SECTION --- */
+        .ai-container {
+            width: 100%;
+            max-width: 1000px;
+            background: linear-gradient(180deg, rgba(0, 243, 255, 0.05) 0%, rgba(5, 11, 20, 0.8) 100%);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+        }
+
+        .ai-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+
+        .ai-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-pulse {
+            width: 10px; height: 10px; background: var(--primary); border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+
+        .suggestion-box {
+            display: none; /* Hidden by default */
+            width: 100%;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .suggestion-box.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sugg-title { font-size: 1.8rem; font-weight: bold; color: #fff; margin: 10px 0; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .sugg-desc { color: #aaa; font-size: 1rem; margin-bottom: 15px; }
+        .sugg-conf { font-family: 'Orbitron'; font-size: 1.2rem; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; border-radius: 4px; display: inline-block; }
+
+        /* --- AI HISTORY --- */
+        .ai-history-container {
+            position: sticky;
+            top: 20px;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(5, 11, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: block;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+        .ai-history-container::-webkit-scrollbar { width: 4px; }
+        .ai-history-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+        
+        .hist-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            transition: background 0.3s;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .hist-item:last-child { border-bottom: none; }
+        .hist-item:hover { background: rgba(255, 255, 255, 0.02); }
+        
+        .hist-strat { color: #fff; font-weight: bold; font-size: 0.95rem; text-align: left; }
+        .hist-conf { font-family: 'Orbitron'; font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; }
+        .hist-time { color: #666; font-size: 0.8rem; font-family: 'Rajdhani'; }
+
+        /* --- RECENT HISTORY (STONES) --- */
+        .recent-history-container {
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 40px;
+        }
+        .recent-history-list {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .recent-history-list::-webkit-scrollbar { height: 6px; }
+        .recent-history-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+        
+        .history-badge { min-width: 60px; padding: 10px 0; text-align: center; border-radius: 4px; font-weight: bold; font-size: 0.9rem; background: rgba(255, 255, 255, 0.05); border: 1px solid transparent; }
+        .h-win { color: var(--green); border-color: rgba(57, 255, 20, 0.3); box-shadow: 0 0 5px rgba(57, 255, 20, 0.1); }
+        .h-loss { color: var(--accent); border-color: rgba(241, 44, 76, 0.3); }
+        .h-doji { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+
+        /* Animação de Entrada */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .history-badge.new-item {
+            animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .history-badge.latest {
+            border: 1px solid #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        .history-badge.latest::after { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.8); animation: pulse-border 1.5s infinite; }
+        @keyframes pulse-border { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Protocolos <span style="color: var(--primary)">Estratégicos</span></h1>
+        <div>
+            <a href="previsao_de_horario.html" class="btn-back" style="margin-right: 10px;">Previsão Horário</a>
+            <a href="index.html" class="btn-back">Voltar</a>
+        </div>
+    </div>
+
+    <!-- AI Section -->
+    <div class="ai-container">
+        <div class="ai-status"><div class="ai-pulse"></div> <span id="ai-status-text">ESCANEANDO MERCADO...</span></div>
+        
+        <div id="ai-result" class="suggestion-box">
+            <div class="sugg-title" id="sugg-name">---</div>
+            <div class="sugg-desc" id="sugg-reason">---</div>
+            <div class="sugg-conf" id="sugg-conf">---</div>
+        </div>
+    </div>
+
+    <!-- AI History Section -->
+    <div id="ai-history-container" class="ai-history-container">
+        <h3 style="color: var(--primary); font-family: 'Orbitron'; margin: 0 0 15px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(0, 243, 255, 0.1); padding-bottom: 10px;">Histórico de Sinais</h3>
+        <div id="ai-history-list">
+            <div id="history-placeholder" style="text-align: center; color: #666; padding: 20px; font-style: italic; font-size: 0.9rem;">Aguardando sinais...</div>
+        </div>
+    </div>
+
+    <!-- Recent History Section -->
+    <div class="recent-history-container">
+        <h3 style="color: var(--primary); font-family: 'Orbitron'; margin: 0 0 15px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(0, 243, 255, 0.1); padding-bottom: 10px;">Últimas 20 Velas</h3>
+        <div id="recent-history-list" class="recent-history-list"></div>
+    </div>
+
+    <div class="strategies-grid">
+        <!-- Estratégia 1 -->
+        <div class="strategy-card card-blue">
+            <div class="card-icon">🛡️</div>
+            <div class="card-title">Scalping Seguro</div>
+            <div class="difficulty diff-easy">Iniciante</div>
+            <p class="card-desc">Focada em consistência e proteção. O objetivo é sair do mercado rapidamente com lucros pequenos mas frequentes.</p>
+            <ul class="step-list">
+                <li>Alvo: <strong>1.30x a 1.50x</strong></li>
+                <li>Stop Loss: 10% da banca diária.</li>
+                <li>Entrar após 2 velas vermelhas seguidas.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 2 -->
+        <div class="strategy-card card-purple">
+            <div class="card-icon">🔮</div>
+            <div class="card-title">Padrão Xadrez</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Identificação de alternância entre velas altas (Verdes) e baixas (Vermelhas).</p>
+            <ul class="step-list">
+                <li>Observar sequência: Verde, Vermelho, Verde...</li>
+                <li>Entrada: Após uma vela vermelha confirmada.</li>
+                <li>Alvo: <strong>2.00x</strong> (Dobro).</li>
+            </ul>
+        </div>
+        <!-- Estratégia 3 -->
+        <div class="strategy-card card-gold">
+            <div class="card-icon">💎</div>
+            <div class="card-title">Hunter 10x</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Estratégia de alto risco e alta recompensa, buscando multiplicadores acima de 10.00x.</p>
+            <ul class="step-list">
+                <li>Analisar média de tempo das últimas velas rosas.</li>
+                <li>Entrada com valor baixo (1% da banca).</li>
+                <li>Utilizar auto-retirar em <strong>10.00x</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 4 -->
+        <div class="strategy-card card-green">
+            <div class="card-icon">⏱️</div>
+            <div class="card-title">Ciclo Pulo 6x</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Estratégia de temporização. Identifica uma vela alta e aguarda a correção do mercado antes de entrar.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela acima de <strong>6.00x</strong>.</li>
+                <li>Espera: Pular exatas <strong>6 casas</strong> (rodadas).</li>
+                <li>Entrada: Apostar na 7ª, 8ª e 9ª casa.</li>
+                <li>Alvo: <strong>1.90x</strong> (Auto-retirar).</li>
+            </ul>
+        </div>
+        <!-- Estratégia 5 -->
+        <div class="strategy-card card-blue">
+            <div class="card-icon">🔢</div>
+            <div class="card-title">Padrão Dígitos Iguais</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Padrão numérico onde velas com dígitos repetidos indicam força para buscar multiplicadores médios.</p>
+            <ul class="step-list">
+                <li>Gatilho: <strong>1.11x, 2.22x, 3.33x, 4.44x, 5.55x</strong></li>
+                <li>Entrada: Buscar 2x a 3x até a <strong>3ª entrada</strong>.</li>
+                <li>Alvo: Auto-retirar em <strong>2.50x</strong> ou <strong>2.90x</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 6 -->
+        <div class="strategy-card card-gold">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Pós-Vela 10x (3X)</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Aproveitar o momento de alta volatilidade após uma vela rosa para buscar um multiplicador de 3x.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela acima de <strong>10.00x</strong>.</li>
+                <li>Entrada: Apostar nas próximas <strong>4 rodadas</strong>.</li>
+                <li>Alvo: <strong>3.00x</strong>.</li>
+                <li>Obs: Se bater a meta e você não entrou, não entre mais.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 7 -->
+        <div class="strategy-card card-purple">
+            <div class="card-icon">⏳</div>
+            <div class="card-title">Pulo 3 Casas (3X)</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Estratégia de espera após velas médias (4x a 8x).</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela entre <strong>4x e 8x</strong>.</li>
+                <li>Espera: Pular exatas <strong>3 casas</strong>.</li>
+                <li>Entrada: Buscar 3x por até <strong>4 rodadas</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 8 -->
+        <div class="strategy-card card-red">
+            <div class="card-icon">📉</div>
+            <div class="card-title">Reversão de Loss (3X)</div>
+            <div class="difficulty diff-easy">Iniciante</div>
+            <p class="card-desc">Entrada contra-tendência após sequência de baixas.</p>
+            <ul class="step-list">
+                <li>Gatilho: Sequência de <strong>5 ou 6 Loss</strong>.</li>
+                <li>Entrada: Imediata buscando reversão.</li>
+                <li>Alvo: Auto-retirar em <strong>2.50x</strong> ou <strong>2.90x</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 9 -->
+        <div class="strategy-card card-blue">
+            <div class="card-icon">🌠</div>
+            <div class="card-title">Pós-Vela 20x (3x-5x)</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Estratégia composta após super velas (20x+). Busca multiplicadores médios em duas fases.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela acima de <strong>20.00x</strong>.</li>
+                <li>Fase 1 (Rodadas 1-4): Buscar <strong>3.00x a 4.00x</strong>.</li>
+                <li>Fase 2 (Rodadas 5-7): Buscar <strong>5.00x</strong>.</li>
+                <li>Obs: Se bater 5x na Fase 1, cancele a Fase 2.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 10 -->
+        <div class="strategy-card card-green">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Padrão Repetição (3x-5x)</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Variação agressiva do padrão de dígitos iguais, buscando multiplicadores maiores.</p>
+            <ul class="step-list">
+                <li>Gatilho: <strong>1.11x, 2.22x, 3.33x, 4.44x</strong>.</li>
+                <li>Entrada: Buscar <strong>3.00x a 5.00x</strong>.</li>
+                <li>Duração: Entrar nas próximas <strong>4 ou 5 rodadas</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 11 -->
+        <div class="strategy-card card-red">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Pós-Vela 1.00x (5X)</div>
+            <div class="difficulty diff-med">Intermediário</div>
+            <p class="card-desc">Alta probabilidade (60%) de recuperação com multiplicador alto após um crash instantâneo.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela de <strong>1.00x</strong>.</li>
+                <li>Entrada: Buscar <strong>5.00x</strong>.</li>
+                <li>Duração: Entrar nas próximas <strong>4 ou 5 rodadas</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 12 -->
+        <div class="strategy-card card-gold">
+            <div class="card-icon">✨</div>
+            <div class="card-title">Pós-Vela 8x (10X)</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Padrão onde uma vela de 8x sinaliza a chegada de uma vela rosa (10x+) em breve.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela na casa de <strong>8.00x</strong>.</li>
+                <li>Entrada: Buscar <strong>10.00x</strong>.</li>
+                <li>Duração: Entrar nas próximas <strong>4 ou 5 rodadas</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 13 -->
+        <div class="strategy-card card-purple">
+            <div class="card-icon">👯</div>
+            <div class="card-title">Valores Iguais (10X-15X)</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Padrão raro onde velas com valores idênticos consecutivos sinalizam um pagamento alto em breve.</p>
+            <ul class="step-list">
+                <li>Gatilho: Duas velas com <strong>valores iguais</strong>.</li>
+                <li>Entrada: Buscar <strong>10.00x a 15.00x</strong>.</li>
+                <li>Duração: Persistir por até <strong>10 rodadas</strong>.</li>
+                <li>Obs: Observar a tendência antes de entrar.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 14 -->
+        <div class="strategy-card card-gold">
+            <div class="card-icon">👑</div>
+            <div class="card-title">Pós-Vela 100x (15X-20X)</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Estratégia de janelas específicas após uma vela lendária (100x+), buscando alvos altos.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela acima de <strong>100.00x</strong>.</li>
+                <li>Janela 1: Pular 6 casas, entrar na <strong>7ª e 8ª</strong>.</li>
+                <li>Janela 2: Se falhar, entrar da <strong>13ª à 17ª casa</strong>.</li>
+                <li>Alvo: <strong>15.00x a 20.00x</strong>.</li>
+            </ul>
+        </div>
+        <!-- Estratégia 15 -->
+        <div class="strategy-card card-blue">
+            <div class="card-icon">➗</div>
+            <div class="card-title">Divisão por 4 (+4)</div>
+            <div class="difficulty diff-hard">Avançado</div>
+            <p class="card-desc">Estratégia matemática para velas pares acima de 16x. O alvo é o resultado da divisão da vela por 4.</p>
+            <ul class="step-list">
+                <li>Gatilho: Vela par acima de <strong>16.00x</strong>.</li>
+                <li>Cálculo: Dividir valor por 4 (Ex: 16x / 4 = <strong>4.00x</strong> alvo).</li>
+                <li>Até 30x: Entrar nas próximas <strong>4 a 5 rodadas</strong>.</li>
+                <li>Acima de 30x: Pular 6 casas, entrar na <strong>7ª</strong> (4 a 5 tentativas).</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const SEU_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+        const API_URL = 'https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=1';
+        const PROXY = 'https://corsproxy.io/?';
+
+        const elStatusText = document.getElementById('ai-status-text');
+        const elResultBox = document.getElementById('ai-result');
+        const elName = document.getElementById('sugg-name');
+        const elReason = document.getElementById('sugg-reason');
+        const elConf = document.getElementById('sugg-conf');
+        const elHistoryContainer = document.getElementById('ai-history-container');
+        const elHistoryList = document.getElementById('ai-history-list');
+        const elRecentHistoryList = document.getElementById('recent-history-list');
+        let lastDetectedId = null;
+        let lastHistoryId = null;
+
+        async function fetchAndAnalyze() {
+            try {
+                const response = await fetch(`${PROXY}${API_URL}&t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${SEU_TOKEN}` }
+                });
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                const records = data.records || data;
+                // Ordenar: mais recente no índice 0
+                records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                renderRecentHistory(records);
+                analyzeStrategies(records);
+            } catch (e) {
+                console.error(e);
+                elStatusText.innerText = "CONEXÃO INSTÁVEL - TENTANDO RECONECTAR...";
+            }
+        }
+
+        function renderRecentHistory(history) {
+            if (!history || history.length === 0) return;
+            const newest = history[0];
+
+            // Função auxiliar para criar o elemento
+            const createBadge = (game) => {
+                const val = parseFloat(game.crash_point);
+                const div = document.createElement('div');
+                div.className = 'history-badge';
+                div.innerText = val.toFixed(2) + 'x';
+                if (val >= 2.00) div.classList.add('h-win');
+                else if (val <= 1.00) div.classList.add('h-doji');
+                else div.classList.add('h-loss');
+                return div;
+            };
+
+            // Primeira carga
+            if (!lastHistoryId) {
+                elRecentHistoryList.innerHTML = '';
+                history.slice(0, 20).forEach((game, index) => {
+                    const el = createBadge(game);
+                    if (index === 0) el.classList.add('latest');
+                    elRecentHistoryList.appendChild(el);
+                });
+                lastHistoryId = newest.id;
+                return;
+            }
+
+            // Se não mudou, não faz nada
+            if (newest.id === lastHistoryId) return;
+
+            // Identifica novos itens
+            const newItems = [];
+            for (let game of history) {
+                if (game.id === lastHistoryId) break;
+                newItems.push(game);
+            }
+
+            // Remove destaque do anterior
+            const currentLatest = elRecentHistoryList.querySelector('.latest');
+            if (currentLatest) currentLatest.classList.remove('latest');
+            
+            // Adiciona novos itens (ordem inversa para manter a pilha correta no prepend)
+            for (let i = newItems.length - 1; i >= 0; i--) {
+                const el = createBadge(newItems[i]);
+                el.classList.add('new-item');
+                if (i === 0) el.classList.add('latest');
+                elRecentHistoryList.prepend(el);
+            }
+
+            lastHistoryId = newest.id;
+
+            // Mantém apenas 20
+            while (elRecentHistoryList.children.length > 20) {
+                elRecentHistoryList.removeChild(elRecentHistoryList.lastChild);
+            }
+        }
+
+        function analyzeStrategies(history) {
+            if (!history || history.length < 20) return;
+
+            const currentGameId = history[0].id;
+            const last = parseFloat(history[0].crash_point);
+            const prev = parseFloat(history[1].crash_point);
+            const prev2 = parseFloat(history[2].crash_point);
+            
+            let bestStrategy = null;
+            let confidence = 0;
+            let reason = "";
+
+            // --- LÓGICA DE DETECÇÃO ---
+
+            // 1. Pós-Vela 1.00x (Estratégia 11)
+            if (last === 1.00) {
+                bestStrategy = "Pós-Vela 1.00x (5X)";
+                confidence = 85;
+                reason = "Crash instantâneo (1.00x) detectado. Alta chance de compensação.";
+            }
+            // 2. Scalping Seguro (Estratégia 1) - 2 Loss seguidos
+            else if (last < 2.00 && prev < 2.00) {
+                bestStrategy = "Scalping Seguro";
+                confidence = 75;
+                reason = "Sequência de 2 velas baixas. Momento propício para buscar 1.30x - 1.50x.";
+            }
+            // 3. Padrão Dígitos Iguais (Estratégia 5)
+            else if ([1.11, 2.22, 3.33, 4.44, 5.55].includes(last)) {
+                bestStrategy = "Padrão Dígitos Iguais";
+                confidence = 80;
+                reason = `Vela de dígitos repetidos (${last}x) detectada.`;
+            }
+            // 4. Reversão de Loss (Estratégia 8) - 5 Loss seguidos
+            else if (history.slice(0, 5).every(h => parseFloat(h.crash_point) < 2.00)) {
+                bestStrategy = "Reversão de Loss";
+                confidence = 90;
+                reason = "Sequência crítica de 5+ Loss. Reversão iminente.";
+            }
+            // 5. Pós-Vela 10x (Estratégia 6)
+            else if (last >= 10.00) {
+                bestStrategy = "Pós-Vela 10x (3X)";
+                confidence = 70;
+                reason = "Vela Rosa recente. Volatilidade alta para buscar 3x.";
+            }
+            // 6. Ciclo Pulo 6x (Estratégia 4) - Verifica se houve vela > 6x há exatos 6 jogos
+            else {
+                // Verifica histórico para estratégias de "Pulo"
+                // Índice 6 = 7ª vela atrás (0 a 6)
+                if (history.length > 7) {
+                    const candle6Back = parseFloat(history[6].crash_point);
+                    if (candle6Back >= 6.00) {
+                        bestStrategy = "Ciclo Pulo 6x";
+                        confidence = 88;
+                        reason = `Vela de ${candle6Back}x há 6 rodadas. Momento de entrada (7ª casa).`;
+                    }
+                }
+                
+                // Pulo 3 Casas (Estratégia 7) - Verifica vela 4x-8x há 3 jogos
+                if (!bestStrategy && history.length > 4) {
+                    const candle3Back = parseFloat(history[3].crash_point);
+                    if (candle3Back >= 4.00 && candle3Back <= 8.00) {
+                        bestStrategy = "Pulo 3 Casas (3X)";
+                        confidence = 65;
+                        reason = `Vela média (${candle3Back}x) há 3 rodadas.`;
+                    }
+                }
+
+                // Valores Iguais (Estratégia 13)
+                if (!bestStrategy && last === prev) {
+                    bestStrategy = "Valores Iguais (10X-15X)";
+                    confidence = 95;
+                    reason = `Duas velas idênticas (${last}x) consecutivas. Padrão raro!`;
+                }
+            }
+
+            // --- ATUALIZAÇÃO DA UI ---
+            if (bestStrategy) {
+                // Salva a confiança para controle de acesso em outras páginas
+                localStorage.setItem('nexus_last_confidence', confidence);
+                localStorage.setItem('nexus_last_strategy_name', bestStrategy);
+                localStorage.setItem('nexus_last_update', Date.now());
+
+                elStatusText.innerText = "ESTRATÉGIA IDENTIFICADA!";
+                elStatusText.style.color = "var(--green)";
+                elName.innerText = bestStrategy;
+                elName.style.color = confidence > 80 ? "var(--green)" : "var(--primary)";
+                elReason.innerText = reason;
+                elConf.innerText = `${confidence}% CONFIANÇA`;
+                elConf.style.borderColor = confidence > 80 ? "var(--green)" : "var(--primary)";
+                elConf.style.color = confidence > 80 ? "var(--green)" : "var(--primary)";
+                elResultBox.classList.add('active');
+
+                // Adiciona ao histórico se for um novo sinal (novo jogo)
+                if (currentGameId !== lastDetectedId) {
+                    lastDetectedId = currentGameId;
+                    
+                    const placeholder = document.getElementById('history-placeholder');
+                    if (placeholder) placeholder.remove();
+
+                    const div = document.createElement('div');
+                    div.className = 'hist-item';
+                    const color = confidence > 80 ? 'var(--green)' : 'var(--primary)';
+                    const timeStr = new Date().toLocaleTimeString();
+
+                    div.innerHTML = `
+                        <div class="hist-strat">${bestStrategy}</div>
+                        <div class="hist-conf" style="color: ${color}; border: 1px solid ${color}">${confidence}%</div>
+                        <div class="hist-time">${timeStr}</div>
+                    `;
+                    
+                    elHistoryList.prepend(div);
+                    if (elHistoryList.children.length > 5) elHistoryList.removeChild(elHistoryList.lastChild);
+                    elHistoryContainer.classList.add('visible');
+                }
+            } else {
+                elStatusText.innerText = "ANALISANDO PADRÕES...";
+                elStatusText.style.color = "var(--primary)";
+                elResultBox.classList.remove('active');
+            }
+        }
+
+        fetchAndAnalyze();
+        setInterval(fetchAndAnalyze, 5000);
+    </script>
+</body>
+</html>

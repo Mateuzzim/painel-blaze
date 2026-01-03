@@ -902,14 +902,14 @@
 
         <!-- Formulário de Cadastro (inicialmente oculto) -->
         <form id="self-register-form" class="form-inactive" onsubmit="handleSelfRegister(event)">
-            <h2>CRIAR CONTA</h2>
+            <h2 class="cortex-text-anim">CRIAR CONTA</h2>
             <div class="login-input-group">
                 <label for="self_reg_username">Nome de Usuário</label>
                 <input type="text" id="self_reg_username" required>
             </div>
             <div class="login-input-group">
                 <label for="self_reg_contact">Contato (Opcional)</label>
-                <input type="text" id="self_reg_contact" placeholder="Seu Telegram ou WhatsApp">
+                <input type="text" id="self_reg_contact">
             </div>
             <div class="login-input-group password-input-container">
                 <label for="self_reg_password">Senha</label>
@@ -1049,6 +1049,7 @@
                         <div class="nav-btn" onclick="openTool('analise_numeros.html', 'Análise Números')"><div class="nav-icon">🧮</div><div class="nav-title">Análise Números</div><div class="nav-desc">Estatísticas Numéricas</div></div>
                         <div class="nav-btn" onclick="openTool('numeros_a_pagar_branco.html', 'Puxadores de Branco')"><div class="nav-icon">🎯</div><div class="nav-title">Puxadores Branco</div><div class="nav-desc">Análise de Ausência</div></div>
                         <div class="nav-btn" onclick="openTool('padroes_repetidos.htm', 'Padrões Repetidos')"><div class="nav-icon">⚛️</div><div class="nav-title">Padrões Repetidos</div><div class="nav-desc">Analisador de Ciclos</div></div>
+                        <div class="nav-btn" onclick="openTool('intervalos.html', 'IA Intervalos')"><div class="nav-icon">⏱️</div><div class="nav-title">IA Intervalos</div><div class="nav-desc">Análise de Ciclos</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_cores.html', 'Corretor Cores')"><div class="nav-icon">✔️</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">✔️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         <div class="nav-btn" onclick="openTool('noticias_double.html', 'Notícias do Mercado')"><div class="nav-icon">📡</div><div class="nav-title">Notícias</div><div class="nav-desc">Mercado Double</div></div>
@@ -1057,8 +1058,10 @@
                         <div class="nav-btn" onclick="openTool('analise_avancada.html', 'Análise Avançada')" style="border-color: #ff9800;"><div class="nav-icon">🚀</div><div class="nav-title" style="color: #ff9800;">Análise Avançada</div><div class="nav-desc">Novas Ferramentas</div></div>
                         <div class="nav-btn" onclick="openTool('ciclo_mercado.html', 'Ciclo de Mercado')" style="border-color: #ffeb3b;"><div class="nav-icon">🌌</div><div class="nav-title" style="color: #ffeb3b;">Ciclo de Mercado</div><div class="nav-desc">Análise de Ciclos</div></div>
                         <div class="nav-btn" onclick="openTool('previsao_ia.html', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🔮</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
+                        <div class="nav-btn" onclick="openTool('horario_previsto.html', 'Previsão de Horário')" style="border-color: #45d4ff;"><div class="nav-icon">⏱️</div><div class="nav-title" style="color: #45d4ff;">Previsão Horário</div><div class="nav-desc">Minuto Futuro</div></div>
                         <div class="nav-btn" onclick="openTool('opcoes_double.html', 'Opções Double')" style="border-color: #00ff88;"><div class="nav-icon">💹</div><div class="nav-title" style="color: #00ff88;">Opções Double</div><div class="nav-desc">Gráfico de Velas</div></div>
                         
+                        <div class="nav-btn" onclick="window.location.href='crach.html'" style="border-color: #00f3ff;"><div class="nav-icon">🚀</div><div class="nav-title" style="color: #00f3ff;">Bot Crash</div><div class="nav-desc">Acessar Nexus</div></div>
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">⚙️</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">💎</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
                         <div class="nav-btn" id="btn-nav-patterns-bot" onclick="suite_openTab('patterns_bot')" style="cursor: pointer; border-color: #a100ff;"><div class="nav-icon">🧬</div><div class="nav-title" style="color: #a100ff;">Robo Padrões</div><div class="nav-desc">Automação Padrões</div></div>

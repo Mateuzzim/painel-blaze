@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Crash Blaze - Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #bc13fe;
+            --accent: #f12c4c;
+            --gold: #ffd700;
+            --bg-dark: #0f0f13;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Background Animado */
+        .bg-animation {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: -2;
+        }
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle, black 40%, transparent 80%);
+        }
+
+        /* Container Principal */
+        .main-container {
+            position: absolute;
+            width: 90%;
+            max-width: 400px;
+            background: #1a1a1a;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* Efeito de Borda Brilhante */
+        .main-container::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 22px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        p {
+            color: #8899a6;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        /* Grid de Botões */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Estilo dos Botões */
+        .nav-btn {
+            background: rgba(20, 25, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0; transition: 0.3s;
+        }
+        
+        .nav-btn:hover::before { opacity: 1; }
+
+        .nav-icon { font-size: 1.8rem; margin-bottom: 5px; }
+        .nav-title { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-family: 'Orbitron', sans-serif; }
+        .nav-desc { font-size: 0.6rem; color: #888; font-family: 'Rajdhani', sans-serif; }
+        
+        .btn-full { grid-column: span 2; }
+
+        /* Rodapé */
+        .footer {
+            margin-top: 30px;
+            font-size: 0.7rem;
+            color: #555;
+        }
+
+        /* Partículas */
+        #particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation"></div>
+
+    <div id="particles"></div>
+
+    <div class="main-container">
+        <h1>Nexus Bot</h1>
+        <p>SISTEMA DE ANÁLISE AVANÇADA</p>
+
+        <div class="button-grid">
+            <a href="historico_crash.html" class="nav-btn" style="border-color: #00f3ff; color: #00f3ff;">
+                <div class="nav-icon">📜</div>
+                <div class="nav-title">Histórico</div>
+                <div class="nav-desc">Real-Time</div>
+            </a>
+
+            <a href="grafico_crash.html" class="nav-btn" style="border-color: #f12c4c; color: #f12c4c;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-title">Gráfico</div>
+                <div class="nav-desc">Trade View</div>
+            </a>
+
+            <a href="velas_2x.html" class="nav-btn" style="border-color: #bc13fe; color: #bc13fe;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-title">IA Hunter</div>
+                <div class="nav-desc">Velas 2x</div>
+            </a>
+
+            <a href="vela_100x.html" class="nav-btn" style="border-color: #ffd700; color: #ffd700;">
+                <div class="nav-icon">💎</div>
+                <div class="nav-title">Hunter 100x</div>
+                <div class="nav-desc">Velas Altas</div>
+            </a>
+
+            <a href="estrategias.html" class="nav-btn" style="border-color: #39ff14; color: #39ff14;">
+                <div class="nav-icon">🧠</div>
+                <div class="nav-title">Estratégias</div>
+                <div class="nav-desc">Modo Pro</div>
+            </a>
+
+            <a href="previsao_de_horario.html" class="nav-btn" style="border-color: #ff00ff; color: #ff00ff;">
+                <div class="nav-icon">⏰</div>
+                <div class="nav-title">Previsão</div>
+                <div class="nav-desc">Horário</div>
+            </a>
+
+            <a href="javascript:history.back()" class="nav-btn btn-full" style="border-color: #ffffff; color: #ffffff;">
+                <div class="nav-icon">🔙</div>
+                <div class="nav-title">Voltar ao Menu</div>
+            </a>
+        </div>
+
+        <div class="footer">
+            V 2.0.4 • CONNECTED
+        </div>
+    </div>
+
+    <script>
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 60;
+        const particles = [];
+        let mouse = { x: -1000, y: -1000 };
+
+        // Rastreia o mouse
+        document.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        for (let i = 0; i < particleCount; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            
+            const size = Math.random() * 3 + 1;
+            const color = Math.random() > 0.5 ? 'var(--primary)' : 'var(--secondary)';
+
+            p.style.width = `${size}px`;
+            p.style.height = `${size}px`;
+            p.style.background = color;
+            
+            particlesContainer.appendChild(p);
+
+            // Estado inicial da partícula
+            particles.push({
+                element: p,
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                speed: Math.random() * 0.5 + 0.2,
+                vx: 0,
+                vy: 0
+            });
+        }
+
+        function animate() {
+            particles.forEach(p => {
+                // Movimento base (subindo)
+                p.y -= p.speed;
+                
+                // Reset se sair da tela
+                if (p.y < -10) {
+                    p.y = window.innerHeight + 10;
+                    p.x = Math.random() * window.innerWidth;
+                }
+
+                // Interação com o Mouse (Repulsão)
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const radius = 100; // Raio de interação
+
+                if (dist < radius) {
+                    const force = (radius - dist) / radius;
+                    const angle = Math.atan2(dy, dx);
+                    const push = force * 2; // Força do empurrão
+                    
+                    p.vx += Math.cos(angle) * push;
+                    p.vy += Math.sin(angle) * push;
+                }
+
+                // Aplica velocidade e atrito
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.95;
+                p.vy *= 0.95;
+
+                // Efeitos visuais baseados na altura (simulando a animação CSS anterior)
+                const progress = 1 - (p.y / window.innerHeight); // 0 (fundo) a 1 (topo)
+                let opacity = 0;
+                let scale = 0;
+
+                if (progress < 0.2) {
+                    opacity = progress * 3.5; // Fade in rápido
+                    scale = progress * 5;
+                } else {
+                    opacity = 0.7 - (progress * 0.7); // Fade out lento
+                    scale = 1 + (progress * 0.5);
+                }
+
+                p.element.style.opacity = opacity;
+                p.element.style.transform = `translate(${p.x}px, ${p.y}px) scale(${scale})`;
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

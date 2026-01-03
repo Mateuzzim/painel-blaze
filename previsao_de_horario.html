@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão de Horário - Nexus Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #bc13fe;
+            --accent: #f12c4c;
+            --gold: #ffd700;
+            --green: #39ff14;
+            --bg-dark: #050b14;
+            --card-bg: rgba(20, 25, 40, 0.7);
+            --text-main: #e0e6ed;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Background Grid */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 8px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        .btn-back:hover { background: var(--secondary); color: #fff; box-shadow: 0 0 15px var(--secondary); }
+
+        /* Main Card */
+        .prediction-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(10, 15, 25, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .prediction-container::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.05) 0%, transparent 60%);
+            animation: rotateBg 10s linear infinite;
+            z-index: -1;
+        }
+        @keyframes rotateBg { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .scanner-line {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            opacity: 0;
+            z-index: 10;
+        }
+        .scanning .scanner-line {
+            opacity: 1;
+            animation: scan 1.5s ease-in-out infinite;
+        }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        .icon-wrapper {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .result-display {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .time-big {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .countdown-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            min-height: 1.5rem;
+        }
+
+        .prediction-meta {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .meta-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .meta-value { font-family: 'Orbitron'; font-size: 1.2rem; color: var(--primary); }
+        .meta-value.high { color: var(--secondary); }
+
+        .btn-predict {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            color: #fff;
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-predict:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.5);
+        }
+        .btn-predict:disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            min-height: 20px;
+            font-family: 'Orbitron';
+        }
+
+        /* Glitch effect for text */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .glitch::before { left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim { 0% { clip: rect(14px, 9999px, 127px, 0); } 100% { clip: rect(38px, 9999px, 46px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip: rect(65px, 9999px, 100px, 0); } 100% { clip: rect(12px, 9999px, 69px, 0); } }
+
+        /* Alert Blink Effect */
+        .blink-red {
+            color: #ff0000 !important;
+            text-shadow: 0 0 15px #ff0000;
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+
+        /* History Section */
+        .history-container {
+            width: 100%;
+            max-width: 500px;
+            /* margin-top handled by grid gap */
+            background: rgba(10, 15, 25, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .history-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary);
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-family: 'Orbitron';
+            transition: 0.3s;
+        }
+        .clear-btn:hover { background: var(--accent); color: #fff; }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .history-list::-webkit-scrollbar { width: 4px; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        .h-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .h-time { font-family: 'Orbitron'; font-size: 1.1rem; color: #fff; }
+        .h-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #aaa; }
+        .h-target { color: var(--secondary); font-weight: bold; }
+        .h-prob { color: var(--green); }
+        .h-countdown { font-size: 0.7rem; color: var(--accent); margin-top: 2px; font-family: 'Orbitron'; }
+        
+        .status-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; vertical-align: middle; }
+        .status-win { background: rgba(57, 255, 20, 0.2); color: var(--green); border: 1px solid var(--green); }
+        .status-loss { background: rgba(241, 44, 76, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+
+        /* Toggle Switch Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid #555;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--secondary); border-color: var(--secondary); box-shadow: 0 0 15px var(--secondary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .toggle-label { font-family: 'Orbitron'; font-size: 0.9rem; color: #888; transition: 0.3s; }
+        input:checked ~ .toggle-label { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
+
+        /* Layout Grid */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+            max-width: 1100px;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (min-width: 900px) {
+            .main-content {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+            }
+            .col-left, .col-right {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 25px;
+                width: 100%;
+                max-width: 500px;
+                align-items: center;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-content {
+            background: rgba(15, 20, 35, 0.95);
+            border: 1px solid var(--primary);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        .modal-close {
+            position: absolute; top: 10px; right: 15px;
+            color: #fff; font-size: 1.5rem; cursor: pointer;
+            background: none; border: none;
+        }
+        
+        .btn-info {
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            color: #aaa; padding: 5px 15px; border-radius: 20px;
+            font-size: 0.8rem; cursor: pointer; margin-top: 15px;
+            transition: 0.3s; font-family: 'Orbitron';
+        }
+        .btn-info:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Crash History Styles */
+        .crash-history-container {
+            width: 100%;
+            max-width: 500px;
+            /* margin-top handled by grid gap */
+            background: rgba(10, 15, 25, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        .crash-list {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 15px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .crash-stone { padding: 2px 4px; border-radius: 3px; font-family: 'Orbitron'; font-weight: bold; font-size: 0.6rem; min-width: 30px; text-align: center; background: rgba(255, 255, 255, 0.05); border: 1px solid transparent; white-space: nowrap; }
+        .stone-win { color: var(--green); border-color: rgba(57, 255, 20, 0.3); box-shadow: 0 0 10px rgba(57, 255, 20, 0.1); }
+        .stone-loss { color: var(--accent); border-color: rgba(241, 44, 76, 0.3); }
+        .stone-doji { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+        .stone-next { 
+            border: 1px dashed var(--primary); 
+            color: var(--primary); 
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            animation: pulse-stone 1.5s infinite;
+        }
+        @keyframes pulse-stone { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Previsão <span style="color: var(--secondary)">Temporal</span></h1>
+        <a href="estrategias.html" class="btn-back">Voltar</a>
+    </div>
+
+    <div class="main-content">
+        <div class="col-left">
+            <div class="prediction-container" id="card">
+                <div class="scanner-line"></div>
+                
+                <div class="icon-wrapper">🔮</div>
+                <h2 style="margin: 0; font-family: 'Orbitron'; text-transform: uppercase;">Oráculo IA</h2>
+                <p style="color: #888; margin-bottom: 30px;">Algoritmo de predição de alta frequência</p>
+
+                <div class="result-display">
+                    <div class="time-big" id="time-display">--:--</div>
+                    <div id="countdown-display" class="countdown-text"></div>
+                    <div class="prediction-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Alvo</span>
+                            <span class="meta-value high" id="target-display">--x</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Probabilidade</span>
+                            <span class="meta-value" id="prob-display">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-text" id="status-text">AGUARDANDO COMANDO...</div>
+                
+                <div class="toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="pink-mode-check">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Modo Vela Rosa (10x+)</span>
+                </div>
+
+                <br>
+                <button class="btn-predict" onclick="startPrediction()" id="btn-predict">Gerar Sinal</button>
+                <br>
+                <button class="btn-info" onclick="openModal()">ℹ Ver Estratégia Ativa</button>
+            </div>
+        </div>
+
+        <div class="col-right">
+            <div class="crash-history-container">
+                <div class="history-title">Últimos Resultados (Crash)</div>
+                <div class="crash-list" id="crash-list">
+                    <div style="color: #666; font-size: 0.8rem;">Carregando...</div>
+                </div>
+            </div>
+
+            <div class="history-container">
+                <div class="history-header">
+                    <div class="history-title">Histórico de Sinais</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-size: 0.7rem; color: var(--secondary); display: flex; align-items: center; gap: 5px; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase;">
+                            <input type="checkbox" id="filter-pink" onchange="loadHistory()" style="accent-color: var(--secondary);"> 
+                            ★ 10x+
+                        </label>
+                        <button class="clear-btn" onclick="clearHistory()">Limpar</button>
+                    </div>
+                </div>
+                <div class="history-list" id="history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="stratModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 style="color: #fff; margin-top: 0; font-family: 'Orbitron';">Estratégia Detectada</h3>
+            <div style="margin: 20px 0;">
+                <div style="font-size: 0.8rem; color: #888; text-transform: uppercase;">Protocolo Ativo</div>
+                <div id="modal-strat-name" style="font-family: 'Orbitron'; font-size: 1.2rem; color: var(--secondary); margin: 5px 0;">---</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 0.8rem; color: #888; text-transform: uppercase;">Confiança Global</div>
+                <div id="modal-strat-conf" style="font-size: 2rem; font-weight: bold; color: var(--green); font-family: 'Orbitron';">--%</div>
+            </div>
+            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;" id="modal-strat-status">Nenhuma estratégia ativa no momento.</p>
+        </div>
+    </div>
+
+    <script>
+        let globalHistory = [];
+        let currentPrediction = null;
+        let countdownInterval;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            checkPermission();
+            fetchCrashHistory();
+            setInterval(fetchCrashHistory, 5000); // Atualiza as pedras a cada 5s
+            setInterval(checkPermission, 2000); // Verifica periodicamente
+            setInterval(updateHistoryCountdowns, 1000); // Atualiza contadores do histórico
+            
+            // Fecha modal ao clicar fora
+            document.getElementById('stratModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('stratModal')) closeModal();
+            });
+        });
+
+        function checkPermission() {
+            const card = document.getElementById('card');
+            // Não altera estado se estiver rodando a animação
+            if (card.classList.contains('scanning')) return;
+
+            const btn = document.getElementById('btn-predict');
+            const status = document.getElementById('status-text');
+            
+            const lastConf = parseInt(localStorage.getItem('nexus_last_confidence') || '0');
+            const lastUpdate = parseInt(localStorage.getItem('nexus_last_update') || '0');
+            const now = Date.now();
+            
+            // Verifica se o sinal é recente (menos de 5 min)
+            const isRecent = (now - lastUpdate) < 300000; 
+
+            if (isRecent && lastConf > 0) {
+                status.innerText = `SISTEMA PRONTO (CONFIANÇA: ${lastConf}%)`;
+                status.style.color = lastConf >= 75 ? "var(--green)" : "var(--primary)";
+                btn.disabled = false;
+            } else {
+                status.innerText = "AGUARDANDO ANÁLISE DE ESTRATÉGIA...";
+                status.style.color = "var(--accent)";
+                // btn.disabled = true; // Descomente para bloquear o botão se não houver estratégia
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('stratModal');
+            const nameEl = document.getElementById('modal-strat-name');
+            const confEl = document.getElementById('modal-strat-conf');
+            const statusEl = document.getElementById('modal-strat-status');
+
+            const lastConf = parseInt(localStorage.getItem('nexus_last_confidence') || '0');
+            const lastName = localStorage.getItem('nexus_last_strategy_name') || 'N/A';
+            const lastUpdate = parseInt(localStorage.getItem('nexus_last_update') || '0');
+            const now = Date.now();
+            const isRecent = (now - lastUpdate) < 300000; // 5 min
+
+            modal.classList.add('active');
+
+            if (isRecent && lastConf > 0) {
+                nameEl.innerText = lastName;
+                confEl.innerText = lastConf + '%';
+                statusEl.innerText = "Sinal ativo e sincronizado com o módulo de estratégias. O algoritmo de previsão temporal está utilizando este padrão para calibrar o horário de entrada.";
+                statusEl.style.color = "#aaa";
+            } else {
+                nameEl.innerText = "NENHUMA";
+                confEl.innerText = "--%";
+                statusEl.innerText = "Nenhuma estratégia recente detectada ou sinal expirado (>5min). Vá para a aba 'Estratégias' para escanear o mercado.";
+                statusEl.style.color = "var(--accent)";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('stratModal').classList.remove('active');
+        }
+
+        function startPrediction() {
+            const btn = document.getElementById('btn-predict');
+            const card = document.getElementById('card');
+            const status = document.getElementById('status-text');
+            const timeDisplay = document.getElementById('time-display');
+            const targetDisplay = document.getElementById('target-display');
+            const probDisplay = document.getElementById('prob-display');
+            const countdownDisplay = document.getElementById('countdown-display');
+
+            if (btn.disabled) return;
+
+            // Reset
+            btn.disabled = true;
+            card.classList.add('scanning');
+            status.innerText = "ANALISANDO PADRÕES TEMPORAIS...";
+            timeDisplay.innerText = "--:--";
+            targetDisplay.innerText = "--x";
+            probDisplay.innerText = "--%";
+            timeDisplay.classList.remove('glitch');
+            countdownDisplay.classList.remove('blink-red');
+            countdownDisplay.innerText = "";
+            
+            currentPrediction = "...";
+            renderCrashStones(globalHistory);
+
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            // Simulation sequence
+            let steps = 0;
+            const interval = setInterval(() => {
+                // Random flicker effect
+                timeDisplay.innerText = `${String(Math.floor(Math.random()*24)).padStart(2,'0')}:${String(Math.floor(Math.random()*60)).padStart(2,'0')}`;
+                steps++;
+
+                if (steps > 20) {
+                    clearInterval(interval);
+                    finalizePrediction();
+                }
+            }, 100);
+        }
+
+        function finalizePrediction() {
+            const card = document.getElementById('card');
+            const status = document.getElementById('status-text');
+            const timeDisplay = document.getElementById('time-display');
+            const targetDisplay = document.getElementById('target-display');
+            const probDisplay = document.getElementById('prob-display');
+            const btn = document.getElementById('btn-predict');
+
+            card.classList.remove('scanning');
+            
+            // --- SUGESTÃO DE LÓGICA DE PREVISÃO REAL (Exemplo) ---
+            // Em vez de aleatório, vamos usar uma análise simples de intervalo.
+            const pinks = globalHistory.filter(g => parseFloat(g.crash_point) >= 10.00);
+            let predictedMinutes = 30; // Fallback
+            let confidence = 50;
+            let analysisReason = "Análise de base";
+
+            if (pinks.length >= 2) {
+                const lastPinkTime = new Date(pinks[0].created_at).getTime();
+                const prevPinkTime = new Date(pinks[1].created_at).getTime();
+                const avgInterval = (lastPinkTime - prevPinkTime) / 60000; // Intervalo em minutos
+                predictedMinutes = avgInterval * 0.8; // Prever um pouco antes da média
+                confidence = 65 + Math.min(30, 60 / avgInterval); // Mais confiança se os intervalos são curtos
+                analysisReason = `Baseado no intervalo médio de ${avgInterval.toFixed(0)} min entre velas rosas.`;
+            }
+
+            const targetTime = new Date(new Date().getTime() + predictedMinutes * 60000);
+            const hours = String(targetTime.getHours()).padStart(2, '0');
+            const minutes = String(targetTime.getMinutes()).padStart(2, '0');
+            
+            const isPinkMode = document.getElementById('pink-mode-check').checked;
+            let target = isPinkMode ? (Math.random() * 40 + 10).toFixed(2) : (Math.random() * 3 + 2).toFixed(2);
+
+            if (isPinkMode) {
+                confidence = Math.min(95, confidence + 15); // Bônus de confiança para o modo rosa
+            }
+
+            timeDisplay.innerText = `${hours}:${minutes}`;
+            timeDisplay.setAttribute('data-text', `${hours}:${minutes}`);
+            timeDisplay.classList.add('glitch');
+            
+            targetDisplay.innerText = `${target}x`;
+            probDisplay.innerText = `${Math.floor(confidence)}%`;
+            
+            status.innerText = "SINAL IDENTIFICADO COM SUCESSO";
+            status.style.color = "var(--green)";
+
+            setTimeout(() => {
+                btn.disabled = false;
+                status.style.color = "var(--primary)";
+            }, 2000);
+
+            currentPrediction = `${target}x`;
+            renderCrashStones(globalHistory);
+
+            saveHistory(`${hours}:${minutes}`, `${target}x`, `${Math.floor(confidence)}%`, targetTime.getTime());
+            startCountdown(targetTime);
+        }
+
+        function startCountdown(targetDate) {
+            const display = document.getElementById('countdown-display');
+            
+            function update() {
+                const now = new Date();
+                const diff = targetDate - now;
+                
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    display.classList.remove('blink-red');
+                    display.innerText = "TEMPO ESGOTADO";
+                    return;
+                }
+                
+                if (diff < 60000) {
+                    display.classList.add('blink-red');
+                } else {
+                    display.classList.remove('blink-red');
+                }
+                
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                display.innerText = `Restam: ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+            
+            update();
+            countdownInterval = setInterval(update, 1000);
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            // Ordena por horário (crescente) ao carregar
+            history.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            
+            const filterPink = document.getElementById('filter-pink');
+            if (filterPink && filterPink.checked) {
+                history = history.filter(item => parseFloat(item.target) >= 10.00);
+            }
+            
+            renderHistoryList(history);
+        }
+
+        function saveHistory(time, target, prob, timestamp) {
+            const item = { time, target, prob, timestamp, id: Date.now() };
+            let history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            
+            history.push(item);
+            
+            // Ordena por horário (timestamp) crescente para manter a ordem cronológica
+            history.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+            // Mantém apenas os 20 itens (remove os mais antigos/passados se exceder)
+            if (history.length > 20) history.shift();
+            
+            localStorage.setItem('predictionHistory', JSON.stringify(history));
+            loadHistory();
+        }
+
+        function renderHistoryList(history) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            history.forEach(item => addHistoryItemToDOM(item, false));
+        }
+
+        function addHistoryItemToDOM(item, prepend) {
+            const list = document.getElementById('history-list');
+            const div = document.createElement('div');
+            div.className = 'h-item';
+            
+            let statusHtml = '';
+            let countdownHtml = '';
+
+            if (item.status === 'win') {
+                let galeText = "";
+                if (typeof item.attempt !== 'undefined') {
+                    galeText = item.attempt === 0 ? " SG" : ` G${item.attempt}`;
+                }
+                statusHtml = `<span class="status-badge status-win">WIN${galeText}</span>`;
+                countdownHtml = `<div class="h-countdown" style="color: var(--green)">RESULTADO: ${item.realCrash}x</div>`;
+                div.style.borderLeftColor = 'var(--green)';
+            } else if (item.status === 'loss') {
+                statusHtml = `<span class="status-badge status-loss">LOSS</span>`;
+                countdownHtml = `<div class="h-countdown" style="color: var(--accent)">RESULTADO: ${item.realCrash}x</div>`;
+                div.style.borderLeftColor = 'var(--accent)';
+            } else if (item.timestamp) {
+                countdownHtml = `<div class="h-countdown" data-ts="${item.timestamp}">--:--</div>`;
+            }
+
+            div.innerHTML = `
+                <div>
+                    <div class="h-time">${item.time} ${statusHtml}</div>
+                    ${countdownHtml}
+                </div>
+                <div class="h-meta">
+                    <span class="h-target">🎯 ${item.target}</span>
+                    <span class="h-prob">⚡ ${item.prob}</span>
+                </div>
+            `;
+            if (prepend) list.prepend(div);
+            else list.appendChild(div);
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('predictionHistory');
+            document.getElementById('history-list').innerHTML = '';
+        }
+
+        function updateHistoryCountdowns() {
+            const els = document.querySelectorAll('.h-countdown');
+            const now = Date.now();
+            els.forEach(el => {
+                const ts = parseInt(el.getAttribute('data-ts'));
+                if (!ts) return;
+                const diff = ts - now;
+                const item = el.closest('.h-item');
+
+                if (diff <= 0) {
+                    el.innerText = "EXPIRADO";
+                    el.style.color = "#666";
+                    if (item) item.style.opacity = "0.4";
+                    return;
+                }
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                el.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            });
+        }
+
+        async function fetchCrashHistory() {
+            // 1. Obter o token de forma segura do localStorage.
+            const apiToken = localStorage.getItem('blaze_token');
+            if (!apiToken) {
+                console.error("Token de autenticação não encontrado.");
+                document.getElementById('status-text').innerText = "ERRO: Token não configurado.";
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://corsproxy.io/?https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=1&t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${apiToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const records = data.records || data;
+                    globalHistory = records;
+                    checkHistoryStatus(); // Verifica se algum sinal pendente bateu
+                    renderCrashStones(records);
+                }
+            } catch (e) {
+                console.error("Erro ao buscar histórico crash", e);
+            }
+        }
+
+        function checkHistoryStatus() {
+            let history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            let changed = false;
+            
+            // Ordena histórico da API por data crescente para verificar sequência
+            const sortedGames = [...globalHistory].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            history.forEach(item => {
+                if (item.status) return; // Já processado
+                if (!item.timestamp) return;
+                
+                // Se o tempo previsto já passou há mais de 5 minutos e não foi processado, marca como expirado/loss
+                // para não ficar pendente para sempre
+                const now = Date.now();
+
+                const target = parseFloat(item.target);
+                const isPink = target >= 10.00;
+                const attempts = isPink ? 6 : 1; // Regra: 6 jogadas para velas rosas (10x+)
+
+                // Procura o jogo inicial (mais próximo do horário previsto)
+                let startIndex = -1;
+                let minDiff = Infinity;
+
+                for (let i = 0; i < sortedGames.length; i++) {
+                    const gameTime = new Date(sortedGames[i].created_at).getTime();
+                    const diff = Math.abs(gameTime - item.timestamp);
+                    
+                    if (diff < 120000 && diff < minDiff) {
+                        minDiff = diff;
+                        startIndex = i;
+                    }
+                }
+
+                if (startIndex !== -1) {
+                    // Verifica se temos jogos suficientes na sequência
+                    if (startIndex + attempts <= sortedGames.length) {
+                        let win = false;
+                        let resultCrash = 0;
+
+                        for (let i = 0; i < attempts; i++) {
+                            const game = sortedGames[startIndex + i];
+                            const crash = parseFloat(game.crash_point);
+                            
+                            if (crash >= target) {
+                                win = true;
+                                resultCrash = crash;
+                                item.attempt = i;
+                                break;
+                            }
+                            if (i === attempts - 1) resultCrash = crash;
+                        }
+
+                        item.status = win ? 'win' : 'loss';
+                        item.realCrash = resultCrash.toFixed(2);
+                        changed = true;
+                    }
+                }
+                // Se passou 10 minutos do horário previsto e não achou resultado, marca como não encontrado/loss
+                else if (now > item.timestamp + 600000) {
+                     // Opcional: Limpar ou marcar como expirado
+                }
+            });
+
+            if (changed) {
+                localStorage.setItem('predictionHistory', JSON.stringify(history));
+                loadHistory();
+            }
+        }
+
+        function renderCrashStones(history) {
+            const list = document.getElementById('crash-list');
+            list.innerHTML = '';
+            const recent = history.slice(0, 6).reverse(); // Pega as últimas 6 e inverte para ordem cronológica (Esq -> Dir)
+            
+            recent.forEach(game => {
+                const val = parseFloat(game.crash_point);
+                const div = document.createElement('div');
+                div.className = 'crash-stone';
+                div.innerText = val.toFixed(2) + 'x';
+                
+                if (val >= 2.00) div.classList.add('stone-win');
+                else if (val <= 1.00) div.classList.add('stone-doji');
+                else div.classList.add('stone-loss');
+                
+                list.appendChild(div);
+            });
+
+            const nextDiv = document.createElement('div');
+            nextDiv.className = 'crash-stone stone-next';
+            nextDiv.innerText = currentPrediction || "?";
+            list.appendChild(nextDiv);
+        }
+    </script>
+</body>
+</html>

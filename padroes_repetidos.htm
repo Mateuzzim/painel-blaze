@@ -455,7 +455,7 @@
             }
 
             // results vem do parseRawData como Antigo -> Novo. Pegamos os últimos 100 para manter a ordem (novo à direita).
-            const recent = results.slice(-100);
+            const recent = results.slice(-20);
             if(countSpan) countSpan.innerText = `(${results.length})`;
             
             let html = '';
