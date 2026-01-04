@@ -688,20 +688,9 @@
             }
 
             try {
-                // Usar HTML para mais robustez e evitar erros de formatação do Markdown
-                const htmlMessage = message.replace(/\*(.*?)\*/g, '<b>$1</b>');
-                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(htmlMessage)}&parse_mode=HTML`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.ok) {
-                    logAutoBotAction('Sinal enviado para Telegram.', 'success');
-                } else {
-                    // Exibe o erro específico retornado pela API do Telegram
-                    logAutoBotAction(`Erro Telegram: ${data.description}`, 'danger');
-                    console.error('Erro ao enviar sinal para o Telegram:', data);
-                }
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+                logAutoBotAction('Sinal enviado para Telegram.', 'success');
             } catch (e) {
                 console.error('Erro ao enviar sinal Telegram:', e);
                 logAutoBotAction('Erro ao enviar Telegram.', 'danger');
