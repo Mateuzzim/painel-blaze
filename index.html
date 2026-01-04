@@ -2199,11 +2199,15 @@
 
             const send = async (chatId, botName) => {
                 try {
-                    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(`✅ *Teste de Conexão*\n\nO ${botName} está conectado e pronto para enviar alertas!`)}&parse_mode=Markdown`;
+                    // Alterado para HTML para evitar erros de formatação do Markdown
+                    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(`✅ <b>Teste de Conexão</b>\n\nO ${botName} está conectado e pronto para enviar alertas!`)}&parse_mode=HTML`;
                     const response = await fetch(url);
                     const data = await response.json();
                     if (data.ok) messagesSent++;
-                    else errors.push(`${botName}: ${data.description}`);
+                    else {
+                        console.error(`Erro Telegram (${botName}):`, data); // Log detalhado no console
+                        errors.push(`${botName}: ${data.description}`);
+                    }
                 } catch (e) { errors.push(`${botName}: Erro de rede`); }
             };
 
