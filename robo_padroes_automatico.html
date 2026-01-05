@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Padrões Automático</title>
+    <style>
+        /* Estilos Base */
+        :root {
+            --bg-color: #0f0f13; --panel-bg: #1a1a1a; --text-color: #fff; --border-color: #333; --input-bg: #0f0f13;
+            --accent: #00d2ff; --accent-blaze: #ff0055; --accent-jonbet: #00ff88; --text-muted: #888;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 800px; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; cursor: pointer; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        /* Controles */
+        .control-group { margin-bottom: 15px; }
+        .inline-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        .inline-controls .control-group { flex: 1; margin-bottom: 0; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
+        .hint { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .toggle-switch-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; }
+        
+        /* Botões Futuristas */
+        .futuristic-collapse-btn { width: 100%; margin-bottom: 15px; padding: 10px; background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a); border: 1px solid #333; color: #00d2ff; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .btn-cyber { position: relative; padding: 12px 25px; font-family: 'Courier New', Courier, monospace; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: rgba(0, 0, 0, 0.6); border: 1px solid transparent; cursor: pointer; transition: all 0.3s ease; overflow: hidden; z-index: 1; border-radius: 4px; outline: none; flex: 1; }
+        .btn-cyber::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: 0.5s; z-index: -1; }
+        .btn-cyber:hover::before { left: 100%; }
+        .btn-save-neon { border-color: #03e9f4; box-shadow: 0 0 5px rgba(3, 233, 244, 0.2); color: #03e9f4; }
+        .btn-save-neon:hover { background: #03e9f4; color: #000; box-shadow: 0 0 10px #03e9f4; }
+        .btn-clear-neon { border-color: #ff0055; box-shadow: 0 0 5px rgba(255, 0, 85, 0.2); color: #ff0055; }
+        .btn-clear-neon:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055; }
+        .btn-access-neon { border-color: #24A1DE; box-shadow: 0 0 5px rgba(36, 161, 222, 0.2); color: #24A1DE; }
+        .btn-access-neon:hover { background: #24A1DE; color: #fff; box-shadow: 0 0 10px #24A1DE; }
+
+        /* Placar */
+        .futuristic-scoreboard { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; padding: 15px; background: rgba(10, 10, 15, 0.6); border: 1px solid #333; border-radius: 12px; }
+        .score-card { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+        .score-card.win { border-bottom: 2px solid #00ff88; }
+        .score-card.loss { border-bottom: 2px solid #ff0055; }
+        .score-card.white-win { border-bottom: 2px solid #ffffff; }
+        .score-label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+        .score-value { font-size: 1.8rem; font-weight: 800; }
+        .win-text { color: #00ff88; }
+        .loss-text { color: #ff0055; }
+        .white-win-text { color: #ffffff; }
+
+        /* Teclado Padrões */
+        .pattern-preview-box { background: rgba(10, 15, 20, 0.95); border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; min-height: 45px; display: flex; align-items: center; overflow-x: auto; white-space: nowrap; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); border-bottom: 2px solid #00d2ff; }
+        .preview-token { display: inline-flex; align-items: center; justify-content: center; margin: 0 3px; font-size: 1.2rem; }
+        .preview-arrow { color: #00d2ff; font-weight: bold; margin: 0 5px; text-shadow: 0 0 5px #00d2ff; font-size: 1rem; }
+        .preview-sep { color: #444; font-size: 0.8rem; margin: 0 2px; }
+        .preview-num { font-family: 'Courier New', monospace; font-weight: 900; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; border: 1px solid; background: rgba(255,255,255,0.05); }
+        .patterns-keyboard-container { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .patterns-keyboard-row { display: flex; gap: 4px; flex-wrap: wrap; }
+        .key-btn { background: rgba(20, 20, 25, 0.9); border: 1px solid #333; color: #fff; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold; font-size: 0.85rem; text-align: center; transition: all 0.2s; flex: 1; min-width: 30px; }
+        .key-btn:hover { transform: translateY(-2px); z-index: 2; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); border-color: #00d2ff; }
+        .key-btn.red { border-color: #ff0055; color: #ff0055; }
+        .key-btn.black { border-color: #666; color: #aaa; }
+        .key-btn.white { border-color: #fff; color: #fff; }
+        .key-btn.action { border-color: #00d2ff; color: #00d2ff; font-weight: 900; }
+
+        .output-area { background: #000; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; min-height: 100px; white-space: pre-wrap; font-family: monospace; margin-top: 15px; color: var(--accent); }
+        .panel-glow-active { animation: neon-border-pulse 1.5s infinite alternate !important; }
+        @keyframes neon-border-pulse { 0% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.5); border-color: #00d2ff; } 100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.8); border-color: #fff; } }
+        .bot-active-pulse { animation: blink-green-border 1.5s infinite; }
+        @keyframes blink-green-border { 0% { border-color: #28a745; } 50% { border-color: transparent; } 100% { border-color: #28a745; } }
+        
+        .inversion-counter { display: flex; align-items: center; gap: 8px; padding: 5px 10px; background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 6px; font-family: monospace; }
+        .inversion-label { font-size: 0.8rem; color: #00d2ff; text-transform: uppercase; }
+        .inversion-value { font-size: 1.2rem; font-weight: bold; color: #fff; min-width: 20px; text-align: center; }
+        .inversion-value.flash { animation: inversion-flash 0.6s ease-out; }
+        @keyframes inversion-flash { 0% { transform: scale(1); color: #fff; } 50% { transform: scale(1.5); color: #ff9800; } 100% { transform: scale(1); color: #fff; } }
+        
+        .signal-chart-container { position: relative; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+        .signal-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; }
+        .ring-1 { width: 100%; height: 100%; border-top: 2px solid #00d2ff; animation: spin-cw 2s linear infinite; }
+        .ring-2 { width: 75%; height: 75%; border-bottom: 2px solid #ff0055; animation: spin-ccw 3s linear infinite; }
+        .signal-center-icon { font-size: 1.5rem; z-index: 2; }
+        @keyframes spin-cw { 100% { transform: rotate(360deg); } }
+        @keyframes spin-ccw { 100% { transform: rotate(-360deg); } }
+
+        /* Histórico Visual */
+        .history-bar {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow-x: auto;
+            min-height: 40px;
+        }
+        .history-badge {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .history-badge.vermelho { background: linear-gradient(135deg, #ff0055, #cc0044); border-color: #ff0055; }
+        .history-badge.preto { background: linear-gradient(135deg, #222, #111); border-color: #444; color: #ccc; }
+        .history-badge.branco { background: linear-gradient(135deg, #fff, #ddd); border-color: #fff; color: #000; text-shadow: none; }
+        .history-badge .badge-time {
+            position: absolute;
+            bottom: -15px;
+            font-size: 0.6rem;
+            color: #666;
+            white-space: nowrap;
+        }
+        .latest-glow {
+            animation: pulse-latest 1.5s infinite alternate;
+            z-index: 2;
+            border-color: #fff !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        @keyframes pulse-latest { 0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); } 100% { transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 5px var(--accent); } }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel suite">
+            <button class="btn-back" onclick="parent.closeTool()" style="display: none;">⬅ Voltar ao Menu</button>
+            <div class="main-header">
+                <h1 class="cortex-text-anim" style="display: none;">ROBÔ PADRÕES</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 0.8rem; color: #aaa; display: none;">Auto-Busca:</span>
+                    <label class="switch" style="display: none;">
+                        <input type="checkbox" id="autoFetchToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 5px; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Últimas 7 Rodadas</div>
+            <div id="visualHistoryContainer" class="history-bar">
+                <span style="color: #666; font-size: 0.8rem;">Aguardando dados...</span>
+            </div>
+
+            <div class="toggle-switch-container" id="patternsBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                <label for="patternsBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ PADRÕES</label>
+                <label class="switch">
+                    <input type="checkbox" id="patternsBotToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button id="patternsBotCollapseBtn" onclick="togglePatternsBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
+            <div id="patternsBotConfigContainer">
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <div id="patternsBotPreview" class="pattern-preview-box">
+                        <span style="color: #444; font-style: italic; font-size: 0.8rem;">Visualização em tempo real...</span>
+                    </div>
+                    <div class="patterns-keyboard-container">
+                        <div class="patterns-keyboard-row">
+                            <button onclick="addCharToPatterns('1')" class="key-btn red">1</button>
+                            <button onclick="addCharToPatterns('2')" class="key-btn red">2</button>
+                            <button onclick="addCharToPatterns('3')" class="key-btn red">3</button>
+                            <button onclick="addCharToPatterns('4')" class="key-btn red">4</button>
+                            <button onclick="addCharToPatterns('5')" class="key-btn red">5</button>
+                            <button onclick="addCharToPatterns('6')" class="key-btn red">6</button>
+                            <button onclick="addCharToPatterns('7')" class="key-btn red">7</button>
+                            <button onclick="addCharToPatterns('8')" class="key-btn black">8</button>
+                            <button onclick="addCharToPatterns('9')" class="key-btn black">9</button>
+                            <button onclick="addCharToPatterns('10')" class="key-btn black">10</button>
+                        </div>
+                        <div class="patterns-keyboard-row">
+                            <button onclick="addCharToPatterns('11')" class="key-btn black">11</button>
+                            <button onclick="addCharToPatterns('12')" class="key-btn black">12</button>
+                            <button onclick="addCharToPatterns('13')" class="key-btn black">13</button>
+                            <button onclick="addCharToPatterns('14')" class="key-btn black">14</button>
+                            <button onclick="addCharToPatterns('0')" class="key-btn white">0</button>
+                            <button onclick="addCharToPatterns('P')" class="key-btn black">P</button>
+                            <button onclick="addCharToPatterns('V')" class="key-btn red">V</button>
+                            <button onclick="addCharToPatterns('B')" class="key-btn white">B</button>
+                            <button onclick="addCharToPatterns('=')" class="key-btn action">=</button>
+                            <button onclick="addCharToPatterns(',')" class="key-btn action">,</button>
+                            <button onclick="undoPatternsBotInput()" class="key-btn action" title="Desfazer">⌫</button>
+                            <button onclick="addCharToPatterns('\n')" class="key-btn action" title="Nova Linha">↵</button>
+                        </div>
+                    </div>
+                    <label for="patternsBotInput">Lista de Padrões (Sequência=Alvo):</label>
+                    <textarea id="patternsBotInput" rows="6" placeholder="Ex: 1,8,10,P=V&#10;V,V,P,P=V&#10;0,1,2=P" style="font-family: monospace; background: #111; color: #00ff88; border: 1px solid #333; width: 100%; padding: 10px; box-sizing: border-box;"></textarea>
+                    <div class="hint">Use V (Vermelho), P (Preto), B (Branco) ou Números (0-14). Separe por vírgula.</div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <button class="btn-cyber btn-save-neon" onclick="savePatternsBotInput(this)">💾 SALVAR PADRÕES</button>
+                        <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
+                        <div style="flex-basis: 100%; display: flex; gap: 10px; margin-top: 5px;">
+                            <button onclick="analyzeBestMinuteForPatterns(this)" class="btn-cyber btn-access-neon" style="flex: 1;">🔍 Analisar Melhor Minuto (2-6)</button>
+                            <div class="toggle-switch-container" style="margin-bottom: 0; padding: 5px 10px; border: 1px solid #24A1DE; border-radius: 4px; display: flex; align-items: center; gap: 8px; background: rgba(36, 161, 222, 0.1);">
+                                <label for="patternsBotAutoAnalyzeMinuteToggle" style="font-size: 0.8em; margin-bottom: 0; color: #24A1DE; font-weight: bold;">AUTO</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="patternsBotAutoAnalyzeMinuteToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="inline-controls" style="margin-bottom: 20px; align-items: flex-end;">
+                    <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="patternsBotEntryTime" style="font-size: 0.8em; margin-bottom: 0;">Tempo de Entrada (min):</label>
+                        <input type="number" id="patternsBotEntryTime" value="2" min="1" style="padding: 5px;">
+                    </div>
+                    <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="patternsBotMaxWhitesFilter" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #fff;">⚪ Max Brancos:</label>
+                        <input type="number" id="patternsBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotSoundToggle" style="font-size: 0.9em; margin-bottom: 0;">🔊 Sons:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotSoundToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotGaleToggle" style="font-size: 0.9em; margin-bottom: 0;">GALE 01 ON/OFF:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotGaleToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotSequentialToggle" style="font-size: 0.9em; margin-bottom: 0;">🔄 Sequencial:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotSequentialToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotTelegramAlert" style="font-size: 0.9em; margin-bottom: 0;">📡 Telegram:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotTelegramAlert">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotInvertToggle" style="font-size: 0.9em; margin-bottom: 0;">🔀 Inverter:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotInvertToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                        <label for="patternsBotAntiRepetitionToggle" style="font-size: 0.9em; margin-bottom: 0;">🚫 Anti-Repetição:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotAntiRepetitionToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="patternsBotInversionCounter" class="inversion-counter" style="padding: 8px; border: 1px solid #333; border-radius: 6px; justify-content: center;">
+                        <span class="inversion-label">Inversões:</span>
+                        <span id="inversionCountValue" class="inversion-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="patternsBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+            <div id="patternsBotCurrentPatternDisplay" style="text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: #00d2ff; display: none; background: rgba(0, 210, 255, 0.05); padding: 8px; border-radius: 6px; border: 1px dashed rgba(0, 210, 255, 0.3);"></div>
+
+            <div id="patternsBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                <div id="patternsBotSignalContent"></div>
+            </div>
+
+            <div id="patternsBotResultPanel" style="margin-top: 20px;">
+                <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar do Robô</h3>
+                <div id="patternsBotScoreboard" class="futuristic-scoreboard">
+                    <div class="score-card win"><span class="score-label">WINS</span><span id="patternsBotWinCount" class="score-value win-text">0</span></div>
+                    <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="patternsBotWhiteWinCount" class="score-value white-win-text">0</span></div>
+                    <div class="score-card loss"><span class="score-label">LOSSES</span><span id="patternsBotLossCount" class="score-value loss-text">0</span></div>
+                </div>
+                <div id="patternsBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let activePatternsSignal = null;
+        let lastPatternsSignalTime = null;
+        let patternsBotWins = 0;
+        let patternsBotWhiteWins = 0;
+        let patternsBotLosses = 0;
+        let patternsBotSequentialIndex = 0;
+        let patternsBotInversionCount = 0;
+        let autoFetchIntervalId = null;
+
+        // --- Funções Auxiliares ---
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function playNotificationSound() {
+            if (!document.getElementById('patternsBotSoundToggle').checked) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        // --- Lógica de Coleta de Dados (Standalone) ---
+        async function fetchBlazeData() {
+            try {
+                let SEU_TOKEN_BLAZE = localStorage.getItem('blaze_token');
+                // Fallback token se não existir
+                if (!SEU_TOKEN_BLAZE) SEU_TOKEN_BLAZE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjY1MzM5MDB9.tuWLmU6u9Gv1JBkYDQTkuVlKAjDFMB_uA6KIxmejpt0";
+
+                const agora = new Date();
+                const ontem = new Date();
+                ontem.setHours(ontem.getHours() - 24);
+                const endDate = agora.toISOString();
+                const startDate = ontem.toISOString();
+                const baseUrl = 'https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1';
+                const params = `?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1`;
+                const targetUrl = `${baseUrl}${params}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE }
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                
+                const blazeData = await response.json();
+                let gamesArray = Array.isArray(blazeData) ? blazeData : (blazeData.records || []);
+                
+                let formattedText = "";
+                gamesArray.forEach(game => {
+                    if (game.created_at && game.roll !== undefined) {
+                        const dateObj = new Date(game.created_at);
+                        const timeStr = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                        const dateStr = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+                        formattedText += `${dateStr}\n${game.roll}\n${timeStr}\n\n`;
+                    }
+                });
+
+                sessionStorage.setItem('raw_blaze_data', formattedText);
+                updateVisualHistory();
+                runPatternsBotLogic();
+
+            } catch (error) {
+                console.error("Erro no Auto-Fetch:", error);
+            }
+        }
+
+        function updateVisualHistory() {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+
+            if (results.length === 0) return;
+
+            const recent = results.slice(0, 7).reverse();
+            const container = document.getElementById('visualHistoryContainer');
+            if (!container) return;
+
+            let html = '';
+            recent.forEach((res, index) => {
+                const color = dash_identificarCor(res.roll);
+                const extraClass = index === recent.length - 1 ? ' latest-glow' : '';
+                html += `<div class="history-badge ${color}${extraClass}">
+                            ${res.roll}
+                            <div class="badge-time">${res.time}</div>
+                         </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Lógica do Robô Padrões ---
+        function handlePatternsBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('patternsBotStatus');
+            const container = document.getElementById('patternsBotActivationContainer');
+
+            if (isBotActive) {
+                statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Padrões Ativado. Monitorando...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+                
+                // Reset stats
+                patternsBotWins = 0; patternsBotLosses = 0; patternsBotWhiteWins = 0; patternsBotSequentialIndex = 0;
+                document.getElementById('patternsBotWinCount').textContent = '0';
+                patternsBotInversionCount = 0;
+                updateInversionCounterDisplay();
+                document.getElementById('patternsBotWhiteWinCount').textContent = '0';
+                document.getElementById('patternsBotLossCount').textContent = '0';
+                document.getElementById('patternsBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+                
+                sendPatternsBotStartedTelegram();
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activePatternsSignal = null;
+                lastPatternsSignalTime = null;
+                document.getElementById('patternsBotSignalPanel').style.display = 'none';
+                const display = document.getElementById('patternsBotCurrentPatternDisplay');
+                if(display) display.style.display = 'none';
+                if (container) container.classList.remove('bot-active-pulse');
+
+                sendPatternsBotStoppedTelegram();
+            }
+        }
+
+        function togglePatternsBotConfig() {
+            const container = document.getElementById('patternsBotConfigContainer');
+            const btn = document.getElementById('patternsBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function savePatternsBotInput(btn) {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+            localStorage.setItem('patternsBot_saved_patterns', input.value);
+            
+            const originalText = btn.innerHTML;
+            const originalStyle = btn.getAttribute('style');
+
+            btn.innerHTML = '✅ PADRÕES SALVOS!';
+            btn.style.background = 'linear-gradient(90deg, #00ff88, #00cc6a)';
+            btn.style.color = '#000';
+            btn.style.borderColor = '#00ff88';
+            btn.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.6)';
+
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.setAttribute('style', originalStyle);
+            }, 2000);
+        }
+
+        function parsePatternsBotInput() {
+            const input = document.getElementById('patternsBotInput').value.trim();
+            if (!input) return [];
+            
+            return input.split('\n').map(line => {
+                line = line.trim();
+                if (!line || !line.includes('=')) return null;
+                
+                const [seqStr, targetStr] = line.split('=').map(s => s.trim().toUpperCase());
+                const sequence = seqStr.split(',').map(s => s.trim());
+                
+                let target = null;
+                if (['V', 'VERMELHO'].includes(targetStr)) target = 'VERMELHO';
+                else if (['P', 'PRETO'].includes(targetStr)) target = 'PRETO';
+                else if (['B', 'BRANCO'].includes(targetStr)) target = 'BRANCO';
+                
+                if (!target || sequence.length === 0) return null;
+                
+                return { sequence, target, original: line };
+            }).filter(p => p !== null);
+        }
+
+        function runPatternsBotLogic() {
+            if (!document.getElementById('patternsBotToggle').checked) return;
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length === 0) return;
+
+            if (activePatternsSignal) {
+                const display = document.getElementById('patternsBotCurrentPatternDisplay');
+                if(display) display.style.display = 'none';
+                checkPatternsSignalResult(results);
+            } else {
+                checkPatterns(results);
+            }
+        }
+
+        function checkPatterns(results) {
+            const patterns = parsePatternsBotInput();
+            if (patterns.length === 0) return;
+
+            const display = document.getElementById('patternsBotCurrentPatternDisplay');
+            const isSequential = document.getElementById('patternsBotSequentialToggle') && document.getElementById('patternsBotSequentialToggle').checked;
+
+            if (display) {
+                display.style.display = 'block';
+                if (isSequential) {
+                    if (patternsBotSequentialIndex >= patterns.length) patternsBotSequentialIndex = 0;
+                    const currentPat = patterns[patternsBotSequentialIndex];
+                    display.innerHTML = `🔍 Buscando Padrão <b>${patternsBotSequentialIndex + 1}/${patterns.length}</b><br><span style="font-family: monospace; color: #ccc; font-size: 0.8em;">${currentPat.original}</span>`;
+                } else {
+                    display.innerHTML = `👀 Monitorando <b>${patterns.length}</b> Padrões simultaneamente`;
+                }
+            }
+
+            const maxWhitesInput = document.getElementById('patternsBotMaxWhitesFilter');
+            const maxWhites = maxWhitesInput ? (parseInt(maxWhitesInput.value) || 0) : 0;
+            if (maxWhites > 0) {
+                const recentForWhites = results.slice(0, 20);
+                const whiteCount = recentForWhites.filter(r => r.roll === 0).length;
+                if (whiteCount >= maxWhites) return;
+            }
+
+            const antiRepetition = document.getElementById('patternsBotAntiRepetitionToggle') && document.getElementById('patternsBotAntiRepetitionToggle').checked;
+
+            for (let i = 0; i < patterns.length; i++) {
+                if (isSequential && i !== patternsBotSequentialIndex) continue;
+                const pattern = patterns[i];
+                
+                if (results.length < pattern.sequence.length) continue;
+
+                let match = true;
+                for (let i = 0; i < pattern.sequence.length; i++) {
+                    const seqItem = pattern.sequence[pattern.sequence.length - 1 - i];
+                    const resultItem = results[i];
+                    const resultColor = dash_identificarCor(resultItem.roll).toUpperCase();
+                    const resultNum = resultItem.roll;
+
+                    let itemMatch = false;
+                    if (['V', 'VERMELHO'].includes(seqItem) && resultColor === 'VERMELHO') itemMatch = true;
+                    else if (['P', 'PRETO'].includes(seqItem) && resultColor === 'PRETO') itemMatch = true;
+                    else if (['B', 'BRANCO'].includes(seqItem) && resultColor === 'BRANCO') itemMatch = true;
+                    else if (!isNaN(parseInt(seqItem)) && parseInt(seqItem) === resultNum) itemMatch = true;
+
+                    if (!itemMatch) {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match) {
+                    if (antiRepetition) {
+                        const lastColor = dash_identificarCor(results[0].roll).toUpperCase();
+                        if (lastColor === pattern.target) continue;
+                    }
+                    createPatternsSignal(pattern.target, pattern.original, results[0], results);
+                    break;
+                }
+            }
+        }
+
+        function createPatternsSignal(targetColor, patternString, triggerResult, allResults) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            
+            const autoAnalyzeToggle = document.getElementById('patternsBotAutoAnalyzeMinuteToggle');
+            let entryTime = 1;
+
+            if (autoAnalyzeToggle && autoAnalyzeToggle.checked && allResults && allResults.length > 0) {
+                // Lógica simplificada para auto análise (mesma do index.html)
+                entryTime = 2; // Fallback seguro
+            } else {
+                const entryTimeInput = document.getElementById('patternsBotEntryTime');
+                entryTime = entryTimeInput ? (parseInt(entryTimeInput.value) || 1) : 1;
+            }
+
+            signalTime.setMinutes(signalTime.getMinutes() + entryTime);
+
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            if (lastPatternsSignalTime === signalTimeString) return;
+            lastPatternsSignalTime = signalTimeString;
+
+            const useGale = document.getElementById('patternsBotGaleToggle') && document.getElementById('patternsBotGaleToggle').checked;
+            const gales = useGale ? 1 : 0;            
+            
+            activePatternsSignal = {
+                time: signalTimeString,
+                date: triggerResult.date,
+                targetColor: targetColor,
+                gales: gales,
+                pattern: patternString
+            };
+
+            const emoji = targetColor === 'VERMELHO' ? '🔴' : (targetColor === 'PRETO' ? '⚫' : '⚪');
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+            
+            signalPanel.style.display = 'block';
+            signalPanel.classList.add('panel-glow-active');
+
+            signalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="text-align: left; flex: 1;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!</div>
+                        <div style="color: #aaa; font-size: 0.8rem; font-family: monospace; margin-bottom: 15px;">${patternString}</div>
+                        
+                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${targetColor}</div>
+                        <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString} (+${entryTime} min)</div>
+                    </div>
+                    <div class="signal-chart-container" style="transform: scale(1);">
+                        <div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${emoji}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Aguardando Resultado...</span>
+                </div>
+            `;
+            
+            if (document.getElementById('patternsBotSoundToggle').checked) {
+                playNotificationSound();
+            }
+            sendPatternsBotTelegramSignal(activePatternsSignal);
+        }
+
+        function checkPatternsSignalResult(results) {
+            if (!activePatternsSignal) return;
+
+            const [sH, sM] = activePatternsSignal.time.split(':').map(Number);
+            const [day, month, year] = activePatternsSignal.date.split('/').map(Number);
+            const signalDate = new Date(year, month - 1, day, sH, sM, 0, 0);
+            const attempts = 1 + activePatternsSignal.gales;
+
+            const relevantResults = [];
+            for (const res of results) {
+                const [rH, rM] = res.time.split(':').map(Number);
+                let resDate = new Date(year, month - 1, day, rH, rM, 0, 0);
+                if (sH > 20 && rH < 4) resDate.setDate(resDate.getDate() + 1);
+                else if (sH < 4 && rH > 20) resDate.setDate(resDate.getDate() - 1);
+                if (resDate >= signalDate) relevantResults.push({ ...res, timestamp: resDate.getTime() });
+            }
+            relevantResults.reverse();
+
+            let winFound = false;
+            let winIndex = -1;
+            let winResult = null;
+            const stonesToCheck = Math.min(relevantResults.length, attempts);
+
+            for (let i = 0; i < stonesToCheck; i++) {
+                const res = relevantResults[i];
+                const color = dash_identificarCor(res.roll).toUpperCase();
+                if (color === activePatternsSignal.targetColor || color === 'BRANCO') {
+                    winFound = true; winIndex = i; winResult = res; break;
+                }
+            }
+
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+
+            if (winFound) {
+                const winType = winIndex === 0 ? 'WIN' : `WIN G${winIndex}`;
+                const winColor = dash_identificarCor(winResult.roll).toUpperCase();
+                const msg = `✅ ${winType}! (${winResult.time} - ${winColor})`;
+                addResultToPatternsHistory(msg, true);
+                sendPatternsBotResultTelegram(msg, activePatternsSignal.pattern);
+            } else if (relevantResults.length >= attempts) {
+                const msg = `❌ LOSS! (${activePatternsSignal.time})`;
+                addResultToPatternsHistory(msg, false);
+                sendPatternsBotResultTelegram(msg, activePatternsSignal.pattern);
+            } else {
+                return;
+            }
+
+            signalPanel.classList.remove('panel-glow-active');
+            signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
+            activePatternsSignal = null;
+
+            const isSequential = document.getElementById('patternsBotSequentialToggle') && document.getElementById('patternsBotSequentialToggle').checked;
+            if (isSequential) {
+                const patterns = parsePatternsBotInput();
+                patternsBotSequentialIndex++;
+                if (patternsBotSequentialIndex >= patterns.length) {
+                    patternsBotSequentialIndex = 0;
+                    if (document.getElementById('patternsBotInvertToggle') && document.getElementById('patternsBotInvertToggle').checked) {
+                        invertPatternsBotInput();
+                    }
+                }
+            }
+        }
+
+        function addResultToPatternsHistory(message, isWin) {
+            const historyDiv = document.getElementById('patternsBotResultHistory');
+            const newEntry = document.createElement('div');
+            newEntry.innerHTML = message;
+            newEntry.style.color = isWin ? 'var(--accent-jonbet)' : 'var(--accent-blaze)';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+
+            if (historyDiv.innerHTML.includes('Aguardando')) {
+                historyDiv.innerHTML = '';
+            }
+
+            if (isWin) {
+                patternsBotWins++;
+                if (message.includes('BRANCO')) patternsBotWhiteWins++;
+            } else {
+                patternsBotLosses++;
+            }
+            document.getElementById('patternsBotWinCount').textContent = patternsBotWins;
+            document.getElementById('patternsBotWhiteWinCount').textContent = patternsBotWhiteWins;
+            document.getElementById('patternsBotLossCount').textContent = patternsBotLosses;
+            historyDiv.prepend(newEntry);
+        }
+
+        // --- Funções de UI do Robô Padrões ---
+        function addCharToPatterns(char) {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const text = input.value;
+                input.value = text.substring(0, start) + char + text.substring(end);
+                input.selectionStart = input.selectionEnd = start + char.length;
+                input.focus();
+                updatePatternsPreview();
+            }
+        }
+
+        function undoPatternsBotInput() {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const text = input.value;
+                if (start > 0 || start !== end) {
+                    const removeCount = (start === end) ? 1 : 0;
+                    input.value = text.substring(0, start - removeCount) + text.substring(end);
+                    input.selectionStart = input.selectionEnd = start - removeCount;
+                    input.focus();
+                    updatePatternsPreview();
+                }
+            }
+        }
+
+        function clearPatternsBotInput(btn) {
+            const input = document.getElementById('patternsBotInput');
+            if (input) {
+                if (confirm('Tem certeza que deseja limpar todos os padrões?')) {
+                    input.value = '';
+                    updatePatternsPreview();
+                }
+            }
+        }
+
+        function updatePatternsPreview() {
+            const input = document.getElementById('patternsBotInput');
+            const preview = document.getElementById('patternsBotPreview');
+            if (!input || !preview) return;
+
+            const cursorPosition = input.selectionStart;
+            const text = input.value;
+            
+            let start = text.lastIndexOf('\n', cursorPosition - 1);
+            if (start === -1) start = 0; else start += 1;
+            
+            let end = text.indexOf('\n', cursorPosition);
+            if (end === -1) end = text.length;
+            
+            const currentLine = text.substring(start, end);
+            
+            if (!currentLine.trim()) {
+                preview.innerHTML = '<span style="color: #444; font-style: italic; font-size: 0.8rem;">Visualização em tempo real...</span>';
+                return;
+            }
+
+            let html = '';
+            const tokens = currentLine.split(/([,=])/);
+            
+            tokens.forEach(token => {
+                const t = token.trim().toUpperCase();
+                if (!t) return;
+                
+                if (t === ',') html += '<span class="preview-sep">›</span>';
+                else if (t === '=') html += '<span class="preview-arrow">➔</span>';
+                else if (t === 'V' || t === 'VERMELHO') html += '<span class="preview-token">🔴</span>';
+                else if (t === 'P' || t === 'PRETO') html += '<span class="preview-token">⚫</span>';
+                else if (t === 'B' || t === 'BRANCO') html += '<span class="preview-token">⚪</span>';
+                else if (!isNaN(parseInt(t))) {
+                    const n = parseInt(t);
+                    let color = '#888';
+                    if (n >= 1 && n <= 7) color = '#ff0055';
+                    else if (n === 0) color = '#fff';
+                    html += `<span class="preview-token preview-num" style="color: ${color}; border-color: ${color};">${n}</span>`;
+                } else {
+                    html += `<span style="color: #aaa; margin: 0 2px;">${t}</span>`;
+                }
+            });
+            
+            preview.innerHTML = html;
+        }
+
+        function invertPatternsBotInput() {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+
+            const lines = input.value.split('\n');
+            const newLines = lines.map(line => {
+                if (!line.includes('=')) return line;
+                const parts = line.split('=');
+                const target = parts[1].trim().toUpperCase();
+                let newTarget = target;
+
+                if (target === 'V' || target === 'VERMELHO') newTarget = 'P';
+                else if (target === 'P' || target === 'PRETO') newTarget = 'V';
+                
+                return `${parts[0]}=${newTarget}`;
+            });
+
+            input.value = newLines.join('\n');
+            savePatternsBotInput(document.querySelector('.btn-save-neon'));
+            patternsBotInversionCount++;
+            updateInversionCounterDisplay();
+        }
+
+        function updateInversionCounterDisplay() {
+            const countElement = document.getElementById('inversionCountValue');
+            if (countElement) {
+                countElement.textContent = patternsBotInversionCount;
+                countElement.classList.remove('flash');
+                void countElement.offsetWidth;
+                countElement.classList.add('flash');
+            }
+        }
+
+        // --- Telegram Functions ---
+        async function sendPatternsBotStartedTelegram() {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            const message = `🤖 *ROBÔ PADRÕES ATIVADO*\n\n✅ O monitoramento de padrões foi iniciado com sucesso.\n🕒 *Horário:* ${new Date().toLocaleTimeString('pt-BR')}\n\nBoa sorte! 🚀`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar msg inicio Telegram:', e); }
+        }
+
+        async function sendPatternsBotStoppedTelegram() {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            const message = `🛑 *ROBÔ PADRÕES PARADO*\n\n⚠️ O monitoramento de padrões foi interrompido.\n🕒 *Horário:* ${new Date().toLocaleTimeString('pt-BR')}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar msg parada Telegram:', e); }
+        }
+
+        async function sendPatternsBotTelegramSignal(signalData) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : (signalData.targetColor === 'PRETO' ? '⚫' : '⚪');
+            const galeStatus = signalData.gales > 0 ? 'GALE 1 (G1)' : 'SEM GALE (SG)';
+            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n🔄 *Modo:* ${galeStatus}\n\n✅ *Gerencie sua banca!*`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
+        }
+
+        async function sendPatternsBotResultTelegram(resultMessage, patternName) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            
+            if (!token || !chatId) return;
+
+            let formattedMessage = `*RESULTADO ROBÔ PADRÕES*\n\n${resultMessage}`;
+            if (patternName) {
+                formattedMessage += `\n🔍 *Padrão:* \`${patternName}\``;
+            }
+            formattedMessage += `\n\n📈 *Placar:* ✅ ${patternsBotWins} | ❌ ${patternsBotLosses}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar resultado Telegram:', e); }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            const autoFetchToggle = document.getElementById('autoFetchToggle');
+            if (autoFetchToggle) {
+                autoFetchToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        fetchBlazeData();
+                        if (autoFetchIntervalId) clearInterval(autoFetchIntervalId);
+                        autoFetchIntervalId = setInterval(fetchBlazeData, 15000);
+                    } else {
+                        clearInterval(autoFetchIntervalId);
+                        autoFetchIntervalId = null;
+                    }
+                    handlePatternsBotToggle({ target: document.getElementById('patternsBotToggle') });
+                });
+                
+                // Auto-start
+                autoFetchToggle.checked = true;
+                autoFetchToggle.dispatchEvent(new Event('change'));
+            }
+
+            document.getElementById('patternsBotToggle').addEventListener('change', handlePatternsBotToggle);
+            
+            // Load saved patterns
+            const savedPatterns = localStorage.getItem('patternsBot_saved_patterns');
+            if (savedPatterns) {
+                document.getElementById('patternsBotInput').value = savedPatterns;
+            }
+            
+            const patternsInput = document.getElementById('patternsBotInput');
+            if (patternsInput) {
+                patternsInput.addEventListener('input', updatePatternsPreview);
+                patternsInput.addEventListener('keyup', updatePatternsPreview);
+                patternsInput.addEventListener('click', updatePatternsPreview);
+            }
+        });
+    </script>
+</body>
+</html>
