@@ -952,18 +952,32 @@
                     const minuteLastDigit = time.getMinutes() % 10;
                     const colContent = resultsContainer.querySelector(`.masonry-column[data-col-index="${minuteLastDigit}"] .masonry-content`);
                     if (colContent) {
-                        // Agrupar por minuto específico para separar visualmente horários diferentes
                         const minuteKey = timeString;
-                        let group = colContent.lastElementChild;
                         
-                        if (!group || group.dataset.minute !== minuteKey || !group.classList.contains('minute-group')) {
+                        // Procura por um grupo existente para este minuto
+                        let group = colContent.querySelector(`div[data-minute="${minuteKey}"]`);
+
+                        // Se o grupo não existe, cria um novo e o insere na posição correta
+                        if (!group) {
                             group = document.createElement('div');
                             group.className = 'minute-group';
                             group.dataset.minute = minuteKey;
-                            colContent.appendChild(group);
+
+                            let inserted = false;
+                            // Itera sobre os grupos existentes para encontrar a posição correta (mantendo a ordem decrescente)
+                            for (const existingGroup of colContent.children) {
+                                if (minuteKey > existingGroup.dataset.minute) {
+                                    colContent.insertBefore(group, existingGroup);
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                            if (!inserted) {
+                                colContent.appendChild(group); // Adiciona no final se for o mais antigo
+                            }
                         }
                         
-                        group.appendChild(resultItem);
+                        group.prepend(resultItem);
                     }
                 } else {
                     resultsContainer.appendChild(resultItem);

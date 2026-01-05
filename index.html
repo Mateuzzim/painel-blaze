@@ -3287,8 +3287,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id');
-            const template = sessionStorage.getItem('telegram_autobot_template');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            const template = sessionStorage.getItem('telegram_autobot_template') || localStorage.getItem('telegram_autobot_template');
 
             if (!token || !chatId) {
                 logAutoBotAction('Telegram não configurado.', 'warning');
@@ -3324,7 +3324,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
 
             if (!token || !chatId) return;
 
@@ -3344,7 +3344,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
 
             if (!token || !chatId) return;
 

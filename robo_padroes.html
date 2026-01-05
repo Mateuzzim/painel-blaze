@@ -214,6 +214,7 @@
                 document.getElementById('patternsBotWinCount').textContent = '0';
                 document.getElementById('patternsBotLossCount').textContent = '0';
                 document.getElementById('patternsBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+                sendPatternsBotStatusTelegram("🧬 *ROBÔ PADRÕES INICIADO*");
             } else {
                 statusDiv.textContent = 'Robô Desativado.';
                 statusDiv.style.color = '#aaa';
@@ -221,6 +222,7 @@
                 lastPatternsSignalTime = null;
                 document.getElementById('patternsBotSignalPanel').style.display = 'none';
                 if (container) container.classList.remove('bot-active-pulse');
+                sendPatternsBotStatusTelegram("🛑 *ROBÔ PADRÕES DESLIGADO*");
             }
         }
 
@@ -450,6 +452,24 @@
                 osc.start();
                 osc.stop(ctx.currentTime + 0.2);
             } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        async function sendPatternsBotStatusTelegram(message) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = sessionStorage.getItem('telegram_chat_id_patterns') || localStorage.getItem('telegram_chat_id_patterns');
+            if (!chatId) {
+                chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            }
+            
+            if (!token || !chatId) return;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro status Telegram (Padrões):', e); }
         }
 
         async function sendPatternsBotTelegramSignal(signalData) {
