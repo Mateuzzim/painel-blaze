@@ -43,7 +43,7 @@
                 <div class="platform-switcher">
                     <input type="hidden" id="suite_platformSelector" value="blaze">
                     <button class="platform-btn active" id="suite_btn-blaze" onclick="suite_selectPlatform('blaze')">Blaze</button>
-                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')">Jonbet</button>
+                    <button class="platform-btn" id="suite_btn-jonbet" onclick="suite_selectPlatform('jonbet')" style="display: none;">Jonbet</button>
                 </div>
             </div>
 
@@ -57,15 +57,6 @@
                         </div>
                     </div>
                     <textarea id="suite_correctorSignalsInput" placeholder="Cole aqui a lista completa que você gerou..." style="height: 100px;"></textarea>
-                </div>
-                 <div class="control-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="margin-bottom: 0;">Cole o Histórico de Resultados Reais:</label>
-                        <div class="header-buttons">
-                            <button onclick="suite_clearTextarea('suite_correctorResultsInput')" class="manual-btn" style="padding: 5px 10px; font-size: 0.8rem; margin: 0; background-color: #555;">LIMPAR</button>
-                        </div>
-                    </div>
-                    <textarea id="suite_correctorResultsInput" oninput="suite_formatarInputHistorico(this)" placeholder="Cole aqui o histórico de resultados da plataforma..." style="height: 100px;"></textarea>
                 </div>
                 <div class="inline-controls">
                     <button class="btn-action" onclick="suite_corrigirSinais()">CORRIGIR LISTA</button>
@@ -109,68 +100,21 @@
 
         function suite_limparCorretor() {
             suite_clearTextarea('suite_correctorSignalsInput');
-            suite_clearTextarea('suite_correctorResultsInput');
             document.getElementById('suite_resCorrector').innerText = 'Aguardando dados para correção...';
-        }
-
-        let suite_formatarTimeout;
-        function suite_formatarInputHistorico(textarea) {
-            clearTimeout(suite_formatarTimeout);
-            suite_formatarTimeout = setTimeout(() => {
-                const valorOriginal = textarea.value.trim();
-                const linhas = valorOriginal.split('\n');
-                const resultadosFinais = [];
-                const timeRegex = /^\d{2}:\d{2}$/;
-                const numberRegex = /^\d{1,2}$/;
-                const fullDateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}/;
-                const platformSelector = document.getElementById('suite_platformSelector');
-                const isJonbet = platformSelector && platformSelector.value === 'jonbet';
-
-                 for (let i = 0; i < linhas.length; i++) {
-                     const linhaAtual = linhas[i].trim();
-                     if (fullDateRegex.test(linhaAtual)) {
-                         const linha1 = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                         const linha2 = linhas[i + 2] ? linhas[i + 2].trim() : '';
-                         let numero, horario, cor;
-                         if (numberRegex.test(linha1) && timeRegex.test(linha2)) {
-                             numero = parseInt(linha1); horario = linha2; i += 2; 
-                         } else if (timeRegex.test(linha1)) {
-                             numero = 0; horario = linha1; i += 1; 
-                         }
-                         if (horario) {
-                             if (numero === 0) cor = 'BRANCO';
-                             else if (numero >= 1 && numero <= 7) cor = 'VERMELHO';
-                             else if (numero >= 8 && numero <= 14) cor = 'PRETO';
-                             if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
-                             resultadosFinais.push(`${horario} ${cor}`);
-                         }
-                     } else if (linhaAtual.match(/^\d{2}:\d{2}\s+(VERMELHO|PRETO|BRANCO|VERDE)$/i)) {
-                         let linha = linhaAtual.toUpperCase();
-                         if (isJonbet) linha = linha.replace('VERMELHO', 'VERDE');
-                         resultadosFinais.push(linha);
-                     } else if (timeRegex.test(linhaAtual)) {
-                         const proximaLinha = linhas[i + 1] ? linhas[i + 1].trim() : '';
-                         if (/^(VERMELHO|PRETO|BRANCO|VERDE)$/i.test(proximaLinha)) {
-                             let cor = proximaLinha.toUpperCase();
-                             if (isJonbet && cor === 'VERMELHO') cor = 'VERDE';
-                             resultadosFinais.push(`${linhaAtual} ${cor}`);
-                             i++;
-                         } else {
-                             resultadosFinais.push(`${linhaAtual} BRANCO`);
-                         }
-                     }
-                 }
-                textarea.value = resultadosFinais.join('\n');
-            }, 500);
         }
 
         function suite_corrigirSinais() {
             const signalsInput = document.getElementById('suite_correctorSignalsInput').value;
-            const resultsInput = document.getElementById('suite_correctorResultsInput').value;
+            const resultsInput = sessionStorage.getItem('raw_blaze_data');
             const resultsDiv = document.getElementById('suite_resCorrector');
 
-            if (!signalsInput || !resultsInput) {
-                alert("Por favor, preencha a lista de sinais e o histórico de resultados.");
+            if (!signalsInput) {
+                alert("Por favor, preencha a lista de sinais.");
+                return;
+            }
+
+            if (!resultsInput) {
+                alert("Histórico de resultados não encontrado. Realize a busca no painel principal.");
                 return;
             }
 
@@ -192,17 +136,20 @@
             }
 
             const allResults = [];
-            const resultLines = resultsInput.split('\n');
-            const resultRegex = /(\d{2}:\d{2})\s+(VERMELHO|PRETO|BRANCO|VERDE)/i;
-
-            resultLines.forEach(line => {
-                const m = resultRegex.exec(line);
-                if (m) {
-                    let color = m[2].toUpperCase();
-                    if (color === 'VERDE') color = 'VERMELHO';
-                    allResults.push({ time: m[1], color: color });
+            // Processa o raw_blaze_data (formato: DD/MM/YYYY ROLL HH:MM)
+            const tokens = resultsInput.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    const roll = parseInt(tokens[i + 1]);
+                    const time = tokens[i + 2];
+                    let color = 'BRANCO';
+                    if (roll >= 1 && roll <= 7) color = 'VERMELHO';
+                    else if (roll >= 8 && roll <= 14) color = 'PRETO';
+                    
+                    allResults.push({ time: time, color: color });
+                    i += 2;
                 }
-            });
+            }
 
             let wins = 0;
             let losses = 0;

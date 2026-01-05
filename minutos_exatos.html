@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutos Exatos - Branco</title>
+    <style>
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; color: #ccc; }
+        .control-group select, .control-group input {
+            width: 100%; padding: 10px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 4px; box-sizing: border-box; font-family: monospace;
+        }
+        
+        .action-btn {
+            width: 100%; margin-top: 10px; padding: 12px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2));
+            border: 1px solid #00d2ff; color: #00d2ff; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .action-btn:hover {
+            border-color: #fff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+
+        .output-area {
+            background: #111; padding: 15px; border-radius: 8px;
+            border: 1px solid #333; min-height: 100px;
+            font-family: monospace; margin-top: 20px;
+        }
+
+        .grid-minutes {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 8px; margin-top: 10px;
+        }
+        .minute-box {
+            background: #1a1a1a; border: 1px solid #333; border-radius: 4px;
+            text-align: center; padding: 5px; font-size: 0.8rem; position: relative;
+        }
+        .minute-box.hot { border-color: #ff0055; background: rgba(255, 0, 85, 0.15); color: #fff; font-weight: bold; }
+        .minute-box.warm { border-color: #ff9800; background: rgba(255, 152, 0, 0.1); color: #ddd; }
+        .minute-box .count { font-size: 0.7rem; color: #aaa; display: block; }
+        
+        .stat-row { display: flex; gap: 10px; margin-top: 20px; }
+        .stat-box {
+            flex: 1; background: #1a1a1a; padding: 15px; border-radius: 6px;
+            border: 1px solid #333; text-align: center;
+        }
+        .stat-value { font-size: 1.8rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+
+        .prediction-item {
+            display: flex; justify-content: space-between; padding: 8px;
+            border-bottom: 1px solid #222; color: #ccc;
+        }
+        .prediction-item:last-child { border-bottom: none; }
+        .prediction-time { color: #00d2ff; font-weight: bold; }
+        .prediction-prob { color: #ff0055; font-size: 0.8rem; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f0f13; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 class="cortex-text-anim" style="margin: 0;">MINUTOS EXATOS</h1>
+        <p style="color: #888; font-size: 0.9rem; margin-top: 5px; display: none;">Análise Avançada de Brancos (Double)</p>
+    </div>
+
+    <div id="config-panel">
+        <div class="control-group">
+            <label for="timeFilter">Período de Análise:</label>
+            <select id="timeFilter">
+                <option value="1">Última 1 Hora</option>
+                <option value="3">Últimas 3 Horas</option>
+                <option value="6">Últimas 6 Horas</option>
+                <option value="12">Últimas 12 Horas</option>
+                <option value="24" selected>Últimas 24 Horas</option>
+                <option value="all">Todo o Histórico</option>
+            </select>
+        </div>
+        <button class="action-btn" onclick="analisarMinutos()">⚡ GERAR PREVISÃO (1H)</button>
+    </div>
+
+    <div id="result-panel" style="display: none;">
+        <div class="stat-row">
+            <div class="stat-box">
+                <div class="stat-value" id="totalWhites">0</div>
+                <div class="stat-label">Brancos Encontrados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="avgMinute">00</div>
+                <div class="stat-label">Minuto + Frequente</div>
+            </div>
+        </div>
+
+        <h3 style="color: #00d2ff; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            🕒 Previsão para Próxima Hora
+        </h3>
+        <div id="predictionList" class="output-area" style="max-height: 250px; overflow-y: auto;"></div>
+
+        <h3 style="color: #ffc107; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            📊 Mapa de Frequência (00-59)
+        </h3>
+        <div id="heatmapGrid" class="grid-minutes"></div>
+    </div>
+
+    <script>
+        function parseRawData() {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return [];
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                // Formato esperado: DD/MM/YYYY ROLL HH:MM
+                if (tokens[i] && tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2] && tokens[i + 2].includes(':')) {
+                    results.push({
+                        date: tokens[i],
+                        roll: parseInt(tokens[i + 1]),
+                        time: tokens[i + 2]
+                    });
+                    i += 2;
+                }
+            }
+            return results;
+        }
+
+        function analisarMinutos() {
+            const results = parseRawData();
+            const resultPanel = document.getElementById('result-panel');
+            const predictionList = document.getElementById('predictionList');
+            const heatmapGrid = document.getElementById('heatmapGrid');
+            const totalWhitesEl = document.getElementById('totalWhites');
+            const avgMinuteEl = document.getElementById('avgMinute');
+
+            if (results.length === 0) {
+                alert('Nenhum dado encontrado! Certifique-se de que o histórico foi coletado no painel principal.');
+                return;
+            }
+
+            resultPanel.style.display = 'block';
+            predictionList.innerHTML = '<div style="text-align:center; color:#666;">Processando...</div>';
+
+            const timeFilter = document.getElementById('timeFilter').value;
+            let filteredResults = results;
+            
+            if (timeFilter !== 'all') {
+                const now = new Date();
+                const hours = parseInt(timeFilter);
+                const cutoff = now.getTime() - (hours * 60 * 60 * 1000);
+                
+                filteredResults = results.filter(r => {
+                    const [day, month, year] = r.date.split('/');
+                    const [hr, min] = r.time.split(':');
+                    const rDate = new Date(year, month - 1, day, hr, min);
+                    return rDate.getTime() >= cutoff;
+                });
+            }
+
+            const whites = filteredResults.filter(r => r.roll === 0);
+            totalWhitesEl.innerText = whites.length;
+
+            if (whites.length === 0) {
+                predictionList.innerHTML = '<div style="text-align:center; color:#ff0055;">Nenhum branco encontrado no período selecionado.</div>';
+                heatmapGrid.innerHTML = '';
+                avgMinuteEl.innerText = '--';
+                return;
+            }
+
+            const minuteCounts = new Array(60).fill(0);
+            whites.forEach(w => {
+                const minute = parseInt(w.time.split(':')[1]);
+                if (!isNaN(minute)) minuteCounts[minute]++;
+            });
+
+            let maxCount = 0;
+            let bestMinute = 0;
+            minuteCounts.forEach((count, min) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    bestMinute = min;
+                }
+            });
+            avgMinuteEl.innerText = bestMinute.toString().padStart(2, '0');
+
+            let heatmapHTML = '';
+            const avgCount = whites.length / 60;
+            
+            for (let m = 0; m < 60; m++) {
+                const count = minuteCounts[m];
+                let className = 'minute-box';
+                if (count >= maxCount * 0.8 && count > 0) className += ' hot';
+                else if (count > avgCount) className += ' warm';
+                
+                heatmapHTML += `
+                    <div class="${className}">
+                        ${m.toString().padStart(2, '0')}
+                        <span class="count">${count}</span>
+                    </div>
+                `;
+            }
+            heatmapGrid.innerHTML = heatmapHTML;
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            const hotMinutes = [];
+            minuteCounts.forEach((count, min) => {
+                if (count >= avgCount && count > 0) {
+                    hotMinutes.push({ minute: min, count: count });
+                }
+            });
+
+            hotMinutes.sort((a, b) => b.count - a.count);
+
+            const predictions = [];
+            hotMinutes.forEach(hm => {
+                let targetHour = currentHour;
+                let targetMinute = hm.minute;
+
+                if (targetMinute < currentMinute) {
+                    targetHour = (currentHour + 1) % 24;
+                }
+                
+                const timeStr = `${targetHour.toString().padStart(2, '0')}:${targetMinute.toString().padStart(2, '0')}`;
+                const prob = Math.round((hm.count / maxCount) * 100);
+
+                predictions.push({
+                    time: timeStr,
+                    prob: prob,
+                    rawTime: targetHour * 60 + targetMinute
+                });
+            });
+
+            predictions.sort((a, b) => {
+                let valA = a.rawTime;
+                let valB = b.rawTime;
+                if (parseInt(a.time.split(':')[0]) < currentHour) valA += 24 * 60;
+                if (parseInt(b.time.split(':')[0]) < currentHour) valB += 24 * 60;
+                return valA - valB;
+            });
+
+            if (predictions.length > 0) {
+                let listHTML = '';
+                predictions.forEach(p => {
+                    let probColor = '#888';
+                    if (p.prob >= 80) probColor = '#00ff88';
+                    else if (p.prob >= 50) probColor = '#ffc107';
+
+                    listHTML += `
+                        <div class="prediction-item">
+                            <span class="prediction-time">${p.time}</span>
+                            <span class="prediction-prob" style="color: ${probColor}">Força: ${p.prob}%</span>
+                        </div>
+                    `;
+                });
+                predictionList.innerHTML = listHTML;
+            } else {
+                predictionList.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">Sem dados suficientes para previsão.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
