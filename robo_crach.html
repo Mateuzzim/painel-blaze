@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Crash - Nexus Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; color: #ccc; }
+        .control-group input, .control-group select {
+            width: 100%; padding: 10px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 4px; box-sizing: border-box; font-family: monospace;
+        }
+        
+        .btn-back {
+            background: transparent; border: 1px solid #444; color: #aaa;
+            padding: 5px 10px; cursor: pointer; margin-bottom: 15px; border-radius: 4px;
+        }
+        .btn-back:hover { border-color: #fff; color: #fff; }
+
+        .action-btn {
+            width: 100%; margin-top: 10px; padding: 12px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2));
+            border: 1px solid #00d2ff; color: #00d2ff; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .action-btn:hover {
+            border-color: #fff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .output-area {
+            background: #111; padding: 15px; border-radius: 8px;
+            border: 1px solid #333; min-height: 150px; max-height: 500px;
+            overflow-y: auto; font-family: monospace; margin-top: 20px;
+        }
+        
+        .log-entry { padding: 5px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        .log-time { color: #888; margin-right: 10px; font-size: 0.8rem; }
+        .log-info { color: #00d2ff; }
+        .log-success { color: #00ff88; }
+        .log-error { color: #ff0055; }
+
+        /* History Display */
+        .history-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .history-badge {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 0.85rem;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            min-width: 50px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .badge-green { color: #00ff88; border-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .badge-red { color: #ff0055; border-color: #ff0055; background: rgba(255, 0, 85, 0.1); }
+
+        /* Switch Toggle */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00d2ff; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Pattern Creator Styles */
+        .pattern-btn {
+            background: #1a1a1a; border: 1px solid #444; color: #fff;
+            padding: 8px; cursor: pointer; border-radius: 4px; flex: 1;
+            transition: all 0.2s; font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
+        }
+        .pattern-btn:hover { border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
+        .pattern-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #16161a; padding: 8px; margin-bottom: 5px; border-radius: 4px; border: 1px solid #333;
+        }
+
+        /* Layout Organization */
+        .panel-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .panel-header { 
+            color: #00d2ff; font-weight: bold; margin-bottom: 15px; 
+            font-size: 0.9rem; text-transform: uppercase; 
+            display: flex; align-items: center; gap: 10px; 
+        }
+        .panel-header::after { content: ''; flex: 1; height: 1px; background: #333; }
+
+        /* Alinhamento lateral para toggles */
+        .control-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+        }
+        .control-row label { margin-bottom: 0; color: #ccc; }
+    </style>
+</head>
+<body>
+    <button class="btn-back" onclick="parent.closeTool()" style="display: none;">⬅ Voltar ao Menu</button>
+    <div style="text-align: center; margin-bottom: 20px; display: none;">
+        <h1 class="cortex-text-anim" style="margin: 0;">ROBÔ CRASH</h1>
+    </div>
+
+    <div id="config-panel">
+        <!-- Painel de Estratégia -->
+        <div class="panel-section">
+            <div class="panel-header">⚙️ Configurações de Estratégia</div>
+            <div class="config-grid">
+                <div class="control-group">
+                    <label>Auto Retirar (x):</label>
+                    <input type="number" id="autoCashout" value="2.00" step="0.01">
+                </div>
+                <div class="control-group">
+                    <label>Seq. Baixas (Gatilho):</label>
+                    <input type="number" id="lowSequence" value="3" min="1">
+                </div>
+                <div class="control-group">
+                    <label>Modo de Operação:</label>
+                    <select id="strategy">
+                        <option value="reversal_basic">1. Reversão Simples (Velas Baixas)</option>
+                        <option value="reversal_after_doji">2. Reversão Pós-1.00x</option>
+                        <option value="follow_green_trend">3. Seguir Tendência de Alta</option>
+                        <option value="smart_reversal">4. Reversão Inteligente (Média Baixa)</option>
+                        <option value="high_candle_11">5. Buscar Velas Altas (Final .11)</option>
+                    </select>
+                    <div id="strategy-off-msg" style="display: none; padding: 10px; background: #222; border: 1px solid #444; color: #888; border-radius: 4px; font-family: monospace; text-align: center;">OFF</div>
+                </div>
+                <div class="control-row">
+                    <label>Telegram:</label>
+                    <label class="switch">
+                        <input type="checkbox" id="telegramToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <label>Usar Padrões Criados:</label>
+                    <label class="switch">
+                        <input type="checkbox" id="useCustomPatternsToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Criador de Padrões -->
+        <div class="panel-section">
+            <div class="panel-header">🧩 Criador de Padrões</div>
+            
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <button class="pattern-btn" onclick="addPatternStep('G')" style="border-color: #00ff88; color: #00ff88;">VERDE (>=2x)</button>
+                <button class="pattern-btn" onclick="addPatternStep('B')" style="border-color: #666; color: #ccc;">PRETO (<2x)</button>
+                <button class="pattern-btn" onclick="clearPattern()" style="border-color: #ff9800; color: #ff9800; flex: 0.5;">DEL</button>
+            </div>
+
+            <div style="display: flex; gap: 3px; margin-bottom: 10px; flex-wrap: wrap;">
+                <button class="pattern-btn" onclick="addPatternStep('1')">1</button>
+                <button class="pattern-btn" onclick="addPatternStep('2')">2</button>
+                <button class="pattern-btn" onclick="addPatternStep('3')">3</button>
+                <button class="pattern-btn" onclick="addPatternStep('4')">4</button>
+                <button class="pattern-btn" onclick="addPatternStep('5')">5</button>
+                <button class="pattern-btn" onclick="addPatternStep('6')">6</button>
+                <button class="pattern-btn" onclick="addPatternStep('7')">7</button>
+                <button class="pattern-btn" onclick="addPatternStep('8')">8</button>
+                <button class="pattern-btn" onclick="addPatternStep('9')">9</button>
+                <button class="pattern-btn" onclick="addPatternStep('0')">0</button>
+                <button class="pattern-btn" onclick="addPatternStep('.')">.</button>
+                <button class="pattern-btn" onclick="addPatternStep(',')" style="border-color: #00d2ff; color: #00d2ff;">,</button>
+                <button class="pattern-btn" onclick="addPatternStep('X')" style="border-color: #a100ff; color: #a100ff;">X</button>
+            </div>
+
+            <div id="pattern-builder-display" style="background: #0a0a0c; padding: 10px; border-radius: 4px; min-height: 20px; margin-bottom: 10px; font-family: monospace; letter-spacing: 3px; color: #fff; border: 1px dashed #444; text-align: center;"></div>
+            
+            <button class="action-btn" style="font-size: 0.8rem; padding: 8px; margin-top: 0; background: #222; border-color: #666; color: #ccc;" onclick="saveCustomPattern()">SALVAR PADRÃO NA LISTA</button>
+            
+            <div id="saved-patterns-container" style="margin-top: 15px; max-height: 150px; overflow-y: auto;"></div>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button class="action-btn" style="flex: 1; font-size: 0.8rem; padding: 8px; background: #222; border-color: #444; color: #ccc; display: flex; align-items: center; justify-content: center; gap: 5px;" onclick="savePatternsToStorage()">💾 SALVAR</button>
+                <button class="action-btn" style="flex: 1; font-size: 0.8rem; padding: 8px; background: #222; border-color: #444; color: #ccc; display: flex; align-items: center; justify-content: center; gap: 5px;" onclick="loadPatternsFromStorage()">📂 CARREGAR</button>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button id="startBtn" class="action-btn" onclick="toggleBot()">▶ INICIAR OPERAÇÃO</button>
+        </div>
+    </div>
+
+    <div class="output-area" id="logArea">
+        <div class="log-entry"><span class="log-time">--:--:--</span> Sistema pronto.</div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let isRunning = false;
+        let checkInterval = null;
+        let lastProcessedId = null;
+        let botState = 'IDLE'; // IDLE, WAITING_RESULT
+        let wins = 0;
+        let losses = 0;
+        let profit = 0.0;
+        let stopWin = 0;
+        let stopLoss = 0;
+        let currentBuilderPattern = [];
+        let currentStepBuffer = '';
+        let savedPatterns = [];
+        let crashHistory = [];
+
+        const PROXY = 'https://corsproxy.io/?';
+        
+        function log(msg, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const now = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            
+            let colorClass = 'log-info';
+            if(type === 'success') colorClass = 'log-success';
+            if(type === 'error') colorClass = 'log-error';
+            
+            div.innerHTML = `<span class="log-time">${now}</span> <span class="${colorClass}">${msg}</span>`;
+            logArea.prepend(div);
+        }
+
+        function updateScoreboard() {
+            document.getElementById('winCount').textContent = wins;
+            document.getElementById('lossCount').textContent = losses;
+            const profitDisplay = document.getElementById('profitDisplay');
+            profitDisplay.textContent = `R$ ${profit.toFixed(2)}`;
+            profitDisplay.style.color = profit >= 0 ? '#00ff88' : '#ff0055';
+        }
+
+        async function sendTelegram(message) {
+            const toggle = document.getElementById('telegramToggle');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            let chatId = localStorage.getItem('telegram_chat_id_crash') || sessionStorage.getItem('telegram_chat_id_crash');
+            if (!chatId) {
+                chatId = localStorage.getItem('telegram_chat_id') || sessionStorage.getItem('telegram_chat_id');
+            }
+
+            if (!token || !chatId) {
+                log('Telegram não configurado.', 'error');
+                return;
+            }
+
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (!data.ok) {
+                    log(`Erro Telegram: ${data.description}`, 'error');
+                }
+            } catch (e) {
+                log('Falha ao enviar para o Telegram.', 'error');
+                console.error("Telegram send error:", e);
+            }
+        }
+
+        async function fetchHistory() {
+            try {
+                let token = localStorage.getItem('blaze_token');
+                if (!token) token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiMDBmN2QyNDktMjM4YS00MjJiLWJiNDAtZDE3OGMyNjE1MGQ0IiwiaWF0IjoxNzY3MzYzNTAzLCJleHAiOjE3Njc0MDY3MDN9.H_WGgqEOqwyuG5zvweAMX_WO9VtP0pWhzxhaZSi4UNo";
+                
+                const response = await fetch(`${PROXY}https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/1?t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                const records = data.records || data;
+                processGameData(records);
+            } catch (e) {
+                console.error("Erro ao buscar dados:", e);
+            }
+        }
+
+        function processGameData(records) {
+            if (!records || records.length === 0) return;
+
+            const latest = records[0];
+
+            if (lastProcessedId === latest.id) return;
+
+            // Se estávamos esperando um resultado
+            if (botState === 'WAITING_RESULT') {
+                const crash = parseFloat(latest.crash_point);
+                const autoCashout = parseFloat(document.getElementById('autoCashout').value);
+                
+                if (crash >= autoCashout) {
+                    const msg = `WIN! Saiu ${crash.toFixed(2)}x (Meta: ${autoCashout.toFixed(2)}x)`;
+                    log(msg, 'success');
+                    sendTelegram(`✅ *WIN no Crash!*\n\n*Resultado:* ${crash.toFixed(2)}x\n*Meta:* ${autoCashout.toFixed(2)}x`);
+                    wins++;
+                } else {
+                    const msg = `LOSS. Saiu ${crash.toFixed(2)}x`;
+                    log(msg, 'error');
+                    sendTelegram(`❌ *LOSS no Crash.*\n\n*Resultado:* ${crash.toFixed(2)}x`);
+                    losses++;
+                }
+                botState = 'IDLE';
+
+            }
+
+            lastProcessedId = latest.id;
+
+            // Verifica se deve entrar na próxima
+            if (botState === 'IDLE' && isRunning) {
+                const usePatterns = document.getElementById('useCustomPatternsToggle').checked;
+                let strategy = document.getElementById('strategy').value;
+
+                if (usePatterns) strategy = 'OFF';
+
+                let trigger = false;
+                let reason = '';
+
+                if (strategy === 'reversal_basic') {
+                    const seqLimit = parseInt(document.getElementById('lowSequence').value);
+                    let currentLowSeq = 0;
+                    
+                    for (let i = 0; i < records.length; i++) {
+                        if (parseFloat(records[i].crash_point) < 2.00) {
+                            currentLowSeq++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (currentLowSeq >= seqLimit) {
+                        trigger = true;
+                        reason = `${currentLowSeq} velas < 2.00x`;
+                    }
+                } else if (strategy === 'reversal_after_doji') {
+                    if (parseFloat(records[0].crash_point) <= 1.00) {
+                        trigger = true;
+                        reason = `Crash de 1.00x detectado`;
+                    }
+                } else if (strategy === 'follow_green_trend') {
+                    const seqLimit = 2; // Entrar após 2 verdes seguidas
+                    let greenStreak = 0;
+                    for (let i = 0; i < records.length; i++) {
+                        if (parseFloat(records[i].crash_point) >= 2.00) {
+                            greenStreak++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (greenStreak >= seqLimit) {
+                        trigger = true;
+                        reason = `${greenStreak} velas > 2.00x`;
+                    }
+                } else if (strategy === 'smart_reversal') {
+                    const seqLimit = parseInt(document.getElementById('lowSequence').value);
+                    const lowSequenceRecords = records.slice(0, seqLimit);
+                    if (lowSequenceRecords.length === seqLimit && lowSequenceRecords.every(r => parseFloat(r.crash_point) < 2.00)) {
+                        const avg = lowSequenceRecords.reduce((sum, r) => sum + parseFloat(r.crash_point), 0) / seqLimit;
+                        if (avg < 1.30) { // Limiar de média "muito baixa"
+                            trigger = true;
+                            reason = `${seqLimit} velas baixas com média de ${avg.toFixed(2)}x`;
+                        }
+                    }
+                } else if (strategy === 'high_candle_11') {
+                    const lastPoint = parseFloat(records[0].crash_point).toFixed(2);
+                    if (lastPoint.endsWith('.11')) {
+                        trigger = true;
+                        reason = `Padrão Final .11 detectado (${lastPoint}x)`;
+                    }
+                }
+
+                // Verifica Padrões Personalizados
+                if (!trigger && usePatterns) {
+                    const customMatch = checkCustomPatterns(records);
+                    if (customMatch) {
+                        trigger = true;
+                        reason = `Padrão Personalizado: ${customMatch}`;
+                    }
+                }
+
+                if (trigger) {
+                    const msg = `Padrão detectado: ${reason}. Entrando...`;
+                    log(msg, 'info');
+                    sendTelegram(`💥 *SINAL CRASH IDENTIFICADO* 💥\n\nPadrão: ${reason}.\n\n🚀 *Possível entrada em breve!*`);
+                    botState = 'WAITING_RESULT';
+                }
+            }
+        }
+
+        function toggleBot() {
+            const btn = document.getElementById('startBtn');
+            if (!isRunning) {
+                isRunning = true;
+                btn.textContent = '⏹ PARAR OPERAÇÃO';
+                btn.style.borderColor = '#ff0055';
+                btn.style.color = '#ff0055';
+                btn.style.background = 'rgba(255, 0, 85, 0.1)';
+                log('Robô iniciado. Aguardando oportunidades...', 'success');
+                // Reseta e carrega os valores de Stop
+                wins = 0; losses = 0; profit = 0;
+            } else {
+                isRunning = false;
+                btn.textContent = '▶ INICIAR OPERAÇÃO';
+                btn.style.borderColor = '#00d2ff';
+                btn.style.color = '#00d2ff';
+                btn.style.background = 'linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2))';
+                log('Robô pausado.', 'info');
+                botState = 'IDLE';
+            }
+        }
+
+        // --- Funções do Criador de Padrões ---
+        function addPatternStep(type) {
+            if (['G', 'B'].includes(type)) {
+                if (currentStepBuffer) {
+                    currentBuilderPattern.push(currentStepBuffer);
+                    currentStepBuffer = '';
+                }
+                currentBuilderPattern.push(type);
+            } else if (type === 'OK' || type === ',') {
+                if (currentStepBuffer) {
+                    currentBuilderPattern.push(currentStepBuffer);
+                    currentStepBuffer = '';
+                }
+            } else {
+                currentStepBuffer += type;
+            }
+            updatePatternDisplay();
+        }
+
+        function clearPattern() {
+            if (currentStepBuffer.length > 0) {
+                currentStepBuffer = currentStepBuffer.slice(0, -1);
+            } else {
+                currentBuilderPattern.pop();
+            }
+            updatePatternDisplay();
+        }
+
+        function updatePatternDisplay() {
+            const display = document.getElementById('pattern-builder-display');
+            if (currentBuilderPattern.length === 0 && currentStepBuffer === '') {
+                display.innerHTML = '<span style="color: #444; font-size: 0.8rem; letter-spacing: 0;">Configure a sequência acima...</span>';
+                return;
+            }
+            let html = currentBuilderPattern.map(p => 
+                p === 'G' ? '<span style="color:#00ff88">G</span>' : 
+                p === 'B' ? '<span style="color:#ccc">B</span>' : 
+                p === 'X' ? '<span style="color:#a100ff">X</span>' : 
+                `<span style="color:#fff">${p}</span>`
+            ).join(', ');
+            
+            if (currentStepBuffer) {
+                if (html) html += ', ';
+                html += `<span style="color:#00d2ff; border-bottom: 1px solid #00d2ff;">${currentStepBuffer}</span>`;
+            }
+            
+            display.innerHTML = html;
+        }
+
+        function saveCustomPattern() {
+            if (currentStepBuffer) {
+                currentBuilderPattern.push(currentStepBuffer);
+                currentStepBuffer = '';
+            }
+            if (currentBuilderPattern.length === 0) return;
+            
+            const patternStr = currentBuilderPattern.join(' - ');
+            savedPatterns.push(patternStr);
+            
+            renderSavedPatterns();
+            currentBuilderPattern = [];
+            updatePatternDisplay();
+            log(`Padrão personalizado adicionado: ${patternStr}`, 'info');
+        }
+
+        function removePattern(index) {
+            savedPatterns.splice(index, 1);
+            renderSavedPatterns();
+        }
+
+        function renderSavedPatterns() {
+            const container = document.getElementById('saved-patterns-container');
+            container.innerHTML = '';
+            savedPatterns.forEach((patternStr, index) => {
+                const div = document.createElement('div');
+                div.className = 'pattern-list-item';
+                
+                const formattedHtml = patternStr.split(' - ').map(p => 
+                    p === 'G' ? '<span style="color:#00ff88">G</span>' : 
+                    p === 'B' ? '<span style="color:#ccc">B</span>' : 
+                    p === 'X' ? '<span style="color:#a100ff">X</span>' : 
+                    `<span style="color:#fff">${p}</span>`
+                ).join(', ');
+
+                div.innerHTML = `
+                    <span style="font-family: monospace; letter-spacing: 2px;">${formattedHtml}</span>
+                    <span style="color: #ff0055; cursor: pointer; font-size: 0.8rem;" onclick="removePattern(${index})">REMOVER</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function savePatternsToStorage() {
+            localStorage.setItem('crash_custom_patterns', JSON.stringify(savedPatterns));
+            log('Padrões salvos com sucesso!', 'success');
+        }
+
+        function loadPatternsFromStorage() {
+            const stored = localStorage.getItem('crash_custom_patterns');
+            if (stored) {
+                try {
+                    savedPatterns = JSON.parse(stored);
+                    renderSavedPatterns();
+                    log('Padrões carregados!', 'success');
+                } catch(e) {
+                    log('Erro ao carregar padrões.', 'error');
+                }
+            } else {
+                log('Nenhum padrão salvo encontrado.', 'info');
+            }
+        }
+
+        function checkCustomPatterns(records) {
+            if (savedPatterns.length === 0) return null;
+
+            for (const patternStr of savedPatterns) {
+                const steps = patternStr.split(' - ');
+                if (records.length < steps.length) continue;
+
+                let match = true;
+                for (let i = 0; i < steps.length; i++) {
+                    const step = steps[steps.length - 1 - i];
+                    const record = records[i];
+                    
+                    if (!matchesPatternStep(step, record.crash_point)) {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match) return patternStr;
+            }
+            return null;
+        }
+
+        function matchesPatternStep(step, crashPoint) {
+            const val = parseFloat(crashPoint);
+            const valStr = val.toFixed(2);
+
+            if (step === 'G') return val >= 2.00;
+            if (step === 'B') return val < 2.00;
+            if (step === 'X') return true;
+
+            let regexStr = '^' + step.replace(/\./g, '\\.').replace(/X/g, '.*') + '$';
+            try {
+                return new RegExp(regexStr).test(valStr);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // UI Toggle Logic for Strategy/Patterns
+        const patternToggle = document.getElementById('useCustomPatternsToggle');
+        const strategySelect = document.getElementById('strategy');
+        const strategyOffMsg = document.getElementById('strategy-off-msg');
+
+        patternToggle.addEventListener('change', () => {
+            if (patternToggle.checked) {
+                strategySelect.style.display = 'none';
+                strategyOffMsg.style.display = 'block';
+            } else {
+                strategySelect.style.display = 'block';
+                strategyOffMsg.style.display = 'none';
+            }
+        });
+
+        // Inicia o monitoramento do histórico imediatamente
+        fetchHistory();
+        checkInterval = setInterval(fetchHistory, 3000);
+    </script>
+</body>
+</html>

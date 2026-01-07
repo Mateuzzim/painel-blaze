@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração Telegram</title>
+    <style>
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; margin-bottom: 8px; color: #ccc; font-weight: bold; }
+        .control-group input {
+            width: 100%; padding: 12px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 6px; box-sizing: border-box; font-family: monospace; font-size: 1rem;
+        }
+        .control-group input:focus { border-color: #00d2ff; outline: none; }
+        
+        .action-btn {
+            width: 100%; margin-top: 10px; padding: 12px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2));
+            border: 1px solid #00d2ff; color: #00d2ff; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .action-btn:hover {
+            border-color: #fff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+        .btn-back {
+            background: transparent; border: 1px solid #444; color: #aaa;
+            padding: 8px 15px; cursor: pointer; margin-bottom: 20px; border-radius: 4px;
+        }
+        .btn-back:hover { border-color: #fff; color: #fff; }
+    </style>
+</head>
+<body>
+    <button class="btn-back" onclick="history.back()">⬅ Voltar</button>
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 class="cortex-text-anim" style="margin: 0;">CONFIGURAÇÃO TELEGRAM</h1>
+        <p style="color: #888; font-size: 0.9rem;">Conecte seu bot para receber sinais</p>
+    </div>
+
+    <div style="max-width: 500px; margin: 0 auto; background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+        <div class="control-group">
+            <label for="botToken">Bot Token:</label>
+            <input type="text" id="botToken" placeholder="Ex: 123456789:ABCdefGHIjkl..." autocomplete="off">
+        </div>
+        <div class="control-group">
+            <label for="chatId">Chat ID:</label>
+            <input type="text" id="chatId" placeholder="Ex: -100123456789" autocomplete="off">
+        </div>
+        
+        <button class="action-btn" onclick="saveConfig()">💾 SALVAR CONFIGURAÇÃO</button>
+        <button class="action-btn" onclick="testMessage()" style="border-color: #ff9800; color: #ff9800; margin-top: 15px;">🔔 TESTAR ENVIO</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('telegram_token');
+            const chatId = localStorage.getItem('telegram_chat_id');
+            if(token) document.getElementById('botToken').value = token;
+            if(chatId) document.getElementById('chatId').value = chatId;
+        });
+
+        function saveConfig() {
+            const token = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            if(!token || !chatId) return alert('Preencha todos os campos!');
+            localStorage.setItem('telegram_token', token);
+            localStorage.setItem('telegram_chat_id', chatId);
+            alert('Configurações salvas com sucesso!');
+        }
+
+        function testMessage() {
+            const token = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            if(!token || !chatId) return alert('Salve as configurações primeiro.');
+
+            const msg = "🔔 Teste de Notificação - Bot Cortex";
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => data.ok ? alert('✅ Mensagem enviada!') : alert('❌ Erro: ' + data.description))
+                .catch(err => alert('❌ Erro de conexão: ' + err.message));
+        }
+    </script>
+</body>
+</html>

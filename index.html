@@ -1063,6 +1063,7 @@
                         <div class="nav-btn" onclick="openTool('minutos_exatos.html', 'Minutos Exatos')" style="border-color: #ffcc00;"><div class="nav-icon">🎯</div><div class="nav-title" style="color: #ffcc00;">Minutos Exatos</div><div class="nav-desc">Análise de Brancos</div></div>
                         <div class="nav-btn" onclick="openTool('opcoes_double.html', 'Opções Double')" style="border-color: #00ff88;"><div class="nav-icon">💹</div><div class="nav-title" style="color: #00ff88;">Opções Double</div><div class="nav-desc">Gráfico de Velas</div></div>
                         
+                        <div class="nav-btn" onclick="openTool('robo_crach.html', 'Robô Crash')" style="border-color: #ff0055;"><div class="nav-icon">💥</div><div class="nav-title" style="color: #ff0055;">Robô Crash</div><div class="nav-desc">Automação Crash</div></div>
                         <div class="nav-btn" onclick="window.location.href='crach.html'" style="border-color: #00f3ff;"><div class="nav-icon">🚀</div><div class="nav-title" style="color: #00f3ff;">Bot Crash</div><div class="nav-desc">Acessar Nexus</div></div>
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">⚙️</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">💎</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
@@ -1422,7 +1423,7 @@
                         </div>
                         <div class="control-group">
                             <label for="config_telegram_token">Token do Bot Telegram (Admin):</label>
-                            <input type="password" id="config_telegram_token" placeholder="Token secreto do bot, visível apenas para admin" value="8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc">
+                            <input type="password" id="config_telegram_token" placeholder="Token secreto do bot, visível apenas para admin" value="8086401145:AAHd60qYtz4HObCHp8Im32bM9o2obMbSICM">
                             <div class="hint">Este token é global e usado para todos os envios.</div>
                         </div>
                         <div class="control-group">
@@ -1455,6 +1456,11 @@
                     <div class="control-group">
                         <label for="config_telegram_chat_id_double">Seu Chat ID (Opções Double):</label>
                         <input type="text" id="config_telegram_chat_id_double" placeholder="ID do seu chat/grupo para Opções Double">
+                        <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
+                    </div>
+                    <div class="control-group">
+                        <label for="config_telegram_chat_id_crash">Seu Chat ID (Robô Crash):</label>
+                        <input type="text" id="config_telegram_chat_id_crash" placeholder="ID do seu chat/grupo para Robô Crash">
                         <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
                     </div>
                     <div class="control-group">
@@ -1864,7 +1870,15 @@
             if (blazeTokenInput) blazeTokenInput.value = localStorage.getItem('blaze_token') || '';
 
             const telegramTokenInput = document.getElementById('config_telegram_token');
-            if (telegramTokenInput) telegramTokenInput.value = localStorage.getItem('telegram_bot_token') || '';
+            if (telegramTokenInput) {
+                const savedToken = localStorage.getItem('telegram_bot_token');
+                const oldInvalidToken = '8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc';
+                // Se o token salvo for o antigo e inválido, não o carregue.
+                // O input manterá seu novo valor padrão.
+                if (savedToken && savedToken !== oldInvalidToken) {
+                    telegramTokenInput.value = savedToken;
+                }
+            }
 
             const tipMinerCookieInput = document.getElementById('config_tipminer_cookie');
             if (tipMinerCookieInput) tipMinerCookieInput.value = localStorage.getItem('tipminer_cookie') || '';
@@ -1879,6 +1893,7 @@
                 document.getElementById('config_telegram_chat_id_patterns').value = localStorage.getItem('telegram_chat_id_patterns') || '';
                 document.getElementById('config_telegram_chat_id_double').value = localStorage.getItem('telegram_chat_id_double') || '';
                 document.getElementById('config_telegram_chat_id_noticias').value = localStorage.getItem('telegram_chat_id_noticias') || '';
+                document.getElementById('config_telegram_chat_id_crash').value = localStorage.getItem('telegram_chat_id_crash') || '';
                 document.getElementById('config_telegram_autobot_template').value = localStorage.getItem('telegram_autobot_template') || '';
                 document.getElementById('config_telegram_whitebot_template').value = localStorage.getItem('telegram_whitebot_template') || '';
                 return; // Finaliza para o admin
@@ -1898,6 +1913,7 @@
                     document.getElementById('config_telegram_chat_id_patterns').value = userData.telegramChatIdPatterns || '';
                     document.getElementById('config_telegram_chat_id_double').value = userData.telegramChatIdDouble || '';
                     document.getElementById('config_telegram_chat_id_noticias').value = userData.telegramChatIdNoticias || '';
+                    document.getElementById('config_telegram_chat_id_crash').value = userData.telegramChatIdCrash || '';
 
                     const autobotTemplate = userData.telegramAutobotTemplate || '';
                     const whitebotTemplate = userData.telegramWhitebotTemplate || '';
@@ -1906,6 +1922,7 @@
                     sessionStorage.setItem('telegram_chat_id_patterns', userData.telegramChatIdPatterns || '');
                     sessionStorage.setItem('telegram_chat_id_double', userData.telegramChatIdDouble || '');
                     sessionStorage.setItem('telegram_chat_id_noticias', userData.telegramChatIdNoticias || '');
+                    sessionStorage.setItem('telegram_chat_id_crash', userData.telegramChatIdCrash || '');
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
                 }
@@ -1959,6 +1976,7 @@
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value;
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value;
             const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value;
+            const chatIdCrash = document.getElementById('config_telegram_chat_id_crash').value;
             const autobotTemplate = document.getElementById('config_telegram_autobot_template').value;
             const whitebotTemplate = document.getElementById('config_telegram_whitebot_template').value;
 
@@ -1969,6 +1987,7 @@
                     localStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     localStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                     localStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
+                    localStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                     localStorage.setItem('telegram_autobot_template', autobotTemplate);
                     localStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -1978,6 +1997,7 @@
                     sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                     sessionStorage.setItem('telegram_chat_id_double', chatIdDouble);
                     sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
+                    sessionStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2005,6 +2025,7 @@
                     telegramChatIdPatterns: chatIdPatterns,
                     telegramChatIdDouble: chatIdDouble,
                     telegramChatIdNoticias: chatIdNoticias,
+                    telegramChatIdCrash: chatIdCrash,
                     telegramAutobotTemplate: autobotTemplate,
                     telegramWhitebotTemplate: whitebotTemplate
                 });
@@ -2014,6 +2035,7 @@
                 sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                 sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                 sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
+                sessionStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                 sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                 sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2036,13 +2058,14 @@
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value.trim();
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value.trim();
             const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value.trim();
+            const chatIdCrash = document.getElementById('config_telegram_chat_id_crash').value.trim();
 
             if (!token) {
                 alert('⚠️ Token do Bot não configurado (Admin).');
                 return;
             }
 
-            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble && !chatIdNoticias) {
+            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble && !chatIdNoticias && !chatIdCrash) {
                 alert('⚠️ Digite pelo menos um Chat ID para testar.');
                 return;
             }
@@ -2069,6 +2092,7 @@
             if (chatIdPatterns) await send(chatIdPatterns, 'Robô Padrões');
             if (chatIdDouble) await send(chatIdDouble, 'Opções Double');
             if (chatIdNoticias) await send(chatIdNoticias, 'Notícias Double');
+            if (chatIdCrash) await send(chatIdCrash, 'Robô Crash');
 
             btn.innerText = originalText;
             btn.disabled = false;
@@ -7167,6 +7191,19 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         suite_openTab('patterns_bot');
                         closeTool();
                     }, 100);
+                } else {
+                    // Caso o robô esteja em um arquivo separado (iframe/ferramenta)
+                    const existingSaved = localStorage.getItem('patternsBot_saved_patterns');
+                    if (existingSaved && existingSaved.trim() !== '') {
+                        if (confirm('Já existem padrões salvos no Robô. Deseja substituir? Clique em "Cancelar" para adicionar ao final.')) {
+                            localStorage.setItem('patternsBot_saved_patterns', patternsText);
+                        } else {
+                            localStorage.setItem('patternsBot_saved_patterns', existingSaved + '\n' + patternsText);
+                        }
+                    } else {
+                        localStorage.setItem('patternsBot_saved_patterns', patternsText);
+                    }
+                    openTool('robo_padroes_automatico.html', 'Robô Padrões');
                 }
             }
         });
