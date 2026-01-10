@@ -5423,6 +5423,41 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
+        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return [];
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ numero: parseInt(tokens[i + 1]), horario: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            
+            if (results.length > 100) results.splice(100);
+            results.reverse();
+
+            if (results.length < 2) return [];
+
+            const minuteStats = {};
+            for (let i = 0; i < results.length; i++) {
+                const minute = parseInt(results[i].horario.split(':')[1]);
+                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
+                const currentColor = dash_identificarCor(results[i].numero);
+                let isWin = false;
+                if (strategy === 'branco' && currentColor === 'branco') isWin = true;
+                if (isWin) minuteStats[minute].wins++;
+                minuteStats[minute].total++;
+            }
+            const bestMinutes = [];
+            for (const minute in minuteStats) {
+                const stats = minuteStats[minute];
+                if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) bestMinutes.push(parseInt(minute));
+            }
+            return bestMinutes;
+        }
+
         function createWhiteSignal(triggerResult, targetColor, strategyName, customOffset = null) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
