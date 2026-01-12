@@ -41,6 +41,15 @@
         .toggle-switch-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; }
         .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; }
         .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+        /* Botões Futuristas */
+        .btn-cyber { position: relative; padding: 12px 25px; font-family: 'Courier New', Courier, monospace; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: rgba(0, 0, 0, 0.6); border: 1px solid transparent; cursor: pointer; transition: all 0.3s ease; overflow: hidden; z-index: 1; border-radius: 4px; outline: none; flex: 1; }
+        .btn-cyber::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: 0.5s; z-index: -1; }
+        .btn-cyber:hover::before { left: 100%; }
+        .btn-save-neon { border-color: #03e9f4; box-shadow: 0 0 5px rgba(3, 233, 244, 0.2); color: #03e9f4; }
+        .btn-save-neon:hover { background: #03e9f4; color: #000; box-shadow: 0 0 10px #03e9f4; }
+        .btn-access-neon { border-color: #24A1DE; box-shadow: 0 0 5px rgba(36, 161, 222, 0.2); color: #24A1DE; }
+        .btn-access-neon:hover { background: #24A1DE; color: #fff; box-shadow: 0 0 10px #24A1DE; }
     </style>
 </head>
 <body>
@@ -56,70 +65,42 @@
             </div>
 
             <div id="suite_ia_branco">
-                <h2>🤖 I.A Branco</h2>
-                <div class="toggle-switch-container" style="margin-bottom: 20px;">
-                    <label for="suite_iaBranco_autoMode">Modo Automático (sem histórico):</label>
-                    <label class="switch">
-                        <input type="checkbox" id="suite_iaBranco_autoMode" onchange="suite_toggleIaBrancoMode(this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="control-group" id="suite_iaBranco_agressividade_container" style="display: none;">
-                    <label>Nível de Agressividade (Automático):</label>
-                    <select id="suite_iaBranco_agressividade">
-                        <option value="moderado" selected>Moderado</option>
-                        <option value="conservador">Conservador</option>
-                        <option value="agressivo">Agressivo</option>
+                <div class="control-group">
+                    <label for="iaWhiteStrategy">Estratégia:</label>
+                    <select id="iaWhiteStrategy">
+                        <option value="alternating_break">1. Quebra de Alternância</option>
+                        <option value="poisson_hunt">2. Caça Poisson (8min+)</option>
+                        <option value="cacador_branco">3. Caçador de Branco (Média)</option>
+                        <option value="exponential_renewal">4. Modelo Exponencial (Renewal)</option>
+                        <option value="low_entropy">5. Entropia Baixa (Física Est.)</option>
+                        <option value="fractal_break">6. Fractais de Quebra (Geom. Fractal)</option>
+                        <option value="sum_minutes_3">7. Soma Minutos (Últimos 3)</option>
                     </select>
                 </div>
-                <div class="control-group" id="suite_iaBranco_historico_container">
-                    <label>Cole o Histórico Copiado:</label>
-                    <div class="hint">Cole os horários (HH:MM) dos brancos. A I.A. usará isso para aprender.</div>
-                    <textarea id="suite_iaBranco_historico" oninput="suite_autoFormatBrancoInput(this)" placeholder="Ex: 10:15, 11:05, 11:30..."></textarea>
+
+                <div class="control-group">
+                    <label for="iaWhiteEntryCount">Nº de Entradas:</label>
+                    <input type="number" id="iaWhiteEntryCount" value="6" min="1">
                 </div>
 
-                <div class="inline-controls" style="margin-bottom: 15px;">
+                <div class="inline-controls" style="margin-top: 15px;">
                     <div class="control-group">
-                        <label>Quantidade de Sinais:</label>
-                        <input type="number" id="suite_iaBranco_qtdSinais" value="6" min="1">
+                        <label for="iaWhiteQtdSinais">Quantidade de Sinais:</label>
+                        <input type="number" id="iaWhiteQtdSinais" value="5" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="iaWhiteIntervalo">Intervalo (Minutos):</label>
+                        <input type="text" id="iaWhiteIntervalo" value="5,10,8" placeholder="Ex: 5 ou 5,10,8">
+                        <div class="hint">Use vírgulas para ciclos.</div>
                     </div>
                 </div>
-                <div class="control-group">
-                    <label>Data da Lista:</label>
-                    <div class="platform-switcher" style="justify-content: center; margin-bottom: 15px;">
-                        <input type="hidden" id="suite_ia_branco_date_selector" value="hoje">
-                        <button class="platform-btn active" id="suite_ia_branco_btn_hoje" onclick="suite_selectDate('ia_branco', 'hoje')">Hoje</button>
-                        <button class="platform-btn" id="suite_ia_branco_btn_amanha" onclick="suite_selectDate('ia_branco', 'amanha')">Amanhã</button>
-                    </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-cyber btn-access-neon" onclick="generateIAWhiteList()">⚡ GERAR LISTA</button>
+                    <button class="btn-cyber btn-save-neon" onclick="copiar('iaWhiteOutput', this)">📋 COPIAR LISTA</button>
                 </div>
-                <div class="control-group">
-                    <label>Estratégia de I.A. para Branco:</label>
-                    <select id="suite_iaBranco_estrategia" onchange="suite_toggleBrancoProximoOptions()">
-                        <option value="iaPreditivaBranco">1. I.A. Preditiva (Dinâmico)</option>
-                        <option value="produtividadeHora">2. Análise de Produtividade</option>
-                        <option value="horarioPico">3. Análise de Horário de Pico</option>
-                        <option value="velocidadeConclusao">4. Análise de Velocidade</option>
-                        <option value="pomodoroOtimizado">5. Análise de Ciclo (Pomodoro)</option>
-                        <option value="eficienciaTemporal">6. Análise de Eficiência Temporal</option>
-                        <option value="distribuicao702010">7. Análise de Distribuição (70/20/10)</option>
-                        <option value="brancoProximo">8. Branco Próximo (Análise por Minuto)</option>
-                    </select>
-                </div>
-                <!-- SUGESTÃO: Opções específicas para a estratégia "Branco Próximo" -->
-                <div class="control-group" id="suite_brancoProximo_options_container" style="display: none; border-left: 3px solid #00d2ff; padding-left: 15px; margin-top: 20px;">
-                    <label for="suite_brancoProximo_patternSize">TAMANHO DO PADRÃO</label>
-                    <select id="suite_brancoProximo_patternSize">
-                        <option value="1">1 Pedra</option>
-                        <option value="2">2 Pedras</option>
-                        <option value="3" selected>3 Pedras</option>
-                        <option value="4">4 Pedras</option>
-                    </select>
-                    <div class="hint">Quantas pedras (números) antes do branco a I.A. deve procurar como padrão.</div>
-                </div>
-                <button class="btn-action" onclick="suite_gerarSinaisBrancoIA()">⚡ GERAR SINAIS DE BRANCO</button>
-                <div class="output-area" id="suite_resIABranco">Aguardando geração...</div>
-                <button class="btn-copy" onclick="copiar('suite_resIABranco', this)">📋 COPIAR LISTA</button>
+
+                <div id="iaWhiteOutput" class="output-area" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace; min-height: 100px;"></div>
             </div>
         </div>
     </div>
@@ -147,144 +128,124 @@
             }).catch(err => console.error('Erro ao copiar:', err));
         }
 
-        function suite_selectDate(tabPrefix, choice) {
-            document.getElementById(`suite_${tabPrefix}_date_selector`).value = choice;
-            document.getElementById(`suite_${tabPrefix}_btn_hoje`).classList.remove('active');
-            document.getElementById(`suite_${tabPrefix}_btn_amanha`).classList.remove('active');
-            document.getElementById(`suite_${tabPrefix}_btn_${choice}`).classList.add('active');
-        }
+        function generateIAWhiteList() {
+            const strategySelect = document.getElementById('iaWhiteStrategy');
+            const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
+            const strategyValue = strategySelect.value;
+            const entryCount = document.getElementById('iaWhiteEntryCount').value;
+            const output = document.getElementById('iaWhiteOutput');
 
-        let suite_formatTimeout;
-        function suite_autoFormatBrancoInput(textarea) {
-            clearTimeout(suite_formatTimeout);
-            suite_formatTimeout = setTimeout(() => {
-                const timeRegex = /^\d{2}:\d{2}$/;
-                const lines = textarea.value.split('\n');
-                const formattedLines = lines
-                    .map(line => line.trim())
-                    .filter(line => timeRegex.test(line) || /^\d{2}:\d{2} BRANCO$/.test(line))
-                    .map(line => timeRegex.test(line) ? `${line} BRANCO` : line);
-                textarea.value = formattedLines.join('\n');
-            }, 500);
-        }
-
-        function suite_toggleIaBrancoMode(isAuto) {
-            const histContainer = document.getElementById('suite_iaBranco_historico_container');
-            const aggContainer = document.getElementById('suite_iaBranco_agressividade_container');
-            if (isAuto) {
-                histContainer.style.display = 'none';
-                aggContainer.style.display = 'block';
-            } else {
-                histContainer.style.display = 'block';
-                aggContainer.style.display = 'none';
-            }
-        }
-
-        function suite_toggleBrancoProximoOptions() {
-            const strategy = document.getElementById('suite_iaBranco_estrategia').value;
-            const container = document.getElementById('suite_brancoProximo_options_container');
-            if (strategy === 'brancoProximo') {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-            }
-        }
-
-        function suite_gerarSinaisBrancoIA() {
-            const isAuto = document.getElementById('suite_iaBranco_autoMode').checked;
-            const qtdSinais = parseInt(document.getElementById('suite_iaBranco_qtdSinais').value) || 6;
-            const estrategia = document.getElementById('suite_iaBranco_estrategia').value;
-            const outputDiv = document.getElementById('suite_resIABranco');
-            const platform = document.getElementById('suite_platformSelector').value;
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-            const dateChoice = document.getElementById('suite_ia_branco_date_selector').value;
+            const qtdSinais = parseInt(document.getElementById('iaWhiteQtdSinais').value) || 5;
             
-            const targetDate = new Date();
-            if (dateChoice === 'amanha') {
-                targetDate.setDate(targetDate.getDate() + 1);
-            }
-            const dataLista = targetDate.toLocaleDateString('pt-BR');
+            // 1. Tenta calcular intervalos automaticamente pelo histórico (Auto-Busca)
+            let intervalos = [];
+            let sourceInfo = "(Manual)";
+            const rawData = sessionStorage.getItem('raw_blaze_data');
 
+            if (rawData) {
+                const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+                const whiteTimes = [];
+                
+                // Parseia o histórico (Date, Roll, Time) para encontrar brancos
+                for (let i = 0; i < tokens.length; i++) {
+                    if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                        const roll = parseInt(tokens[i + 1]);
+                        const time = tokens[i + 2];
+                        if (roll === 0) whiteTimes.push(time);
+                        i += 2;
+                    }
+                }
+
+                // Se houver brancos suficientes, calcula a média dos intervalos recentes
+                if (whiteTimes.length >= 2) {
+                    const diffs = [];
+                    // whiteTimes[0] é o mais recente
+                    for (let i = 0; i < whiteTimes.length - 1; i++) {
+                        const [h1, m1] = whiteTimes[i].split(':').map(Number);
+                        const [h2, m2] = whiteTimes[i+1].split(':').map(Number);
+                        let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+                        if (diff < 0) diff += 24 * 60; // Ajuste para virada de dia
+                        if (diff > 0) diffs.push(diff);
+                    }
+
+                    if (diffs.length > 0) {
+                        let calculatedInterval = 0;
+
+                        if (strategyValue === 'poisson_hunt') {
+                            const longDiffs = diffs.filter(d => d >= 8);
+                            if (longDiffs.length > 0) {
+                                calculatedInterval = Math.round(longDiffs.reduce((a, b) => a + b, 0) / longDiffs.length);
+                                sourceInfo = `(Auto: Poisson >8m)`;
+                            } else {
+                                calculatedInterval = Math.round(diffs.reduce((a, b) => a + b, 0) / diffs.length) + 5;
+                                sourceInfo = `(Auto: Média + Bias)`;
+                            }
+                        } else if (strategyValue === 'low_entropy') {
+                            const sortedDiffs = [...diffs].sort((a, b) => a - b);
+                            const mid = Math.floor(sortedDiffs.length / 2);
+                            calculatedInterval = sortedDiffs.length % 2 !== 0 ? sortedDiffs[mid] : Math.round((sortedDiffs[mid - 1] + sortedDiffs[mid]) / 2);
+                            sourceInfo = `(Auto: Mediana)`;
+                        } else if (strategyValue === 'sum_minutes_3') {
+                            const last3 = diffs.slice(0, 3);
+                            if (last3.length > 0) {
+                                calculatedInterval = Math.round(last3.reduce((a, b) => a + b, 0) / last3.length);
+                                sourceInfo = `(Auto: Média Últimos 3)`;
+                            }
+                        } else if (strategyValue === 'exponential_renewal') {
+                            const chronologicalDiffs = [...diffs].reverse();
+                            const alpha = 0.3;
+                            let ema = chronologicalDiffs[0];
+                            for (let i = 1; i < chronologicalDiffs.length; i++) {
+                                ema = alpha * chronologicalDiffs[i] + (1 - alpha) * ema;
+                            }
+                            calculatedInterval = Math.round(ema);
+                            sourceInfo = `(Auto: EMA)`;
+                        } else {
+                            const recentDiffs = diffs.slice(0, 10);
+                            calculatedInterval = Math.round(recentDiffs.reduce((a, b) => a + b, 0) / recentDiffs.length);
+                            sourceInfo = `(Auto: Média ${calculatedInterval}m)`;
+                        }
+
+                        if (calculatedInterval > 0) {
+                            intervalos = [calculatedInterval];
+                        }
+                    }
+                }
+            }
+
+            // 2. Se não encontrou no histórico, usa o input manual
+            if (intervalos.length === 0) {
+                const intervaloInput = document.getElementById('iaWhiteIntervalo').value;
+                intervalos = intervaloInput.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i > 0);
+            }
+
+            if (intervalos.length === 0) {
+                output.innerText = "⚠️ Insira um intervalo válido em minutos ou carregue o histórico (Auto-Busca).";
+                return;
+            }
+
+            const now = new Date();
+            let list = `📋 LISTA I.A BRANCO - ${now.toLocaleDateString('pt-BR')}\n`;
+            list += `🔥 Estratégia: ${strategyName} ${sourceInfo}\n`;
+            list += `🔄 Entradas: ${entryCount}\n\n`; // Linha solicitada
+            
+            let currentTime = new Date();
+            currentTime.setSeconds(0, 0);
+            currentTime.setMinutes(currentTime.getMinutes() + 1);
             let signals = [];
-            let log = "";
+            let intervalIndex = 0;
 
-            if (isAuto) {
-                // Modo Automático (Simulação baseada em agressividade)
-                const agressividade = document.getElementById('suite_iaBranco_agressividade').value;
-                let intervalBase = 20; 
-                if (agressividade === 'conservador') intervalBase = 45;
-                if (agressividade === 'agressivo') intervalBase = 10;
-
-                let currentTime = new Date();
-                currentTime.setMinutes(currentTime.getMinutes() + 5); // Começa daqui a 5 min
-
-                for (let i = 0; i < qtdSinais; i++) {
-                    const variation = Math.floor(Math.random() * 10) - 5; // +/- 5 min
-                    currentTime.setMinutes(currentTime.getMinutes() + intervalBase + variation);
-                    const hh = currentTime.getHours().toString().padStart(2, '0');
-                    const mm = currentTime.getMinutes().toString().padStart(2, '0');
-                    signals.push(`🕒 ${hh}:${mm} ➔ ⚪`);
-                }
-                log = `Modo Automático (${agressividade})`;
-            } else {
-                // Modo Histórico
-                const input = document.getElementById('suite_iaBranco_historico').value.trim();
-                if (!input) {
-                    outputDiv.innerText = "⚠️ Cole o histórico de brancos ou ative o Modo Automático.";
-                    return;
-                }
-                
-                // Extrai horários
-                const timeRegex = /(\d{2}):(\d{2})/;
-                const times = input.split('\n').map(l => {
-                    const m = l.match(timeRegex);
-                    return m ? { h: parseInt(m[1]), m: parseInt(m[2]) } : null;
-                }).filter(t => t !== null);
-
-                if (times.length < 2) {
-                    outputDiv.innerText = "⚠️ Histórico insuficiente (mínimo 2 horários).";
-                    return;
-                }
-
-                // Lógica simplificada de projeção baseada na estratégia
-                let lastTime = new Date();
-                lastTime.setHours(times[times.length-1].h, times[times.length-1].m, 0, 0);
-                
-                // Se o último horário do histórico for muito antigo, usa o atual
-                if ((new Date() - lastTime) > 12 * 60 * 60 * 1000) {
-                    lastTime = new Date();
-                }
-
-                let intervals = [];
-                for(let i=1; i<times.length; i++) {
-                    let diff = (times[i].h * 60 + times[i].m) - (times[i-1].h * 60 + times[i-1].m);
-                    if (diff < 0) diff += 24*60;
-                    intervals.push(diff);
-                }
-                
-                let avgInterval = intervals.reduce((a,b)=>a+b,0) / intervals.length;
-                if (avgInterval < 5) avgInterval = 15; // Fallback
-
-                for (let i = 0; i < qtdSinais; i++) {
-                    lastTime.setMinutes(lastTime.getMinutes() + avgInterval);
-                    const hh = lastTime.getHours().toString().padStart(2, '0');
-                    const mm = lastTime.getMinutes().toString().padStart(2, '0');
-                    signals.push(`🕒 ${hh}:${mm} ➔ ⚪`);
-                }
-                log = `Baseado em Histórico (${estrategia})`;
+            for(let i = 0; i < qtdSinais; i++) {
+                const minutesToAdd = intervalos[intervalIndex % intervalos.length];
+                intervalIndex++;
+                currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                const timeStr = `${currentTime.getHours().toString().padStart(2,'0')}:${currentTime.getMinutes().toString().padStart(2,'0')}`;
+                signals.push(`🕒${timeStr} = ⚪️`);
             }
-
-            let out = `🤖 *I.A BRANCO - LISTA*\n`;
-            out += `🚦 Plataforma: *${platformName}*\n`;
-            out += `📅 Data: *${dataLista}*\n`;
-            out += `🧠 Análise: *${log}*\n`;
-            out += `🔄 Entradas: *3* (Cobrir até 3 min)\n`;
-            out += `--------------------------------\n`;
-            out += signals.join('\n');
-            out += `\n--------------------------------\n`;
-            out += `⚠️ Gerencie sua banca.`;
             
-            outputDiv.innerText = out;
+            out += signals.join('\n');
+            list += `\n\n⚠️ Gerencie sua banca!`;
+            output.innerText = list;
         }
     </script>
 </body>

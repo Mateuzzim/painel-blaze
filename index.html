@@ -7092,7 +7092,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 intervalIndex++;
                 currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
                 const timeStr = `${currentTime.getHours().toString().padStart(2,'0')}:${currentTime.getMinutes().toString().padStart(2,'0')}`;
-                signals.push(`🕒 ${timeStr} -> ⚪ BRANCO`);
+                signals.push(`🕒${timeStr} = ⚪️`);
             }
             
             list += signals.join('\n');
