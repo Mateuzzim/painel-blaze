@@ -1003,12 +1003,10 @@
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = sessionStorage.getItem('telegram_chat_id_white') || localStorage.getItem('telegram_chat_id_white');
-            if (!chatId) {
-                chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
-            }
-            const template = sessionStorage.getItem('telegram_whitebot_template') || localStorage.getItem('telegram_whitebot_template');
-            
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
+            const template = localStorage.getItem('telegram_whitebot_template');
+
             if (!token || !chatId) return;
 
             let message;
@@ -1032,11 +1030,8 @@
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            let chatId = sessionStorage.getItem('telegram_chat_id_white') || localStorage.getItem('telegram_chat_id_white');
-            if (!chatId) {
-                chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
-            }
-
+            let chatId = localStorage.getItem('telegram_chat_id_white');
+            if (!chatId) chatId = localStorage.getItem('telegram_chat_id');
             if (!token || !chatId) return;
 
             const strategy = strategyName || (activeWhiteSignal ? activeWhiteSignal.strategyName : 'Automática');

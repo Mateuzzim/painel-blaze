@@ -178,6 +178,33 @@
                     </select>
                 </div>
                 
+                <div class="toggle-switch-container" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="suite_minAssertiveness" style="margin-bottom:0; font-size: 0.8em;">Assertividade Mín. (%):</label>
+                        <input type="number" id="suite_minAssertiveness" value="75" min="1" max="100" style="width: 70px; padding: 8px; font-size: 0.9em;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label for="suite_filterByBestMinute" style="margin-bottom:0;">ATIVAR FILTRO:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="suite_filterByBestMinute">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="hint" style="width: 100%; margin-top: 5px; font-size: 0.7em;">(Requer histórico abaixo)</div>
+                </div>
+
+                <!-- Campo de Histórico Adicionado para Dependência do Filtro -->
+                <div class="control-group">
+                    <label>Histórico para Filtro (Cole aqui):</label>
+                    <textarea id="dash_autoInput" style="height: 80px;" placeholder="Cole o histórico (Data/Roll/Hora) para análise de assertividade..."></textarea>
+                </div>
+
+                <div id="suite_bestMinutesLogContainer" style="margin-bottom: 15px; display: none;">
+                    <label style="font-size: 0.85em; text-transform: uppercase; opacity: 0.8;">🔎 Log de Minutos (Assertividade):</label>
+                    <div id="suite_bestMinutesLog" class="output-area" style="margin-top: 5px; min-height: 50px; max-height: 120px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6;">
+                    </div>
+                </div>
+
                 <button class="btn-action" onclick="suite_gerarSinaisSimples()">⚡ GERAR LISTA</button>
                 <div class="output-area" id="suite_resGerador">Resultado aqui...</div>
                 <div class="inline-controls" style="margin-top: 10px;">
@@ -224,7 +251,8 @@
 
         function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
             const bestMinutes = [];
-            let rawData = sessionStorage.getItem('raw_blaze_data') || '';
+            const autoInput = document.getElementById('dash_autoInput');
+            let rawData = autoInput ? autoInput.value.trim() : '';
 
             if (!rawData) {
                 if (logElementId) document.getElementById(logElementId).innerHTML = 'Sem dados para análise.';
@@ -289,6 +317,15 @@
             const intervalos = intervaloInput.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i > 0);
             if (intervalos.length === 0) { outputDiv.innerText = "⚠️ Insira intervalos válidos."; return; }
 
+            const filterActive = document.getElementById('suite_filterByBestMinute').checked;
+            let bestMinutes = [];
+            if (filterActive) {
+                const minAssertiveness = parseInt(document.getElementById('suite_minAssertiveness').value) || 75;
+                bestMinutes = getBestPerformingMinutes(minAssertiveness, 'suite_bestMinutesLog', estrategia);
+                document.getElementById('suite_bestMinutesLogContainer').style.display = 'block';
+                if (bestMinutes.length === 0) { outputDiv.innerText = `⚠️ Filtro: Nenhum minuto atingiu ${minAssertiveness}%.`; return; }
+            }
+
             let currentTime = new Date();
             currentTime.setSeconds(0, 0);
             currentTime.setMinutes(currentTime.getMinutes() + 1);
@@ -302,6 +339,8 @@
                 const minutesToAdd = intervalos[intervalIndex % intervalos.length];
                 intervalIndex++;
                 currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
+                
+                if (filterActive && !bestMinutes.includes(currentTime.getMinutes())) continue;
 
                 const hh = currentTime.getHours().toString().padStart(2, '0');
                 const mm = currentTime.getMinutes().toString().padStart(2, '0');

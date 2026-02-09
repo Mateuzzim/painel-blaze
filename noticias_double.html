@@ -945,11 +945,11 @@
                 if (filterCat !== 'all') {
                     const t = item.title.toLowerCase();
                     if (filterCat === 'padroes') matchesCat = t.includes('padrão');
-                    else if (filterCat === 'alertas') matchesCat = t.includes('alerta') || t.includes('atenção') || t.includes('zona de proteção');
+                    else if (filterCat === 'alertas') matchesCat = t.includes('alerta') || t.includes('atenção');
                     else if (filterCat === 'numeros') matchesCat = t.includes('análise de números');
                     else if (filterCat === 'ciclo') matchesCat = t.includes('ciclo de mercado');
-                    else if (filterCat === 'ia') matchesCat = t.includes('previsão i.a.') || t.includes('probabilidade') || t.includes('chance');
-                    else if (filterCat === 'ferramentas') matchesCat = t.includes('robô') || t.includes('i.a branco') || t.includes('ferramenta') || t.includes('win') || t.includes('loss') || t.includes('opções double');
+                    else if (filterCat === 'ia') matchesCat = t.includes('previsão i.a.');
+                    else if (filterCat === 'ferramentas') matchesCat = t.includes('robô') || t.includes('i.a branco') || t.includes('ferramenta') || t.includes('win') || t.includes('loss');
                 }
 
                 return matchesText && matchesCat;

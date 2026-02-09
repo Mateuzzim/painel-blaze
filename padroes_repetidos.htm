@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analisador de Padrões & Probabilidades</title>
-    <link rel="icon" href="data:image/x-icon;base64,AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA==" />
     <style>
         /* Copiando e adaptando os estilos de robo_padroes.html */
         body {
@@ -193,9 +192,8 @@
         </div>
 
         <div class="buttons-row" style="display: flex; gap: 10px;">
-            <button id="analyzeBtn" class="action-btn" onclick="analyzePatterns()" style="flex: 1.5;">⚡ ANALISAR PADRÕES</button>
-            <button id="analyzeVolBtn" class="action-btn" onclick="analyzeVolume()" style="flex: 1.5; border-color: #ff9800; color: #ff9800; background: linear-gradient(90deg, rgba(255, 152, 0, 0.1), rgba(255, 152, 0, 0.2));">📊 ANÁLISE DE VOLUME</button>
-            <button id="sendToBotBtn" class="action-btn" onclick="sendToPatternsBot()" style="flex: 1; background: #00ff88; color: #000; border-color: #00ff88;">➤ ENVIAR ROBÔ</button>
+            <button id="analyzeBtn" class="action-btn" onclick="analyzePatterns()" style="flex: 2;">⚡ ANALISAR PADRÕES</button>
+            <button id="sendToBotBtn" class="action-btn" onclick="sendToPatternsBot()" style="flex: 1; background: #00ff88; color: #000; border-color: #00ff88;">➤ ENVIAR PARA ROBÔ</button>
         </div>
     </div>
 
@@ -397,76 +395,6 @@
             }, 100);
         }
 
-        function analyzeVolume() {
-            const resultDiv = document.getElementById('analysisResult');
-            resultDiv.innerHTML = 'Calculando volume de dados...';
-
-            setTimeout(() => {
-                const allResults = parseRawData();
-                if (allResults.length === 0) {
-                    resultDiv.innerHTML = 'Nenhum dado encontrado para análise de volume.';
-                    return;
-                }
-
-                let resultsForAnalysis = [...allResults];
-                const timeFilterHours = document.getElementById('timeFilter').value;
-
-                if (timeFilterHours !== 'all') {
-                    const now = new Date();
-                    const filterMilliseconds = parseInt(timeFilterHours) * 60 * 60 * 1000;
-                    const cutoffTime = now.getTime() - filterMilliseconds;
-
-                    resultsForAnalysis = resultsForAnalysis.filter(res => {
-                        const [day, month, year] = res.date.split('/');
-                        const [hour, minute] = res.time.split(':');
-                        const resultDate = new Date(year, month - 1, day, hour, minute);
-                        return resultDate.getTime() >= cutoffTime;
-                    });
-                }
-
-                if (resultsForAnalysis.length === 0) {
-                    resultDiv.innerHTML = 'Nenhum dado encontrado no período selecionado.';
-                    return;
-                }
-
-                let counts = { 'V': 0, 'P': 0, 'B': 0 };
-                let numCounts = {};
-
-                resultsForAnalysis.forEach(r => {
-                    const color = dash_identificarCor(r.roll);
-                    if (counts[color] !== undefined) counts[color]++;
-                    numCounts[r.roll] = (numCounts[r.roll] || 0) + 1;
-                });
-
-                const total = resultsForAnalysis.length;
-                const getPct = (c) => total > 0 ? ((counts[c] / total) * 100).toFixed(1) : 0;
-
-                const sortedNums = Object.entries(numCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-                let html = `
-                    <div style="display: flex; justify-content: space-around; margin-bottom: 20px; text-align: center; background: #1a1a1a; padding: 15px; border-radius: 8px;">
-                        <div style="color: #ff0055;"><div style="font-size: 2rem; font-weight: bold;">${getPct('V')}%</div><div>Vermelhos (${counts['V']})</div></div>
-                        <div style="color: #fff;"><div style="font-size: 2rem; font-weight: bold;">${getPct('B')}%</div><div>Brancos (${counts['B']})</div></div>
-                        <div style="color: #888;"><div style="font-size: 2rem; font-weight: bold;">${getPct('P')}%</div><div>Pretos (${counts['P']})</div></div>
-                    </div>
-                    <h4 style="color: #ff9800; margin: 10px 0;">🔥 Números Mais Frequentes</h4>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">`;
-
-                sortedNums.forEach(([num, qtd]) => {
-                    const c = dash_identificarCor(num);
-                    const colorStyle = c === 'V' ? '#ff0055' : (c === 'P' ? '#888' : '#fff');
-                    const borderStyle = c === 'V' ? 'border-color: #ff0055;' : (c === 'P' ? 'border-color: #444;' : 'border-color: #fff;');
-                    html += `<div style="border: 1px solid; ${borderStyle} color: ${colorStyle}; padding: 8px 12px; border-radius: 6px; text-align: center; flex: 1;">
-                                <div style="font-weight: bold; font-size: 1.2rem;">${num}</div>
-                                <div style="font-size: 0.8rem; opacity: 0.7;">${qtd}x</div>
-                             </div>`;
-                });
-
-                html += `</div><div style="margin-top: 15px; font-size: 0.8rem; color: #666; text-align: center;">Baseado em ${total} rodadas analisadas.</div>`;
-                resultDiv.innerHTML = html;
-            }, 100);
-        }
-
         // --- Funções de Interface (UI) ---
         function displayResults(patterns, minAccuracy, minWins) {
             const resultDiv = document.getElementById('analysisResult');
@@ -527,7 +455,7 @@
             }
 
             // results vem do parseRawData como Antigo -> Novo. Pegamos os últimos 100 para manter a ordem (novo à direita).
-            const recent = results.slice(-20);
+            const recent = results.slice(-100);
             if(countSpan) countSpan.innerText = `(${results.length})`;
             
             let html = '';

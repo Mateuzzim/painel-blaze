@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Padrões</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #0f0f13;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        /* Estilos Futuristas e Animações */
+        @keyframes blink-green-border {
+            0% { border-color: #28a745; box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
+            50% { border-color: transparent; box-shadow: none; }
+            100% { border-color: #28a745; box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
+        }
+        .bot-active-pulse { animation: blink-green-border 1.5s infinite; }
+        
+        .cortex-text-anim {
+            background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cortex-gradient 3s linear infinite;
+            font-weight: bold;
+        }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        .futuristic-collapse-btn {
+            width: 100%; margin-bottom: 15px; padding: 10px;
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a);
+            border: 1px solid #333; color: #00d2ff; font-size: 0.9rem; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .futuristic-collapse-btn:hover { border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.3); }
+
+        .futuristic-scoreboard {
+            display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;
+            padding: 15px; background: rgba(10, 10, 15, 0.6); border: 1px solid #333;
+            border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .score-card {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .score-card.win { border-bottom: 2px solid #00ff88; }
+        .score-card.loss { border-bottom: 2px solid #ff0055; }
+        .score-label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+        .score-value { font-size: 1.8rem; font-weight: 800; font-family: monospace; }
+        .win-text { color: #00ff88; text-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
+        .loss-text { color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.4); }
+
+        .toggle-switch-container {
+            display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+            gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;
+        }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #2196F3; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; color: #ccc; }
+        .control-group input, .control-group textarea {
+            width: 100%; padding: 10px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 4px; box-sizing: border-box;
+        }
+        .hint { font-size: 0.8rem; color: #888; margin-top: 5px; }
+        
+        .btn-back {
+            background: transparent; border: 1px solid #444; color: #aaa;
+            padding: 5px 10px; cursor: pointer; margin-bottom: 15px; border-radius: 4px;
+        }
+        .btn-back:hover { border-color: #fff; color: #fff; }
+
+        .signal-chart-container {
+            position: relative; width: 80px; height: 80px; display: flex;
+            justify-content: center; align-items: center; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; margin: 0 auto;
+        }
+        .signal-ring { position: absolute; border-radius: 50%; border: 2px solid transparent; }
+        .ring-1 { width: 100%; height: 100%; border-top: 2px solid #00d2ff; animation: spin-cw 2s linear infinite; }
+        .ring-2 { width: 75%; height: 75%; border-bottom: 2px solid #ff0055; animation: spin-ccw 3s linear infinite; }
+        .signal-center-icon { font-size: 1.5rem; z-index: 2; text-shadow: 0 0 10px #fff; }
+        @keyframes spin-cw { 100% { transform: rotate(360deg); } }
+        @keyframes spin-ccw { 100% { transform: rotate(-360deg); } }
+        .panel-glow-active { animation: neon-border-pulse 1.5s infinite alternate !important; border-color: #00d2ff; }
+        @keyframes neon-border-pulse {
+            0% { box-shadow: 0 0 5px rgba(0, 210, 255, 0.5); border-color: #00d2ff; }
+            100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.8); border-color: #fff; }
+        }
+        .output-area { background: #111; padding: 10px; border-radius: 4px; border: 1px solid #333; }
+
+        /* --- Scrollbar Futurista Aprimorada --- */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 15, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(0, 210, 255, 0.5), rgba(161, 0, 255, 0.5));
+            border-radius: 10px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, var(--accent), #a100ff);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <button class="btn-back" onclick="parent.closeTool()">⬅ Voltar ao Menu</button>
+    <div class="main-header" style="text-align: center; margin-bottom: 20px;">
+        <h1 class="cortex-text-anim" style="margin: 0;">ROBÔ PADRÕES</h1>
+    </div>
+    
+    <div class="toggle-switch-container" id="patternsBotActivationContainer">
+        <label for="patternsBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ PADRÕES</label>
+        <label class="switch">
+            <input type="checkbox" id="patternsBotToggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <button id="patternsBotCollapseBtn" onclick="togglePatternsBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
+    <div id="patternsBotConfigContainer">
+        <div class="control-group" style="margin-bottom: 15px;">
+            <label for="patternsBotInput">Lista de Padrões (Sequência=Alvo):</label>
+            <textarea id="patternsBotInput" rows="6" placeholder="Ex: 1,8,10,P=V&#10;V,V,P,P=V&#10;0,1,2=P" style="font-family: monospace; background: #111; color: #00ff88; border: 1px solid #333; width: 100%; padding: 10px; box-sizing: border-box;"></textarea>
+            <div class="hint">Use V (Vermelho), P (Preto), B (Branco) ou Números (0-14). Separe por vírgula.</div>
+            <button onclick="savePatternsBotInput(this)" style="width: 100%; margin-top: 10px; padding: 12px; background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(0, 210, 255, 0.2)); border: 1px solid #00d2ff; color: #00d2ff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);">💾 SALVAR PADRÕES</button>
+        </div>
+        <div class="control-group" style="margin-bottom: 20px;">
+            <label for="patternsBotGales" style="font-size: 0.8em; margin-bottom: 0;">Nº de Gales:</label>
+            <input type="number" id="patternsBotGales" value="1" min="0" style="padding: 5px;">
+        </div>
+        <div class="toggle-switch-container" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+            <label for="patternsBotSoundToggle" style="font-size: 0.95em;">🔊 Sons do Robô:</label>
+            <label class="switch" style="width: 50px; height: 26px;">
+                <input type="checkbox" id="patternsBotSoundToggle" checked>
+                <span class="slider" style="border-radius: 26px;"></span>
+            </label>
+            <label for="patternsBotTelegramAlert" style="font-size: 0.95em; margin-left: 10px;">📡 Telegram:</label>
+            <label class="switch" style="width: 50px; height: 26px;">
+                <input type="checkbox" id="patternsBotTelegramAlert">
+                <span class="slider" style="border-radius: 26px;"></span>
+            </label>
+        </div>
+    </div>
+
+    <div id="patternsBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+
+    <div id="patternsBotSignalPanel" style="display: none; border: 2px solid #00d2ff; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+        <div id="patternsBotSignalContent"></div>
+    </div>
+
+    <div id="patternsBotResultPanel" style="margin-top: 20px;">
+        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar do Robô</h3>
+        <div id="patternsBotScoreboard" class="futuristic-scoreboard">
+            <div class="score-card win"><span class="score-label">WINS</span><span id="patternsBotWinCount" class="score-value win-text">0</span></div>
+            <div class="score-card loss"><span class="score-label">LOSSES</span><span id="patternsBotLossCount" class="score-value loss-text">0</span></div>
+        </div>
+        <div id="patternsBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
+    </div>
+
+    <script>
+        let activePatternsSignal = null;
+        let lastPatternsSignalTime = null;
+        let patternsBotWins = 0;
+        let patternsBotLosses = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedPatterns = localStorage.getItem('patternsBot_saved_patterns');
+            if (savedPatterns) {
+                const patternsInput = document.getElementById('patternsBotInput');
+                if (patternsInput) patternsInput.value = savedPatterns;
+            }
+            
+            document.getElementById('patternsBotToggle').addEventListener('change', handlePatternsBotToggle);
+
+            // Loop de verificação de dados (lê do sessionStorage populado pelo index.html)
+            setInterval(runPatternsBotLogic, 2000);
+        });
+
+        function handlePatternsBotToggle(event) {
+            const isBotActive = event.target.checked;
+            const statusDiv = document.getElementById('patternsBotStatus');
+            const container = document.getElementById('patternsBotActivationContainer');
+
+            if (isBotActive) {
+                statusDiv.innerHTML = '<span class="cortex-text-anim">✅ Robô Padrões Ativado. Monitorando...</span>';
+                if (container) container.classList.add('bot-active-pulse');
+                
+                patternsBotWins = 0; patternsBotLosses = 0;
+                document.getElementById('patternsBotWinCount').textContent = '0';
+                document.getElementById('patternsBotLossCount').textContent = '0';
+                document.getElementById('patternsBotResultHistory').innerHTML = 'Aguardando o primeiro resultado...';
+            } else {
+                statusDiv.textContent = 'Robô Desativado.';
+                statusDiv.style.color = '#aaa';
+                activePatternsSignal = null;
+                lastPatternsSignalTime = null;
+                document.getElementById('patternsBotSignalPanel').style.display = 'none';
+                if (container) container.classList.remove('bot-active-pulse');
+            }
+        }
+
+        function togglePatternsBotConfig() {
+            const container = document.getElementById('patternsBotConfigContainer');
+            const btn = document.getElementById('patternsBotCollapseBtn');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.innerHTML = '🔽 RECOLHER PAINEL';
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = '▶️ EXPANDIR PAINEL';
+            }
+        }
+
+        function savePatternsBotInput(btn) {
+            const input = document.getElementById('patternsBotInput');
+            if (!input) return;
+            localStorage.setItem('patternsBot_saved_patterns', input.value);
+            
+            const originalText = btn.innerHTML;
+            const originalStyle = btn.getAttribute('style');
+            btn.innerHTML = '✅ PADRÕES SALVOS!';
+            btn.style.background = 'linear-gradient(90deg, #00ff88, #00cc6a)';
+            btn.style.color = '#000';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.setAttribute('style', originalStyle);
+            }, 2000);
+        }
+
+        function parsePatternsBotInput() {
+            const input = document.getElementById('patternsBotInput').value.trim();
+            if (!input) return [];
+            return input.split('\n').map(line => {
+                line = line.trim();
+                if (!line || !line.includes('=')) return null;
+                const [seqStr, targetStr] = line.split('=').map(s => s.trim().toUpperCase());
+                const sequence = seqStr.split(',').map(s => s.trim());
+                let target = null;
+                if (['V', 'VERMELHO'].includes(targetStr)) target = 'VERMELHO';
+                else if (['P', 'PRETO'].includes(targetStr)) target = 'PRETO';
+                else if (['B', 'BRANCO'].includes(targetStr)) target = 'BRANCO';
+                if (!target || sequence.length === 0) return null;
+                return { sequence, target, original: line };
+            }).filter(p => p !== null);
+        }
+
+        function runPatternsBotLogic() {
+            if (!document.getElementById('patternsBotToggle').checked) return;
+            const rawData = sessionStorage.getItem('raw_blaze_data');
+            if (!rawData) return;
+
+            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
+            const results = [];
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
+                    results.push({ date: tokens[i], roll: parseInt(tokens[i + 1]), time: tokens[i + 2] });
+                    i += 2;
+                }
+            }
+            if (results.length === 0) return;
+
+            if (activePatternsSignal) {
+                checkPatternsSignalResult(results);
+            } else {
+                checkPatterns(results);
+            }
+        }
+
+        function checkPatterns(results) {
+            const patterns = parsePatternsBotInput();
+            if (patterns.length === 0) return;
+
+            for (const pattern of patterns) {
+                if (results.length < pattern.sequence.length) continue;
+                let match = true;
+                for (let i = 0; i < pattern.sequence.length; i++) {
+                    const seqItem = pattern.sequence[pattern.sequence.length - 1 - i];
+                    const resultItem = results[i];
+                    const resultColor = dash_identificarCor(resultItem.roll).toUpperCase();
+                    const resultNum = resultItem.roll;
+                    let itemMatch = false;
+                    if (['V', 'VERMELHO'].includes(seqItem) && resultColor === 'VERMELHO') itemMatch = true;
+                    else if (['P', 'PRETO'].includes(seqItem) && resultColor === 'PRETO') itemMatch = true;
+                    else if (['B', 'BRANCO'].includes(seqItem) && resultColor === 'BRANCO') itemMatch = true;
+                    else if (!isNaN(parseInt(seqItem)) && parseInt(seqItem) === resultNum) itemMatch = true;
+                    if (!itemMatch) { match = false; break; }
+                }
+                if (match) {
+                    createPatternsSignal(pattern.target, pattern.original, results[0]);
+                    break;
+                }
+            }
+        }
+
+        function createPatternsSignal(targetColor, patternString, triggerResult) {
+            const [h, m] = triggerResult.time.split(':').map(Number);
+            const signalTime = new Date();
+            signalTime.setHours(h, m, 0, 0);
+            signalTime.setMinutes(signalTime.getMinutes() + 1);
+            const signalTimeString = `${signalTime.getHours().toString().padStart(2, '0')}:${signalTime.getMinutes().toString().padStart(2, '0')}`;
+            if (lastPatternsSignalTime === signalTimeString) return;
+            lastPatternsSignalTime = signalTimeString;
+
+            const gales = parseInt(document.getElementById('patternsBotGales').value) || 1;
+            activePatternsSignal = {
+                time: signalTimeString,
+                date: triggerResult.date,
+                targetColor: targetColor,
+                gales: gales,
+                pattern: patternString
+            };
+
+            const emoji = targetColor === 'VERMELHO' ? '🔴' : (targetColor === 'PRETO' ? '⚫' : '⚪');
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+            
+            signalPanel.style.display = 'block';
+            signalPanel.classList.add('panel-glow-active');
+            signalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="text-align: left; flex: 1;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">PADRÃO DETECTADO!</div>
+                        <div style="color: #aaa; font-size: 0.8rem; font-family: monospace; margin-bottom: 15px;">${patternString}</div>
+                        <div style="font-size: 1rem; color: #ccc;">ENTRAR: ${emoji} ${targetColor}</div>
+                        <div style="font-size: 0.8rem; color: #888;">Horário: ${signalTimeString}</div>
+                    </div>
+                    <div class="signal-chart-container" style="transform: scale(1);">
+                        <div class="signal-ring ring-1"></div><div class="signal-ring ring-2"></div><div class="signal-center-icon">${emoji}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); text-align: center;">
+                    <span class="cortex-text-anim" style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">⏳ Aguardando Resultado...</span>
+                </div>
+            `;
+            if (document.getElementById('patternsBotSoundToggle').checked) playSound();
+            sendPatternsBotTelegramSignal(activePatternsSignal);
+        }
+
+        function checkPatternsSignalResult(results) {
+            if (!activePatternsSignal) return;
+            const [sH, sM] = activePatternsSignal.time.split(':').map(Number);
+            const [day, month, year] = activePatternsSignal.date.split('/').map(Number);
+            const signalDate = new Date(year, month - 1, day, sH, sM, 0, 0);
+            const attempts = 1 + activePatternsSignal.gales;
+
+            const relevantResults = [];
+            for (const res of results) {
+                const [rH, rM] = res.time.split(':').map(Number);
+                let resDate = new Date(year, month - 1, day, rH, rM, 0, 0);
+                if (sH > 20 && rH < 4) resDate.setDate(resDate.getDate() + 1);
+                else if (sH < 4 && rH > 20) resDate.setDate(resDate.getDate() - 1);
+                if (resDate >= signalDate) relevantResults.push({ ...res, timestamp: resDate.getTime() });
+            }
+            relevantResults.reverse();
+
+            let winFound = false;
+            let winIndex = -1;
+            let winResult = null;
+            const stonesToCheck = Math.min(relevantResults.length, attempts);
+
+            for (let i = 0; i < stonesToCheck; i++) {
+                const res = relevantResults[i];
+                const color = dash_identificarCor(res.roll).toUpperCase();
+                if (color === activePatternsSignal.targetColor || color === 'BRANCO') {
+                    winFound = true; winIndex = i; winResult = res; break;
+                }
+            }
+
+            const signalPanel = document.getElementById('patternsBotSignalPanel');
+            const signalContent = document.getElementById('patternsBotSignalContent');
+
+            if (winFound) {
+                const winType = winIndex === 0 ? 'WIN' : `WIN G${winIndex}`;
+                const winColor = dash_identificarCor(winResult.roll).toUpperCase();
+                const msg = `✅ ${winType}! (${winResult.time} - ${winColor})`;
+                addResultToPatternsHistory(msg, true);
+                sendPatternsBotResultTelegram(msg);
+                signalPanel.classList.remove('panel-glow-active');
+                signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
+                activePatternsSignal = null;
+            } else if (relevantResults.length >= attempts) {
+                const msg = `❌ LOSS! (${activePatternsSignal.time})`;
+                addResultToPatternsHistory(msg, false);
+                sendPatternsBotResultTelegram(msg);
+                signalPanel.classList.remove('panel-glow-active');
+                signalContent.innerHTML = '<span class="cortex-text-anim" style="font-size: 1.2rem;">⏳ AGUARDANDO PADRÃO...</span>';
+                activePatternsSignal = null;
+            } else {
+                const currentAttempt = relevantResults.length;
+                const textAnim = signalContent.querySelector('.cortex-text-anim');
+                if(textAnim) textAnim.textContent = `⏳ AGUARDANDO GALE ${currentAttempt}...`;
+            }
+        }
+
+        function addResultToPatternsHistory(message, isWin) {
+            const historyDiv = document.getElementById('patternsBotResultHistory');
+            const newEntry = document.createElement('div');
+            newEntry.innerHTML = message;
+            newEntry.style.color = isWin ? '#00ff88' : '#ff0055';
+            newEntry.style.fontWeight = 'bold';
+            newEntry.style.borderBottom = '1px solid #333';
+            newEntry.style.padding = '5px 0';
+            if (historyDiv.innerHTML.includes('Aguardando')) historyDiv.innerHTML = '';
+            if (isWin) patternsBotWins++; else patternsBotLosses++;
+            document.getElementById('patternsBotWinCount').textContent = patternsBotWins;
+            document.getElementById('patternsBotLossCount').textContent = patternsBotLosses;
+            historyDiv.prepend(newEntry);
+        }
+
+        function dash_identificarCor(numero) {
+            numero = parseInt(numero);
+            if (numero === 0) return 'branco';
+            if (numero >= 1 && numero <= 7) return 'vermelho';
+            if (numero >= 8 && numero <= 14) return 'preto';
+            return 'desconhecido';
+        }
+
+        function playSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            } catch (e) { console.error("Erro ao tocar som:", e); }
+        }
+
+        async function sendPatternsBotTelegramSignal(signalData) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            const emoji = signalData.targetColor === 'VERMELHO' ? '🔴' : (signalData.targetColor === 'PRETO' ? '⚫' : '⚪');
+            const message = `🧩 *SINAL ROBÔ PADRÕES*\n\n🕒 *Horário:* ${signalData.time}\n🎯 *Entrada:* ${emoji} ${signalData.targetColor}\n🔍 *Padrão:* \`${signalData.pattern}\`\n\n✅ *Gerencie sua banca!*`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar sinal Telegram:', e); }
+        }
+
+        async function sendPatternsBotResultTelegram(resultMessage) {
+            const toggle = document.getElementById('patternsBotTelegramAlert');
+            if (!toggle || !toggle.checked) return;
+
+            const token = localStorage.getItem('telegram_bot_token');
+            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+
+            if (!token || !chatId) return;
+
+            const formattedMessage = `*RESULTADO ROBÔ PADRÕES*\n\n${resultMessage}\n\n📈 *Placar:* ✅ ${patternsBotWins} | ❌ ${patternsBotLosses}`;
+
+            try {
+                const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(formattedMessage)}&parse_mode=Markdown`;
+                await fetch(url);
+            } catch (e) { console.error('Erro ao enviar resultado Telegram:', e); }
+        }
+    </script>
+</body>
+</html>

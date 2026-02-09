@@ -261,11 +261,6 @@
                             <input type="checkbox" id="autoBotSoundToggle" checked>
                             <span class="slider" style="border-radius: 26px;"></span>
                         </label>
-                        <label for="autoBotTelegramAlert" style="font-size: 0.95em; margin-left: 10px;">📡 Telegram:</label>
-                        <label class="switch" style="width: 50px; height: 26px;">
-                            <input type="checkbox" id="autoBotTelegramAlert">
-                            <span class="slider" style="border-radius: 26px;"></span>
-                        </label>
                     </div>
                 </div>
                 <div id="autoBotStatus">Robô Desativado.</div>
@@ -385,12 +380,10 @@
                 const targetUrl = `${baseUrl}${params}`;
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-                let response;
-                try {
-                    response = await fetch(proxyUrl, { method: 'GET', headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE } });
-                } catch (e) {
-                    response = await fetch(targetUrl, { method: 'GET', headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE } });
-                }
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE }
+                });
 
                 if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 
@@ -494,11 +487,6 @@
                 lastAutoBotResult = null;
                 if (container) container.classList.remove('bot-active-pulse');
                 document.getElementById('autoBotActionLog').style.display = 'none';
-
-                const telegramToggle = document.getElementById('autoBotTelegramAlert');
-                if (telegramToggle && telegramToggle.checked) {
-                    telegramToggle.checked = false;
-                }
             }
         }
 
@@ -678,8 +666,8 @@
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
-            const template = sessionStorage.getItem('telegram_autobot_template') || localStorage.getItem('telegram_autobot_template');
+            const chatId = localStorage.getItem('telegram_chat_id');
+            const template = localStorage.getItem('telegram_autobot_template');
 
             if (!token || !chatId) {
                 logAutoBotAction('Telegram não configurado.', 'warning');

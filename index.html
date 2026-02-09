@@ -902,14 +902,14 @@
 
         <!-- Formulário de Cadastro (inicialmente oculto) -->
         <form id="self-register-form" class="form-inactive" onsubmit="handleSelfRegister(event)">
-            <h2 class="cortex-text-anim">CRIAR CONTA</h2>
+            <h2>CRIAR CONTA</h2>
             <div class="login-input-group">
                 <label for="self_reg_username">Nome de Usuário</label>
                 <input type="text" id="self_reg_username" required>
             </div>
             <div class="login-input-group">
                 <label for="self_reg_contact">Contato (Opcional)</label>
-                <input type="text" id="self_reg_contact">
+                <input type="text" id="self_reg_contact" placeholder="Seu Telegram ou WhatsApp">
             </div>
             <div class="login-input-group password-input-container">
                 <label for="self_reg_password">Senha</label>
@@ -1049,25 +1049,19 @@
                         <div class="nav-btn" onclick="openTool('analise_numeros.html', 'Análise Números')"><div class="nav-icon">🧮</div><div class="nav-title">Análise Números</div><div class="nav-desc">Estatísticas Numéricas</div></div>
                         <div class="nav-btn" onclick="openTool('numeros_a_pagar_branco.html', 'Puxadores de Branco')"><div class="nav-icon">🎯</div><div class="nav-title">Puxadores Branco</div><div class="nav-desc">Análise de Ausência</div></div>
                         <div class="nav-btn" onclick="openTool('padroes_repetidos.htm', 'Padrões Repetidos')"><div class="nav-icon">⚛️</div><div class="nav-title">Padrões Repetidos</div><div class="nav-desc">Analisador de Ciclos</div></div>
-                        <div class="nav-btn" onclick="openTool('intervalos.html', 'IA Intervalos')"><div class="nav-icon">⏱️</div><div class="nav-title">IA Intervalos</div><div class="nav-desc">Análise de Ciclos</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_cores.html', 'Corretor Cores')"><div class="nav-icon">✔️</div><div class="nav-title">Corretor Cores</div><div class="nav-desc">Verificar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('corretor_branco.html', 'Corretor Branco')"><div class="nav-icon">✔️</div><div class="nav-title">Corretor Branco</div><div class="nav-desc">Verificar Branco</div></div>
                         <div class="nav-btn" onclick="openTool('noticias_double.html', 'Notícias do Mercado')"><div class="nav-icon">📡</div><div class="nav-title">Notícias</div><div class="nav-desc">Mercado Double</div></div>
-                        <div class="nav-btn" onclick="openTool('histoy_double.html', 'Histórico Double')" style="border-color: #60a5fa;"><div class="nav-icon">📜</div><div class="nav-title" style="color: #60a5fa;">Histórico Double</div><div class="nav-desc">Ver Histórico</div></div>
                         
                         <div class="nav-btn" onclick="openTool('gerador_manual.html', 'Gerador Manual')"><div class="nav-icon">⌨️</div><div class="nav-title">Gerador Manual</div><div class="nav-desc">Criar Lista</div></div>
                         <div class="nav-btn" onclick="openTool('analise_avancada.html', 'Análise Avançada')" style="border-color: #ff9800;"><div class="nav-icon">🚀</div><div class="nav-title" style="color: #ff9800;">Análise Avançada</div><div class="nav-desc">Novas Ferramentas</div></div>
                         <div class="nav-btn" onclick="openTool('ciclo_mercado.html', 'Ciclo de Mercado')" style="border-color: #ffeb3b;"><div class="nav-icon">🌌</div><div class="nav-title" style="color: #ffeb3b;">Ciclo de Mercado</div><div class="nav-desc">Análise de Ciclos</div></div>
                         <div class="nav-btn" onclick="openTool('previsao_ia.html', 'Previsão I.A.')" style="border-color: #ff45d4;"><div class="nav-icon">🔮</div><div class="nav-title" style="color: #ff45d4;">Previsão I.A.</div><div class="nav-desc">Análise Avançada</div></div>
-                        <div class="nav-btn" onclick="openTool('horario_previsto.html', 'Previsão de Horário')" style="border-color: #45d4ff;"><div class="nav-icon">⏱️</div><div class="nav-title" style="color: #45d4ff;">Previsão Horário</div><div class="nav-desc">Minuto Futuro</div></div>
-                        <div class="nav-btn" onclick="openTool('minutos_exatos.html', 'Minutos Exatos')" style="border-color: #ffcc00;"><div class="nav-icon">🎯</div><div class="nav-title" style="color: #ffcc00;">Minutos Exatos</div><div class="nav-desc">Análise de Brancos</div></div>
                         <div class="nav-btn" onclick="openTool('opcoes_double.html', 'Opções Double')" style="border-color: #00ff88;"><div class="nav-icon">💹</div><div class="nav-title" style="color: #00ff88;">Opções Double</div><div class="nav-desc">Gráfico de Velas</div></div>
                         
-                        <div class="nav-btn" onclick="openTool('robo_crach.html', 'Robô Crash')" style="border-color: #ff0055;"><div class="nav-icon">💥</div><div class="nav-title" style="color: #ff0055;">Robô Crash</div><div class="nav-desc">Automação Crash</div></div>
-                        <div class="nav-btn" onclick="window.location.href='crach.html'" style="border-color: #00f3ff;"><div class="nav-icon">🚀</div><div class="nav-title" style="color: #00f3ff;">Bot Crash</div><div class="nav-desc">Acessar Nexus</div></div>
                         <div class="nav-btn" id="btn-nav-auto-bot" onclick="suite_openTab('auto_bot')" style="cursor: pointer; border-color: #ff9800;"><div class="nav-icon">⚙️</div><div class="nav-title" style="color: #ff9800;">Robô Cores</div><div class="nav-desc">Automação Cores</div></div>
                         <div class="nav-btn" id="btn-nav-white-bot" onclick="suite_openTab('white_bot')" style="cursor: pointer; border-color: #fff;"><div class="nav-icon">💎</div><div class="nav-title" style="color: #fff;">Robô Branco</div><div class="nav-desc">Automação Branco</div></div>
-                        <div class="nav-btn" onclick="openTool('robo_padroes_automatico.html', 'Robô Padrões')" style="cursor: pointer; border-color: #a100ff;"><div class="nav-icon">🧬</div><div class="nav-title" style="color: #a100ff;">Robo Padrões</div><div class="nav-desc">Automação Padrões</div></div>
+                        <div class="nav-btn" id="btn-nav-patterns-bot" onclick="suite_openTab('patterns_bot')" style="cursor: pointer; border-color: #a100ff;"><div class="nav-icon">🧬</div><div class="nav-title" style="color: #a100ff;">Robo Padrões</div><div class="nav-desc">Automação Padrões</div></div>
                         
                         <div class="nav-btn" onclick="suite_openTab('config')" style="border-color: #24A1DE;"><div class="nav-icon">🛰️</div><div class="nav-title" style="color: #24A1DE;">Telegram</div><div class="nav-desc">Configuração</div></div>
                         
@@ -1402,6 +1396,151 @@
                     <div id="iaWhiteOutput" class="output-area" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace; min-height: 100px;"></div>
                 </div>
 
+                <!-- PATTERNS BOT TAB (INTEGRATED) -->
+                <div id="suite_patterns_bot" class="tab-content">
+                    <button class="btn-back" onclick="suite_openTab('menu')">⬅ Voltar ao Menu</button>
+                    <div class="main-header">
+                        <h1 class="cortex-text-anim">ROBÔ PADRÕES</h1>
+                    </div>
+                    
+                    <div class="toggle-switch-container" id="patternsBotActivationContainer" style="flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 15px; border: 2px solid transparent; border-radius: 10px; padding: 5px;">
+                        <label for="patternsBotToggle" style="font-size: 1.1em; font-weight: bold; margin-bottom: 0;">ATIVAR ROBÔ PADRÕES</label>
+                        <label class="switch">
+                            <input type="checkbox" id="patternsBotToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button id="patternsBotCollapseBtn" onclick="togglePatternsBotConfig()" class="futuristic-collapse-btn">🔽 RECOLHER PAINEL</button>
+                    <div id="patternsBotConfigContainer">
+                        <div class="control-group" style="margin-bottom: 15px;">
+                            <div id="patternsBotPreview" class="pattern-preview-box">
+                                <span style="color: #444; font-style: italic; font-size: 0.8rem;">Visualização em tempo real...</span>
+                            </div>
+                            <div class="patterns-keyboard-container">
+                                <div class="patterns-keyboard-row">
+                                    <button onclick="addCharToPatterns('1')" class="key-btn red">1</button>
+                                    <button onclick="addCharToPatterns('2')" class="key-btn red">2</button>
+                                    <button onclick="addCharToPatterns('3')" class="key-btn red">3</button>
+                                    <button onclick="addCharToPatterns('4')" class="key-btn red">4</button>
+                                    <button onclick="addCharToPatterns('5')" class="key-btn red">5</button>
+                                    <button onclick="addCharToPatterns('6')" class="key-btn red">6</button>
+                                    <button onclick="addCharToPatterns('7')" class="key-btn red">7</button>
+                                    <button onclick="addCharToPatterns('8')" class="key-btn black">8</button>
+                                    <button onclick="addCharToPatterns('9')" class="key-btn black">9</button>
+                                    <button onclick="addCharToPatterns('10')" class="key-btn black">10</button>
+                                </div>
+                                <div class="patterns-keyboard-row">
+                                    <button onclick="addCharToPatterns('11')" class="key-btn black">11</button>
+                                    <button onclick="addCharToPatterns('12')" class="key-btn black">12</button>
+                                    <button onclick="addCharToPatterns('13')" class="key-btn black">13</button>
+                                    <button onclick="addCharToPatterns('14')" class="key-btn black">14</button>
+                                    <button onclick="addCharToPatterns('0')" class="key-btn white">0</button>
+                                    <button onclick="addCharToPatterns('P')" class="key-btn black">P</button>
+                                    <button onclick="addCharToPatterns('V')" class="key-btn red">V</button>
+                                    <button onclick="addCharToPatterns('B')" class="key-btn white">B</button>
+                                    <button onclick="addCharToPatterns('=')" class="key-btn action">=</button>
+                                    <button onclick="addCharToPatterns(',')" class="key-btn action">,</button>
+                                    <button onclick="undoPatternsBotInput()" class="key-btn action" title="Desfazer">⌫</button>
+                                    <button onclick="addCharToPatterns('\n')" class="key-btn action" title="Nova Linha">↵</button>
+                                </div>
+                            </div>
+                            <label for="patternsBotInput">Lista de Padrões (Sequência=Alvo):</label>
+                            <textarea id="patternsBotInput" rows="6" placeholder="Ex: 1,8,10,P=V&#10;V,V,P,P=V&#10;0,1,2=P" style="font-family: monospace; background: #111; color: #00ff88; border: 1px solid #333; width: 100%; padding: 10px; box-sizing: border-box;"></textarea>
+                            <div class="hint">Use V (Vermelho), P (Preto), B (Branco) ou Números (0-14). Separe por vírgula.</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                                <button class="btn-cyber btn-save-neon" onclick="savePatternsBotInput(this)">💾 SALVAR PADRÕES</button>
+                                <button class="btn-cyber btn-clear-neon" onclick="clearPatternsBotInput(this)">🗑️ LIMPAR PADRÕES</button>
+                                <div style="flex-basis: 100%; display: flex; gap: 10px; margin-top: 5px;">
+                                    <button onclick="analyzeBestMinuteForPatterns(this)" class="btn-cyber btn-access-neon" style="flex: 1;">🔍 Analisar Melhor Minuto (2-6)</button>
+                                    <div class="toggle-switch-container" style="margin-bottom: 0; padding: 5px 10px; border: 1px solid #24A1DE; border-radius: 4px; display: flex; align-items: center; gap: 8px; background: rgba(36, 161, 222, 0.1);">
+                                        <label for="patternsBotAutoAnalyzeMinuteToggle" style="font-size: 0.8em; margin-bottom: 0; color: #24A1DE; font-weight: bold;">AUTO</label>
+                                        <label class="switch" style="width: 40px; height: 20px;">
+                                            <input type="checkbox" id="patternsBotAutoAnalyzeMinuteToggle">
+                                            <span class="slider" style="border-radius: 20px;"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="inline-controls" style="margin-bottom: 20px; align-items: flex-end;">
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="patternsBotEntryTime" style="font-size: 0.8em; margin-bottom: 0;">Tempo de Entrada (min):</label>
+                                <input type="number" id="patternsBotEntryTime" value="1" min="1" style="padding: 5px;">
+                            </div>
+                            <div class="control-group" style="flex: 1; margin-bottom: 0;">
+                                <label for="patternsBotMaxWhitesFilter" style="font-size: 0.8em; margin-bottom: 0; white-space: nowrap; color: #fff;">⚪ Max Brancos:</label>
+                                <input type="number" id="patternsBotMaxWhitesFilter" value="4" min="1" title="Bloqueia se houver X+ brancos nas últimas 20 pedras" style="padding: 5px;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotSoundToggle" style="font-size: 0.9em; margin-bottom: 0;">🔊 Sons:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotSoundToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotGaleToggle" style="font-size: 0.9em; margin-bottom: 0;">GALE 01 ON/OFF:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotGaleToggle" checked>
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotSequentialToggle" style="font-size: 0.9em; margin-bottom: 0;">🔄 Sequencial:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotSequentialToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotTelegramAlert" style="font-size: 0.9em; margin-bottom: 0;">📡 Telegram:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotTelegramAlert">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotInvertToggle" style="font-size: 0.9em; margin-bottom: 0;">🔀 Inverter:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotInvertToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-switch-container" style="justify-content: space-between; margin-bottom: 0; padding: 8px; border: 1px solid #333; border-radius: 6px;">
+                                <label for="patternsBotAntiRepetitionToggle" style="font-size: 0.9em; margin-bottom: 0;">🚫 Anti-Repetição:</label>
+                                <label class="switch" style="width: 50px; height: 26px;">
+                                    <input type="checkbox" id="patternsBotAntiRepetitionToggle">
+                                    <span class="slider" style="border-radius: 26px;"></span>
+                                </label>
+                            </div>
+                            <div id="patternsBotInversionCounter" class="inversion-counter" style="padding: 8px; border: 1px solid #333; border-radius: 6px; justify-content: center;">
+                                <span class="inversion-label">Inversões:</span>
+                                <span id="inversionCountValue" class="inversion-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="patternsBotStatus" style="text-align: center; margin-bottom: 20px; font-weight: bold; color: #aaa;">Robô Desativado.</div>
+                    <div id="patternsBotCurrentPatternDisplay" style="text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: #00d2ff; display: none; background: rgba(0, 210, 255, 0.05); padding: 8px; border-radius: 6px; border: 1px dashed rgba(0, 210, 255, 0.3);"></div>
+
+                    <div id="patternsBotSignalPanel" style="display: none; border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                        <div id="patternsBotSignalContent"></div>
+                    </div>
+
+                    <div id="patternsBotResultPanel" style="margin-top: 20px;">
+                        <h3 style="text-align: center; text-transform: uppercase; color: #ffc107;">Placar do Robô</h3>
+                        <div id="patternsBotScoreboard" class="futuristic-scoreboard">
+                            <div class="score-card win"><span class="score-label">WINS</span><span id="patternsBotWinCount" class="score-value win-text">0</span></div>
+                            <div class="score-card white-win"><span class="score-label">BRANCOS</span><span id="patternsBotWhiteWinCount" class="score-value white-win-text">0</span></div>
+                            <div class="score-card loss"><span class="score-label">LOSSES</span><span id="patternsBotLossCount" class="score-value loss-text">0</span></div>
+                        </div>
+                        <div id="patternsBotResultHistory" class="output-area" style="min-height: 150px; max-height: 300px; overflow-y: auto;">Aguardando o primeiro resultado...</div>
+                    </div>
+                </div>
+
                 <div id="suite_config" class="tab-content">
                     <h2><span class="settings-icon-anim">⚙️</span> Configurações Gerais</h2>
 
@@ -1423,7 +1562,7 @@
                         </div>
                         <div class="control-group">
                             <label for="config_telegram_token">Token do Bot Telegram (Admin):</label>
-                            <input type="password" id="config_telegram_token" placeholder="Token secreto do bot, visível apenas para admin" value="8086401145:AAHd60qYtz4HObCHp8Im32bM9o2obMbSICM">
+                            <input type="password" id="config_telegram_token" placeholder="Token secreto do bot, visível apenas para admin" value="8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc">
                             <div class="hint">Este token é global e usado para todos os envios.</div>
                         </div>
                         <div class="control-group">
@@ -1456,11 +1595,6 @@
                     <div class="control-group">
                         <label for="config_telegram_chat_id_double">Seu Chat ID (Opções Double):</label>
                         <input type="text" id="config_telegram_chat_id_double" placeholder="ID do seu chat/grupo para Opções Double">
-                        <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
-                    </div>
-                    <div class="control-group">
-                        <label for="config_telegram_chat_id_crash">Seu Chat ID (Robô Crash):</label>
-                        <input type="text" id="config_telegram_chat_id_crash" placeholder="ID do seu chat/grupo para Robô Crash">
                         <div class="hint">Pode ser o mesmo ID dos outros robôs. Deixe em branco para usar o ID do Robô Cores.</div>
                     </div>
                     <div class="control-group">
@@ -1870,15 +2004,7 @@
             if (blazeTokenInput) blazeTokenInput.value = localStorage.getItem('blaze_token') || '';
 
             const telegramTokenInput = document.getElementById('config_telegram_token');
-            if (telegramTokenInput) {
-                const savedToken = localStorage.getItem('telegram_bot_token');
-                const oldInvalidToken = '8236773317:AAFECWkOJRX3iXGE5gpwLi98EFE4zngyAwc';
-                // Se o token salvo for o antigo e inválido, não o carregue.
-                // O input manterá seu novo valor padrão.
-                if (savedToken && savedToken !== oldInvalidToken) {
-                    telegramTokenInput.value = savedToken;
-                }
-            }
+            if (telegramTokenInput) telegramTokenInput.value = localStorage.getItem('telegram_bot_token') || '';
 
             const tipMinerCookieInput = document.getElementById('config_tipminer_cookie');
             if (tipMinerCookieInput) tipMinerCookieInput.value = localStorage.getItem('tipminer_cookie') || '';
@@ -1893,7 +2019,6 @@
                 document.getElementById('config_telegram_chat_id_patterns').value = localStorage.getItem('telegram_chat_id_patterns') || '';
                 document.getElementById('config_telegram_chat_id_double').value = localStorage.getItem('telegram_chat_id_double') || '';
                 document.getElementById('config_telegram_chat_id_noticias').value = localStorage.getItem('telegram_chat_id_noticias') || '';
-                document.getElementById('config_telegram_chat_id_crash').value = localStorage.getItem('telegram_chat_id_crash') || '';
                 document.getElementById('config_telegram_autobot_template').value = localStorage.getItem('telegram_autobot_template') || '';
                 document.getElementById('config_telegram_whitebot_template').value = localStorage.getItem('telegram_whitebot_template') || '';
                 return; // Finaliza para o admin
@@ -1913,7 +2038,6 @@
                     document.getElementById('config_telegram_chat_id_patterns').value = userData.telegramChatIdPatterns || '';
                     document.getElementById('config_telegram_chat_id_double').value = userData.telegramChatIdDouble || '';
                     document.getElementById('config_telegram_chat_id_noticias').value = userData.telegramChatIdNoticias || '';
-                    document.getElementById('config_telegram_chat_id_crash').value = userData.telegramChatIdCrash || '';
 
                     const autobotTemplate = userData.telegramAutobotTemplate || '';
                     const whitebotTemplate = userData.telegramWhitebotTemplate || '';
@@ -1922,7 +2046,6 @@
                     sessionStorage.setItem('telegram_chat_id_patterns', userData.telegramChatIdPatterns || '');
                     sessionStorage.setItem('telegram_chat_id_double', userData.telegramChatIdDouble || '');
                     sessionStorage.setItem('telegram_chat_id_noticias', userData.telegramChatIdNoticias || '');
-                    sessionStorage.setItem('telegram_chat_id_crash', userData.telegramChatIdCrash || '');
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
                 }
@@ -1976,7 +2099,6 @@
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value;
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value;
             const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value;
-            const chatIdCrash = document.getElementById('config_telegram_chat_id_crash').value;
             const autobotTemplate = document.getElementById('config_telegram_autobot_template').value;
             const whitebotTemplate = document.getElementById('config_telegram_whitebot_template').value;
 
@@ -1987,7 +2109,6 @@
                     localStorage.setItem('telegram_chat_id_white', chatIdWhite);
                     localStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                     localStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
-                    localStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                     localStorage.setItem('telegram_autobot_template', autobotTemplate);
                     localStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -1997,7 +2118,6 @@
                     sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                     sessionStorage.setItem('telegram_chat_id_double', chatIdDouble);
                     sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
-                    sessionStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                     sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                     sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2025,7 +2145,6 @@
                     telegramChatIdPatterns: chatIdPatterns,
                     telegramChatIdDouble: chatIdDouble,
                     telegramChatIdNoticias: chatIdNoticias,
-                    telegramChatIdCrash: chatIdCrash,
                     telegramAutobotTemplate: autobotTemplate,
                     telegramWhitebotTemplate: whitebotTemplate
                 });
@@ -2035,7 +2154,6 @@
                 sessionStorage.setItem('telegram_chat_id_white', chatIdWhite);
                 sessionStorage.setItem('telegram_chat_id_patterns', chatIdPatterns);
                 sessionStorage.setItem('telegram_chat_id_noticias', chatIdNoticias);
-                sessionStorage.setItem('telegram_chat_id_crash', chatIdCrash);
                 sessionStorage.setItem('telegram_autobot_template', autobotTemplate);
                 sessionStorage.setItem('telegram_whitebot_template', whitebotTemplate);
 
@@ -2058,14 +2176,13 @@
             const chatIdPatterns = document.getElementById('config_telegram_chat_id_patterns').value.trim();
             const chatIdDouble = document.getElementById('config_telegram_chat_id_double').value.trim();
             const chatIdNoticias = document.getElementById('config_telegram_chat_id_noticias').value.trim();
-            const chatIdCrash = document.getElementById('config_telegram_chat_id_crash').value.trim();
 
             if (!token) {
                 alert('⚠️ Token do Bot não configurado (Admin).');
                 return;
             }
 
-            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble && !chatIdNoticias && !chatIdCrash) {
+            if (!chatIdCores && !chatIdWhite && !chatIdPatterns && !chatIdDouble && !chatIdNoticias) {
                 alert('⚠️ Digite pelo menos um Chat ID para testar.');
                 return;
             }
@@ -2092,7 +2209,6 @@
             if (chatIdPatterns) await send(chatIdPatterns, 'Robô Padrões');
             if (chatIdDouble) await send(chatIdDouble, 'Opções Double');
             if (chatIdNoticias) await send(chatIdNoticias, 'Notícias Double');
-            if (chatIdCrash) await send(chatIdCrash, 'Robô Crash');
 
             btn.innerText = originalText;
             btn.disabled = false;
@@ -2208,13 +2324,7 @@
                         const targetUrl = `${baseUrl}${params}`;
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                         
-                        let response;
-                        try {
-                            response = await fetch(proxyUrl, { method: 'GET', headers: headers });
-                        } catch (err) {
-                            console.warn(`Erro de conexão com proxy na página ${page}, tentando direto...`, err);
-                            response = await fetch(targetUrl, { method: 'GET', headers: headers });
-                        }
+                        let response = await fetch(proxyUrl, { method: 'GET', headers: headers });
 
                         // --- LÓGICA DE RENOVAÇÃO AUTOMÁTICA (401) ---
                         if (response.status === 401) {
@@ -2626,7 +2736,7 @@
             dash_updateNumericStats(resultados); // Atualiza o painel de estatísticas numéricas
             runWhiteBotLogic(); // Garante que o Robô Branco analise os novos dados
             runAutoBotLogic(); // Garante que o Robô Automático analise os novos dados
-            // runPatternsBotLogic(); // Removido pois agora é uma ferramenta externa
+            runPatternsBotLogic(); // Garante que o Robô Padrões analise os novos dados
         }
 
 function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
@@ -2861,6 +2971,10 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             // Inicializa listener do Robô Automático
             if(document.getElementById('autoBotToggle')) document.getElementById('autoBotToggle').addEventListener('change', handleAutoBotToggle);
 
+            // Inicializa listener do Robô Padrões
+            if(document.getElementById('patternsBotToggle')) document.getElementById('patternsBotToggle').addEventListener('change', handlePatternsBotToggle);
+
+            
             setupPasswordToggles(); // Configura todos os botões de mostrar/ocultar senha
             toggleTrialDurationField(); // Garante que o campo de duração seja exibido ou ocultado corretamente no início
 
@@ -2905,6 +3019,20 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         announcement.style.display = 'none';
                     }, 500); // Deve corresponder à duração da transição do CSS
                 }, 10000); // 10000 ms = 10 segundos
+            }
+
+            // Carrega padrões salvos do Robô Padrões
+            const savedPatterns = localStorage.getItem('patternsBot_saved_patterns');
+            if (savedPatterns) {
+                const patternsInput = document.getElementById('patternsBotInput');
+                if (patternsInput) patternsInput.value = savedPatterns;
+            }
+            
+            const patternsInput = document.getElementById('patternsBotInput');
+            if (patternsInput) {
+                patternsInput.addEventListener('input', updatePatternsPreview);
+                patternsInput.addEventListener('keyup', updatePatternsPreview);
+                patternsInput.addEventListener('click', updatePatternsPreview);
             }
         });
 
@@ -3154,8 +3282,8 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
-            const template = sessionStorage.getItem('telegram_autobot_template') || localStorage.getItem('telegram_autobot_template');
+            const chatId = sessionStorage.getItem('telegram_chat_id');
+            const template = sessionStorage.getItem('telegram_autobot_template');
 
             if (!token || !chatId) {
                 logAutoBotAction('Telegram não configurado.', 'warning');
@@ -3191,7 +3319,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            const chatId = sessionStorage.getItem('telegram_chat_id');
 
             if (!token || !chatId) return;
 
@@ -3211,7 +3339,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             if (!toggle || !toggle.checked) return;
 
             const token = localStorage.getItem('telegram_bot_token');
-            const chatId = sessionStorage.getItem('telegram_chat_id') || localStorage.getItem('telegram_chat_id');
+            const chatId = sessionStorage.getItem('telegram_chat_id');
 
             if (!token || !chatId) return;
 
@@ -5429,41 +5557,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
             }
         }
 
-        function getBestPerformingMinutes(threshold = 75, logElementId = null, strategy = 'padrao') {
-            const rawData = sessionStorage.getItem('raw_blaze_data');
-            if (!rawData) return [];
-            const tokens = rawData.split(/[\s\n]+/).filter(n => n.trim() !== '');
-            const results = [];
-            for (let i = 0; i < tokens.length; i++) {
-                if (tokens[i].includes('/') && !isNaN(parseInt(tokens[i + 1])) && tokens[i + 2].includes(':')) {
-                    results.push({ numero: parseInt(tokens[i + 1]), horario: tokens[i + 2] });
-                    i += 2;
-                }
-            }
-            
-            if (results.length > 100) results.splice(100);
-            results.reverse();
-
-            if (results.length < 2) return [];
-
-            const minuteStats = {};
-            for (let i = 0; i < results.length; i++) {
-                const minute = parseInt(results[i].horario.split(':')[1]);
-                if (!minuteStats[minute]) minuteStats[minute] = { wins: 0, total: 0 };
-                const currentColor = dash_identificarCor(results[i].numero);
-                let isWin = false;
-                if (strategy === 'branco' && currentColor === 'branco') isWin = true;
-                if (isWin) minuteStats[minute].wins++;
-                minuteStats[minute].total++;
-            }
-            const bestMinutes = [];
-            for (const minute in minuteStats) {
-                const stats = minuteStats[minute];
-                if (stats.total > 0 && (stats.wins / stats.total) * 100 >= threshold) bestMinutes.push(parseInt(minute));
-            }
-            return bestMinutes;
-        }
-
         function createWhiteSignal(triggerResult, targetColor, strategyName, customOffset = null) {
             const [h, m] = triggerResult.time.split(':').map(Number);
             const signalTime = new Date();
@@ -7098,7 +7191,7 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                 intervalIndex++;
                 currentTime.setMinutes(currentTime.getMinutes() + minutesToAdd);
                 const timeStr = `${currentTime.getHours().toString().padStart(2,'0')}:${currentTime.getMinutes().toString().padStart(2,'0')}`;
-                signals.push(`🕒${timeStr} = ⚪️`);
+                signals.push(`🕒 ${timeStr} -> ⚪ BRANCO`);
             }
             
             list += signals.join('\n');
@@ -7232,19 +7325,6 @@ function dash_atualizarDashboard(resultados, totalNumeros, target = 'ambos') {
                         suite_openTab('patterns_bot');
                         closeTool();
                     }, 100);
-                } else {
-                    // Caso o robô esteja em um arquivo separado (iframe/ferramenta)
-                    const existingSaved = localStorage.getItem('patternsBot_saved_patterns');
-                    if (existingSaved && existingSaved.trim() !== '') {
-                        if (confirm('Já existem padrões salvos no Robô. Deseja substituir? Clique em "Cancelar" para adicionar ao final.')) {
-                            localStorage.setItem('patternsBot_saved_patterns', patternsText);
-                        } else {
-                            localStorage.setItem('patternsBot_saved_patterns', existingSaved + '\n' + patternsText);
-                        }
-                    } else {
-                        localStorage.setItem('patternsBot_saved_patterns', patternsText);
-                    }
-                    openTool('robo_padroes_automatico.html', 'Robô Padrões');
                 }
             }
         });
