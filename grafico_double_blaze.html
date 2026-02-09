@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Double - Cortex Virtual</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f0f13;
+            --panel-bg: #1a1a1a;
+            --text-color: #fff;
+            --border-color: #333;
+            --accent: #00d2ff;
+            --accent-blaze: #ff0055;
+        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .main-container { max-width: 1200px; margin: 0 auto; }
+        .layout-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; font-size: 1.5rem; }
+        .cortex-text-anim { background: linear-gradient(90deg, #00d2ff, #ff0055, #ff9800, #00d2ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: cortex-gradient 3s linear infinite; font-weight: bold; }
+        @keyframes cortex-gradient { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        
+        .btn-back { display: inline-flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #333; transition: all 0.3s; cursor: pointer; }
+        .btn-back:hover { background: rgba(0, 210, 255, 0.1); border-color: #00d2ff; color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .control-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .control-item label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 5px; font-weight: bold; }
+        
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        #chart-container { width: 100%; height: 500px; position: relative; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 10; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="layout-panel">
+            <a href="index.html" class="btn-back">⬅ Voltar ao Menu</a>
+            
+            <div class="main-header">
+                <h1 class="cortex-text-anim">GRÁFICO DOUBLE</h1>
+                <div style="font-size: 0.8rem; color: #888;">Tempo Real</div>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-item">
+                    <label>Auto-Update</label>
+                    <label class="switch"><input type="checkbox" id="autoUpdate" checked><span class="slider"></span></label>
+                </div>
+                <div class="control-item">
+                    <label>SMA (14)</label>
+                    <label class="switch"><input type="checkbox" id="toggleSMA"><span class="slider"></span></label>
+                </div>
+                <div class="control-item">
+                    <label>Bollinger Bands</label>
+                    <label class="switch"><input type="checkbox" id="toggleBB"><span class="slider"></span></label>
+                </div>
+                <div class="control-item">
+                    <label>Volume</label>
+                    <label class="switch"><input type="checkbox" id="toggleVolume" checked><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div id="chart-container">
+                <div id="loading" class="loading-overlay">Carregando dados...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartContainer = document.getElementById('chart-container');
+        const chart = LightweightCharts.createChart(chartContainer, {
+            layout: { background: { type: 'solid', color: '#0f0f13' }, textColor: '#ccc' },
+            grid: { vertLines: { color: '#333' }, horzLines: { color: '#333' } },
+            timeScale: { timeVisible: true, secondsVisible: true },
+        });
+
+        const mainSeries = chart.addCandlestickSeries({
+            upColor: '#ff0055', downColor: '#444', borderVisible: false, wickUpColor: '#ff0055', wickDownColor: '#444'
+        });
+
+        const volumeSeries = chart.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '', 
+            scaleMargins: { top: 0.8, bottom: 0 },
+        });
+
+        let smaSeries = null;
+        let bbTopSeries = null;
+        let bbBottomSeries = null;
+        let currentCandles = [];
+        let lastPrice = 1000;
+        let lastTime = 0;
+
+        function createCandle(record) {
+            const num = parseInt(record.roll);
+            let colorType = num === 0 ? 'white' : (num <= 7 ? 'red' : 'black');
+            const open = lastPrice;
+            let close = lastPrice;
+            const volatility = 10;
+            let wick = Math.random() * 5;
+
+            if (colorType === 'red') close = open + volatility;
+            else if (colorType === 'black') close = open - volatility;
+            else { close = open; wick = 4; }
+
+            const high = Math.max(open, close) + wick;
+            const low = Math.min(open, close) - wick;
+            lastPrice = close;
+
+            let time = new Date(record.created_at).getTime() / 1000;
+            if (time <= lastTime) time = lastTime + 1;
+            lastTime = time;
+
+            return { time, open, high, low, close, color: colorType };
+        }
+
+        function calculateSMA(data, period) {
+            const smaData = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) continue;
+                let sum = 0;
+                for (let j = 0; j < period; j++) sum += data[i - j].close;
+                smaData.push({ time: data[i].time, value: sum / period });
+            }
+            return smaData;
+        }
+
+        function calculateBollinger(data, period, multiplier) {
+            const bbTop = [], bbBottom = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) continue;
+                let sum = 0;
+                for (let j = 0; j < period; j++) sum += data[i - j].close;
+                const sma = sum / period;
+                let sumSqDiff = 0;
+                for (let j = 0; j < period; j++) sumSqDiff += Math.pow(data[i - j].close - sma, 2);
+                const stdDev = Math.sqrt(sumSqDiff / period);
+                bbTop.push({ time: data[i].time, value: sma + stdDev * multiplier });
+                bbBottom.push({ time: data[i].time, value: sma - stdDev * multiplier });
+            }
+            return { top: bbTop, bottom: bbBottom };
+        }
+
+        function updateIndicators() {
+            if (document.getElementById('toggleSMA').checked) {
+                if (!smaSeries) smaSeries = chart.addLineSeries({ color: '#fbbf24', lineWidth: 1 });
+                smaSeries.setData(calculateSMA(currentCandles, 14));
+            } else if (smaSeries) {
+                chart.removeSeries(smaSeries); smaSeries = null;
+            }
+
+            if (document.getElementById('toggleBB').checked) {
+                if (!bbTopSeries) {
+                    bbTopSeries = chart.addLineSeries({ color: 'rgba(0, 210, 255, 0.5)', lineWidth: 1 });
+                    bbBottomSeries = chart.addLineSeries({ color: 'rgba(0, 210, 255, 0.5)', lineWidth: 1 });
+                }
+                const bbData = calculateBollinger(currentCandles, 20, 2);
+                bbTopSeries.setData(bbData.top);
+                bbBottomSeries.setData(bbData.bottom);
+            } else if (bbTopSeries) {
+                chart.removeSeries(bbTopSeries); chart.removeSeries(bbBottomSeries);
+                bbTopSeries = null; bbBottomSeries = null;
+            }
+
+            if (document.getElementById('toggleVolume').checked) {
+                volumeSeries.applyOptions({ visible: true });
+                const volumeData = currentCandles.map(d => ({
+                    time: d.time, value: Math.random() * 100,
+                    color: d.close > d.open ? 'rgba(0, 255, 136, 0.5)' : 'rgba(255, 0, 85, 0.5)'
+                }));
+                volumeSeries.setData(volumeData);
+            } else {
+                volumeSeries.applyOptions({ visible: false });
+            }
+        }
+
+        async function fetchData() {
+            try {
+                let token = localStorage.getItem('blaze_token') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTIxMywiaXNSZWZyZXNoVG9rZW4iOmZhbHNlLCJibG9ja3MiOltdLCJ1dWlkIjoiYzE4MWQxNjAtODA5OC00Y2M4LTk4YjktNzZjNDg5YTEzY2I0IiwiaWF0IjoxNzY1MzYwNTMxLCJleHAiOjE3NjU0MDM3MzF9.FodxcWCvsl6vn3Zfyo8097ldjvO4VABtPftJYHzD1z8";
+                const response = await fetch(`https://corsproxy.io/?https://blaze.bet.br/api/singleplayer-originals/originals/roulette_games/recent/history/1?t=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Erro API');
+                const data = await response.json();
+                const records = data.records || data;
+                records.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                lastPrice = 1000; lastTime = 0;
+                currentCandles = records.map(createCandle);
+                mainSeries.setData(currentCandles);
+                updateIndicators();
+                document.getElementById('loading').style.display = 'none';
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('toggleSMA').addEventListener('change', updateIndicators);
+        document.getElementById('toggleBB').addEventListener('change', updateIndicators);
+        document.getElementById('toggleVolume').addEventListener('change', updateIndicators);
+
+        setInterval(() => {
+            if (document.getElementById('autoUpdate').checked) fetchData();
+        }, 15000);
+
+        window.addEventListener('resize', () => {
+            chart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>
