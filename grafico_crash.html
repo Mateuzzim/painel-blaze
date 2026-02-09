@@ -880,12 +880,18 @@
                 const pagesToFetch = firstLoad ? 10 : 1;
 
                 for (let i = 1; i <= pagesToFetch; i++) {
-                    const response = await fetch(`${PROXY}${API_URL}${i}&t=${Date.now()}`, {
-                        headers: {
-                            'Authorization': `Bearer ${SEU_TOKEN}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                    const targetUrl = `https://blaze.bet.br/api/singleplayer-originals/originals/crash_games/recent/history/4?page=${i}&t=${Date.now()}`;
+                    let response;
+                    try {
+                        response = await fetch(`${PROXY}${targetUrl}`, {
+                            headers: { 'Authorization': `Bearer ${SEU_TOKEN}`, 'Content-Type': 'application/json' }
+                        });
+                    } catch (e) {
+                        // Fallback sem proxy
+                        response = await fetch(targetUrl, {
+                            headers: { 'Authorization': `Bearer ${SEU_TOKEN}`, 'Content-Type': 'application/json' }
+                        });
+                    }
 
                     if (!response.ok) {
                         console.warn(`Erro HTTP: ${response.status} na página ${i}`);

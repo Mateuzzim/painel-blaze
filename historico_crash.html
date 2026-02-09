@@ -152,15 +152,20 @@
             for (let i = 1; i <= pagesToFetch; i++) {
                 try {
                     // Adiciona timestamp (&t=...) para evitar que o proxy/navegador entregue dados velhos (Cache)
-                    const url = `${PROXY}${API_BASE}${i}&t=${Date.now()}`;
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${SEU_TOKEN}`,
-                            'Content-Type': 'application/json',
-                            'Origin': 'https://blaze.bet.br'
-                        }
-                    });
+                    const targetUrl = `${API_BASE}${i}&t=${Date.now()}`;
+                    const url = `${PROXY}${targetUrl}`;
+                    let response;
+                    try {
+                        response = await fetch(url, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${SEU_TOKEN}`, 'Content-Type': 'application/json', 'Origin': 'https://blaze.bet.br' }
+                        });
+                    } catch (e) {
+                        response = await fetch(targetUrl, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${SEU_TOKEN}`, 'Content-Type': 'application/json', 'Origin': 'https://blaze.bet.br' }
+                        });
+                    }
 
                     if (!response.ok) {
                         console.warn(`Página ${i} ignorada (Status ${response.status})`);

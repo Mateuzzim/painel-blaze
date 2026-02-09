@@ -1012,7 +1012,12 @@
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
                     try {
-                        const response = await fetch(proxyUrl);
+                        let response;
+                        try {
+                            response = await fetch(proxyUrl);
+                        } catch (e) {
+                            response = await fetch(targetUrl);
+                        }
                         if (response.ok) {
                             const data = await response.json();
                             const records = Array.isArray(data) ? data : (data.records || []);

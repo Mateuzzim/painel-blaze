@@ -385,10 +385,12 @@
                 const targetUrl = `${baseUrl}${params}`;
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
-                const response = await fetch(proxyUrl, {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE }
-                });
+                let response;
+                try {
+                    response = await fetch(proxyUrl, { method: 'GET', headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE } });
+                } catch (e) {
+                    response = await fetch(targetUrl, { method: 'GET', headers: { 'Authorization': `Bearer ${SEU_TOKEN_BLAZE}`, 'x-access-token': SEU_TOKEN_BLAZE } });
+                }
 
                 if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 

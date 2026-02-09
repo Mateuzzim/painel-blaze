@@ -1829,7 +1829,12 @@
                     const targetUrl = `${baseUrl}${params}`;
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
-                    const response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                    let response;
+                    try {
+                        response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                    } catch (e) {
+                        response = await fetch(targetUrl, { method: 'GET', headers: headers });
+                    }
                     if (response.ok) {
                         const data = await response.json();
                         if (data) {

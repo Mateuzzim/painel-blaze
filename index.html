@@ -2208,7 +2208,13 @@
                         const targetUrl = `${baseUrl}${params}`;
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                         
-                        let response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                        let response;
+                        try {
+                            response = await fetch(proxyUrl, { method: 'GET', headers: headers });
+                        } catch (err) {
+                            console.warn(`Erro de conexão com proxy na página ${page}, tentando direto...`, err);
+                            response = await fetch(targetUrl, { method: 'GET', headers: headers });
+                        }
 
                         // --- LÓGICA DE RENOVAÇÃO AUTOMÁTICA (401) ---
                         if (response.status === 401) {
